@@ -1,0 +1,330 @@
+{
+ "version": 1,
+ "roots": [
+  {
+   "id": "fac",
+   "family": 1,
+   "tier": "어려움"
+  },
+  {
+   "id": "struct",
+   "family": 1,
+   "tier": "보통"
+  },
+  {
+   "id": "form",
+   "family": 1,
+   "tier": "어려움"
+  },
+  {
+   "id": "par",
+   "family": 1,
+   "tier": "보통"
+  },
+  {
+   "id": "nat",
+   "family": 1,
+   "tier": "어려움"
+  },
+  {
+   "id": "ple",
+   "family": 1,
+   "tier": "쉬움"
+  },
+  {
+   "id": "cept",
+   "family": 2,
+   "tier": "보통"
+  },
+  {
+   "id": "tain",
+   "family": 2,
+   "tier": "보통"
+  },
+  {
+   "id": "pris",
+   "family": 2,
+   "tier": "어려움"
+  },
+  {
+   "id": "hib",
+   "family": 2,
+   "tier": "어려움"
+  },
+  {
+   "id": "quest",
+   "family": 2,
+   "tier": "쉬움"
+  },
+  {
+   "id": "spect",
+   "family": 3,
+   "tier": "보통"
+  },
+  {
+   "id": "vis",
+   "family": 3,
+   "tier": "보통"
+  },
+  {
+   "id": "sens",
+   "family": 3,
+   "tier": "보통"
+  },
+  {
+   "id": "lect",
+   "family": 4,
+   "tier": "보통"
+  },
+  {
+   "id": "cert",
+   "family": 4,
+   "tier": "쉬움"
+  },
+  {
+   "id": "not",
+   "family": 4,
+   "tier": "쉬움"
+  },
+  {
+   "id": "put",
+   "family": 4,
+   "tier": "쉬움"
+  },
+  {
+   "id": "equ",
+   "family": 4,
+   "tier": "어려움"
+  },
+  {
+   "id": "dict",
+   "family": 5,
+   "tier": "어려움"
+  },
+  {
+   "id": "script",
+   "family": 5,
+   "tier": "보통"
+  },
+  {
+   "id": "sign",
+   "family": 5,
+   "tier": "쉬움"
+  },
+  {
+   "id": "leg",
+   "family": 5,
+   "tier": "쉬움"
+  },
+  {
+   "id": "jus",
+   "family": 5,
+   "tier": "보통"
+  },
+  {
+   "id": "cess",
+   "family": 6,
+   "tier": "보통"
+  },
+  {
+   "id": "ven",
+   "family": 6,
+   "tier": "쉬움"
+  },
+  {
+   "id": "it",
+   "family": 6,
+   "tier": "쉬움"
+  },
+  {
+   "id": "grad",
+   "family": 6,
+   "tier": "쉬움"
+  },
+  {
+   "id": "curr",
+   "family": 6,
+   "tier": "보통"
+  },
+  {
+   "id": "sequ",
+   "family": 6,
+   "tier": "쉬움"
+  },
+  {
+   "id": "loc",
+   "family": 6,
+   "tier": "쉬움"
+  },
+  {
+   "id": "fer",
+   "family": 7,
+   "tier": "쉬움"
+  },
+  {
+   "id": "port",
+   "family": 7,
+   "tier": "쉬움"
+  },
+  {
+   "id": "miss",
+   "family": 7,
+   "tier": "보통"
+  },
+  {
+   "id": "dit",
+   "family": 7,
+   "tier": "쉬움"
+  },
+  {
+   "id": "pend",
+   "family": 7,
+   "tier": "보통"
+  },
+  {
+   "id": "pay",
+   "family": 7,
+   "tier": "쉬움"
+  },
+  {
+   "id": "grat",
+   "family": 7,
+   "tier": "보통"
+  },
+  {
+   "id": "duc",
+   "family": 8,
+   "tier": "어려움"
+  },
+  {
+   "id": "rect",
+   "family": 8,
+   "tier": "쉬움"
+  },
+  {
+   "id": "act",
+   "family": 8,
+   "tier": "어려움"
+  },
+  {
+   "id": "cur",
+   "family": 8,
+   "tier": "쉬움"
+  },
+  {
+   "id": "cap",
+   "family": 8,
+   "tier": "보통"
+  },
+  {
+   "id": "tract",
+   "family": 9,
+   "tier": "보통"
+  },
+  {
+   "id": "press",
+   "family": 9,
+   "tier": "보통"
+  },
+  {
+   "id": "ject",
+   "family": 9,
+   "tier": "쉬움"
+  },
+  {
+   "id": "tend",
+   "family": 9,
+   "tier": "보통"
+  },
+  {
+   "id": "pet",
+   "family": 9,
+   "tier": "쉬움"
+  },
+  {
+   "id": "vers",
+   "family": 10,
+   "tier": "어려움"
+  },
+  {
+   "id": "turn",
+   "family": 10,
+   "tier": "보통"
+  },
+  {
+   "id": "plic",
+   "family": 10,
+   "tier": "보통"
+  },
+  {
+   "id": "mot",
+   "family": 10,
+   "tier": "보통"
+  },
+  {
+   "id": "sta",
+   "family": 11,
+   "tier": "보통"
+  },
+  {
+   "id": "pos",
+   "family": 11,
+   "tier": "쉬움"
+  },
+  {
+   "id": "sid",
+   "family": 11,
+   "tier": "쉬움"
+  },
+  {
+   "id": "clos",
+   "family": 11,
+   "tier": "보통"
+  },
+  {
+   "id": "lig",
+   "family": 11,
+   "tier": "보통"
+  },
+  {
+   "id": "strict",
+   "family": 11,
+   "tier": "어려움"
+  },
+  {
+   "id": "val",
+   "family": 11,
+   "tier": "쉬움"
+  },
+  {
+   "id": "fort",
+   "family": 11,
+   "tier": "쉬움"
+  },
+  {
+   "id": "rupt",
+   "family": 12,
+   "tier": "보통"
+  },
+  {
+   "id": "cis",
+   "family": 12,
+   "tier": "어려움"
+  },
+  {
+   "id": "cid",
+   "family": 12,
+   "tier": "어려움"
+  },
+  {
+   "id": "fin",
+   "family": 12,
+   "tier": "쉬움"
+  },
+  {
+   "id": "part",
+   "family": 12,
+   "tier": "보통"
+  }
+ ]
+}

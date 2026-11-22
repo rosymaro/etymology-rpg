@@ -1,5 +1,5 @@
 {
-  "_doc": "장비 능력치. v = 차수 값, t = 차수. 02-rpg-v2 '장비 능력치' 그대로. 유닛 레벨 공식을 키운 뒤(unit.json) 다시 맞았다(docs/design/sim-10stage.md)",
+  "_doc": "장비 능력치. v = 차수 값, t = 차수. 02-rpg-v2 '장비 능력치' 그대로. 유닛 레벨 공식을 키운 뒤(unit.json) 다시 맞았다(docs/design/sim-10stage.md). 식 문법은 숫자·변수·+ - * / // %·괄호·min max ceil floor abs만(게임 Formula와 Python eval 공통)",
   "tier_value": {
     "1": 1,
     "2": 2,
@@ -29,7 +29,7 @@
       "atk": "v // 2"
     },
     "머리": {
-      "def": "1 if t == 4 else 0"
+      "def": "max(0, t - 3)"
     },
     "가슴": {
       "hp": "v"

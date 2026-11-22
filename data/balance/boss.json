@@ -139,6 +139,15 @@
       60,
       2
     ],
-    "_level_gate_doc": "devil 능력 '말뿌리 장막': 우리 유닛 레벨이 [0]보다 낮으면 devil에게 주는 피해가 모자란 레벨마다 [1]씩 준다"
-  }
+    "_level_gate_doc": "devil 능력 '말뿌리 장막': 우리 유닛 레벨이 [0]보다 낮으면 devil에게 주는 피해가 모자란 레벨마다 [1]씩 준다",
+    "ability": {
+      "class": "LevelGate",
+      "params": {
+        "level": 60,
+        "per_level": 2
+      }
+    }
+  },
+  "minion_level_bonus": 2,
+  "_minion_doc": "보스 졸개: 그 스테이지 재료로 만드는 2차 단어. 레벨 = 필드 기준 레벨 + minion_level_bonus. 수 = 파티 수 − 1"
 }

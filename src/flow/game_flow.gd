@@ -1,0 +1,226 @@
+class_name GameFlow
+extends RefCounted
+## 게임 흐름(architecture.md 8절): 타이틀 → 이름 → 이야기 → 필드 ↔ 조우·퀴즈 → 전투 준비 → 전투 → 결과.
+## 화면은 '무엇이 눌렸다'만 알리고, 다음 화면은 여기서 정한다. 흐름이 바뀌면 이 파일만 고친다.
+
+const STAGE := 1
+const JOIN_CHEOK_AFTER := 5  ## 알기 유닛이 합류하는 포획 수(s01_skit_cheok). 이야기 진행 값이라 여기 둔다
+
+var main: Main
+
+
+func _init(m: Main) -> void:
+	main = m
+
+
+func start() -> void:
+	main.show_screen(TitleScreen.new())
+
+
+func go_title() -> void:
+	start()
+
+
+func go_options(back: Callable) -> void:
+	main.show_screen(OptionsScreen.new(), {"back": back})
+
+
+func new_game() -> void:
+	GameData.save_store.erase()
+	main.show_screen(NameScreen.new())
+
+
+func name_entered(hero_name: String) -> void:
+	GameData.new_game(hero_name)
+	main.play_scene("s01_intro", func() -> void:
+		main.play_scene("s01_ki", func() -> void:
+			_flag("s01_ki")
+			GameData.save()
+			go_field()))
+
+
+func continue_game() -> void:
+	if GameData.continue_game():
+		go_field()
+	else:
+		new_game()
+
+
+func go_field(msg: String = "") -> void:
+	main.show_screen(FieldScreen.new(), {"msg": msg})
+
+
+func _flag(k: String) -> void:
+	GameData.state.flags[k] = true
+
+
+func seen(k: String) -> bool:
+	return GameData.state.flags.get(k, false)
+
+
+# ----- 필드에서 일어나는 일 -----
+
+func entered_field() -> void:
+	if not seen("s01_tut_battle"):
+		_flag("s01_tut_battle")
+		main.play_scene("s01_tut_battle", func() -> void: pass)
+
+
+## 필드 적과 부딪힘: 단어 n개 조우 퀴즈.
+func encounter(word_ids: Array[String]) -> void:
+	GameData.vibrate()
+	main.show_screen(QuizScreen.new(), {"words": word_ids, "mode": "encounter",
+		"done": func(right: Array[bool]) -> void: _after_encounter(word_ids, right)})
+
+
+func _after_encounter(word_ids: Array[String], right: Array[bool]) -> void:
+	if not right.has(false):
+		_give_words(word_ids, "ui.result.caught_all")
+	else:
+		go_battle_prep(word_ids, false)
+
+
+## 마을 게시판: 마을 단어 퀴즈(미니게임·퀘스트가 생기기 전 임시 길, 04-meta.md 6절). 맞힌 단어만 얻는다.
+func board_quiz(word_ids: Array[String]) -> void:
+	main.show_screen(QuizScreen.new(), {"words": word_ids, "mode": "board",
+		"done": func(right: Array[bool]) -> void:
+			var got: Array[String] = []
+			for i in word_ids.size():
+				if right[i]:
+					got.append(word_ids[i])
+			if got.is_empty():
+				go_field(TranslationServer.translate("ui.board.none"))
+			else:
+				_give_words(got, "ui.result.board")})
+
+
+func go_battle_prep(word_ids: Array[String], boss: bool) -> void:
+	main.show_screen(BattlePrepScreen.new(), {"words": word_ids, "boss": boss})
+
+
+## 전투 준비가 끝남: 마법과 어근이 정해졌다.
+func start_battle(party: Array[int], roots: Dictionary, magic_id: String, word_ids: Array[String], boss: bool) -> void:
+	var s := GameData.state
+	for u in roots:
+		s.chosen_roots[u] = roots[u]
+	var ctx := GameData.setup.make_context(s, party, roots, magic_id)
+	var ids := word_ids
+	if boss:
+		ids = GameData.setup.boss_enemies(ctx, s, STAGE)
+	else:
+		GameData.setup.field_enemies(ctx, word_ids, STAGE)
+	var result := BattleEngine.new(ctx).run()
+	main.show_screen(BattleScreen.new(), {"ctx": ctx, "result": result, "words": ids, "boss": boss,
+		"party": party})
+
+
+func battle_finished(result: BattleResult, word_ids: Array[String], boss: bool) -> void:
+	var won := RewardRule.words_won(result, word_ids, GameData.coin_source)
+	if boss:
+		if result.won():
+			_boss_won()
+			return
+		go_field(TranslationServer.translate("ui.boss.lost"))
+		GameData.save()
+		return
+	if won.is_empty():
+		GameData.save()
+		go_field(TranslationServer.translate("ui.result.none"))
+	else:
+		_give_words(won, "ui.result.won" if result.won() else "ui.result.partial")
+
+
+func _give_words(ids: Array[String], title_key: String) -> void:
+	var events: Array = []
+	for id in ids:
+		events.append(GameData.rules.gain_word(GameData.state, id))
+		EventBus.word_captured.emit(id)
+	GameData.save()
+	main.show_screen(ResultScreen.new(), {"events": events, "title": title_key,
+		"done": func() -> void: _after_result()})
+
+
+func _after_result() -> void:
+	var s := GameData.state
+	if not seen("s01_skit_cheok") and s.dex_count() >= JOIN_CHEOK_AFTER:
+		_flag("s01_skit_cheok")
+		if not 4 in s.joined:
+			s.joined.append(4)
+		GameData.save()
+		go_field()
+		main.play_scene("s01_skit_cheok", func() -> void:
+			main.notice(TranslationServer.translate("ui.join").format({"name": UiKit.unit_name(4)})))
+		return
+	go_field()
+
+
+# ----- 마을 -----
+
+func go_forge() -> void:
+	if not seen("s01_tut_evolve"):
+		_flag("s01_tut_evolve")
+		main.play_scene("s01_tut_evolve", func() -> void: main.show_screen(EvolveScreen.new()))
+		return
+	main.show_screen(EvolveScreen.new())
+
+
+func evolve_quiz(word_id: String) -> void:
+	var words := GameData.evolution.quiz_words(word_id)
+	main.show_screen(QuizScreen.new(), {"words": words, "mode": "evolve", "target": word_id,
+		"done": func(right: Array[bool]) -> void: _after_evolve(word_id, words, right)})
+
+
+func _after_evolve(word_id: String, words: Array[String], right: Array[bool]) -> void:
+	if not right.has(false):
+		GameData.vibrate(true)
+		_give_words([word_id] as Array[String], "ui.evolve.success")
+		return
+	var wrong: Array[String] = []
+	for i in words.size():
+		if not right[i]:
+			wrong.append(words[i])
+	var target := GameData.evolution.recapture_target(word_id, wrong)
+	GameData.state.recapture[word_id] = target
+	GameData.save()
+	EventBus.evolution_failed.emit(target)
+	main.show_screen(EvolveScreen.new())
+	main.notice(TranslationServer.translate("ui.evolve.fail").format({"word": target}))
+
+
+func go_dex() -> void:
+	main.show_screen(DexScreen.new())
+
+
+func go_party() -> void:
+	main.show_screen(PartyScreen.new())
+
+
+# ----- 보스 -----
+
+func boss_gate() -> void:
+	var g := GameData.rules.boss_gate(GameData.state, STAGE)
+	if seen("boss_s01"):
+		main.notice(TranslationServer.translate("ui.boss.already"))
+		return
+	if not g["open"]:
+		main.notice(TranslationServer.translate("ui.boss.gate").format(g))
+		return
+	GameData.vibrate(true)
+	main.play_scene("s01_jeon", func() -> void: go_battle_prep([] as Array[String], true))
+
+
+func _boss_won() -> void:
+	var s := GameData.state
+	_flag("boss_s01")
+	var bw := GameData.repo.boss_word(STAGE)
+	GameData.rules.gain_word(s, bw.id)
+	for m in ["sub", "re", "com"]:
+		if not m in s.magics:
+			s.magics.append(m)
+	s.stage = maxi(s.stage, STAGE + 1)
+	GameData.save()
+	EventBus.boss_defeated.emit(STAGE)
+	GameData.vibrate(true)
+	main.play_scene("s01_gyeol", func() -> void:
+		go_field()
+		main.notice(TranslationServer.translate("ui.stage.clear")))
