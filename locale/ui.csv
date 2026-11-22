@@ -1,0 +1,9 @@
+keys,ko
+ui.battle.start,전투 시작
+ui.battle.magic_pick,마법 고르기
+ui.battle.skill_pick,스킬 고르기
+ui.quiz.pick_meaning,뜻을 고르세요
+ui.quiz.correct,정답
+ui.quiz.wrong,오답
+ui.evolve.start,진화하기
+ui.evolve.need_recapture,"{word}를 다시 잡아야 진화에 도전할 수 있어요."

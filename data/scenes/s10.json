@@ -1,0 +1,266 @@
+{
+ "stage": 10,
+ "place": "name.stage.s10",
+ "theme_note": "모든 뿌리가 잘린 곳. 최종전과 엔딩.",
+ "scenes": [
+  {
+   "id": "s10_ki",
+   "title": "story.s10.ki.title",
+   "place_note": "탑 아래 마을",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "tower_child"
+   ],
+   "staging_note": "탑 아래 마을 사람들은 모두 \"어… 그… 저거\" 같은 소리만 낸다. 간판은 전부 회색. 아이 하나가 회색 단어 카드 defect를 들고 있다. 첫 장면의 그 단어다.",
+   "game_note": "1스테이지에서 본 defect를 여기서 처음 잡을 수 있다",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "tower_child",
+     "text": "story.s10.ki.001"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s10.ki.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.ki.003_etym"
+    },
+    {
+     "speaker": "tower_child",
+     "text": "story.s10.ki.004"
+    }
+   ]
+  },
+  {
+   "id": "s10_seung",
+   "title": "story.s10.seung.title",
+   "place_note": "탑 아래 광장",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "tower_child"
+   ],
+   "staging_note": "플로우 프리 규칙의 문양 잇기 소개. 문양 조각을 이을 때마다 마을 간판이 하나씩 색을 되찾는다.",
+   "game_note": "미니게임 문양 잇기 개방",
+   "borrow": [
+    {
+     "game": "플로우 프리",
+     "part": "같은 색 점을 겹치지 않게 선으로 잇고 판을 채우는 규칙"
+    },
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "tower_child",
+     "text": "story.s10.seung.001"
+    },
+    {
+     "speaker": "tower_child",
+     "text": "story.s10.seung.002"
+    }
+   ]
+  },
+  {
+   "id": "s10_q_magic",
+   "title": "story.s10.q_magic.title",
+   "place_note": "탑 입구",
+   "cast": [
+    "hero",
+    "ttukttak"
+   ],
+   "staging_note": "탑 입구가 두 쪽으로 갈라져 있다. re- 마법으로 다시 붙인다.",
+   "game_note": "마법 re- 필드 효과(다시 붙이기, 이 스테이지 전용 연출)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.q_magic.001_etym"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s10.q_magic.002"
+    }
+   ]
+  },
+  {
+   "id": "s10_q_root",
+   "title": "story.s10.q_root.title",
+   "place_note": "탑 안 계단",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "bingeul"
+   ],
+   "staging_note": "계단이 종이처럼 접혀 있다. plic 장착 유닛이 펼친다.",
+   "game_note": "어근 plic 필드 능력(접힌 것 펼치기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.q_root.001_etym"
+    },
+    {
+     "speaker": "bingeul",
+     "text": "story.s10.q_root.002"
+    }
+   ]
+  },
+  {
+   "id": "s10_q_word",
+   "title": "story.s10.q_word.title",
+   "place_note": "탑 아래 마을",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "tower_child"
+   ],
+   "staging_note": "아이의 공책에 세 단어.",
+   "game_note": "필드 단어 defect, construction, require 잡기",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "tower_child",
+     "text": "story.s10.q_word.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.q_word.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s10_jeon_a",
+   "title": "story.s10.jeon_a.title",
+   "place_note": "탑 꼭대기",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "devil",
+    "yeongcha"
+   ],
+   "staging_note": "탑 꼭대기. 하늘에 갈라진 문양. devil 옆에 영차가 서 있다(이름 자막 devil).",
+   "game_note": "최종전 직전",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "devil",
+     "text": "story.s10.jeon_a.001"
+    },
+    {
+     "speaker": "devil",
+     "text": "story.s10.jeon_a.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.jeon_a.003"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s10.jeon_a.004"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s10.jeon_a.005"
+    }
+   ]
+  },
+  {
+   "id": "s10_jeon_b",
+   "title": "story.s10.jeon_b.title",
+   "place_note": "탑 꼭대기",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "devil",
+    "yeongcha"
+   ],
+   "staging_note": "최종전: devil, 영차(플레이어와 같은 레벨·입은 장비 그대로), 지역 보스 둘. 전투 중 체력이 절반이 되면, 지금까지 뿌리를 찾아 준 마을 사람들이 차례로 단어를 외치는 컷(각 마을 1명, 한 줄씩) → 아군 전체가 힘을 얻는다(수치는 나중에).",
+   "game_note": "최종전, 이간 능력, 중간 응원 컷",
+   "borrow": [
+    {
+     "game": "MOTHER 2",
+     "part": "최종전에서 그동안 만난 사람들의 마음이 모여 힘이 되는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "devil",
+     "text": "story.s10.jeon_b.001"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s10.jeon_b.002"
+    },
+    {
+     "speaker": "hunter",
+     "text": "story.s10.jeon_b.003"
+    },
+    {
+     "speaker": "king",
+     "text": "story.s10.jeon_b.004"
+    },
+    {
+     "speaker": "tower_child",
+     "text": "story.s10.jeon_b.005"
+    }
+   ]
+  },
+  {
+   "id": "s10_gyeol",
+   "title": "story.s10.gyeol.title",
+   "place_note": "말뿌리 나무",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "yeongcha",
+    "devil"
+   ],
+   "staging_note": "devil이 쓰러지며 갈라진 문양이 하나로 붙는다. 장면이 1스테이지의 말뿌리 나무로 바뀌고, 끊어졌던 뿌리가 모두 이어져 단어 카드들이 색을 되찾으며 나무에 다시 매달린다. 마지막에 devil 카드가 dia + ballein으로 갈라졌다가 하나로 붙는다. 엔딩 크레디트에 지금까지 모은 단어가 흐른다.",
+   "game_note": "엔딩. 크레디트 후 계속 플레이(남은 수집·진화)",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    },
+    {
+     "game": "파이널 판타지 IV",
+     "part": "동료가 꾐에 넘어가 적 편에 섰다가 돌아오는 줄기"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "devil",
+     "text": "story.s10.gyeol.001"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s10.gyeol.002"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s10.gyeol.003"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.gyeol.004"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,220 @@
+{
+ "stage": 6,
+ "place": "name.stage.s06",
+ "theme_note": "잊힌 뿌리: 말하기·이끌기(dict·reg·duc). devil의 과거.",
+ "scenes": [
+  {
+   "id": "s06_ki",
+   "title": "story.s06.ki.title",
+   "place_note": "왕성 광장",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "dictator",
+    "scribe"
+   ],
+   "staging_note": "광장 단상에서 dictator가 엉뚱한 법을 선포한다. 사람들이 dict를 잊어서 그가 말한 소리 그대로 법이 된다.",
+   "game_note": "이끌기 유닛 해금 단서",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "dictator",
+     "text": "story.s06.ki.001"
+    },
+    {
+     "speaker": "scribe",
+     "text": "story.s06.ki.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s06.ki.003_etym"
+    },
+    {
+     "speaker": "scribe",
+     "text": "story.s06.ki.004"
+    }
+   ]
+  },
+  {
+   "id": "s06_seung",
+   "title": "story.s06.seung.title",
+   "place_note": "서기실",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "scribe",
+    "daejang"
+   ],
+   "staging_note": "이끌기 유닛 대장 합류(앞장서고 싶어 함). 애너그램 규칙의 필사 소개.",
+   "game_note": "미니게임 필사 개방, 이끌기 유닛 합류",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "애너그램 퍼즐",
+     "part": "섞인 글자를 바른 단어로 늘어놓는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "daejang",
+     "text": "story.s06.seung.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s06.seung.002_etym"
+    },
+    {
+     "speaker": "scribe",
+     "text": "story.s06.seung.003"
+    }
+   ]
+  },
+  {
+   "id": "s06_q_magic",
+   "title": "story.s06.q_magic.title",
+   "place_note": "서기실 금고",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "scribe"
+   ],
+   "staging_note": "원래 법전이 든 상자가 봉인되어 있다. un- 마법으로 연다.",
+   "game_note": "마법 un- 필드 효과(잠긴 것 열기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "scribe",
+     "text": "story.s06.q_magic.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s06.q_magic.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s06_q_root",
+   "title": "story.s06.q_root.title",
+   "place_note": "성문 안쪽",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "jojal",
+    "guard_castle"
+   ],
+   "staging_note": "경비가 길을 막는다. dict 장착 유닛(조잘)이 있으면 말로 설득할 수 있다.",
+   "game_note": "어근 dict 필드 능력(NPC 설득)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "guard_castle",
+     "text": "story.s06.q_root.001"
+    },
+    {
+     "speaker": "jojal",
+     "text": "story.s06.q_root.002"
+    },
+    {
+     "speaker": "guard_castle",
+     "text": "story.s06.q_root.003"
+    }
+   ]
+  },
+  {
+   "id": "s06_q_word",
+   "title": "story.s06.q_word.title",
+   "place_note": "서기실",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "scribe"
+   ],
+   "staging_note": "문서의 빈칸 세 개.",
+   "game_note": "필드 단어 sign, design, legal 잡기",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s06.q_word.001_etym"
+    }
+   ]
+  },
+  {
+   "id": "s06_jeon",
+   "title": "story.s06.jeon.title",
+   "place_note": "왕좌의 방",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "dictator"
+   ],
+   "staging_note": "dictator가 두루마리(devil의 명령서)를 들고 있다. 이름 자막.",
+   "game_note": "보스 전투 dictator",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "dictator",
+     "text": "story.s06.jeon.001"
+    },
+    {
+     "speaker": "bingeul",
+     "text": "story.s06.jeon.002"
+    }
+   ]
+  },
+  {
+   "id": "s06_gyeol",
+   "title": "story.s06.gyeol.title",
+   "place_note": "왕좌의 방",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "king"
+   ],
+   "staging_note": "갇혀 있던 왕이 돌아와 devil의 과거를 이야기한다. 회상은 흑백 그림 한 장.",
+   "game_note": "마법 dis-·inter- 획득(14개 완성), 스테이지 7 개방",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "king",
+     "text": "story.s06.gyeol.001"
+    },
+    {
+     "speaker": "king",
+     "text": "story.s06.gyeol.002"
+    },
+    {
+     "speaker": "king",
+     "text": "story.s06.gyeol.003"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s06.gyeol.004"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,236 @@
+{
+ "stage": 5,
+ "place": "name.stage.s05",
+ "theme_note": "잊힌 뿌리: 나르기·주기(port·fer·mit·dare). 복선.",
+ "scenes": [
+  {
+   "id": "s05_ki",
+   "title": "story.s05.ki.title",
+   "place_note": "부두",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "yeongcha",
+    "porter"
+   ],
+   "staging_note": "짐꾼들이 짐 앞에 앉아 멍하니 있다. 영차가 일행에 합류한다(고향 항구).",
+   "game_note": "나르기 유닛 합류",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "porter",
+     "text": "story.s05.ki.001_pun"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.ki.002_etym"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.ki.003"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.ki.004"
+    }
+   ]
+  },
+  {
+   "id": "s05_seung",
+   "title": "story.s05.seung.title",
+   "place_note": "방파제",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "sailor",
+    "jojal"
+   ],
+   "staging_note": "말하기 유닛 조잘 합류(받아 적기가 버릇). 3개 맞추기 규칙의 낚시 소개.",
+   "game_note": "미니게임 낚시 개방, 말하기 유닛 합류",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "비주얼드·캔디 크러시",
+     "part": "같은 것 3개를 맞춰 터뜨리는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "jojal",
+     "text": "story.s05.seung.001"
+    },
+    {
+     "speaker": "sailor",
+     "text": "story.s05.seung.002"
+    }
+   ]
+  },
+  {
+   "id": "s05_q_magic",
+   "title": "story.s05.q_magic.title",
+   "place_note": "등대",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "sailor"
+   ],
+   "staging_note": "등대 불이 꺼져 배들이 앞을 못 본다. pro- 마법을 쓰면 등대 빛이 앞으로 뻗는다.",
+   "game_note": "마법 pro- 필드 효과(앞길 비추기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "sailor",
+     "text": "story.s05.q_magic.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.q_magic.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s05_q_root",
+   "title": "story.s05.q_root.title",
+   "place_note": "부두",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "yeongcha",
+    "porter"
+   ],
+   "staging_note": "fer 장착 유닛(영차)이 짐을 번쩍 든다. 영차는 무척 신나 보인다.",
+   "game_note": "어근 fer 필드 능력(무거운 짐 나르기)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.q_root.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.q_root.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s05_q_word",
+   "title": "story.s05.q_word.title",
+   "place_note": "선원 술집",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "sailor",
+    "yeongcha"
+   ],
+   "staging_note": "늙은 선원이 옛 단어를 늘어놓는다. 퀘스트가 끝난 밤, 영차가 혼자 부두로 걸어 나가는 짧은 장면(일행은 잠들어 있음).",
+   "game_note": "필드 단어 report, support, important 잡기 + 복선",
+   "borrow": [
+    {
+     "game": "파이널 판타지 IV",
+     "part": "동료가 꾐에 넘어가 적 편에 섰다가 돌아오는 줄기"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "sailor",
+     "text": "story.s05.q_word.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.q_word.002_etym"
+    },
+    {
+     "speaker": "sailor",
+     "text": "story.s05.q_word.003"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.q_word.004"
+    }
+   ]
+  },
+  {
+   "id": "s05_jeon",
+   "title": "story.s05.jeon.title",
+   "place_note": "바다 위 해적선",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "pirate",
+    "yeongcha"
+   ],
+   "staging_note": "해적선이 일행이 탈 배를 정확히 막고 기다린다(이름 자막).",
+   "game_note": "보스 전투 pirate",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "pirate",
+     "text": "story.s05.jeon.001"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s05.jeon.002"
+    },
+    {
+     "speaker": "pirate",
+     "text": "story.s05.jeon.003"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.jeon.004"
+    }
+   ]
+  },
+  {
+   "id": "s05_gyeol",
+   "title": "story.s05.gyeol.title",
+   "place_note": "부두",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "sailor",
+    "yeongcha"
+   ],
+   "staging_note": "뿌리가 이어지며 항구 간판들이 색을 되찾는다. 선원이 의미심장한 말을 남긴다.",
+   "game_note": "마법 in-(아닌)·un- 획득, 스테이지 6 개방",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "sailor",
+     "text": "story.s05.gyeol.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.gyeol.002_etym"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.gyeol.003"
+    }
+   ]
+  }
+ ]
+}

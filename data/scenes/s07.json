@@ -1,0 +1,191 @@
+{
+ "stage": 7,
+ "place": "name.stage.s07",
+ "theme_note": "잊힌 뿌리: 돌리기(vers·turn·mot). devil의 목적.",
+ "scenes": [
+  {
+   "id": "s07_ki",
+   "title": "story.s07.ki.title",
+   "place_note": "호숫가 방앗간",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miller",
+    "bingeul"
+   ],
+   "staging_note": "물레방아가 거꾸로 돈다. 마을 사람들이 모두 빙글처럼 반대로 말한다. 빙글은 처음으로 정상적인 사람 취급을 받는다.",
+   "game_note": "—",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    },
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "miller",
+     "text": "story.s07.ki.001"
+    },
+    {
+     "speaker": "bingeul",
+     "text": "story.s07.ki.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s07.ki.003_etym"
+    }
+   ]
+  },
+  {
+   "id": "s07_seung",
+   "title": "story.s07.seung.title",
+   "place_note": "방앗간",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miller"
+   ],
+   "staging_note": "15 퍼즐 규칙의 물레방아 소개.",
+   "game_note": "미니게임 물레방아 개방",
+   "borrow": [
+    {
+     "game": "15 퍼즐",
+     "part": "빈칸으로 조각을 밀어 맞추는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "miller",
+     "text": "story.s07.seung.001"
+    }
+   ]
+  },
+  {
+   "id": "s07_q_magic",
+   "title": "story.s07.q_magic.title",
+   "place_note": "호수 양쪽 기슭",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miller"
+   ],
+   "staging_note": "두 기슭 사이가 끊겼다. inter- 마법으로 두 지점 사이를 잇는 길이 나타난다.",
+   "game_note": "마법 inter- 필드 효과(두 지점 사이 길 찾기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s07.q_magic.001_etym"
+    }
+   ]
+  },
+  {
+   "id": "s07_q_root",
+   "title": "story.s07.q_root.title",
+   "place_note": "수문",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "bingeul"
+   ],
+   "staging_note": "vers 장착 유닛(빙글)이 있으면 수문을 반대로 돌려 물길을 바로잡는다.",
+   "game_note": "어근 vers 필드 능력(돌리는 장치)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "bingeul",
+     "text": "story.s07.q_root.001"
+    }
+   ]
+  },
+  {
+   "id": "s07_q_word",
+   "title": "story.s07.q_word.title",
+   "place_note": "방앗간",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miller"
+   ],
+   "staging_note": "뒤집힌 간판 세 개.",
+   "game_note": "필드 단어 return, version, conversation 잡기",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s07.q_word.001_etym"
+    }
+   ]
+  },
+  {
+   "id": "s07_jeon",
+   "title": "story.s07.jeon.title",
+   "place_note": "호수 한가운데",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "vortex"
+   ],
+   "staging_note": "물이 빨려 들어가며 vortex 등장(이름 자막).",
+   "game_note": "보스 전투 vortex",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "vortex",
+     "text": "story.s07.jeon.001"
+    },
+    {
+     "speaker": "vortex",
+     "text": "story.s07.jeon.002"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s07.jeon.003"
+    }
+   ]
+  },
+  {
+   "id": "s07_gyeol",
+   "title": "story.s07.gyeol.title",
+   "place_note": "호숫가",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miller",
+    "yeongcha"
+   ],
+   "staging_note": "물이 바른 방향으로 돈다. 영차가 일행에서 조금 떨어져 서 있다.",
+   "game_note": "스테이지 8 개방",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "miller",
+     "text": "story.s07.gyeol.001"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s07.gyeol.002"
+    }
+   ]
+  }
+ ]
+}

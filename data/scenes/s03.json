@@ -1,0 +1,235 @@
+{
+ "stage": 3,
+ "place": "name.stage.s03",
+ "theme_note": "잊힌 뿌리: 보기·알기(vis·spect·lect). 이름 devil이 드러남.",
+ "scenes": [
+  {
+   "id": "s03_ki",
+   "title": "story.s03.ki.title",
+   "place_note": "망루 꼭대기",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "watchman"
+   ],
+   "staging_note": "망루지기가 눈을 감은 채 망원경을 들고 있다. 안개가 자욱하다.",
+   "game_note": "보기 유닛 해금 단서",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "watchman",
+     "text": "story.s03.ki.001"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s03.ki.002"
+    },
+    {
+     "speaker": "watchman",
+     "text": "story.s03.ki.003"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.ki.004_etym"
+    },
+    {
+     "speaker": "watchman",
+     "text": "story.s03.ki.005"
+    }
+   ]
+  },
+  {
+   "id": "s03_seung",
+   "title": "story.s03.seung.title",
+   "place_note": "도서관 열람실",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "librarian",
+    "hilkkeum",
+    "cheokcheok"
+   ],
+   "staging_note": "책장마다 글자가 한 줄씩 사라진다. 보기 유닛 힐끔 합류. 아는 척 담당 척척(알기 유닛, 스테이지 1부터 동행)이 자신만만하게 틀린다.",
+   "game_note": "미니게임 책 읽기(단어 찾기) 개방",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "단어 찾기(워드 서치) 퍼즐",
+     "part": "글자 격자에서 숨은 단어를 찾는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "librarian",
+     "text": "story.s03.seung.001"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s03.seung.002_pun"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.seung.003_etym"
+    },
+    {
+     "speaker": "hilkkeum",
+     "text": "story.s03.seung.004"
+    },
+    {
+     "speaker": "librarian",
+     "text": "story.s03.seung.005"
+    }
+   ]
+  },
+  {
+   "id": "s03_q_magic",
+   "title": "story.s03.q_magic.title",
+   "place_note": "도서관 뒤 정원",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "librarian"
+   ],
+   "staging_note": "희귀 단어 하나가 사람을 보자마자 달아난다. ad- 필드 효과(다가가기)를 쓰면 달아나지 못한다.",
+   "game_note": "마법 ad- 필드 효과",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "librarian",
+     "text": "story.s03.q_magic.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.q_magic.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s03_q_root",
+   "title": "story.s03.q_root.title",
+   "place_note": "망루 아래 숲",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hilkkeum"
+   ],
+   "staging_note": "안개 속 갈림길. vis 장착 유닛이 있으면 숨은 길이 빛난다.",
+   "game_note": "어근 vis 필드 능력(숨은 길 보기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "hilkkeum",
+     "text": "story.s03.q_root.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.q_root.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s03_q_word",
+   "title": "story.s03.q_word.title",
+   "place_note": "열람실",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "librarian"
+   ],
+   "staging_note": "사서의 대출 목록에 빈칸 세 개.",
+   "game_note": "필드 단어 collection, advice, notice 잡기",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "librarian",
+     "text": "story.s03.q_word.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.q_word.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s03_jeon",
+   "title": "story.s03.jeon.title",
+   "place_note": "도서관 탑 꼭대기",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "wizard"
+   ],
+   "staging_note": "탑 꼭대기 서가에 wizard가 책 한 권을 불태우려 한다. 이름 자막. 책 표지에 갈라진 문양.",
+   "game_note": "보스 전투 wizard",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "wizard",
+     "text": "story.s03.jeon.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.jeon.002_etym"
+    },
+    {
+     "speaker": "wizard",
+     "text": "story.s03.jeon.003"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s03.jeon.004"
+    }
+   ]
+  },
+  {
+   "id": "s03_gyeol",
+   "title": "story.s03.gyeol.title",
+   "place_note": "탑 꼭대기",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "librarian",
+    "cheokcheok"
+   ],
+   "staging_note": "남은 책에서 문양의 이름을 찾는다. 페이지에 devil이라는 단어 카드가 회색으로 떠오르고, 두 조각(dia + ballein)으로 갈라졌다가 다시 붙는다.",
+   "game_note": "마법 prae-·in-(효과) 획득, 스테이지 4 개방, 2막 시작",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "librarian",
+     "text": "story.s03.gyeol.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.gyeol.002_etym"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s03.gyeol.003"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s03.gyeol.004"
+    }
+   ]
+  }
+ ]
+}

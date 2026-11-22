@@ -1,0 +1,189 @@
+{
+ "stage": 8,
+ "place": "name.stage.s08",
+ "theme_note": "잊힌 뿌리: 서기·끌기(sta·pos·lig·tract). 배신자를 밝힘.",
+ "scenes": [
+  {
+   "id": "s08_ki",
+   "title": "story.s08.ki.title",
+   "place_note": "성벽 앞",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "guardian"
+   ],
+   "staging_note": "성벽 위 guardian이 내려다본다. 사람들이 stable을 잊어서 성벽이 조금씩 무너진다.",
+   "game_note": "서기·끌기 유닛 해금 단서",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "guardian",
+     "text": "story.s08.ki.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s08.ki.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s08_seung",
+   "title": "story.s08.seung.title",
+   "place_note": "보초 막사",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "sentry",
+    "kkumjjeok",
+    "hwik"
+   ],
+   "staging_note": "서기 유닛 꿈쩍(절대 안 움직임)과 끌기 유닛 휙(뭐든 던짐) 합류. 볼 소트 규칙의 보초 서기 소개.",
+   "game_note": "미니게임 보초 서기 개방, 서기·끌기 유닛 합류",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "볼 소트 퍼즐",
+     "part": "섞인 것을 통에 옮겨 같은 것끼리 모으는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "kkumjjeok",
+     "text": "story.s08.seung.001"
+    },
+    {
+     "speaker": "hwik",
+     "text": "story.s08.seung.002"
+    },
+    {
+     "speaker": "kkumjjeok",
+     "text": "story.s08.seung.003"
+    },
+    {
+     "speaker": "sentry",
+     "text": "story.s08.seung.004"
+    }
+   ]
+  },
+  {
+   "id": "s08_q_magic",
+   "title": "story.s08.q_magic.title",
+   "place_note": "성벽 통로",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "sentry"
+   ],
+   "staging_note": "보초가 너무 많다. in-(아닌) 마법으로 보이지 않게 되어 지나간다.",
+   "game_note": "마법 in-(아닌) 필드 효과",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s08.q_magic.001_etym"
+    }
+   ]
+  },
+  {
+   "id": "s08_q_root",
+   "title": "story.s08.q_root.title",
+   "place_note": "무너진 성벽 사이",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "kkumjjeok"
+   ],
+   "staging_note": "lig 장착 유닛(꿈쩍)이 밧줄로 두 성벽을 묶어 건넌다.",
+   "game_note": "어근 lig 필드 능력(밧줄로 묶어 길 만들기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s08.q_root.001_etym"
+    },
+    {
+     "speaker": "kkumjjeok",
+     "text": "story.s08.q_root.002"
+    }
+   ]
+  },
+  {
+   "id": "s08_jeon",
+   "title": "story.s08.jeon.title",
+   "place_note": "성문 위",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "guardian"
+   ],
+   "staging_note": "guardian과 싸운다(이름 자막). 이기면 guardian이 무릎을 꿇는다.",
+   "game_note": "보스 전투 guardian",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "guardian",
+     "text": "story.s08.jeon.001"
+    }
+   ]
+  },
+  {
+   "id": "s08_gyeol",
+   "title": "story.s08.gyeol.title",
+   "place_note": "성벽 안 재판정",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "guardian",
+    "yeongcha",
+    "jojal"
+   ],
+   "staging_note": "역전재판처럼 guardian의 증언을 듣고, 모은 단어 카드(reliable, rely, alliance)를 증거로 들이민다. 마지막에 traitor 카드가 화면 가운데에서 trans- + dare로 갈라진다. 영차가 고개를 숙이고 화면 밖으로 달려 나간다.",
+   "game_note": "단어 퀘스트 reliable·rely·alliance(증거) → 배신자 밝힘, 스테이지 9 개방, 나르기 유닛 이탈",
+   "borrow": [
+    {
+     "game": "역전재판 시리즈",
+     "part": "증언의 모순을 찾아 증거를 들이미는 추리 장면"
+    },
+    {
+     "game": "파이널 판타지 IV",
+     "part": "동료가 꾐에 넘어가 적 편에 섰다가 돌아오는 줄기"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "guardian",
+     "text": "story.s08.gyeol.001"
+    },
+    {
+     "speaker": "jojal",
+     "text": "story.s08.gyeol.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s08.gyeol.003_etym"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s08.gyeol.004"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s08.gyeol.005"
+    }
+   ]
+  }
+ ]
+}

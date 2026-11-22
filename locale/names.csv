@@ -1,0 +1,87 @@
+keys,ko
+name.stage.s01,공방 마을
+name.stage.s02,사냥꾼 초원
+name.stage.s03,망루 도서관
+name.stage.s04,바람 협곡
+name.stage.s05,항구 도시
+name.stage.s06,왕성
+name.stage.s07,소용돌이 호수
+name.stage.s08,성벽 요새
+name.stage.s09,부서진 광산
+name.stage.s10,갈라진 탑
+name.attr.01,생명
+name.attr.02,영혼
+name.attr.03,지혜
+name.attr.04,파동
+name.attr.05,자연
+name.attr.06,원소
+name.attr.07,일상
+name.attr.08,창조
+name.attr.09,공간
+name.attr.10,시간
+name.attr.11,바람
+name.attr.12,유대
+name.attr.13,권위
+name.attr.14,파멸
+name.attr.15,번영
+name.attr.16,영감
+name.attr.17,신성
+name.attr.18,형상
+name.attr.19,심판
+name.attr.20,질서
+name.unit.01,만들기
+name.unit.02,잡기
+name.unit.03,보기
+name.unit.04,알기·가려내기
+name.unit.05,말하기·쓰기
+name.unit.06,가기·오기
+name.unit.07,나르기·주기
+name.unit.08,이끌기·다스리기
+name.unit.09,끌기·밀기·던지기
+name.unit.10,돌리기·바꾸기
+name.unit.11,서기·두기·지키기
+name.unit.12,깨기·자르기
+name.slot.weapon,무기
+name.slot.head,머리
+name.slot.chest,가슴
+name.slot.hands,장갑
+name.slot.feet,신발
+name.char.hero,{hero}
+name.char.ttukttak,뚝딱
+name.char.deopseok,덥석
+name.char.hilkkeum,힐끔
+name.char.cheokcheok,척척
+name.char.jojal,조잘
+name.char.ssaeng,쌩
+name.char.yeongcha,영차
+name.char.daejang,대장
+name.char.hwik,휙
+name.char.bingeul,빙글
+name.char.kkumjjeok,꿈쩍
+name.char.wajang,와장
+name.char.blacksmith,대장장이
+name.char.villager_a,마을 사람
+name.char.villager_b,마을 사람
+name.char.hunter,사냥꾼
+name.char.watchman,망루지기
+name.char.librarian,사서
+name.char.kite_elder,연 할아버지
+name.char.porter,짐꾼
+name.char.sailor,늙은 선원
+name.char.scribe,서기
+name.char.guard_castle,성 경비
+name.char.king,왕
+name.char.miller,방앗간 주인
+name.char.sentry,보초병
+name.char.miner,광부
+name.char.tower_child,탑 아래 아이
+name.char.destroyer,destroyer
+name.char.predator,predator
+name.char.wizard,wizard
+name.char.hurricane,hurricane
+name.char.pirate,pirate
+name.char.dictator,dictator
+name.char.vortex,vortex
+name.char.guardian,guardian
+name.char.dragon,dragon
+name.char.devil,devil

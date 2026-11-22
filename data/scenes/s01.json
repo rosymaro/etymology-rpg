@@ -1,0 +1,325 @@
+{
+ "stage": 1,
+ "place": "name.stage.s01",
+ "theme_note": "잊힌 뿌리: 만들기(fac·form). 속성 파동 하나만 열림.",
+ "scenes": [
+  {
+   "id": "s01_intro",
+   "title": "story.s01.intro.title",
+   "place_note": "공방 마을 언덕의 말뿌리 나무",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith"
+   ],
+   "staging_note": "검은 화면에 낭독 → 말뿌리 나무가 화면을 채움. 뿌리 끝마다 단어가 매달려 있다. 갈라진 문양이 번지며 뿌리가 하나씩 끊어지고 단어 카드가 회색으로 떨어진다. 이어 아침의 공방 마을로 바뀌고, 주인공(남/여 선택)이 대장간 앞에 서 있다.",
+   "game_note": "주인공 선택, 이름 입력, 만들기 유닛 합류(펭귄/병아리 외모 확정)",
+   "borrow": [
+    {
+     "game": "포켓몬스터 시리즈",
+     "part": "연구소에서 첫 파트너를 받으며 여행을 시작하는 도입"
+    },
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "narr",
+     "text": "story.s01.intro.001"
+    },
+    {
+     "speaker": "narr",
+     "text": "story.s01.intro.002"
+    },
+    {
+     "speaker": "narr",
+     "text": "story.s01.intro.003"
+    },
+    {
+     "speaker": "narr",
+     "text": "story.s01.intro.004"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.intro.005"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.intro.006"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.intro.007"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s01.intro.008"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.intro.009"
+    }
+   ]
+  },
+  {
+   "id": "s01_ki",
+   "title": "story.s01.ki.title",
+   "place_note": "대장간 안",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith"
+   ],
+   "staging_note": "주인공이 모루 앞에서 망치질(버튼 3번 누르기 미니 연출). 완성된 물건에 금이 가며 단어 카드 defect가 튀어나온다. 카드는 회색이고 어원 칸이 비어 있다.",
+   "game_note": "단어 카드 보는 법 튜토리얼(카드를 누르면 뜻·어원)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.ki.001"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s01.ki.002"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.ki.003"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.ki.004_etym"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.ki.005"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.ki.006"
+    }
+   ]
+  },
+  {
+   "id": "s01_seung",
+   "title": "story.s01.seung.title",
+   "place_note": "마을 광장 → 게시판 → 대장간",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith",
+    "villager_a"
+   ],
+   "staging_note": "광장 게시판의 글자가 모두 소리로만 적혀 있다(\"인포메이션: 어쩌고\"). 마을 사람이 게시판 앞에서 고개를 갸웃한다. 대장장이가 블록 채우기 미니게임을 소개.",
+   "game_note": "미니게임 대장간 제작 개방, 마을 퀘스트 3개 개방",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "테트리스",
+     "part": "떨어지는 조각을 돌려 빈틈없이 채우는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "villager_a",
+     "text": "story.s01.seung.001_pun"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.seung.002_etym"
+    },
+    {
+     "speaker": "villager_a",
+     "text": "story.s01.seung.003"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.seung.004"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.seung.005"
+    }
+   ]
+  },
+  {
+   "id": "s01_q_magic",
+   "title": "story.s01.q_magic.title",
+   "place_note": "마을 끝 절벽",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith"
+   ],
+   "staging_note": "절벽 위. 아래로 내려가는 길이 없다. de- 마법을 쓰면 주인공 일행이 천천히 내려앉는 연출.",
+   "game_note": "마법 de- 필드 효과(절벽 아래로 내려가기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.q_magic.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.q_magic.002_etym"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s01.q_magic.003"
+    }
+   ]
+  },
+  {
+   "id": "s01_q_root",
+   "title": "story.s01.q_root.title",
+   "place_note": "대장간 뒤뜰",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith"
+   ],
+   "staging_note": "고장 난 풀무가 바람을 뿜지 못한다. 만들기 유닛(뚝딱)이 fac를 장착하고 있으면 고칠 수 있다.",
+   "game_note": "어근 fac 필드 능력(망가진 장치 고치기)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.q_root.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.q_root.002_etym"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.q_root.003"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.q_root.004"
+    }
+   ]
+  },
+  {
+   "id": "s01_q_word",
+   "title": "story.s01.q_word.title",
+   "place_note": "마을 광장 게시판",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "villager_a"
+   ],
+   "staging_note": "게시판에 빈칸 세 개. 해당 단어를 잡아 오면 빈칸이 채워지고 글자가 색을 되찾는다.",
+   "game_note": "필드 단어 information, inform, format 잡기",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "villager_a",
+     "text": "story.s01.q_word.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.q_word.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s01_jeon",
+   "title": "story.s01.jeon.title",
+   "place_note": "마을 입구",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith",
+    "destroyer"
+   ],
+   "staging_note": "땅이 울리고 마을 입구 다리가 무너진다. destroyer 등장(화면 위로 이름 자막). 몸에 갈라진 문양이 빛난다.",
+   "game_note": "보스 전투 destroyer(그 스테이지 1차 50% 이상 필요)",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "destroyer",
+     "text": "story.s01.jeon.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.jeon.002_etym"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s01.jeon.003"
+    },
+    {
+     "speaker": "destroyer",
+     "text": "story.s01.jeon.004"
+    }
+   ]
+  },
+  {
+   "id": "s01_gyeol",
+   "title": "story.s01.gyeol.title",
+   "place_note": "말뿌리 나무 앞",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith",
+    "villager_a"
+   ],
+   "staging_note": "destroyer가 쓰러지며 빛 한 줄기가 말뿌리 나무로 날아가 뿌리 하나가 다시 이어진다. 마을 단어 간판들에 어원이 색으로 번진다. 쓰러진 자리에 갈라진 문양만 남는다.",
+   "game_note": "마법 re-·com- 획득, 마을 이야기 보상 sub-, 스테이지 2 개방",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "villager_a",
+     "text": "story.s01.gyeol.001"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.gyeol.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.gyeol.003"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.gyeol.004_etym"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s01.gyeol.005"
+    }
+   ]
+  }
+ ]
+}

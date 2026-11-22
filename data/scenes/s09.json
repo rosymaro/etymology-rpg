@@ -1,0 +1,201 @@
+{
+ "stage": 9,
+ "place": "name.stage.s09",
+ "theme_note": "잊힌 뿌리: 깨기·자르기(rupt·cis·fin·part). 동료가 없는 여행.",
+ "scenes": [
+  {
+   "id": "s09_ki",
+   "title": "story.s09.ki.title",
+   "place_note": "광산 입구",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miner"
+   ],
+   "staging_note": "파티 화면에 나르기 유닛 자리가 비어 있다(회색 실루엣). 광부들이 아무것도 끝내지 못한다.",
+   "game_note": "나르기 유닛 빈자리 연출",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    },
+    {
+     "game": "파이널 판타지 IV",
+     "part": "동료가 꾐에 넘어가 적 편에 섰다가 돌아오는 줄기"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "miner",
+     "text": "story.s09.ki.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.ki.002"
+    },
+    {
+     "speaker": "miner",
+     "text": "story.s09.ki.003_pun"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.ki.004_etym"
+    }
+   ]
+  },
+  {
+   "id": "s09_seung",
+   "title": "story.s09.seung.title",
+   "place_note": "갱도",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miner",
+    "wajang"
+   ],
+   "staging_note": "깨기 유닛 와장 합류(뭐든 부수려 함). 2048 규칙의 광석 캐기 소개.",
+   "game_note": "미니게임 광석 캐기 개방, 깨기 유닛 합류",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "2048",
+     "part": "판을 밀어 같은 것끼리 합치는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "wajang",
+     "text": "story.s09.seung.001"
+    },
+    {
+     "speaker": "miner",
+     "text": "story.s09.seung.002"
+    }
+   ]
+  },
+  {
+   "id": "s09_q_magic",
+   "title": "story.s09.q_magic.title",
+   "place_note": "광부 숙소",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miner"
+   ],
+   "staging_note": "광부들이 사슬에 묶여 있다. dis- 마법으로 사슬을 떼어 낸다.",
+   "game_note": "마법 dis- 필드 효과(묶인 것 풀기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.q_magic.001_etym"
+    }
+   ]
+  },
+  {
+   "id": "s09_q_root",
+   "title": "story.s09.q_root.title",
+   "place_note": "막힌 갱도",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "wajang"
+   ],
+   "staging_note": "rupt 장착 유닛(와장)이 금 간 벽을 부순다. 드디어 부숴도 되는 벽.",
+   "game_note": "어근 rupt 필드 능력(금 간 벽 부수기)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.q_root.001_etym"
+    },
+    {
+     "speaker": "wajang",
+     "text": "story.s09.q_root.002"
+    }
+   ]
+  },
+  {
+   "id": "s09_q_word",
+   "title": "story.s09.q_word.title",
+   "place_note": "광산 사무소",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miner"
+   ],
+   "staging_note": "장부의 빈칸 세 개.",
+   "game_note": "필드 단어 corrupt, decision, finish 잡기",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.q_word.001_etym"
+    }
+   ]
+  },
+  {
+   "id": "s09_jeon",
+   "title": "story.s09.jeon.title",
+   "place_note": "갱도 끝 동굴",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "dragon"
+   ],
+   "staging_note": "거대한 동굴에서 dragon이 눈을 뜬다(이름 자막). 숨을 쉴 때마다 대기 유닛들에게 불티가 날린다.",
+   "game_note": "보스 전투 dragon",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "dragon",
+     "text": "story.s09.jeon.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.jeon.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s09_gyeol",
+   "title": "story.s09.gyeol.title",
+   "place_note": "동굴 너머",
+   "cast": [
+    "hero",
+    "ttukttak"
+   ],
+   "staging_note": "동굴 벽이 무너지고 그 너머로 두 갈래로 갈라진 탑이 보인다. 하늘에 갈라진 문양이 크게 떠 있다.",
+   "game_note": "스테이지 10 개방",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.gyeol.001"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s09.gyeol.002"
+    }
+   ]
+  }
+ ]
+}
