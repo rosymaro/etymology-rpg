@@ -1,0 +1,12 @@
+{
+  "_doc": "경험치와 레벨. docs/design/02-rpg-v2.md '기존 체계와 연결', tools/balance/progress.py와 같은 값",
+  "capture_exp_per_stage": 10,
+  "evolve_exp_per_stage_tier": 4,
+  "wearer_multiplier": 2,
+  "duplicate_ratio": 0.1,
+  "exp_per_level_squared": 200,
+  "max_level": 60,
+  "boss_gate_ratio": 0.5,
+  "_boss_gate_doc": "보스 길 막기: 그 스테이지 1차 단어를 이 비율보다 많이 가져야 보스와 싸울 수 있다",
+  "team_max": 4
+}

@@ -1,33 +1,25 @@
-
-# Android Profiling
-# Android Studio generated files and folders
 # Godot
-# Google Services (e.g. APIs or Firebase)
-# Gradle files
-# IntelliJ
-# Keystore files
-# Local configuration file (sdk path, etc)
-# Log/OS Files
-*.aab
+.godot/
+*.translation
+/android/
+export_credentials.cfg
+
+# 빌드 결과
+build/
 *.apk
-*.hprof
-*.iml
-*.jks
-*.keystore
+*.aab
 *.log
 *.tmp
-.cxx/
-.externalNativeBuild/
-.godot/
-.gradle/
-.idea/
-.kotlin/
+
+# 키: 릴리스 키는 저장소에 넣지 않는다. 디버그 키만 예외(덮어 설치용, docs/dev/build.md)
+*.jks
+*.keystore
+!keystore/debug.keystore
+
+# Python
 __pycache__/
-build/
-captures/
-deploymentTargetDropDown.xml
-google-services.json
+
+# 편집기
+.idea/
+*.iml
 local.properties
-misc.xml
-output-metadata.json
-render.experimental.xml

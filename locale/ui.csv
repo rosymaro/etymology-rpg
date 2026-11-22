@@ -25,3 +25,86 @@ ui.title_exam.fail,다음에 다시 도전해요
 ui.title_exam.wrong_list,틀린 단어
 ui.title_exam.locked_today,오늘은 시험을 볼 수 없어요. 내일 다시 와요
 ui.title_exam.need,단어 {need}개를 모으면 볼 수 있어요 (지금 {have}개)
+ui.common.ok,확인
+ui.common.back,돌아가기
+ui.title.name,어원 RPG
+ui.title.sub,말뿌리를 되찾는 여행
+ui.title.continue,이어하기
+ui.title.new,새 게임
+ui.title.new_confirm,새로 시작하면 저장된 게임이 지워져요. 확인을 누르면 새로 시작해요.
+ui.name.ask,이름을 지어 주세요
+ui.name.placeholder,이름 (8자까지)
+ui.name.default,모험가
+ui.dialogue.tap,눌러서 다음
+ui.menu.dex,도감
+ui.menu.party,파티
+ui.menu.save,저장
+ui.menu.saved,저장했어요
+ui.menu.option,옵션
+ui.field.top,{stage} · {title}  |  단어 {have}/{total} (보스: {need}개 필요)
+ui.field.forge,대장간
+ui.field.tree,말뿌리 나무
+ui.field.board,게시판
+ui.field.boss,마을 입구 언덕
+ui.field.act,{place} 살펴보기
+ui.field.tree_msg,"말뿌리 나무가 조용히 흔들려요. 단어를 1,000개 모으면 여기서 칭호 시험을 볼 수 있어요."
+ui.quiz.title_encounter,단어가 나타났다! 뜻을 모두 맞히면 싸우지 않고 잡아요
+ui.quiz.title_board,게시판 단어 퀴즈: 맞힌 단어를 얻어요
+ui.quiz.title_evolve,진화 퀴즈: 모두 맞혀야 진화해요
+ui.quiz.right,정답!
+ui.quiz.wrong,아쉬워요.
+ui.board.none,이번에는 얻은 단어가 없어요.
+ui.prep.title,전투 준비
+ui.prep.boss,보스 전투 준비
+ui.prep.minion,졸개
+ui.prep.no_root,장착할 어근이 없어요
+ui.battle.skip,빨리 보기
+ui.battle.to_result,결과 보기
+ui.battle.coins,코인
+ui.battle.stats,공격 {atk} 방어 {def} 체력 {hp}
+ui.battle.magic_cast,{magic} 발동! {target}에게 피해 {damage}
+ui.battle.skill,{who}의 {root} 발동!
+ui.battle.skill_copy,{root} 스킬을 따라 했다!
+ui.battle.boss_ability,결함! 코인 {count}개가 뒷면이 됐다
+ui.battle.round,"{n}라운드: 아군 −{to_a}, 적 −{to_b}"
+ui.battle.end,적 {total}개 중 {kills}개를 쓰러뜨렸다
+ui.result.caught_all,모두 맞혀서 싸우지 않고 잡았어요!
+ui.result.won,승리! 단어를 모두 얻었어요
+ui.result.partial,일부를 쓰러뜨려 단어 하나를 얻었어요
+ui.result.none,이번에는 얻은 단어가 없어요. 유닛은 모두 회복했어요.
+ui.result.board,게시판에서 단어를 얻었어요
+ui.result.new,새 단어
+ui.result.dup,다시 얻음
+ui.result.equipped,→ {name}이(가) 입었어요
+ui.result.level_up,{name} 레벨 {level}!
+ui.result.new_root,새 어근 {root}를 얻었어요! 전투 준비에서 장착할 수 있어요
+ui.join,{name}이(가) 동료가 되었어요!
+ui.evolve.title,대장간 용광로: 진화
+ui.evolve.none,지금 진화할 수 있는 단어가 없어요. 재료 단어를 더 모아 보세요.
+ui.evolve.row,{word} = {mats}  ·  {unit} {slot}
+ui.evolve.go,진화하기
+ui.evolve.intro,"{word}는 {mats}에서 태어나요.
+어원: {etym}
+아래 단어들의 뜻을 모두 맞혀야 해요."
+ui.evolve.success,진화 성공!
+ui.evolve.fail,진화 실패. 재료는 그대로예요. {word}를 다시 잡아 오면 다시 도전할 수 있어요.
+ui.evolve.recapture,{word}: {target}를 다시 잡아야 해요
+ui.dex.title,도감 ({count}개)
+ui.dex.pick,단어를 누르면 뜻과 어원이 나와요
+ui.dex.etym,어원
+ui.dex.tier,{tier}차
+ui.dex.tier_boss,보스 단어
+ui.dex.gear,{unit}의 {slot}
+ui.dex.group.field,필드
+ui.dex.group.town,마을
+ui.dex.group.evolved,진화
+ui.dex.group.boss,보스
+ui.party.title,파티
+ui.party.unit,{name}  Lv {level} (경험치 {exp})  공격 {atk} 방어 {def} 체력 {hp} · 코인 {coins}개 · {attr}
+ui.party.attr,속성 {attr} {count}개
+ui.party.attr_off,속성 꺼짐
+ui.party.choose,{name}의 {slot}: 입을 단어를 고르세요
+ui.boss.gate,길이 막혀 있어요. 이 스테이지 단어를 {need}개 모아야 지나갈 수 있어요(지금 {have}개).
+ui.boss.lost,destroyer에게 졌어요. 단어를 더 모으고 진화해서 다시 도전해요.
+ui.boss.already,destroyer는 이미 물리쳤어요.
+ui.stage.clear,스테이지 1 클리어! re-·com-·sub- 마법을 얻었어요. 다음 스테이지는 준비 중이에요.

@@ -77,7 +77,7 @@ def gear_stats(g, model=None):
     for sl, (t, _) in g.items():
         v = _GEAR['tier_value'][str(t)]
         for k, expr in table.get(sl, {}).items():
-            st[k] += eval(expr, {}, {'v': v, 't': t})
+            st[k] += eval(expr, {"min": min, "max": max, "ceil": math.ceil, "floor": math.floor, "abs": abs}, {"v": v, "t": t})
     atk, df, hp = st['atk'], st['def'], st['hp']
     cnt = {}
     for sl in SLOTS:

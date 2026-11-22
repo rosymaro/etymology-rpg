@@ -62,6 +62,12 @@ def enemy(L, coins=None, boss=None, role=None, bonus=None):
     u.bA += a; u.bD += d; u.bH += h
     return u
 
+def expected_gear_bonus(s):
+    """같은 스테이지 부지런한 플레이어 평균 장비 × gear_bonus_ratio(반올림)."""
+    W, leaves = DATA
+    ratio = BAL('enemy.json').get('gear_bonus_ratio', 0.0)
+    return tuple(round(v * ratio) for v in player_gear_avg(PG.snapshot(W, leaves, s)))
+
 def player_gear_avg(snap):
     g = [PG.gear_stats(snap['gear'][u]) for u in PG.UNITS]
     return tuple(sum(x[i] for x in g) / 12 for i in range(3))
@@ -112,10 +118,7 @@ def evaluate(s, base=None, delta=None, scale=1.0, T=300, lazy=False, coins=None,
     if delta is None: delta = [b for b in bdef if b['stage'] == s][0]['level_delta']
     snap_e = PG.snapshot(W, leaves, s, lazy=lazy, max_tier=max_tier); snap_b = PG.snapshot(W, leaves, s, 0.6, lazy=lazy, max_tier=max_tier)
     global ENEMY_BONUS
-    if 'gear_bonus' in cv: ENEMY_BONUS = tuple(cv['gear_bonus'])
-    else:  # 기본: 같은 스테이지 부지런한 플레이어 장비의 ratio배
-        ratio = BAL('enemy.json').get('gear_bonus_ratio', 0.0)
-        ENEMY_BONUS = tuple(round(v * ratio) for v in player_gear_avg(PG.snapshot(W, leaves, s)))
+    ENEMY_BONUS = tuple(cv['gear_bonus']) if 'gear_bonus' in cv else expected_gear_bonus(s)
     freq = field_freq(s); ms = magics_at(s)
     f0 = field_rate(s, base, cv['coins'], snap_e, scale, T, freq, None)
     fr = [field_rate(s, base, cv['coins'], snap_e, scale, T, freq, m) for m in ms]
@@ -150,12 +153,18 @@ if __name__ == '__main__':
     ap.add_argument('--tune', action='store_true', help='목표 승률에 맞는 base_level·level_delta를 찾는다')
     ap.add_argument('--lazy', action='store_true', help='진화를 안 하는 플레이어')
     ap.add_argument('--stages', default='1-10')
+    ap.add_argument('--write-gear-bonus', action='store_true', help='enemy.json stage_curve의 gear_bonus를 지금 장비 식으로 다시 쓴다')
     ap.add_argument('--max-tier', type=int, default=4, help='이 차수까지만 진화하는 플레이어(1 = 진화 안 함)')
     ap.add_argument('--gear-model', default='v2', choices=['v2', 'light'])
     a = ap.parse_args()
     random.seed(7); PG.GEAR_MODEL = a.gear_model
     DATA = PG.load()
     lo, hi = map(int, a.stages.split('-'))
+    if a.write_gear_bonus:
+        p = os.path.join(ROOT, 'data/balance/enemy.json'); d = json.load(open(p, encoding='utf-8'))
+        for c in d['stage_curve']: c['gear_bonus'] = list(expected_gear_bonus(c['stage']))
+        json.dump(d, open(p, 'w', encoding='utf-8'), ensure_ascii=False, indent=2); open(p, 'a').write('\n')
+        print('gear_bonus', [c['gear_bonus'] for c in d['stage_curve']]); sys.exit(0)
     print('| 스테이지 | 입장 Lv | 보스전 Lv | 적 기준 Lv | 코인 | 보스 레벨 차 | 마법 없음 | 필드 평균 | 필드 최고 | 보스 평균 | 보스 최고 |')
     print('|---|---|---|---|---|---|---|---|---|---|---|')
     for s in range(lo, hi + 1):

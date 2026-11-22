@@ -4,52 +4,102 @@
     {
       "stage": 1,
       "base_level": 1,
-      "coins": 1
+      "coins": 1,
+      "gear_bonus": [
+        0,
+        0,
+        0
+      ]
     },
     {
       "stage": 2,
       "base_level": 10,
-      "coins": 1
+      "coins": 1,
+      "gear_bonus": [
+        3,
+        2,
+        4
+      ]
     },
     {
       "stage": 3,
       "base_level": 13,
-      "coins": 1
+      "coins": 1,
+      "gear_bonus": [
+        5,
+        6,
+        10
+      ]
     },
     {
       "stage": 4,
       "base_level": 15,
-      "coins": 2
+      "coins": 2,
+      "gear_bonus": [
+        7,
+        6,
+        12
+      ]
     },
     {
       "stage": 5,
       "base_level": 20,
-      "coins": 2
+      "coins": 2,
+      "gear_bonus": [
+        7,
+        7,
+        13
+      ]
     },
     {
       "stage": 6,
       "base_level": 25,
-      "coins": 2
+      "coins": 2,
+      "gear_bonus": [
+        7,
+        7,
+        14
+      ]
     },
     {
       "stage": 7,
       "base_level": 31,
-      "coins": 3
+      "coins": 3,
+      "gear_bonus": [
+        8,
+        8,
+        15
+      ]
     },
     {
       "stage": 8,
       "base_level": 37,
-      "coins": 3
+      "coins": 3,
+      "gear_bonus": [
+        8,
+        8,
+        16
+      ]
     },
     {
       "stage": 9,
       "base_level": 43,
-      "coins": 3
+      "coins": 3,
+      "gear_bonus": [
+        9,
+        9,
+        17
+      ]
     },
     {
       "stage": 10,
       "base_level": 49,
-      "coins": 4
+      "coins": 4,
+      "gear_bonus": [
+        9,
+        9,
+        18
+      ]
     }
   ],
   "frequency_level_bonus": {
@@ -71,5 +121,5 @@
   "skill_pick": "random",
   "_skill_pick_doc": "random | weighted | scripted. 적 스킬 고르는 방식. scripted면 overrides의 skills를 순서대로 쓴다",
   "gear_bonus_ratio": 1.0,
-  "_gear_bonus_doc": "적도 장비를 입은 것으로 본다: 같은 스테이지에 부지런히 진화한 플레이어 유닛의 평균 장비 능력치(공·방·체) × 이 비율을 더한다. 스테이지 곡선에 gear_bonus [공,방,체]를 적으면 그 값을 쓴다"
+  "_gear_bonus_doc": "적도 장비를 입은 것으로 본다: stage_curve의 gear_bonus [공,방,체]를 더한다. 값은 같은 스테이지에 부지런히 진화한 플레이어 평균 장비 × gear_bonus_ratio. 장비 식을 바꾸면 python3 tools/balance/sim10.py --write-gear-bonus로 다시 쓴다"
 }
