@@ -4,7 +4,7 @@
     {
       "id": "destroyer",
       "stage": 1,
-      "level_delta": -4,
+      "level_delta": 5,
       "coins": 2,
       "ability": {
         "class": "CoinLock",
@@ -16,7 +16,7 @@
     {
       "id": "predator",
       "stage": 2,
-      "level_delta": 4,
+      "level_delta": 12,
       "coins": 2,
       "ability": {
         "class": "HealOnKill",
@@ -28,7 +28,7 @@
     {
       "id": "wizard",
       "stage": 3,
-      "level_delta": 12,
+      "level_delta": 0,
       "coins": 2,
       "ability": {
         "class": "RandomAttackMagic",
@@ -38,7 +38,7 @@
     {
       "id": "hurricane",
       "stage": 4,
-      "level_delta": 16,
+      "level_delta": 0,
       "coins": 3,
       "ability": {
         "class": "BenchDamage",
@@ -51,7 +51,7 @@
     {
       "id": "pirate",
       "stage": 5,
-      "level_delta": 0,
+      "level_delta": -8,
       "coins": 4,
       "ability": {
         "class": "StealDefenseMagic",
@@ -61,7 +61,7 @@
     {
       "id": "dictator",
       "stage": 6,
-      "level_delta": 4,
+      "level_delta": -4,
       "coins": 4,
       "ability": {
         "class": "CoinLock",
@@ -73,7 +73,7 @@
     {
       "id": "vortex",
       "stage": 7,
-      "level_delta": -20,
+      "level_delta": 0,
       "coins": 5,
       "ability": {
         "class": "FlipAllCoins",
@@ -83,7 +83,7 @@
     {
       "id": "guardian",
       "stage": 8,
-      "level_delta": -20,
+      "level_delta": 0,
       "coins": 5,
       "ability": {
         "class": "BlockFirstHit",
@@ -95,7 +95,7 @@
     {
       "id": "dragon",
       "stage": 9,
-      "level_delta": -12,
+      "level_delta": -4,
       "coins": 5,
       "ability": {
         "class": "BurnBench",
@@ -108,7 +108,7 @@
     {
       "id": "devil",
       "stage": 10,
-      "level_delta": -20,
+      "level_delta": 0,
       "coins": 5,
       "ability": {
         "class": "Sever",
@@ -125,5 +125,20 @@
     ],
     "count": 3
   },
-  "_level_doc": "보스 레벨 = 보스전 때 플레이어 평균 레벨 + level_delta(최대 60). 보스 능력마다 세기가 달라 차이가 크다(sim-10stage.md)"
+  "_level_doc": "보스 레벨 = 보스전 때 플레이어 평균 레벨 + level_delta(최대 60). 보스 능력마다 세기가 달라 차이가 크다(sim-10stage.md)",
+  "final": {
+    "_doc": "마지막 전투(갈라진 탑): devil + 영차 + 다른 보스 2명. 목표: 60레벨·4차 장비 = 어렵게 이김, 60·3차 = 꽤 어려움, 55·3차 = 거의 불가능(tools/balance/final.py)",
+    "devil_level": 60,
+    "other_level": 58,
+    "stat_bonus": [
+      4,
+      0,
+      15
+    ],
+    "level_gate": [
+      60,
+      2
+    ],
+    "_level_gate_doc": "devil 능력 '말뿌리 장막': 우리 유닛 레벨이 [0]보다 낮으면 devil에게 주는 피해가 모자란 레벨마다 [1]씩 준다"
+  }
 }

@@ -144,6 +144,8 @@ def battle(my,en,magic=None,quizok=True,P=2,bossab=None):
       def dmg(x,y):
         if x.skip>=rnd: return 0
         d=max(1,x.A-y.D-y.red)
+        gate=getattr(y,'gate',None)  # 보스 능력 level_gate: (기준 레벨, 레벨당 감소) 모자란 만큼 공격이 깎인다
+        if bossab and gate and x.L<gate[0]: d=max(0,d-(gate[0]-x.L)*gate[1])
         if getattr(x,'put',False) and y.hp*2<=y.bH: d+=3
         if bossab and y.boss=='specter' and rnd==1: return 0
         return d*(2 if (x.dbl and rnd==1) else 1)

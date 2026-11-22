@@ -18,32 +18,32 @@
     },
     {
       "stage": 4,
-      "base_level": 16,
+      "base_level": 15,
       "coins": 2
     },
     {
       "stage": 5,
-      "base_level": 22,
+      "base_level": 20,
       "coins": 2
     },
     {
       "stage": 6,
-      "base_level": 22,
+      "base_level": 25,
       "coins": 2
     },
     {
       "stage": 7,
-      "base_level": 34,
+      "base_level": 31,
       "coins": 3
     },
     {
       "stage": 8,
-      "base_level": 40,
+      "base_level": 37,
       "coins": 3
     },
     {
       "stage": 9,
-      "base_level": 46,
+      "base_level": 43,
       "coins": 3
     },
     {

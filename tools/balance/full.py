@@ -1,15 +1,18 @@
 import random,math
-ATK={'L':(2,0.09),'M':(3,0.12),'H':(4,0.15)}
-DEF={'L':(0,0.018),'M':(0,0.03),'H':(1,0.048)}
-HP={'L':(6,0.24),'M':(8,0.3),'H':(11,0.42)}
+import json as _json, os as _os
+UNIT=_json.load(open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'../../data/balance/unit.json'),encoding='utf-8'))
+def set_unit(d):
+  global ATK,DEF,HP,UNIT
+  UNIT=d; ATK=d['atk']; DEF=d['def']; HP=d['hp']
+set_unit(UNIT)
 ROLES={1:('M','M','M','skill'),2:('M','L','M','atk'),3:('L','L','L','skill'),4:('L','M','M','stable'),5:('L','M','L','skill'),6:('M','L','L','atk'),7:('M','M','H','hp'),8:('M','M','M','skill'),9:('H','L','L','atk'),10:('M','M','M','tails'),11:('L','H','H','stable'),12:('H','M','M','swing')}
 FAM={1:'fac struct form par nat ple',2:'cept tain pris hib quest',3:'spect vis sens',4:'lect cert not put equ',5:'dict script sign leg jus',6:'cess ven it grad curr sequ loc',7:'fer port miss dit pend pay grat',8:'duc rect act cur cap',9:'tract press ject tend pet',10:'vers turn plic mot',11:'sta pos sid clos lig strict val fort',12:'rupt cis cid fin part'}
 FAM={k:v.split() for k,v in FAM.items()}
 TIER={}
 import skills
 for n,t,_ in skills.S: TIER[n]=t
-def stage(L): return min(5,L//10+1)
-def kof(L): return 4 if L>=50 else 3
+def stage(L): return eval(UNIT['coins'],{},{'L':L})
+def kof(L): return eval(UNIT['coin_value'],{},{'L':L})
 class U:
   def __init__(s,role,L,coins=None,k=None,skill=None,side='A',boss=None,pheads=0.5):
     s.role=role;s.L=L;s.coins=coins or stage(L);s.k=k or kof(L);s.skill=skill or random.choice(FAM[role]);s.side=side;s.boss=boss;s.ph=pheads
