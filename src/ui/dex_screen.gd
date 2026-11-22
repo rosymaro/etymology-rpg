@@ -8,7 +8,7 @@ var _detail: Label
 func open(_args: Dictionary) -> void:
 	UiKit.fill_bg(self, UiKit.PAPER)
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 24)
 	add_child(margin)
@@ -52,7 +52,7 @@ func open(_args: Dictionary) -> void:
 	var right := UiKit.card()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.add_child(right)
-	_detail = UiKit.label(t("ui.dex.pick"), 24)
+	_detail = UiKit.wrap(UiKit.label(t("ui.dex.pick"), 24), 420)
 	_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right.add_child(UiKit.scroll(_detail))
 

@@ -8,7 +8,7 @@ var _detail: VBoxContainer
 func open(_args: Dictionary) -> void:
 	UiKit.fill_bg(self, UiKit.LEAF.lightened(0.4))
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 24)
 	add_child(margin)
@@ -40,9 +40,9 @@ func _refresh() -> void:
 		var attr := AttributeResolver.new().resolve(s.eq(u), GameData.repo)
 		var attr_text := t("ui.party.attr_off") if attr["tier"] == 0 else t("ui.party.attr").format(
 			{"attr": t("name.attr.%02d" % attr["attr"]), "count": attr["count"]})
-		col.add_child(UiKit.label(t("ui.party.unit").format({"name": UiKit.unit_name(u), "level": lv,
+		col.add_child(UiKit.wrap(UiKit.label(t("ui.party.unit").format({"name": UiKit.unit_name(u), "level": lv,
 			"exp": s.unit_exp[u - 1], "atk": a.base.atk, "def": a.base.def, "hp": a.base.hp,
-			"coins": a.coins, "attr": attr_text}), 22))
+			"coins": a.coins, "attr": attr_text}), 22), 1100))
 		var slots := UiKit.hbox(8)
 		for sl in Equipment.SLOTS:
 			var slot: String = sl

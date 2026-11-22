@@ -32,7 +32,15 @@ static func label(text: String, size: int = 26, color: Color = INK) -> Label:
 	l.text = text
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", color)
+	return l
+
+
+## 줄바꿈을 켠다. 폭이 정해진 자리(가득 찬 컨테이너, 또는 min_w)에서만 쓴다. 폭 없이 켜면 한 글자씩 세로로 쌓인다.
+static func wrap(l: Label, min_w: float = 0.0) -> Label:
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if min_w > 0.0:
+		l.custom_minimum_size.x = min_w
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return l
 
 
@@ -75,7 +83,7 @@ static func hbox(sep: int = 12) -> HBoxContainer:
 static func fill_bg(parent: Control, color: Color = SKY) -> ColorRect:
 	var r := ColorRect.new()
 	r.color = color
-	r.set_anchors_preset(Control.PRESET_FULL_RECT)
+	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(r)
 	return r

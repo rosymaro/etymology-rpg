@@ -8,7 +8,7 @@ const MAX_TIER_STAGE1 := 2  ## 스테이지 1 범위는 2차까지(04-meta.md 6�
 func open(_args: Dictionary) -> void:
 	UiKit.fill_bg(self, UiKit.APRICOT.lightened(0.5))
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 28)
 	add_child(margin)
@@ -32,6 +32,7 @@ func open(_args: Dictionary) -> void:
 		var info := UiKit.label(t("ui.evolve.row").format({"word": w.id, "mats": " + ".join(w.mats),
 			"unit": UiKit.unit_name(w.unit), "slot": t("name.slot." + w.slot)}), 22)
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		info.clip_text = true
 		row.add_child(info)
 		row.add_child(UiKit.button(t("ui.evolve.go"), func() -> void: main.flow.evolve_quiz(id), UiKit.ACCENT.lightened(0.35), 22))
 		var c := UiKit.card()

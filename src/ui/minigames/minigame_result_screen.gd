@@ -6,7 +6,7 @@ extends Screen
 func open(args: Dictionary) -> void:
 	UiKit.fill_bg(self, UiKit.SKY)
 	var c := CenterContainer.new()
-	c.set_anchors_preset(Control.PRESET_FULL_RECT)
+	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(c)
 	var card := UiKit.card()
 	card.custom_minimum_size = Vector2(760, 0)

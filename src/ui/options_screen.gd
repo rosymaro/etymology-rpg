@@ -9,7 +9,7 @@ func open(args: Dictionary) -> void:
 	_back = args.get("back", Callable())
 	UiKit.fill_bg(self, UiKit.PAPER)
 	var c := CenterContainer.new()
-	c.set_anchors_preset(Control.PRESET_FULL_RECT)
+	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(c)
 	var card := UiKit.card()
 	card.custom_minimum_size = Vector2(720, 0)
@@ -35,7 +35,8 @@ func _toggle(key: String, on: bool, set_value: Callable) -> Control:
 	b.button_pressed = on
 	b.text = t("ui.option.on") if on else t("ui.option.off")
 	b.add_theme_font_size_override("font_size", 26)
-	b.add_theme_color_override("font_color", UiKit.INK)
+	for k in ["font_color", "font_pressed_color", "font_hover_color", "font_hover_pressed_color", "font_focus_color"]:
+		b.add_theme_color_override(k, UiKit.INK)
 	b.toggled.connect(func(x: bool) -> void:
 		set_value.call(x)
 		b.text = t("ui.option.on") if x else t("ui.option.off")

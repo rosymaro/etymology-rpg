@@ -55,6 +55,7 @@ func refresh() -> void:
 		b.custom_minimum_size = Vector2(560, 0)
 		var bl := UiKit.label(g.inner_at(p), 20)
 		bl.clip_text = true
+		bl.custom_minimum_size.x = 520
 		b.add_child(bl)
 		row.add_child(b)
 		_rows.add_child(row)

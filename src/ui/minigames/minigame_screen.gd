@@ -29,7 +29,7 @@ func open(args: Dictionary) -> void:
 	quit.custom_minimum_size = Vector2(110, 48)
 	add_child(quit)
 	UiKit.pin(quit, 1, 0, -16, 10)
-	_sub = UiKit.label(t("ui.mini.rule." + game_id), 20, UiKit.INK.lightened(0.25))
+	_sub = UiKit.wrap(UiKit.label(t("ui.mini.rule." + game_id), 20, UiKit.INK.lightened(0.25)), 1000)
 	_sub.position = Vector2(16, 52)
 	_sub.custom_minimum_size = Vector2(1000, 0)
 	add_child(_sub)

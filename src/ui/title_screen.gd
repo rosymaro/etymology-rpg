@@ -6,7 +6,7 @@ extends Screen
 func open(_args: Dictionary) -> void:
 	UiKit.fill_bg(self, UiKit.SKY)
 	var c := CenterContainer.new()
-	c.set_anchors_preset(Control.PRESET_FULL_RECT)
+	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(c)
 	var v := UiKit.vbox(16)
 	c.add_child(v)
@@ -29,6 +29,8 @@ func open(_args: Dictionary) -> void:
 			main.flow.new_game(), UiKit.LEAF if not has_save else UiKit.APRICOT))
 	v.add_child(story)
 	v.add_child(UiKit.button(t("ui.title.dev"), func() -> void: main.flow.dev_game(), UiKit.PINK))
-	v.add_child(UiKit.label(t("ui.title.dev_note"), 18, UiKit.INK.lightened(0.3)))
+	var note := UiKit.wrap(UiKit.label(t("ui.title.dev_note"), 18, UiKit.INK.lightened(0.3)), 560)
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(note)
 	v.add_child(UiKit.button(t("ui.title.minigames"), func() -> void: main.flow.go_minigames(), UiKit.APRICOT))
 	v.add_child(UiKit.button(t("ui.option.title"), func() -> void: main.flow.go_options(main.flow.go_title), UiKit.PAPER))

@@ -96,7 +96,7 @@ func _step_magic() -> void:
 			_step_magic(), UiKit.ACCENT.lightened(0.45) if _magic == m else UiKit.PAPER, 24)
 		LongPress.attach(b, func() -> void: _show_help(_magic_desc(id)))
 		row.add_child(b)
-	_help = UiKit.label(_magic_desc(_magic), 22, UiKit.INK.lightened(0.2))
+	_help = UiKit.wrap(UiKit.label(_magic_desc(_magic), 22, UiKit.INK.lightened(0.2)))
 	_help.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_body.add_child(_help)
 	var nav := UiKit.hbox()
@@ -145,7 +145,7 @@ func _step_roots() -> void:
 			LongPress.attach(b, func() -> void: _show_help(_root_desc(root)))
 			row.add_child(b)
 		grid.add_child(row)
-	_help = UiKit.label("", 22, UiKit.INK.lightened(0.2))
+	_help = UiKit.wrap(UiKit.label("", 22, UiKit.INK.lightened(0.2)))
 	_body.add_child(_help)
 	var nav := UiKit.hbox()
 	nav.alignment = BoxContainer.ALIGNMENT_END

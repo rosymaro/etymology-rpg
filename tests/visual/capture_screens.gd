@@ -1,25 +1,27 @@
-extends SceneTree
-## 화면을 차례로 띄워 PNG로 저장한다(그림이 그려지는 빌드에서만).
-## 사용: godot --path . --resolution 1280x720 -s res://tests/visual/capture_screens.gd -- <출력 폴더>
+extends Node
+## 화면을 차례로 띄워 PNG로 저장한다(그림이 그려지는 빌드에서만). Main이 --capture=<폴더> 인자를 보면 이 노드를 붙인다.
+## 사용: godot --path . --resolution 1280x720 -- --capture=/절대/경로
 
 var out_dir := "user://shots"
 var main: Main
+var root: Window
 
 
-func _initialize() -> void:
-	var args := OS.get_cmdline_user_args()
-	if args.size() > 0:
-		out_dir = args[0]
+func start(m: Main, dir: String) -> void:
+	main = m
+	out_dir = dir
+	root = get_tree().root
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	_run.call_deferred()
 
 
 func _shot(name: String) -> void:
-	for i in 6:
-		await process_frame
+	for i in 4:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
 	var img := root.get_viewport().get_texture().get_image()
 	img.save_png(out_dir.path_join(name + ".png"))
-	print("shot ", name)
+	print("shot ", name, " ", Time.get_ticks_msec())
 
 
 func _run() -> void:
@@ -27,8 +29,6 @@ func _run() -> void:
 	gd.save_prefix = "user://shots_"
 	gd.use_dev_save(false)
 	gd.save_store.erase()
-	main = load("res://src/ui/main.tscn").instantiate()
-	root.add_child(main)
 	await _shot("01_title")
 	main.flow.new_game()
 	await _shot("02_name")
@@ -57,7 +57,7 @@ func _run() -> void:
 	await _shot("08_prep_roots")
 	(main.current() as BattlePrepScreen)._start()
 	for i in 60:
-		await process_frame
+		await get_tree().process_frame
 	await _shot("09_battle")
 	var r: Array = []
 	for i in 3:
@@ -79,6 +79,8 @@ func _run() -> void:
 	await _shot("15_options")
 	main.notice(TranslationServer.translate("ui.boss.gate").format({"need": 77, "have": 40}))
 	await _shot("16_notice")
+	for c in main._overlay.get_children():
+		c.queue_free()
 	main.flow.go_minigames()
 	await _shot("17_minigame_hub")
 	var n := 18
@@ -89,4 +91,4 @@ func _run() -> void:
 	main.flow.go_title()
 	await _shot("30_title_modes")
 	gd.save_store.erase()
-	quit()
+	get_tree().quit()
