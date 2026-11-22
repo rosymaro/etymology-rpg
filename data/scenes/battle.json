@@ -1,0 +1,325 @@
+{
+ "stage": 0,
+ "place": "",
+ "theme_note": "전투 흐름: 조우부터 결과까지. 전투 화면 배치는 아군(주인공 + 유닛 4개)이 왼쪽 아래, 적 카드 4장이 오른쪽 위.",
+ "scenes": [
+  {
+   "id": "b01_encounter",
+   "title": "조우와 화면 전환",
+   "place_note": "필드 → 전투 화면",
+   "cast": [],
+   "staging_note": "필드에서 적 단어와 닿으면 화면이 금 간 유리처럼 깨지며 전투 화면으로 넘어간다. 깨진 조각 사이로 적 카드 4장이 먼저 보인다.",
+   "game_note": "필드 접촉 → 전투 진입",
+   "borrow": [
+    "pokeenc"
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 45,
+       "y": 65,
+       "pose": ""
+      },
+      {
+       "id": "rare",
+       "x": 55,
+       "y": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "move": "hero>52/58"
+     },
+     "say": 0,
+     "note": "필드에서 주인공이 배회하던 회색 단어와 닿는다."
+    },
+    {
+     "shot": "battle",
+     "view": "transition",
+     "note": "화면이 금 간 유리처럼 깨지고, 조각 사이로 적 카드 4장이 보인다.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b02_quiz",
+   "title": "뜻 맞히기",
+   "place_note": "전투 화면(퀴즈)",
+   "cast": [],
+   "staging_note": "싸우기 전에 적 단어 4개의 뜻을 하나씩 묻는다. 지금 묻는 카드가 위로 떠오르고, 아래에 4지선다가 나온다. 퀴즈 중에는 카드의 뜻을 보여 주지 않는다.",
+   "game_note": "조우 퀴즈(4지선다, 모두 맞히면 포획)",
+   "borrow": [],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "quiz",
+     "note": "적 카드 1번이 떠오르고 보기 4개. 위쪽 점은 진행(1/4).",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    },
+    {
+     "shot": "battle",
+     "view": "quiz_wrong",
+     "note": "하나를 틀리면 보기가 빨갛게 물들고 \"전투로!\" 띠가 지나간다.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b03_capture",
+   "title": "모두 맞힘",
+   "place_note": "전투 화면(포획)",
+   "cast": [],
+   "staging_note": "4개를 모두 맞히면 싸우지 않는다. 카드 4장이 차례로 도감 책 속으로 날아 들어간다.",
+   "game_note": "포획 연출, 도감 등록",
+   "borrow": [],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "capture",
+     "note": "카드 4장이 점선을 따라 도감 책으로 날아간다.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b04_prep",
+   "title": "전투 준비",
+   "place_note": "전투 준비 화면",
+   "cast": [],
+   "staging_note": "적 카드 4장과 출전 순서(1→4)가 공개된다. 마법 1개를 고르고(쓸 수 없는 마법은 회색), 유닛마다 장착할 어근을 하나씩 고른다. 장착은 이때만 한다.",
+   "game_note": "마법·어근 선택(전투 중에는 못 바꿈)",
+   "borrow": [],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "prep_magic",
+     "note": "마법 14칸. 얻은 마법만 밝고, 고른 칸이 주황으로 빛난다.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    },
+    {
+     "shot": "battle",
+     "view": "prep_root",
+     "note": "유닛 4개 줄마다 어근 칩. 고른 칩이 주황. 오른쪽 위에 적 출전 순서.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b05_magic",
+   "title": "마법 발동",
+   "place_note": "전투 화면(마법)",
+   "cast": [],
+   "staging_note": "전투가 시작되면 고른 마법이 먼저 발동한다(순서 → 효과 → 방어 → 공격, 적 먼저). 방어 마법은 조합 뜻 고르기를 거친다.",
+   "game_note": "마법 발동, 방어 마법 퀴즈",
+   "borrow": [],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "magic_cast",
+     "note": "주인공 머리 위로 접두사 문양(com-)이 떠오른다.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    },
+    {
+     "shot": "battle",
+     "view": "defquiz",
+     "note": "뜻 카드 5장. 고른 뜻 아래에 영어 단어가 뜨고, 초록이면 성공, 빨강이면 실패.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b06_clash",
+   "title": "격돌",
+   "place_note": "전투 화면(격돌)",
+   "cast": [],
+   "staging_note": "아군 1번과 적 1번이 가운데로 나와 동시에 코인을 던진다. 코인 결과로 공격력·체력이 정해지고, 스킬 조건을 채우면 스킬이 터진다.",
+   "game_note": "격돌 시작, 코인, 스킬 발동",
+   "borrow": [
+    "fm"
+   ],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "clash",
+     "note": "양쪽 1번이 가운데로. 머리 위에서 코인 2개가 돌다가 앞·뒤로 멈춘다. 식 \"5+C2 → 6\"이 뜬다.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    },
+    {
+     "shot": "battle",
+     "view": "skill",
+     "note": "코인 조건을 채우면 스킬 이름 띠(spect: 이번 격돌 공격 +2)가 번쩍.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b07_rounds",
+   "title": "동시 공격",
+   "place_note": "전투 화면(라운드)",
+   "cast": [],
+   "staging_note": "둘이 동시에 (공격 − 상대 방어, 최소 1)만큼 피해를 주고받는다. 한쪽이 쓰러질 때까지 라운드를 되풀이한다. 둘 다 쓰러질 수도 있다.",
+   "game_note": "라운드 교환",
+   "borrow": [
+    "fm"
+   ],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "exchange",
+     "note": "양쪽에서 동시에 피해 숫자가 튀고 체력 막대가 줄어든다.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b08_survival",
+   "title": "서바이벌",
+   "place_note": "전투 화면(다음 상대)",
+   "cast": [],
+   "staging_note": "이긴 쪽은 남은 체력과 코인 결과를 그대로 가지고 다음 상대와 싸운다. 새로 나온 쪽만 코인을 던진다.",
+   "game_note": "서바이벌 규칙",
+   "borrow": [
+    "fm"
+   ],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "survive",
+     "note": "아군 1번은 남은 체력 그대로, 적 2번만 코인을 던진다.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b09_attr",
+   "title": "속성 능력",
+   "place_note": "전투 화면(속성)",
+   "cast": [],
+   "staging_note": "장비 5개 중 같은 속성이 3개 이상인 유닛은 속성 능력이 켜져 있다. 능력이 작동할 때 유닛 머리 위에 속성 무늬가 뜬다.",
+   "game_note": "속성 능력 표시(약/강)",
+   "borrow": [],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "attr",
+     "note": "생명 약(3개): 라운드가 끝날 때 유닛 머리 위에 생명 무늬와 +1.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b10_result",
+   "title": "결과",
+   "place_note": "결과 화면",
+   "cast": [],
+   "staging_note": "쓰러뜨린 적 수로 보상이 갈린다. 4개 모두 → 4개 획득, 1~3개 → 그중 랜덤 1개, 0개 → 없음. 경험치 막대가 차고, 모든 유닛이 회복되며 자동 저장 표시가 뜬다.",
+   "game_note": "보상, 경험치, 자동 저장",
+   "borrow": [],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "result",
+     "note": "왼쪽부터 세 칸: 4개 모두 / 1~3개 / 0개의 보상 화면.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    },
+    {
+     "shot": "battle",
+     "view": "exp",
+     "note": "유닛 4개의 경험치 막대가 찬다. 오른쪽 아래 저장 아이콘.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  },
+  {
+   "id": "b11_boss",
+   "title": "보스 전투",
+   "place_note": "보스 전투 화면",
+   "cast": [],
+   "staging_note": "보스 전투는 퀴즈 없이 바로 시작한다. 부하 3장(그 스테이지의 2~3차 단어) 뒤 4번에 보스가 서고, 처음 등장할 때 이름 자막이 뜬다. 보스 능력은 코인 조건 없이 늘 작동한다.",
+   "game_note": "보스 등장, 보스 능력",
+   "borrow": [
+    "mh"
+   ],
+   "conti": [
+    {
+     "shot": "battle",
+     "view": "bossintro",
+     "note": "적 자리 4번에 보스. 화면 아래로 이름 자막(DESTROYER).",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    },
+    {
+     "shot": "battle",
+     "view": "bossability",
+     "note": "destroyer의 결함: 격돌마다 아군 코인 1개가 금 간 채 뒷면으로 고정.",
+     "actors": [],
+     "fx": {},
+     "say": 0,
+     "bg": ""
+    }
+   ],
+   "lines": []
+  }
+ ]
+}

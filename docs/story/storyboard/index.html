@@ -79,7 +79,7 @@ details li{margin:2px 0}
 <div class="wrap">
   <header>
     <h1>말뿌리 스토리보드</h1>
-    <p class="lede">어원 RPG 10스테이지 101장면의 콘티다. 맵은 위에서 내려다본 타일 맵이고 인물은 가로(X)·세로(Y)로 움직인다. 장면마다 1~4컷을 그렸고, 컷 아래에 연출과 그 컷의 대사를 적었다. 다른 게임에서 빌려 온 개념은 그 개념이 어떤 모습인지 따로 그려 장면 옆에 붙였다.</p>
+    <p class="lede">어원 RPG 10스테이지 101장면과 전투 흐름 11장면의 콘티다. 맵은 위에서 내려다본 타일 맵이고 인물은 가로(X)·세로(Y)로 움직인다. 장면마다 1~4컷을 그렸고, 컷 아래에 연출과 그 컷의 대사를 적었다. 다른 게임에서 빌려 온 개념은 그 개념이 어떤 모습인지 따로 그려 장면 옆에 붙였다.</p>
     <div class="legend">
       <span><b>와이드</b> 위에서 본 맵 전체</span><span><b>미디엄</b> 맵을 가까이(인물 주변)</span><span><b>클로즈업</b> 옆에서 본 이벤트 일러스트</span><span><b>아래 대화창</b> 얼굴 그림 + 대사</span>
       <span><b>주황</b> 연출 효과(빛, 금, 문양, 자막)</span><span><b>점선 화살표</b> 움직임</span>
@@ -457,9 +457,99 @@ function mapPanel(cut,lines){
   if(cut.say>0&&lines[cut.say-1]&&!('namecap' in cut.fx)) body+=dialog(lines[cut.say-1]);
   return svg(320,180,body);
 }
-function panel(cut,lines){return cut.shot==='close'?illustration(cut,lines):mapPanel(cut,lines);}
+/* ---------- 전투 화면 ---------- */
+const BWORDS=['export','inspect','describe','attract'];
+function ecard(i,opt={}){
+  const x=opt.x??(150+i*42), y=opt.y??14, w=38, h=50, hl=opt.hl, grey=opt.grey;
+  return `<g opacity="${opt.fade?'.35':'1'}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${grey?'var(--wash)':'var(--sheet)'}" stroke="${hl?'var(--marker)':'var(--ink)'}" stroke-width="${hl?2.4:1.4}"/>
+    <text x="${x+w/2}" y="${y+14}" font-family="Noto Sans KR,sans-serif" font-size="6.5" font-weight="700" fill="var(--ink)" text-anchor="middle">${esc(opt.word??BWORDS[i])}</text>
+    <path d="M${x+5} ${y+22} h${w-10} M${x+5} ${y+30} h${w-14} M${x+5} ${y+38} h${w-18}" ${P}/>
+    <text x="${x+w-5}" y="${y+h-4}" font-family="Noto Sans KR,sans-serif" font-size="6" fill="var(--pencil)" text-anchor="end">${i+1}</text></g>`;
+}
+function allies(opt={}){
+  let g=`<circle cx="30" cy="150" r="11" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.4"/>${label(30,172,'주인공')}`;
+  const ids=['ttukttak','cheokcheok','deopseok','hilkkeum'];
+  ids.forEach((id,i)=>{const x=opt.front===i?(opt.fx??130):62+i*24, y=opt.front===i?(opt.fy??110):150;
+    g+=`<ellipse cx="${x}" cy="${y}" rx="9" ry="11" fill="${UNIT[id]}" fill-opacity="${opt.fadeOthers&&opt.front!==i?.35:.9}" stroke="var(--ink)" stroke-width="1.2"/><ellipse cx="${x}" cy="${y+3}" rx="5" ry="6" fill="var(--sheet)"/>`;
+    if(opt.front!==i) g+=label(x,172,i+1);});
+  return g;
+}
+function hpbar(x,y,v,max=10){return `<rect x="${x}" y="${y}" width="40" height="5" fill="var(--sheet)" stroke="var(--ink)" stroke-width=".8"/><rect x="${x}" y="${y}" width="${40*v/max}" height="5" fill="var(--marker)"/>`;}
+function coin(x,y,face){return `<circle cx="${x}" cy="${y}" r="7" fill="${face==='h'?'var(--marker)':face==='lock'?'var(--wash)':'var(--sheet)'}" stroke="var(--ink)" stroke-width="1.2"/>${face==='h'?txt(x,y+3,'앞','font-size="6.5" fill="var(--sheet)"'):face==='t'?txt(x,y+3,'뒤','font-size="6.5"'):''}${face==='lock'?`<path d="M${x-4} ${y-5} l3 4 l-2 3 l4 4" ${M}/>`:''}${face==='spin'?`<ellipse cx="${x}" cy="${y}" rx="2.5" ry="7" ${P}/>`:''}`;}
+function battleView(cut){
+  let g=`<rect width="320" height="180" fill="var(--sheet)"/><path d="M0 128 Q160 112 320 128" ${P} stroke-dasharray="2 4"/>`;
+  const v=cut.view;
+  const cards=(o={})=>[0,1,2,3].map(i=>ecard(i,typeof o==='function'?o(i):o)).join('');
+  switch(v){
+  case 'transition':
+    g+=`<rect width="320" height="180" fill="var(--wash)"/>`+cards()+[[0,0,140,60],[140,0,200,90],[0,60,120,180],[120,90,320,180],[200,0,320,90]].map(([a,b,c,d])=>`<path d="M${a} ${b} L${c} ${d}" stroke="var(--ink)" stroke-width="1.2"/>`).join('')+`<path d="M160 90 l-30 -40 M160 90 l40 -30 M160 90 l-10 60 M160 90 l60 40" ${M}/>`+txt(160,96,'쨍!','font-size="14" fill="var(--marker)" font-weight="700"');
+    break;
+  case 'quiz': case 'quiz_wrong':
+    g+=cards(i=>i===0?{x:132,y:10,hl:true}:{fade:true})+allies();
+    g+=[0,1,2,3].map(i=>`<circle cx="${200+i*12}" cy="72" r="3.5" fill="${i===0?'var(--marker)':'var(--sheet)'}" stroke="var(--ink)"/>`).join('');
+    ['수출하다','검사하다','묘사하다','끌어당기다'].forEach((t,i)=>{const x=140+(i%2)*88,y=86+Math.floor(i/2)*22,bad=v==='quiz_wrong'&&i===2,good=v==='quiz_wrong'&&i===0;
+      g+=`<rect x="${x}" y="${y}" width="82" height="18" rx="4" fill="${bad?'var(--marker-soft)':'var(--sheet)'}" stroke="${bad?'var(--marker)':good?'var(--pencil)':'var(--ink)'}" stroke-width="1.3"/>`+txt(x+41,y+12.5,t,'font-size="8"');});
+    if(v==='quiz_wrong') g+=`<rect x="0" y="64" width="320" height="16" fill="var(--ink)" opacity=".85"/>`+`<text x="160" y="75.5" font-family="Do Hyeon,sans-serif" font-size="11" fill="var(--sheet)" text-anchor="middle">전투로!</text>`;
+    break;
+  case 'capture':
+    g+=cards()+allies()+`<rect x="40" y="70" width="40" height="30" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.4"/><path d="M60 70 v30" ${S}/>`+label(60,110,'도감')+[0,1,2,3].map(i=>`<path d="M${169+i*42} 66 Q${120+i*10} ${40+i*6} 70 72" ${M} stroke-dasharray="4 3"/>`).join('');
+    break;
+  case 'prep_magic':
+    g+=cards(i=>({x:226+(i%2)*44,y:8+Math.floor(i/2)*56}))+`<rect x="10" y="10" width="200" height="110" rx="6" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.4"/>`+txt(110,24,'마법 고르기','font-size="9" font-weight="700"');
+    ['de-','sub-','re-','com-','ad-','ob-','prae-','in-','pro-','ex-','in-','un-','dis-','inter-'].forEach((m,i)=>{const x=18+(i%5)*38,y=32+Math.floor(i/5)*28,own=i<6,pick=i===3;
+      g+=`<rect x="${x}" y="${y}" width="34" height="22" rx="3" fill="${pick?'var(--marker-soft)':own?'var(--sheet)':'var(--wash)'}" stroke="${pick?'var(--marker)':own?'var(--ink)':'var(--rule)'}" stroke-width="${pick?2:1}"/>`+txt(x+17,y+14,m,`font-size="7.5"${own?'':' opacity=".4"'}`);});
+    g+=allies();
+    break;
+  case 'prep_root':
+    g+=cards(i=>({x:226+(i%2)*44,y:8+Math.floor(i/2)*56}))+`<text x="270" y="126" font-family="Noto Sans KR,sans-serif" font-size="7" fill="var(--pencil)" text-anchor="middle">적 출전 순서 1→4</text>`;
+    [['뚝딱',['fac','form','ple']],['척척',['not','cert']],['덥석',['cept','quest']],['힐끔',['vis','spect']]].forEach(([n,rs],i)=>{const y=12+i*27;
+      g+=`<rect x="10" y="${y}" width="200" height="22" rx="4" fill="var(--sheet)" stroke="var(--ink)"/>`+txt(32,y+14,n,'font-size="8" font-weight="700"')+rs.map((r,j)=>`<rect x="${58+j*44}" y="${y+4}" width="38" height="14" rx="7" fill="${j===0?'var(--marker-soft)':'var(--sheet)'}" stroke="${j===0?'var(--marker)':'var(--pencil)'}"/>`+txt(77+j*44,y+14,r,'font-size="7.5"')).join('');});
+    g+=`<rect x="70" y="128" width="80" height="20" rx="5" fill="var(--ink)"/>`+`<text x="110" y="141" font-family="Noto Sans KR,sans-serif" font-size="8.5" fill="var(--sheet)" text-anchor="middle">전투 시작</text>`;
+    break;
+  case 'magic_cast':
+    g+=cards()+allies()+`<circle cx="30" cy="100" r="22" fill="var(--marker-soft)" stroke="var(--marker)" stroke-width="2"/>`+txt(30,104,'com-','font-size="11" font-weight="700"')+`<path d="M52 100 Q120 90 150 130" ${M} stroke-dasharray="4 3"/>`+label(110,86,'아군 4개에게');
+    break;
+  case 'defquiz':
+    g+=allies()+[['지지하다','support','g'],['의심하다','',''],['생각하다','',''],['결정하다','decide','r'],['용감한','','']].map(([t,w,c],i)=>{const x=16+i*60;return `<rect x="${x}" y="30" width="54" height="60" rx="4" fill="${c==='g'?'var(--wash)':c==='r'?'var(--marker-soft)':'var(--sheet)'}" stroke="${c==='r'?'var(--marker)':'var(--ink)'}" stroke-width="${c?2:1.2}"/>`+txt(x+27,56,t,'font-size="8"')+(w?txt(x+27,76,w,`font-size="8" font-weight="700" fill="${c==='r'?'var(--marker)':'var(--ink)'}"`):'');}).join('')+label(160,104,'정답 수는 화면 위에 표시(이번에는 3개). 빨강을 고르면 실패')+txt(160,20,'com- + 우리 어근 = ? 뜻을 골라요','font-size="9"');
+    break;
+  case 'clash': case 'skill':
+    g+=cards(i=>i===0?{x:178,y:62,hl:true}:{fade:true})+allies({front:0,fx:130,fy:104,fadeOthers:true});
+    g+=coin(120,74,'h')+coin(138,74,'t')+coin(192,50,'h');
+    g+=txt(130,132,'공격 5+C2 → 6','font-size="8.5"')+txt(198,132,'공격 4+C1 → 5','font-size="8.5"');
+    g+=`<path d="M146 104 L172 90" stroke="var(--ink)" stroke-width="1.6"/>`;
+    if(v==='skill') g+=`<rect x="70" y="20" width="180" height="20" rx="4" fill="var(--marker)"/>`+`<text x="160" y="34" font-family="Noto Sans KR,sans-serif" font-size="9" fill="var(--sheet)" text-anchor="middle" font-weight="700">spect: 이번 격돌 공격 +2</text>`;
+    break;
+  case 'exchange':
+    g+=cards(i=>i===0?{x:178,y:62,hl:true}:{fade:true})+allies({front:0,fx:130,fy:104,fadeOthers:true});
+    g+=txt(130,84,'−4','font-size="13" fill="var(--marker)" font-weight="700"')+txt(198,56,'−6','font-size="13" fill="var(--marker)" font-weight="700"')+hpbar(110,120,4)+hpbar(178,116,2)+`<path d="M144 100 L174 86 M176 92 L146 106" ${M}/>`+label(160,150,'동시에 주고받는다. 한쪽이 쓰러질 때까지 반복');
+    break;
+  case 'survive':
+    g+=cards(i=>i===0?{x:178,y:62,grey:true,fade:true}:i===1?{x:200,y:62,hl:true}:{fade:true})+allies({front:0,fx:130,fy:104,fadeOthers:true});
+    g+=hpbar(110,120,4)+coin(120,74,'h')+coin(138,74,'t')+coin(214,50,'spin')+label(130,88,'코인 그대로')+label(219,40,'새로 던짐')+`<path d="M185 70 l14 10 m0 -10 l-14 10" ${M}/>`;
+    break;
+  case 'attr':
+    g+=cards(i=>i===0?{x:178,y:62,hl:true}:{fade:true})+allies({front:0,fx:130,fy:104,fadeOthers:true});
+    g+=`<circle cx="130" cy="76" r="11" fill="var(--marker-soft)" stroke="var(--marker)" stroke-width="1.6"/>`+txt(130,79,'생명','font-size="7"')+txt(150,74,'+1','font-size="12" fill="var(--marker)" font-weight="700"')+[0,1,2,3,4].map(i=>`<rect x="${20+i*18}" y="20" width="14" height="14" rx="2" fill="${i<3?'var(--marker-soft)':'var(--sheet)'}" stroke="var(--ink)"/>`).join('')+label(62,46,'장비 5칸 중 생명 3개 → 약');
+    break;
+  case 'result':
+    g+=[['4개 모두',4],['1~3개',1],['0개',0]].map(([t,n],k)=>{const x=10+k*104;return `<rect x="${x}" y="14" width="96" height="150" rx="5" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.3"/>`+txt(x+48,32,t,'font-size="9" font-weight="700"')+Array.from({length:n},(_,i)=>`<rect x="${x+10+(i%2)*40}" y="${44+Math.floor(i/2)*46}" width="34" height="40" rx="3" fill="var(--wash)" stroke="var(--ink)"/>`).join('')+(n===1?label(x+48,100,'쓰러뜨린 것 중 랜덤'):n===0?label(x+48,90,'얻는 단어 없음'):'');}).join('');
+    break;
+  case 'exp':
+    g+=['뚝딱','척척','덥석','힐끔'].map((n,i)=>`${txt(40,34+i*28,n,'font-size="8.5"')}<rect x="66" y="${26+i*28}" width="180" height="10" fill="var(--sheet)" stroke="var(--ink)"/><rect x="66" y="${26+i*28}" width="${80+i*20}" height="10" fill="var(--marker)" opacity=".75"/>`).join('')+txt(160,150,'모든 유닛 회복 · 경험치 +','font-size="9"')+`<rect x="276" y="140" width="30" height="26" rx="3" ${S}/><path d="M282 140 v8 h18 v-8" ${P}/>`+label(291,174,'자동 저장');
+    break;
+  case 'bossintro':
+    g+=[0,1,2].map(i=>ecard(i,{word:['inform','format','notify'][i]})).join('')+`<path d="M276 18 q-6 40 6 56 q18 6 30 -6 q4 -30 -10 -50 z" fill="var(--wash)" stroke="var(--ink)" stroke-width="2"/>`+crackmark(292,50,6)+allies()+`<rect x="0" y="146" width="320" height="34" fill="var(--ink)"/><text x="160" y="170" font-family="Do Hyeon,sans-serif" font-size="22" fill="var(--sheet)" text-anchor="middle" letter-spacing="3">DESTROYER</text><line x1="40" y1="152" x2="280" y2="152" stroke="var(--marker)" stroke-width="1.5"/>`+label(205,76,'부하 3장: 2~3차 단어');
+    break;
+  case 'bossability':
+    g+=allies({front:0,fx:130,fy:104,fadeOthers:true})+`<path d="M190 60 q-6 40 6 56 q18 6 30 -6 q4 -30 -10 -50 z" fill="var(--wash)" stroke="var(--ink)" stroke-width="2"/>`+crackmark(206,92,6)+coin(112,74,'h')+coin(130,74,'lock')+coin(148,74,'t')+`<rect x="60" y="20" width="200" height="20" rx="4" fill="var(--ink)"/>`+`<text x="160" y="34" font-family="Noto Sans KR,sans-serif" font-size="9" fill="var(--sheet)" text-anchor="middle">결함: 아군 코인 1개가 뒷면으로 고정</text>`;
+    break;
+  }
+  return svg(320,180,g);
+}
+
+function panel(cut,lines){return cut.shot==='battle'?battleView(cut):cut.shot==='close'?illustration(cut,lines):mapPanel(cut,lines);}
 const BEAT={intro:'시작',ki:'기',seung:'승',jeon:'전',jeon_a:'전 1',jeon_b:'전 2',gyeol:'결',q_magic:'마법 퀘스트',q_root:'어근 퀘스트',q_word:'단어 퀘스트',epilogue:'엔딩 후'};
-function beatOf(id){const k=id.replace(/^s\d\d_/,'');if(BEAT[k])return BEAT[k];if(k.startsWith('skit'))return '동료 잡담';if(k.startsWith('tut'))return '설명';if(k.startsWith('town'))return '마을 이야기';return k;}
+function beatOf(id){if(/^b\d\d_/.test(id))return '전투';const k=id.replace(/^s\d\d_/,'');if(BEAT[k])return BEAT[k];if(k.startsWith('skit'))return '동료 잡담';if(k.startsWith('tut'))return '설명';if(k.startsWith('town'))return '마을 이야기';return k;}
 
 /* ---------- 빌려 온 개념 그림 ---------- */
 const CONCEPT={
@@ -471,41 +561,51 @@ const CONCEPT={
  ace:{t:'증언의 모순에 증거를 들이민다',draw:()=>`<rect x="20" y="110" width="80" height="40" ${S}/><rect x="220" y="110" width="80" height="40" ${S}/><circle cx="60" cy="90" r="12" ${S}/><path d="M72 92 l60 -14" ${S}/><rect x="140" y="50" width="54" height="34" rx="3" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>${txt(167,71,'증거')}<path d="M230 20 l8 18 l16 -8 l-8 16 l16 8 l-18 2 l2 18 l-12 -14 l-10 16 l-2 -18 l-18 2 l14 -12 l-14 -12 l18 2 z" fill="var(--marker)"/><circle cx="260" cy="92" r="12" ${S}/>`},
  ff4:{t:'동료가 적 편에 섰다가 돌아온다',draw:()=>`${[40,80,120].map(x=>`<circle cx="${x}" cy="120" r="10" ${S}/>`).join('')}<circle cx="160" cy="120" r="10" ${P} stroke-dasharray="2 2"/><circle cx="250" cy="70" r="10" fill="var(--marker)" fill-opacity=".5" stroke="var(--ink)"/><path d="M165 110 Q210 60 240 70" ${M}/><path d="M245 82 Q210 150 170 124" ${M} stroke-dasharray="4 4"/>${label(100,150,'우리 편')}${label(250,98,'적 편')}${label(220,150,'돌아옴')}`},
  mother2:{t:'만난 사람들의 마음이 모여 힘이 된다',draw:()=>`${[40,100,160,220,280].map(x=>`<circle cx="${x}" cy="40" r="14" ${S}/><path d="M${x} 56 Q${x} 100 160 130" ${M} stroke-dasharray="4 3"/>`).join('')}<circle cx="160" cy="142" r="14" fill="var(--marker)" fill-opacity=".5" stroke="var(--ink)"/>`},
- tetris:{t:'떨어지는 조각을 돌려 채우기',draw:()=>`<rect x="110" y="10" width="100" height="160" ${S}/>${[[110,150],[130,150],[150,150],[190,150],[110,130],[130,130],[190,130],[170,150]].map(([x,y])=>`<rect x="${x}" y="${y}" width="20" height="20" fill="var(--wash)" stroke="var(--ink)"/>`).join('')}${[[150,50],[170,50],[150,70],[150,90]].map(([x,y])=>`<rect x="${x}" y="${y}" width="20" height="20" fill="var(--marker)" fill-opacity=".6" stroke="var(--ink)"/>`).join('')}<path d="M240 60 a20 20 0 1 1 -10 -16" ${M}/>`},
  mine:{t:'숫자로 숨은 칸 추리하기',draw:()=>{let g='';for(let r=0;r<4;r++)for(let c=0;c<6;c++){g+=`<rect x="${70+c*30}" y="${20+r*35}" width="30" height="35" fill="${(r+c)%3?'var(--sheet)':'var(--wash)'}" stroke="var(--ink)"/>`;}return g+txt(85,43,'1')+txt(115,43,'2')+txt(145,78,'1')+`<path d="M175 105 v20 M175 105 l12 5 l-12 5" ${M}/>`}},
  wsearch:{t:'글자판에서 숨은 단어 찾기',draw:()=>{const L='FACTORYAZQINFORMXSUPPORTB';let g='';for(let i=0;i<25;i++)g+=txt(90+(i%5)*35,40+Math.floor(i/5)*28,L[i],'font-size="14"');return g+`<rect x="76" y="25" width="170" height="22" rx="10" ${M}/>`}},
  pipe:{t:'타일을 돌려 길 잇기',draw:()=>{let g='';for(let r=0;r<3;r++)for(let c=0;c<5;c++)g+=`<rect x="${60+c*40}" y="${30+r*40}" width="40" height="40" ${P}/>`;return g+`<path d="M40 90 H140 V50 H220 V130 H280" stroke="var(--marker)" stroke-width="6" fill="none"/><path d="M200 30 a14 14 0 1 1 -8 -4" ${S}/>`}},
  match3:{t:'같은 것 셋을 맞춰 터뜨리기',draw:()=>{let g='';const k=['○','△','□'];for(let r=0;r<4;r++)for(let c=0;c<6;c++)g+=txt(80+c*32,40+r*34,k[(r*2+c)%3],'font-size="16"');return g+`<rect x="66" y="92" width="96" height="26" rx="12" ${M}/>`}},
  anagram:{t:'섞인 글자를 바른 단어로',draw:()=>`${'RTFOM'.split('').map((c,i)=>`<rect x="${60+i*42}" y="30" width="34" height="34" ${S}/>${txt(77+i*42,53,c,'font-size="16"')}`).join('')}<path d="M160 74 v24" ${M}/>${'FORMT'.split('').map((c,i)=>`<rect x="${60+i*42}" y="110" width="34" height="34" fill="var(--marker-soft)" stroke="var(--ink)"/>${txt(77+i*42,133,c,'font-size="16"')}`).join('')}`},
- fifteen:{t:'빈칸으로 조각 밀기',draw:()=>{let g='';for(let i=0;i<15;i++)g+=`<rect x="${90+(i%4)*36}" y="${18+Math.floor(i/4)*36}" width="34" height="34" fill="var(--wash)" stroke="var(--ink)"/>${txt(107+(i%4)*36,40+Math.floor(i/4)*36,i+1)}`;return g+`<path d="M215 135 h-24" ${M}/>`}},
  ballsort:{t:'통에 옮겨 같은 것끼리',draw:()=>[60,120,180,240].map((x,i)=>`<path d="M${x} 30 v120 a14 14 0 0 0 28 0 v-120" ${S}/>`+[0,1,2].map(j=>`<circle cx="${x+14}" cy="${140-j*28}" r="11" fill="${(i+j)%2?'var(--marker)':'var(--pencil)'}" opacity=".7"/>`).join('')).join('')},
- '2048':{t:'밀어서 같은 것끼리 합치기',draw:()=>{let g='';const v=['2','2','','4','','8','','','2','','16','','','4','',''];for(let i=0;i<16;i++)g+=`<rect x="${90+(i%4)*36}" y="${18+Math.floor(i/4)*36}" width="34" height="34" fill="${v[i]?'var(--wash)':'var(--sheet)'}" stroke="var(--ink)"/>${txt(107+(i%4)*36,40+Math.floor(i/4)*36,v[i])}`;return g+`<path d="M110 10 h40 m-6 -4 l6 4 l-6 4" ${M}/>`}},
+ overcooked:{t:'주문서가 쌓이고 시간 안에 맞는 것을 낸다',draw:()=>[0,1,2].map(i=>`<rect x="${20+i*62}" y="12" width="56" height="34" rx="3" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.4"/><rect x="${24+i*62}" y="38" width="${48-i*14}" height="4" fill="var(--marker)"/>${txt(48+i*62,28,['주문 1','주문 2','주문 3'][i])}`).join('')+`<rect x="0" y="120" width="320" height="22" fill="var(--wash)" stroke="var(--ink)"/>`+[30,90,150,210,270].map(x=>`<rect x="${x}" y="114" width="34" height="34" rx="3" fill="var(--sheet)" stroke="var(--ink)"/>`).join('')+`<path d="M10 160 h300" ${P} stroke-dasharray="6 4"/><path d="M247 108 Q260 70 240 50" ${M} stroke-dasharray="4 3"/><rect x="220" y="56" width="60" height="34" rx="4" ${M}/>`+label(250,100,'틀')+label(160,172,'줄줄이 흘러오는 재료')},
+ cryptex:{t:'고리를 돌려 한 줄을 맞춘다',draw:()=>`<circle cx="160" cy="90" r="70" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="160" cy="90" r="44" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.4"/><circle cx="160" cy="90" r="18" ${S}/>`+[0,60,120,180,240,300].map(a=>{const r=a*Math.PI/180;return `<line x1="${160+44*Math.cos(r)}" y1="${90+44*Math.sin(r)}" x2="${160+70*Math.cos(r)}" y2="${90+70*Math.sin(r)}" stroke="var(--rule)"/>`}).join('')+`<rect x="150" y="18" width="20" height="74" rx="4" fill="none" stroke="var(--marker)" stroke-width="2.4"/><path d="M246 60 a90 90 0 0 1 0 60" ${M}/><path d="M246 120 l-6 -4 m6 4 l4 -6" ${M}/>`+label(160,174,'바깥 고리와 안쪽 고리를 돌려 주황 칸에 맞춘다')},
+ ninja:{t:'튀어 오르는 것을 그어 벤다',draw:()=>[[80,110],[150,60],[230,90]].map(([x,y],i)=>`<path d="M${x} ${y} l14 -10 l14 10 l-6 16 h-16 z" fill="${i===1?'var(--marker-soft)':'var(--wash)'}" stroke="var(--ink)" stroke-width="1.3"/>`).join('')+`<path d="M90 170 Q110 80 130 130 M150 170 Q160 40 175 170 M230 170 Q240 70 255 170" ${P} stroke-dasharray="3 4"/><path d="M120 40 L210 110" stroke="var(--marker)" stroke-width="3" stroke-linecap="round"/>`+label(160,22,'목표 무늬와 같은 것만 벤다')},
+ pokeenc:{t:'조우할 때 화면이 깨지듯 전환',draw:()=>`<rect width="320" height="180" fill="var(--wash)"/>`+[[0,0,160,90],[160,90,320,0],[0,180,160,90],[160,90,320,180],[160,0,160,90],[0,90,160,90]].map(([a,b,c,d])=>`<path d="M${a} ${b} L${c} ${d}" stroke="var(--ink)" stroke-width="1.4"/>`).join('')+`<circle cx="160" cy="90" r="16" fill="var(--marker)" opacity=".7"/>`+label(160,172,'필드 화면이 조각나며 전투 화면이 드러난다')},
+ fm:{t:'한 장씩 나와 격돌, 이긴 쪽이 남는다',draw:()=>`<rect x="40" y="40" width="40" height="56" rx="4" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.4"/><rect x="240" y="40" width="40" height="56" rx="4" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.4"/><path d="M90 68 L150 68 M230 68 L170 68" ${M}/>`+txt(160,72,'격돌','font-size="10" font-weight="700"')+[0,1,2].map(i=>`<rect x="${250+i*0}" y="${110+i*16}" width="30" height="12" rx="2" fill="var(--wash)" stroke="var(--pencil)"/>`).join('')+`<circle cx="60" cy="30" r="6" fill="var(--marker)"/><circle cx="74" cy="30" r="6" fill="var(--sheet)" stroke="var(--ink)"/>`+label(60,116,'이긴 카드는 남은 체력 그대로')+label(265,170,'다음 상대 대기')},
  flow:{t:'같은 점을 선으로 잇고 판 채우기',draw:()=>{let g='';for(let r=0;r<4;r++)for(let c=0;c<5;c++)g+=`<rect x="${70+c*36}" y="${20+r*36}" width="36" height="36" ${P}/>`;return g+`<path d="M88 38 H196 V74" stroke="var(--marker)" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M88 110 H160 V146" stroke="var(--pencil)" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="88" cy="38" r="9" fill="var(--marker)"/><circle cx="196" cy="74" r="9" fill="var(--marker)"/><circle cx="88" cy="110" r="9" fill="var(--pencil)"/><circle cx="160" cy="146" r="9" fill="var(--pencil)"/>`}},
 };
 
 /* ---------- 페이지 ---------- */
-function render(data){
-  NAMES=data.names;
-  const nav=document.getElementById('nav');
-  nav.innerHTML=`<a href="#concepts">빌려 온 개념</a>`+data.stages.map(s=>`<a href="#stage-${s.stage}">${s.stage} ${esc(s.name)}</a>`).join('');
-  document.getElementById('conceptGrid').innerHTML=Object.entries(data.borrow).map(([k,b])=>`
-    <div class="concept" id="concept-${k}">${svg(320,180,`<rect width="320" height="180" fill="var(--sheet)"/>`+CONCEPT[k].draw())}
-      <h3>${esc(b.game)}</h3><p>${esc(b.part)}</p><p>쓰는 장면: ${b.scenes.map(esc).join(', ')}</p></div>`).join('');
-  document.getElementById('stages').innerHTML=data.stages.map(s=>`
-    <section class="stage" id="stage-${s.stage}">
-      <div class="stage-head"><span class="no">${s.stage}</span><h2>${esc(s.name)}</h2><p>${esc(s.theme)}</p></div>
-      ${s.scenes.map(sc=>`
+function sceneCard(sc,data){
+  return `
       <article class="scene" id="${sc.id}">
         <div class="scene-top"><span class="beat">${beatOf(sc.id)}</span><h3>${esc(sc.title)}</h3><span class="sid">${sc.id}</span><span class="place">${esc(sc.place)}</span></div>
-        <div class="cast">등장: ${sc.cast.map(nm).map(esc).join(', ')}</div>
+        ${sc.cast.length?`<div class="cast">등장: ${sc.cast.map(nm).map(esc).join(', ')}</div>`:''}
         <div class="cuts">${sc.conti.map((c,i)=>{const l=c.say>0?sc.lines[c.say-1]:null;return `
           <figure class="cut">${panel(c,sc.lines)}
-            <figcaption><span class="cutno">#${i+1} ${{wide:'와이드',mid:'미디엄',close:'클로즈업'}[c.shot]}</span>${esc(c.note)}
+            <figcaption><span class="cutno">#${i+1} ${{wide:'와이드',mid:'미디엄',close:'클로즈업',battle:'전투 화면'}[c.shot]}</span>${esc(c.note)}
             ${l?`<span class="say">${esc(nm(l.sp))}: ${esc(l.t.replace('{hero}','주인공'))}</span>`:''}</figcaption></figure>`}).join('')}</div>
         <div class="meta"><div><b>연출</b>${esc(sc.staging)}</div><div><b>게임 연결</b>${esc(sc.game)}</div></div>
         ${sc.borrow.length?`<div class="borrow">${sc.borrow.map(k=>`<a class="bchip" href="#concept-${k}">${svg(320,180,`<rect width="320" height="180" fill="var(--sheet)"/>`+CONCEPT[k].draw())}<span><b>${esc(data.borrow[k].game)}</b><br>${esc(data.borrow[k].part)}</span></a>`).join('')}</div>`:''}
-        <details><summary>대사 ${sc.lines.length}줄</summary><ul>${sc.lines.map(l=>`<li><b>${esc(nm(l.sp))}</b> ${esc(l.t.replace('{hero}','주인공'))}${l.k.endsWith('_etym')?'<span class="tag">어원</span>':l.k.endsWith('_pun')?'<span class="tag">말장난</span>':''}</li>`).join('')}</ul></details>
-      </article>`).join('')}
+        ${sc.lines.length?`<details><summary>대사 ${sc.lines.length}줄</summary><ul>${sc.lines.map(l=>`<li><b>${esc(nm(l.sp))}</b> ${esc(l.t.replace('{hero}','주인공'))}${l.k.endsWith('_etym')?'<span class="tag">어원</span>':l.k.endsWith('_pun')?'<span class="tag">말장난</span>':''}</li>`).join('')}</ul></details>`:''}
+      </article>`;
+}
+function render(data){
+  NAMES=data.names;
+  const nav=document.getElementById('nav');
+  nav.innerHTML=`<a href="#concepts">빌려 온 개념</a><a href="#battle">전투</a>`+data.stages.map(s=>`<a href="#stage-${s.stage}">${s.stage} ${esc(s.name)}</a>`).join('');
+  document.getElementById('conceptGrid').innerHTML=Object.entries(data.borrow).map(([k,b])=>`
+    <div class="concept" id="concept-${k}">${svg(320,180,`<rect width="320" height="180" fill="var(--sheet)"/>`+CONCEPT[k].draw())}
+      <h3>${esc(b.game)}</h3><p>${esc(b.part)}</p><p>쓰는 장면: ${b.scenes.map(esc).join(', ')}</p></div>`).join('');
+  const battle=data.battle?`
+    <section class="stage" id="battle">
+      <div class="stage-head"><span class="no">⚔</span><h2>전투 장면</h2><p>${esc(data.battle.theme)}</p></div>
+      ${data.battle.scenes.map(sc=>sceneCard(sc,data)).join('')}
+    </section>`:'';
+  document.getElementById('stages').innerHTML=battle+data.stages.map(s=>`
+    <section class="stage" id="stage-${s.stage}">
+      <div class="stage-head"><span class="no">${s.stage}</span><h2>${esc(s.name)}</h2><p>${esc(s.theme)}</p></div>
+      ${s.scenes.map(sc=>sceneCard(sc,data)).join('')}
     </section>`).join('');
   if(location.hash){const t=document.getElementById(location.hash.slice(1));if(t)t.scrollIntoView();}
 }

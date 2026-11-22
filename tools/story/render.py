@@ -50,6 +50,15 @@ for st in stages:
         bp.append('| ' + ' | '.join([cell(beat(sc['id']) + ' · ' + sc['id']), cell(text.get(sc['title'], '')), cell(sc['place_note']), cell(cast),
                                      conti, cell(sc['game_note']), bor]) + ' |')
     bp.append('')
+import os
+if os.path.exists('data/scenes/battle.json'):
+    bt = json.load(open('data/scenes/battle.json', encoding='utf-8'))
+    bp += ['## 전투 장면', '', bt.get('theme_note', ''), '', '| 장면 | 제목 | 화면 | 콘티(컷) | 게임 연결 |', '|---|---|---|---|---|']
+    for sc in bt['scenes']:
+        shot = {'wide': '와이드', 'mid': '미디엄', 'close': '클로즈업', 'battle': '전투 화면'}
+        conti = '<br>'.join(f"#{i} {shot[c['shot']]}: {cell(c['note'])}" for i, c in enumerate(sc['conti'], 1))
+        bp.append('| ' + ' | '.join([sc['id'], cell(sc['title']), cell(sc['place_note']), conti, cell(sc['game_note'])]) + ' |')
+    bp.append('')
 bp += ['## 빌려 온 개념 모음', '', '| 게임 | 빌려 온 부분 | 쓰는 장면 |', '|---|---|---|']
 for (g, part), ids in sorted(used.items()):
     show = ', '.join(ids[:6]) + (f' 외 {len(ids) - 6}곳' if len(ids) > 6 else '')

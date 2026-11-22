@@ -15,8 +15,12 @@ KEY = {  # 빌려 온 게임 → 스토리보드의 개념 그림 키
  '포켓몬스터 시리즈': 'poke', '크로노 트리거·파이널 판타지 VI': 'snes', '테일즈 오브 시리즈': 'skit',
  '몬스터 헌터 시리즈': 'mh', '오오카미': 'okami', '역전재판 시리즈': 'ace', '파이널 판타지 IV': 'ff4',
  'MOTHER 2': 'mother2', '테트리스': 'tetris', '지뢰찾기': 'mine', '단어 찾기(워드 서치) 퍼즐': 'wsearch',
- '파이프 매니아': 'pipe', '비주얼드·캔디 크러시': 'match3', '애너그램 퍼즐': 'anagram', '15 퍼즐': 'fifteen',
- '볼 소트 퍼즐': 'ballsort', '2048': '2048', '플로우 프리': 'flow'}
+ '파이프 매니아': 'pipe', '비주얼드·캔디 크러시': 'match3', '애너그램 퍼즐': 'anagram',
+ '볼 소트 퍼즐': 'ballsort', '플로우 프리': 'flow', '오버쿡드 시리즈': 'overcooked',
+ '크립텍스(돌려 맞추는 원통 자물쇠)': 'cryptex', '프루트 닌자': 'ninja'}
+INFO = {v: k for k, v in KEY.items()}
+PART = {'pokeenc': ('포켓몬스터 시리즈', '야생에서 마주치면 화면이 깨지듯 전투로 넘어가는 연출'),
+        'fm': ('판타지 마스터즈', '양쪽이 한 장씩 나와 격돌하고, 이긴 쪽이 남은 체력으로 다음 상대와 싸우는 규칙')}
 out = {'names': {k[10:]: v for k, v in names.items() if k.startswith('name.char.')}, 'stages': [], 'borrow': {}}
 for p in sorted(glob.glob('data/scenes/s*.json')):
     st = json.load(open(p, encoding='utf-8'))
@@ -30,6 +34,23 @@ for p in sorted(glob.glob('data/scenes/s*.json')):
             'staging': sc['staging_note'], 'game': sc['game_note'], 'borrow': bks, 'conti': sc.get('conti', []),
             'lines': [{'sp': l['speaker'], 't': text.get(l['text'], ''), 'k': l['text']} for l in sc['lines']]})
     out['stages'].append(s)
+try:
+    bt = json.load(open('data/scenes/battle.json', encoding='utf-8'))
+except FileNotFoundError:
+    bt = None
+if bt:
+    bs = {'theme': bt.get('theme_note', ''), 'scenes': []}
+    for sc in bt['scenes']:
+        for k in sc['borrow']:
+            if k not in out['borrow']:
+                g, part = PART.get(k) or (None, None)
+                if g is None:  # 이야기 장면에서 이미 쓴 개념
+                    continue
+                out['borrow'][k] = {'game': g, 'part': part, 'scenes': []}
+            out['borrow'][k]['scenes'].append(sc['id'])
+        bs['scenes'].append({'id': sc['id'], 'title': sc['title'], 'place': sc['place_note'], 'cast': [],
+            'staging': sc['staging_note'], 'game': sc['game_note'], 'borrow': sc['borrow'], 'conti': sc['conti'], 'lines': []})
+    out['battle'] = bs
 json.dump(out, open('docs/story/storyboard/storyboard.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 print('ok', sum(len(s['scenes']) for s in out['stages']), 'scenes')
 
