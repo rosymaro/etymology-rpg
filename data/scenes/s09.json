@@ -50,11 +50,13 @@
       {
        "id": "miner",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 35,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -71,6 +73,7 @@
       {
        "id": "miner",
        "x": 55,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -123,11 +126,13 @@
       {
        "id": "wajang",
        "x": 45,
+       "y": 74,
        "pose": "excited"
       },
       {
        "id": "miner",
        "x": 70,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -144,11 +149,13 @@
       {
        "id": "miner",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -157,6 +164,94 @@
      },
      "say": 2,
      "note": "광부가 광석 캐기(2048 규칙)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s09_skit_missing",
+   "title": "story.s09.skit_missing.title",
+   "place_note": "갱도 쉼터",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "daejang",
+    "wajang",
+    "jojal"
+   ],
+   "staging_note": "쉼터에 짐 더미. 대장이 들어 보려다 휘청한다. 마지막에 조잘의 수첩 마지막 줄이 클로즈업.",
+   "game_note": "동료 잡담(유머 + 감정)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "파이널 판타지 IV",
+     "part": "동료가 꾐에 넘어가 적 편에 섰다가 돌아오는 줄기"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "daejang",
+     "text": "story.s09.skit_missing.001"
+    },
+    {
+     "speaker": "wajang",
+     "text": "story.s09.skit_missing.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.skit_missing.003"
+    },
+    {
+     "speaker": "jojal",
+     "text": "story.s09.skit_missing.004"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s09.skit_missing.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "daejang",
+       "x": 40,
+       "y": 55,
+       "pose": "sweat"
+      },
+      {
+       "id": "wajang",
+       "x": 60,
+       "y": 58,
+       "pose": "excited"
+      },
+      {
+       "id": "jojal",
+       "x": 72,
+       "y": 62,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "crates": ""
+     },
+     "say": 1,
+     "note": "짐 더미 앞에서 휘청하는 대장."
+    },
+    {
+     "shot": "close",
+     "bg": "mine",
+     "actors": [],
+     "fx": {
+      "note": "",
+      "partyslot": ""
+     },
+     "say": 4,
+     "note": "클로즈업: 조잘 수첩의 마지막 줄."
     }
    ]
   },
@@ -186,11 +281,13 @@
       {
        "id": "miner",
        "x": 55,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -212,7 +309,7 @@
     "ttukttak",
     "wajang"
    ],
-   "staging_note": "rupt 장착 유닛(와장)이 금 간 벽을 부순다. 드디어 부숴도 되는 벽.",
+   "staging_note": "rupt 어원을 갖고 있어서 와장이 금 간 벽을 부순다. 드디어 부숴도 되는 벽.",
    "game_note": "어근 rupt 필드 능력(금 간 벽 부수기)",
    "borrow": [
     {
@@ -238,6 +335,7 @@
       {
        "id": "wajang",
        "x": 45,
+       "y": 74,
        "pose": "happy"
       }
      ],
@@ -246,6 +344,74 @@
      },
      "say": 2,
      "note": "드디어 부숴도 되는 벽. 와장이 감격."
+    }
+   ]
+  },
+  {
+   "id": "s09_town_department",
+   "title": "story.s09.town_department.title",
+   "place_note": "광산 사무소",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miner",
+    "wajang"
+   ],
+   "staging_note": "사무소 문 열두 개에 각기 다른 팻말. 와장이 망치를 들어 올리자 광부가 막는다.",
+   "game_note": "마을 이야기(유머)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "miner",
+     "text": "story.s09.town_department.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.town_department.002_etym"
+    },
+    {
+     "speaker": "wajang",
+     "text": "story.s09.town_department.003"
+    },
+    {
+     "speaker": "miner",
+     "text": "story.s09.town_department.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "miner",
+       "x": 55,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "wajang",
+       "x": 40,
+       "y": 62,
+       "pose": "excited"
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "y": 78,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "doors": ""
+     },
+     "say": 3,
+     "note": "문 열두 개. 와장이 망치를 들자 광부가 막는다."
     }
    ]
   },
@@ -275,11 +441,13 @@
       {
        "id": "miner",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -288,6 +456,52 @@
      },
      "say": 1,
      "note": "장부의 빈칸이 채워진다."
+    }
+   ]
+  },
+  {
+   "id": "s09_tut_fullset",
+   "title": "story.s09.tut_fullset.title",
+   "place_note": "광산 제련소",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hilkkeum",
+    "cheokcheok"
+   ],
+   "staging_note": "제련소에서 4차 단어가 처음 만들어진다. 장비 다섯 칸 중 하나가 금빛으로 빛난다.",
+   "game_note": "4차 장비와 풀세트 목표 설명",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s09.tut_fullset.001"
+    },
+    {
+     "speaker": "hilkkeum",
+     "text": "story.s09.tut_fullset.002"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s09.tut_fullset.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "close",
+     "bg": "mine",
+     "actors": [],
+     "fx": {
+      "slots5": "",
+      "gold": ""
+     },
+     "say": 1,
+     "note": "클로즈업: 장비 다섯 칸 중 하나가 금빛으로 빛난다(4차)."
     }
    ]
   },
@@ -326,11 +540,13 @@
       {
        "id": "dragon",
        "x": 65,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 20,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -347,6 +563,7 @@
       {
        "id": "dragon",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       }
      ],
@@ -393,11 +610,13 @@
       {
        "id": "hero",
        "x": 20,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 30,
+       "y": 74,
        "pose": ""
       }
      ],

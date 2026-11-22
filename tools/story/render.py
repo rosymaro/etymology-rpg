@@ -20,6 +20,13 @@ def who(sp):
         return '(낭독)'
     return names.get(f'name.char.{sp}', sp).replace('{hero}', '주인공')
 
+BEAT = {'intro': '시작', 'ki': '기', 'seung': '승', 'jeon': '전', 'jeon_a': '전 1', 'jeon_b': '전 2', 'gyeol': '결',
+        'q_magic': '마법 퀘스트', 'q_root': '어근 퀘스트', 'q_word': '단어 퀘스트', 'epilogue': '엔딩 후'}
+def beat(sid):
+    k = sid.split('_', 1)[1]
+    if k in BEAT: return BEAT[k]
+    return {'skit': '동료 잡담', 'tut': '설명', 'town': '마을 이야기'}.get(k.split('_')[0], k)
+
 def cell(s):
     return s.replace('|', '\\|').replace('\n', ' ')
 
@@ -40,7 +47,7 @@ for st in stages:
             used[(b['game'], b['part'])].append(sc['id'])
         shot = {'wide': '와이드', 'mid': '미디엄', 'close': '클로즈업'}
         conti = '<br>'.join(f"#{i} {shot[c['shot']]}: {cell(c['note'])}" for i, c in enumerate(sc.get('conti', []), 1)) or cell(sc['staging_note'])
-        bp.append('| ' + ' | '.join([cell(sc['id']), cell(text.get(sc['title'], '')), cell(sc['place_note']), cell(cast),
+        bp.append('| ' + ' | '.join([cell(beat(sc['id']) + ' · ' + sc['id']), cell(text.get(sc['title'], '')), cell(sc['place_note']), cell(cast),
                                      conti, cell(sc['game_note']), bor]) + ' |')
     bp.append('')
 bp += ['## 빌려 온 개념 모음', '', '| 게임 | 빌려 온 부분 | 쓰는 장면 |', '|---|---|---|']
@@ -54,7 +61,7 @@ sc_md = [f'# 대본 ({lang})', '', '장면 데이터와 `locale/story.csv`로 �
 for st in stages:
     sc_md += [f"## 스테이지 {st['stage']} {names.get(st['place'], '')}", '']
     for sc in st['scenes']:
-        sc_md += [f"### {sc['id']} · {text.get(sc['title'], '')}", '', f"*{sc['staging_note']}*", '']
+        sc_md += [f"### {beat(sc['id'])} · {text.get(sc['title'], '')} ({sc['id']})", '', f"*{sc['staging_note']}*", '']
         for l in sc['lines']:
             t = text.get(l['text'], '').replace('{hero}', '주인공')
             mark = ' `어원`' if l['text'].endswith('_etym') else (' `말장난`' if l['text'].endswith('_pun') else '')

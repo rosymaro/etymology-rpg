@@ -38,11 +38,13 @@
       {
        "id": "guardian",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -104,11 +106,13 @@
       {
        "id": "kkumjjeok",
        "x": 40,
+       "y": 74,
        "pose": "still"
       },
       {
        "id": "hwik",
        "x": 65,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -125,11 +129,13 @@
       {
        "id": "sentry",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -138,6 +144,69 @@
      },
      "say": 4,
      "note": "보초병이 보초 서기(통 정렬)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s08_town_stable",
+   "title": "story.s08.town_stable.title",
+   "place_note": "무너진 성벽 아래",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "mason"
+   ],
+   "staging_note": "석공이 무너진 돌을 쌓다가 고개를 든다. 뒤에 말 한 마리가 서 있다.",
+   "game_note": "마을 이야기(유머)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "mason",
+     "text": "story.s08.town_stable.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s08.town_stable.002_etym"
+    },
+    {
+     "speaker": "mason",
+     "text": "story.s08.town_stable.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "mason",
+       "x": 50,
+       "y": 45,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "y": 72,
+       "pose": ""
+      },
+      {
+       "id": "horse",
+       "x": 75,
+       "y": 40,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "crumble": ""
+     },
+     "say": 1,
+     "note": "무너진 성벽 아래 석공. 뒤에 말 한 마리."
     }
    ]
   },
@@ -167,21 +236,25 @@
       {
        "id": "sentry",
        "x": 40,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "sentry",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "sentry",
        "x": 80,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 20,
+       "y": 70,
        "pose": "ghost"
       }
      ],
@@ -202,7 +275,7 @@
     "ttukttak",
     "kkumjjeok"
    ],
-   "staging_note": "lig 장착 유닛(꿈쩍)이 밧줄로 두 성벽을 묶어 건넌다.",
+   "staging_note": "lig 어원을 갖고 있어서 꿈쩍이 밧줄로 두 성벽을 묶어 건넌다.",
    "game_note": "어근 lig 필드 능력(밧줄로 묶어 길 만들기)",
    "borrow": [],
    "lines": [
@@ -223,6 +296,7 @@
       {
        "id": "kkumjjeok",
        "x": 45,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -231,6 +305,68 @@
      },
      "say": 1,
      "note": "꿈쩍이 밧줄로 두 성벽을 묶어 다리를 만든다."
+    }
+   ]
+  },
+  {
+   "id": "s08_skit_position",
+   "title": "story.s08.skit_position.title",
+   "place_note": "성벽 위 통로",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "kkumjjeok",
+    "hwik"
+   ],
+   "staging_note": "휙이 꿈쩍을 들어 올리려다 실패한다. 꿈쩍은 표정 하나 안 바뀐다.",
+   "game_note": "동료 잡담(유머)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "hwik",
+     "text": "story.s08.skit_position.001"
+    },
+    {
+     "speaker": "kkumjjeok",
+     "text": "story.s08.skit_position.002_etym"
+    },
+    {
+     "speaker": "hwik",
+     "text": "story.s08.skit_position.003"
+    },
+    {
+     "speaker": "kkumjjeok",
+     "text": "story.s08.skit_position.004_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "kkumjjeok",
+       "x": 45,
+       "y": 55,
+       "pose": "still"
+      },
+      {
+       "id": "hwik",
+       "x": 60,
+       "y": 58,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "throw": ""
+     },
+     "say": 3,
+     "note": "휙이 꿈쩍을 들어 올리려다 실패."
     }
    ]
   },
@@ -265,11 +401,13 @@
       {
        "id": "guardian",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -286,6 +424,7 @@
       {
        "id": "guardian",
        "x": 55,
+       "y": 32,
        "pose": "kneel"
       }
      ],
@@ -294,6 +433,74 @@
      },
      "say": 1,
      "note": "이긴 뒤 guardian이 무릎을 꿇는다."
+    }
+   ]
+  },
+  {
+   "id": "s08_tut_court",
+   "title": "story.s08.tut_court.title",
+   "place_note": "재판정 앞 복도",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "sentry",
+    "jojal"
+   ],
+   "staging_note": "재판정 문 앞. 보초병이 문을 연다. 주인공의 단어 카드 묶음이 화면 아래에 부채처럼 펼쳐진다.",
+   "game_note": "재판 튜토리얼(모은 단어 카드를 증거로 제시)",
+   "borrow": [
+    {
+     "game": "역전재판 시리즈",
+     "part": "증언의 모순을 찾아 증거를 들이미는 추리 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "sentry",
+     "text": "story.s08.tut_court.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s08.tut_court.002"
+    },
+    {
+     "speaker": "jojal",
+     "text": "story.s08.tut_court.003"
+    },
+    {
+     "speaker": "sentry",
+     "text": "story.s08.tut_court.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "sentry",
+       "x": 55,
+       "y": 35,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 40,
+       "y": 70,
+       "pose": ""
+      },
+      {
+       "id": "jojal",
+       "x": 55,
+       "y": 74,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "fan": ""
+     },
+     "say": 2,
+     "note": "재판정 문 앞. 단어 카드 묶음이 화면 아래에 부채처럼 펼쳐진다."
     }
    ]
   },
@@ -350,21 +557,25 @@
       {
        "id": "guardian",
        "x": 70,
+       "y": 32,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "jojal",
        "x": 45,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "yeongcha",
        "x": 55,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -381,6 +592,7 @@
       {
        "id": "hero",
        "x": 40,
+       "y": 70,
        "pose": "point"
       }
      ],
@@ -409,6 +621,7 @@
       {
        "id": "yeongcha",
        "x": 60,
+       "y": 74,
        "pose": "cry"
       }
      ],

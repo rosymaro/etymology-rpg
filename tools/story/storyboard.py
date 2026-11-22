@@ -1,4 +1,6 @@
-"""스토리보드 페이지가 읽는 데이터(docs/story/storyboard/storyboard.json)를 만든다.
+"""스토리보드 페이지의 데이터(storyboard.json)와 GitHub Pages용 index.html을 만든다.
+
+page.html은 페이지 본문(Claude 아티팩트로 게시하는 원본)이고, index.html은 그 앞뒤에 HTML 뼈대를 붙인 것이다.
 
 사용: python3 tools/story/storyboard.py [언어코드]   (저장소 루트에서 실행)
 """
@@ -30,3 +32,9 @@ for p in sorted(glob.glob('data/scenes/s*.json')):
     out['stages'].append(s)
 json.dump(out, open('docs/story/storyboard/storyboard.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 print('ok', sum(len(s['scenes']) for s in out['stages']), 'scenes')
+
+page = open('docs/story/storyboard/page.html', encoding='utf-8').read()
+open('docs/story/storyboard/index.html', 'w', encoding='utf-8').write(
+    '<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n'
+    '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n</head>\n<body>\n'
+    + page + '\n</body>\n</html>\n')

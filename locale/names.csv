@@ -75,6 +75,9 @@ name.char.miller,방앗간 주인
 name.char.sentry,보초병
 name.char.miner,광부
 name.char.tower_child,탑 아래 아이
+name.char.merchant,상인
+name.char.shipwright,조선공
+name.char.mason,석공
 name.char.destroyer,destroyer
 name.char.predator,predator
 name.char.wizard,wizard

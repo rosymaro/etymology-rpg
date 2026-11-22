@@ -47,11 +47,13 @@
       {
        "id": "porter",
        "x": 40,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 60,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -68,11 +70,13 @@
       {
        "id": "yeongcha",
        "x": 50,
+       "y": 74,
        "pose": "proud"
       },
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -124,11 +128,13 @@
       {
        "id": "jojal",
        "x": 45,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 65,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -145,11 +151,13 @@
       {
        "id": "sailor",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -158,6 +166,68 @@
      },
      "say": 2,
      "note": "늙은 선원이 낚시(3개 맞추기)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s05_tut_order",
+   "title": "story.s05.tut_order.title",
+   "place_note": "부두 창고",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "yeongcha",
+    "jojal"
+   ],
+   "staging_note": "창고에 상자를 줄 세우며 순서 마법을 설명한다. 상자 하나가 맨 앞으로 쏙 이동하는 연출.",
+   "game_note": "순서 마법 튜토리얼(pro-, ex-)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.tut_order.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.tut_order.002"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.tut_order.003"
+    },
+    {
+     "speaker": "jojal",
+     "text": "story.s05.tut_order.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 40,
+       "y": 60,
+       "pose": ""
+      },
+      {
+       "id": "jojal",
+       "x": 62,
+       "y": 62,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "order": ""
+     },
+     "say": 2,
+     "note": "상자 넷이 한 줄. 하나가 맨 앞으로 쏙 이동한다(순서 마법)."
     }
    ]
   },
@@ -191,6 +261,7 @@
       {
        "id": "sailor",
        "x": 30,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -213,7 +284,7 @@
     "yeongcha",
     "porter"
    ],
-   "staging_note": "fer 장착 유닛(영차)이 짐을 번쩍 든다. 영차는 무척 신나 보인다.",
+   "staging_note": "fer 어원을 갖고 있어서 영차가 짐을 번쩍 든다. 영차는 무척 신나 보인다.",
    "game_note": "어근 fer 필드 능력(무거운 짐 나르기)",
    "borrow": [
     {
@@ -239,6 +310,7 @@
       {
        "id": "yeongcha",
        "x": 50,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -247,6 +319,97 @@
      },
      "say": 1,
      "note": "영차가 짐을 번쩍. 무척 신나 보인다."
+    }
+   ]
+  },
+  {
+   "id": "s05_skit_important",
+   "title": "story.s05.skit_important.title",
+   "place_note": "부두 끝 말뚝",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "yeongcha",
+    "jojal"
+   ],
+   "staging_note": "영차가 말뚝 위에 올라 바다를 가리키며 자랑한다. 마지막 줄에서 영차의 얼굴이 잠깐 어두워진다.",
+   "game_note": "동료 잡담(유머 + 복선)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "파이널 판타지 IV",
+     "part": "동료가 꾐에 넘어가 적 편에 섰다가 돌아오는 줄기"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.skit_important.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.skit_important.002_etym"
+    },
+    {
+     "speaker": "jojal",
+     "text": "story.s05.skit_important.003"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s05.skit_important.004"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.skit_important.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 55,
+       "y": 45,
+       "pose": "proud"
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "y": 70,
+       "pose": ""
+      },
+      {
+       "id": "jojal",
+       "x": 45,
+       "y": 74,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "sea": ""
+     },
+     "say": 1,
+     "note": "부두 끝 말뚝 위의 영차가 바다를 가리킨다."
+    },
+    {
+     "shot": "close",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 50,
+       "y": 74,
+       "pose": "sad"
+      }
+     ],
+     "fx": {},
+     "say": 4,
+     "note": "\"항구만 무사하면…\" 영차의 얼굴이 잠깐 어두워진다."
     }
    ]
   },
@@ -294,16 +457,19 @@
       {
        "id": "sailor",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "yeongcha",
        "x": 45,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -320,6 +486,7 @@
       {
        "id": "yeongcha",
        "x": 70,
+       "y": 74,
        "pose": "back"
       }
      ],
@@ -329,6 +496,67 @@
      },
      "say": 4,
      "note": "밤. 일행이 잠든 사이 영차가 혼자 부두로 걸어간다(뒷모습, 달빛)."
+    }
+   ]
+  },
+  {
+   "id": "s05_tut_evolfail",
+   "title": "story.s05.tut_evolfail.title",
+   "place_note": "항구 조선소",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "shipwright"
+   ],
+   "staging_note": "조선소의 진화대. 진화 퀴즈에서 하나를 틀린 직후. 틀린 단어 카드에 표식이 붙고, 지도에 그 단어가 있는 곳이 표시된다.",
+   "game_note": "진화 실패와 재포획 튜토리얼",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "shipwright",
+     "text": "story.s05.tut_evolfail.001"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s05.tut_evolfail.002"
+    },
+    {
+     "speaker": "shipwright",
+     "text": "story.s05.tut_evolfail.003"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s05.tut_evolfail.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "shipwright",
+       "x": 65,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 40,
+       "y": 70,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mapmark": ""
+     },
+     "say": 3,
+     "note": "조선소 진화대. 틀린 단어 카드에 표식, 지도에 그 단어가 있는 곳이 빛난다."
     }
    ]
   },
@@ -376,11 +604,13 @@
       {
        "id": "pirate",
        "x": 65,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -398,11 +628,13 @@
       {
        "id": "pirate",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "yeongcha",
        "x": 30,
+       "y": 74,
        "pose": "sweat"
       }
      ],
@@ -454,11 +686,13 @@
       {
        "id": "sailor",
        "x": 40,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "yeongcha",
        "x": 70,
+       "y": 74,
        "pose": ""
       }
      ],
