@@ -10,3 +10,18 @@ ui.evolve.need_recapture,"{word}를 다시 잡아야 진화에 도전할 수 있
 ui.battle.next,다음
 ui.battle.back,이전
 ui.battle.root_pick,어근 고르기
+ui.option.title,옵션
+ui.option.vibration,진동
+ui.option.sfx,효과음
+ui.option.bgm,배경음악
+ui.option.volume,음량
+ui.option.on,켜기
+ui.option.off,끄기
+ui.title_exam.open,칭호 시험
+ui.title_exam.start,시험 보기
+ui.title_exam.progress,{n} / {total}
+ui.title_exam.pass,칭호를 얻었어요!
+ui.title_exam.fail,다음에 다시 도전해요
+ui.title_exam.wrong_list,틀린 단어
+ui.title_exam.locked_today,오늘은 시험을 볼 수 없어요. 내일 다시 와요
+ui.title_exam.need,단어 {need}개를 모으면 볼 수 있어요 (지금 {have}개)

@@ -4,3 +4,6 @@ sys.magic.com.name,com- (함께)
 sys.magic.com.desc,"싸우는 아군이 받는 피해의 {share_pct}%를 대기 중인 동료가 나눠 받는다. 동료는 그 {taken_pct}%만 받는다. 걸 때 조합 뜻 고르기를 통과해야 한다."
 sys.root.fac.desc,"이번 전투에 건 마법을 한 번 더 발동한다. 코인 조건: 어려움."
 sys.hint.long_press,"길게 누르면 설명이 나와요."
+sys.title_exam.rule_first,"지금까지 모은 단어 중 20개가 나와요. 모두 맞히면 칭호를 얻어요."
+sys.title_exam.rule_later,"새로 모은 {new_n}개에서 10개, 그 전에 모은 단어에서 10개가 나와요. 모두 맞히면 칭호를 얻어요."
+sys.title_exam.rule_retry,"떨어지면 다음 날 다시 볼 수 있어요."

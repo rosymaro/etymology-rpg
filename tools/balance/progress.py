@@ -30,13 +30,13 @@ def load():
     return W, leaves
 
 _CACHE = {}
-def snapshot(W, leaves, s, boss_ratio=None, lazy=False, seed=0):
-    key = (s, boss_ratio, lazy, seed, GEAR_MODEL if 'GEAR_MODEL' in globals() else None)
-    if key not in _CACHE: _CACHE[key] = _snapshot(W, leaves, s, boss_ratio, lazy, seed)
+def snapshot(W, leaves, s, boss_ratio=None, lazy=False, seed=0, max_tier=4):
+    key = (s, boss_ratio, lazy, seed, max_tier, GEAR_MODEL if 'GEAR_MODEL' in globals() else None)
+    if key not in _CACHE: _CACHE[key] = _snapshot(W, leaves, s, boss_ratio, lazy, seed, max_tier)
     return _CACHE[key]
 
-def _snapshot(W, leaves, s, boss_ratio=None, lazy=False, seed=0):
-    """스테이지 s에 들어올 때(boss_ratio=None) 또는 보스전 때의 상태."""
+def _snapshot(W, leaves, s, boss_ratio=None, lazy=False, seed=0, max_tier=4):
+    """스테이지 s에 들어올 때(boss_ratio=None) 또는 보스전 때의 상태. max_tier: 이 차수까지만 진화한다."""
     rnd = random.Random(seed)
     got = {w for w, r in W.items() if r['차수'] == '1' and int(r['스테이지']) < s}
     if boss_ratio:
@@ -45,7 +45,7 @@ def _snapshot(W, leaves, s, boss_ratio=None, lazy=False, seed=0):
     evolved = set()
     if not lazy:
         for w, lv in leaves.items():
-            if W[w]['차수'] != '1' and all(x in got for x in lv): evolved.add(w)
+            if 1 < int(W[w]['차수']) <= max_tier and all(x in got for x in lv): evolved.add(w)
     exp = [0] * 12
     def give(base, unit):
         for u in range(12): exp[u] += base * (2 if UNITS[u] == unit else 1)
@@ -64,15 +64,15 @@ def _snapshot(W, leaves, s, boss_ratio=None, lazy=False, seed=0):
             gear[u][sl] = (t, r['속성(주/보조)'].split('/'))
     return {'level': level, 'gear': gear, 'got': len(got), 'evolved': len(evolved)}
 
-GEAR_MODEL = 'light'
+GEAR_MODEL = 'v2'
 import json as _json
 _GEAR = _json.load(open(os.path.join(ROOT, 'data/balance/gear.json'), encoding='utf-8'))
 
 def gear_stats(g, model=None):
     """부위별 장비 능력치와 켜진 속성(이름, 개수). 수치는 data/balance/gear.json.
-    light: slots(채택). v2: _v2_draft(02-rpg-v2 첫 가정, 비교용)."""
+    v2: slots(채택, 02-rpg-v2 그대로). light: _light(낮춘 값, 비교용)."""
     model = model or GEAR_MODEL
-    table = _GEAR['slots'] if model == 'light' else _GEAR['_v2_draft']
+    table = _GEAR['slots'] if model == 'v2' else _GEAR['_light']
     st = {'atk': 0, 'def': 0, 'hp': 0}
     for sl, (t, _) in g.items():
         v = _GEAR['tier_value'][str(t)]

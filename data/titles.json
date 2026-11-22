@@ -1,0 +1,28 @@
+{
+  "_doc": "칭호(이야기·규칙과 묶인 고정 데이터). 이름은 locale/names.csv의 name.title.<id>. 규칙 설명은 docs/design/04-meta.md",
+  "count_by": "dex",
+  "_count_by_doc": "dex = 한 번이라도 얻은 단어 수(도감). 진화 재료로 써도 줄지 않는다",
+  "exam": {
+    "questions": 20,
+    "pass": "all",
+    "format": "encounter_quiz",
+    "first_title_pool": [ { "from": "new", "count": 20 } ],
+    "later_pool": [ { "from": "new", "count": 10 }, { "from": "old", "count": 10 } ],
+    "_pool_doc": "new = 이번 칭호 구간에서 얻은 단어(얻은 순서 (N-1)*1000+1 ~ N*1000번째), old = 그 앞에 얻은 모든 단어",
+    "retry": "next_local_date",
+    "_retry_doc": "떨어지면 휴대폰 날짜가 바뀐 뒤(자정 이후) 다시 볼 수 있다. 붙으면 바로 다음 시험을 볼 수 있다(조건이 되면)",
+    "place": "root_tree"
+  },
+  "titles": [
+    { "id": "t01", "need": 1000,  "look": 1, "accessory": "sprout_pin" },
+    { "id": "t02", "need": 2000,  "look": 1, "accessory": "seedleaf_brooch" },
+    { "id": "t03", "need": 3000,  "look": 2, "accessory": "root_scarf" },
+    { "id": "t04", "need": 4000,  "look": 2, "accessory": "book_bag" },
+    { "id": "t05", "need": 5000,  "look": 3, "accessory": "quill" },
+    { "id": "t06", "need": 6000,  "look": 3, "accessory": "leaf_glasses" },
+    { "id": "t07", "need": 7000,  "look": 4, "accessory": "flower_crown" },
+    { "id": "t08", "need": 8000,  "look": 4, "accessory": "fruit_medal" },
+    { "id": "t09", "need": 9000,  "look": 5, "accessory": "forest_crown" },
+    { "id": "t10", "need": 10000, "look": 5, "accessory": "root_staff" }
+  ]
+}

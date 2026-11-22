@@ -12,7 +12,10 @@ from full import ROLES
 import progress as PG
 
 ROOT = PG.ROOT
-BAL = lambda f: json.load(open(os.path.join(ROOT, 'data/balance', f), encoding='utf-8'))
+import functools
+@functools.lru_cache(None)
+def _bal(f): return json.dumps(json.load(open(os.path.join(ROOT, 'data/balance', f), encoding='utf-8')))
+def BAL(f): return json.loads(_bal(f))
 BOSS_KEY = {'destroyer': 'defect', 'predator': 'predator', 'wizard': 'wizard', 'hurricane': 'storm', 'pirate': 'pirate',
             'dictator': 'dictate', 'vortex': 'vortex', 'guardian': 'guardian', 'dragon': 'dragon', 'devil': 'devil'}
 # 필드 마법을 얻는 순서 = 전투 마법을 쓸 수 있게 되는 순서 (data/field_magic.json)
@@ -73,7 +76,7 @@ def field_rate(s, base, coins, snap, scale, T, freq, magic):
     for _ in range(T):
         my = party(s, snap, scale, n)
         en = [enemy(base + max(-2, min(3, 5 - random.choice(freq))), coins) for _ in range(n)]
-        P = 2 + int(sum(u.L for u in my) / len(my)) // 6
+        P = eval(BAL('unit.json')['magic_power'], {}, {'L': int(sum(u.L for u in my) / len(my))})
         win += fight(my, en, magic, P)
     return win / T
 
@@ -84,29 +87,30 @@ def boss_rate(s, delta, snap, scale, T, freq, magic, bdef, minion_level, minion_
     for _ in range(T):
         my = party(s, snap, scale, n)
         BL = round(lv) + delta
-        if s == 10:
+        if s == 10:  # 마지막 전투: boss.json final (devil 고정 레벨, 말뿌리 장막, 능력치 보정)
+            cfg = BAL('boss.json')['final']; bb = tuple(cfg['stat_bonus'])
             others = random.sample([b for b in bdef if b['stage'] < 10], 2)
-            en = [enemy(BL - 2, 5, BOSS_KEY[o['id']], random.choice([9, 12])) for o in others[: n - 2]]
-            yc = ally(7, snap, scale); yc.side = 'B'; en.append(yc)
-            en.append(enemy(BL, 5, 'devil', 12))
+            en = [enemy(cfg['other_level'], 5, BOSS_KEY[o['id']], random.choice([9, 12]), bonus=bb) for o in others[: n - 2]]
+            yc = ally(7, snap, scale); yc.side = 'B'; yc.bA += bb[0]; yc.bD += bb[1]; yc.bH += bb[2]; en.append(yc)
+            dv = enemy(cfg['devil_level'], 5, 'devil', 12, bonus=bb); dv.gate = tuple(cfg['level_gate']); en.append(dv)
         else:
             b = [x for x in bdef if x['stage'] == s][0]
             en = [enemy(minion_level, minion_coins) for _ in range(n - 1)]
             en.append(enemy(BL, b['coins'], BOSS_KEY[b['id']], random.choice([9, 12])))
-        P = 2 + int(sum(u.L for u in my) / len(my)) // 6
+        P = eval(BAL('unit.json')['magic_power'], {}, {'L': int(sum(u.L for u in my) / len(my))})
         win += fight(my, en, magic, P, bossab=True)
     return win / T
 
 def curve():
     return {c['stage']: c for c in BAL('enemy.json')['stage_curve']}
 
-def evaluate(s, base=None, delta=None, scale=1.0, T=300, lazy=False, coins=None):
+def evaluate(s, base=None, delta=None, scale=1.0, T=300, lazy=False, coins=None, max_tier=4):
     W, leaves = DATA
     cv = curve()[s]; bdef = BAL('boss.json')['bosses']
     base = cv['base_level'] if base is None else base
     cv = dict(cv, coins=coins or cv['coins'])
     if delta is None: delta = [b for b in bdef if b['stage'] == s][0]['level_delta']
-    snap_e = PG.snapshot(W, leaves, s, lazy=lazy); snap_b = PG.snapshot(W, leaves, s, 0.6, lazy=lazy)
+    snap_e = PG.snapshot(W, leaves, s, lazy=lazy, max_tier=max_tier); snap_b = PG.snapshot(W, leaves, s, 0.6, lazy=lazy, max_tier=max_tier)
     global ENEMY_BONUS
     if 'gear_bonus' in cv: ENEMY_BONUS = tuple(cv['gear_bonus'])
     else:  # 기본: 같은 스테이지 부지런한 플레이어 장비의 ratio배
@@ -146,7 +150,8 @@ if __name__ == '__main__':
     ap.add_argument('--tune', action='store_true', help='목표 승률에 맞는 base_level·level_delta를 찾는다')
     ap.add_argument('--lazy', action='store_true', help='진화를 안 하는 플레이어')
     ap.add_argument('--stages', default='1-10')
-    ap.add_argument('--gear-model', default='light', choices=['light', 'v2'])
+    ap.add_argument('--max-tier', type=int, default=4, help='이 차수까지만 진화하는 플레이어(1 = 진화 안 함)')
+    ap.add_argument('--gear-model', default='v2', choices=['v2', 'light'])
     a = ap.parse_args()
     random.seed(7); PG.GEAR_MODEL = a.gear_model
     DATA = PG.load()
@@ -154,5 +159,5 @@ if __name__ == '__main__':
     print('| 스테이지 | 입장 Lv | 보스전 Lv | 적 기준 Lv | 코인 | 보스 레벨 차 | 마법 없음 | 필드 평균 | 필드 최고 | 보스 평균 | 보스 최고 |')
     print('|---|---|---|---|---|---|---|---|---|---|---|')
     for s in range(lo, hi + 1):
-        r = tune(s, a.gear_scale, a.trials, a.lazy) if a.tune else evaluate(s, scale=a.gear_scale, T=a.trials, lazy=a.lazy)
+        r = tune(s, a.gear_scale, a.trials, a.lazy) if a.tune else evaluate(s, scale=a.gear_scale, T=a.trials, lazy=a.lazy, max_tier=a.max_tier)
         print(row(r), flush=True)
