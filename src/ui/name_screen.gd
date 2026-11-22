@@ -8,7 +8,7 @@ var _edit: LineEdit
 func open(_args: Dictionary) -> void:
 	UiKit.fill_bg(self, UiKit.PAPER)
 	var c := CenterContainer.new()
-	c.set_anchors_preset(Control.PRESET_FULL_RECT)
+	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(c)
 	var v := UiKit.vbox(20)
 	c.add_child(v)

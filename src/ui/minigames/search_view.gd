@@ -30,12 +30,12 @@ func refresh() -> void:
 	var g := game as WordSearchGame
 	for c in _hints.get_children():
 		c.queue_free()
-	_hints.add_child(UiKit.label(t("ui.mini.search.hints"), 22))
+	_hints.add_child(UiKit.wrap(UiKit.label(t("ui.mini.search.hints"), 22), 560))
 	for id in g.hidden_ids():
 		var w := word(g._original(id))
 		var done := id in g.found
-		_hints.add_child(UiKit.label(("✓ %s  %s" % [w.id, w.meaning]) if done else ("· %s (%d)" % [w.meaning, id.length()]), 22,
-			UiKit.GOOD.darkened(0.3) if done else UiKit.INK))
+		_hints.add_child(UiKit.wrap(UiKit.label(("✓ %s  %s" % [w.id, w.meaning]) if done else ("· %s (%d)" % [w.meaning, id.length()]), 22,
+			UiKit.GOOD.darkened(0.3) if done else UiKit.INK), 560))
 	_canvas.queue_redraw()
 
 

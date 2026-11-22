@@ -6,7 +6,7 @@ extends Screen
 func open(_args: Dictionary) -> void:
 	UiKit.fill_bg(self, UiKit.LEAF.lightened(0.4))
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 24)
 	add_child(margin)
@@ -18,7 +18,7 @@ func open(_args: Dictionary) -> void:
 	head.add_child(title)
 	head.add_child(UiKit.button(t("ui.common.back"), func() -> void: main.flow.go_title(), UiKit.PAPER, 22))
 	v.add_child(head)
-	v.add_child(UiKit.label(t("ui.mini.hub_note"), 20, UiKit.INK.lightened(0.25)))
+	v.add_child(UiKit.wrap(UiKit.label(t("ui.mini.hub_note"), 20, UiKit.INK.lightened(0.25))))
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 12)

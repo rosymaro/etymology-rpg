@@ -8,14 +8,27 @@ var flow: GameFlow
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_overlay = Control.new()
-	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_overlay.z_index = 10
 	add_child(_overlay)
 	flow = GameFlow.new(self)
 	flow.start()
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--capture="):
+			_start_capture(a.trim_prefix("--capture="))
+
+
+## 개발용 화면 캡처(tests/visual). APK에는 tests가 없어 이 인자를 줘도 아무 일도 없다.
+func _start_capture(dir: String) -> void:
+	var path := "res://tests/visual/capture_screens.gd"
+	if not ResourceLoader.exists(path):
+		return
+	var cap: Node = load(path).new()
+	add_child(cap)
+	cap.start(self, dir)
 
 
 func show_screen(screen: Screen, args: Dictionary = {}) -> void:

@@ -13,7 +13,7 @@ func build() -> void:
 	v.position = Vector2(40, 10)
 	v.custom_minimum_size = Vector2(1200, 0)
 	body.add_child(v)
-	_hint = UiKit.label("", 28)
+	_hint = UiKit.wrap(UiKit.label("", 28), 1150)
 	v.add_child(_hint)
 	_typed = UiKit.label("", 54)
 	v.add_child(_typed)

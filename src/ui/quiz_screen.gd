@@ -24,7 +24,7 @@ func open(args: Dictionary) -> void:
 	_qs = QuizBuilder.new(GameData.repo, GameData.rng).build(ids)
 	UiKit.fill_bg(self, UiKit.SKY if _mode == "encounter" else UiKit.PAPER)
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 32)
 	add_child(margin)
@@ -40,7 +40,7 @@ func open(args: Dictionary) -> void:
 	_word_lbl = UiKit.label("", 54)
 	_word_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(_word_lbl)
-	_info_lbl = UiKit.label("", 22, UiKit.INK.lightened(0.25))
+	_info_lbl = UiKit.wrap(UiKit.label("", 22, UiKit.INK.lightened(0.25)))
 	_info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(_info_lbl)
 	v.add_child(UiKit.label(t("ui.quiz.pick_meaning"), 24))

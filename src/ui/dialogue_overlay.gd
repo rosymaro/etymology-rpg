@@ -23,11 +23,11 @@ func play(scene_id: String, done: Callable) -> void:
 
 
 func _build(scene: Dictionary) -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var dim := ColorRect.new()
 	dim.color = Color(0.2, 0.18, 0.3, 0.25)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(dim)
 	_title = UiKit.label(TranslationServer.translate(scene.get("title", "")), 24)
@@ -43,7 +43,7 @@ func _build(scene: Dictionary) -> void:
 	box.add_child(v)
 	_name = UiKit.label("", 24, UiKit.ACCENT.darkened(0.2))
 	v.add_child(_name)
-	_text = UiKit.label("", 28)
+	_text = UiKit.wrap(UiKit.label("", 28))
 	_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(_text)
 	var hint := UiKit.label(TranslationServer.translate("ui.dialogue.tap"), 18, UiKit.GRAY.darkened(0.3))
