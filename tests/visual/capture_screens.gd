@@ -24,7 +24,8 @@ func _shot(name: String) -> void:
 
 func _run() -> void:
 	var gd: Node = root.get_node("GameData")
-	gd.save_store = SaveStore.new("user://shots_save.json")
+	gd.save_prefix = "user://shots_"
+	gd.use_dev_save(false)
 	gd.save_store.erase()
 	main = load("res://src/ui/main.tscn").instantiate()
 	root.add_child(main)
@@ -78,5 +79,14 @@ func _run() -> void:
 	await _shot("15_options")
 	main.notice(TranslationServer.translate("ui.boss.gate").format({"need": 77, "have": 40}))
 	await _shot("16_notice")
+	main.flow.go_minigames()
+	await _shot("17_minigame_hub")
+	var n := 18
+	for g in MinigameRegistry.games():
+		main.flow.play_minigame(g["id"], "free")
+		await _shot("%d_mini_%s" % [n, g["id"]])
+		n += 1
+	main.flow.go_title()
+	await _shot("30_title_modes")
 	gd.save_store.erase()
 	quit()

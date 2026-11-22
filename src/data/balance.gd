@@ -10,6 +10,7 @@ var boss: Dictionary
 var magic: Dictionary
 var skills: Dictionary
 var progress: Dictionary
+var minigames: Dictionary
 var skill_roots: Dictionary  ## 어근 id -> {family, tier}
 
 
@@ -23,6 +24,7 @@ static func load_default() -> Balance:
 	b.magic = JsonFile.read("res://data/balance/battle_magic.json")
 	b.skills = JsonFile.read("res://data/balance/skills.json")
 	b.progress = JsonFile.read("res://data/balance/progress.json")
+	b.minigames = JsonFile.read("res://data/balance/minigames.json")
 	for r in JsonFile.read("res://data/game/skill_roots.json")["roots"]:
 		b.skill_roots[r["id"]] = r
 	return b

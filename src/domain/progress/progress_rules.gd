@@ -44,6 +44,8 @@ func gain_word(state: GameState, id: String) -> Dictionary:
 	var is_new := not state.has_word(id)
 	var roots_before := owned_roots(state)
 	if is_new:
+		for r in w.skill_roots:
+			state.roots_cache[r] = true
 		state.dex[id] = state.dex.size() + 1
 	var base := base_exp(w)
 	if not is_new:
@@ -63,8 +65,8 @@ func gain_word(state: GameState, id: String) -> Dictionary:
 		equipped = w.unit
 	var new_roots: Array[String] = []
 	if is_new:
-		for r in owned_roots(state):
-			if not r in roots_before:
+		for r in w.skill_roots:
+			if not r in roots_before and not r in new_roots:
 				new_roots.append(r)
 	# 다시 잡아야 했던 단어면 진화 재도전이 열린다
 	for evo in state.recapture.keys():
@@ -75,15 +77,49 @@ func gain_word(state: GameState, id: String) -> Dictionary:
 
 ## 가진 스킬 어근(그 어근이 든 단어를 하나라도 얻었으면). 01-rpg-base '어근 해금'.
 func owned_roots(state: GameState) -> Array[String]:
+	if state.roots_cache.is_empty() and not state.dex.is_empty():
+		for id in state.dex:
+			var w := repo.get_word(id)
+			if w:
+				for r in w.skill_roots:
+					state.roots_cache[r] = true
 	var out: Array[String] = []
-	for id in state.dex:
-		var w := repo.get_word(id)
-		if w == null:
-			continue
-		for r in w.skill_roots:
-			if not r in out:
-				out.append(r)
+	for r in state.roots_cache:
+		out.append(r)
 	return out
+
+
+## 개발자 모드: 모든 단어·유닛·마법을 주고, 장비는 부위마다 가장 높은 차수를 입힌다.
+## gain_word를 1만 번 부르면 느려서, 같은 규칙(경험치·입는 유닛 2배)을 한 번에 계산한다.
+func grant_all(state: GameState, magics: Array[String]) -> void:
+	var mult := int(p["wearer_multiplier"])
+	var total := 0
+	var bonus: Array[int] = []
+	bonus.resize(GameState.UNIT_COUNT)
+	bonus.fill(0)
+	for id in repo.all_ids():
+		var w := repo.get_word(id)
+		if not state.has_word(id):
+			state.dex[id] = state.dex.size() + 1
+		var e := base_exp(w)
+		total += e
+		if w.unit > 0:
+			bonus[w.unit - 1] += e * (mult - 1)
+		for r in w.skill_roots:
+			state.roots_cache[r] = true
+		if w.unit > 0 and w.slot != "":
+			var eq := state.eq(w.unit)
+			var cur := eq.get_in(w.slot)
+			if cur == "" or repo.get_word(cur).tier < w.tier:
+				eq.put(w.slot, id)
+	for u in GameState.UNIT_COUNT:
+		state.unit_exp[u] = total + bonus[u]
+	state.joined.clear()
+	for u in range(1, GameState.UNIT_COUNT + 1):
+		state.joined.append(u)
+	for m in magics:
+		if not m in state.magics:
+			state.magics.append(m)
 
 
 ## 그 유닛이 장착할 수 있는 어근: 가진 어근 중 그 유닛 계열이고, 게임에 동작이 있는 것.

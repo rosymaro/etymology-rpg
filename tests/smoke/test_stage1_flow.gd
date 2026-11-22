@@ -5,13 +5,17 @@ var main: Main
 
 
 func before_all() -> void:
-	GameData.save_store = SaveStore.new("user://smoke_save.json")
+	GameData.save_prefix = "user://smoke_"
+	GameData.use_dev_save(false)
 	GameData.save_store.erase()
 
 
 func after_all() -> void:
 	GameData.save_store.erase()
-	GameData.save_store = SaveStore.new()
+	GameData.use_dev_save(true)
+	GameData.save_store.erase()
+	GameData.save_prefix = "user://"
+	GameData.use_dev_save(false)
 
 
 func before_each() -> void:

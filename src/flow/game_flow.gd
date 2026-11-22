@@ -26,9 +26,88 @@ func go_options(back: Callable) -> void:
 
 
 func new_game() -> void:
+	GameData.use_dev_save(false)
 	GameData.save_store.erase()
 	main.show_screen(NameScreen.new())
 
+
+## 개발자 모드(스토리): 모든 단어·유닛·마법·장비를 갖추고 평가를 위해 바로 필드에서 시작한다. 저장은 따로.
+func dev_game() -> void:
+	GameData.use_dev_save(true)
+	GameData.new_game(TranslationServer.translate("ui.dev.name"))
+	var s := GameData.state
+	s.dev_mode = true
+	var all: Array[String] = []
+	for m in GameData.bal.magic["magics"]:
+		all.append(str(m["id"]))
+	GameData.rules.grant_all(s, all)
+	for k in ["s01_ki", "s01_tut_battle", "s01_skit_cheok", "s01_tut_evolve"]:
+		_flag(k)
+	s.pos = Vector2(950, 760)
+	GameData.save()
+	go_field(TranslationServer.translate("ui.dev.started").format({"count": s.dex_count()}))
+
+
+# ----- 미니게임 -----
+
+static func _views() -> Dictionary:
+	return {
+		"order": OrderView, "trap": TrapView, "search": SearchView, "kite": KiteView, "fishing": FishingView,
+		"copy": CopyView, "wheel": WheelView, "guard": GuardView, "ore": OreView, "pattern": PatternView,
+	}
+
+
+func go_minigames() -> void:
+	main.show_screen(MinigameHubScreen.new())
+
+
+## mode "free": 미니게임 메뉴(보상 없음, 그 마을 단어로). "story": 마을에서(아직 못 얻은 마을 단어로, 끝나면 뜻 문제).
+func play_minigame(id: String, mode: String) -> void:
+	var def := MinigameRegistry.game_def(id)
+	var pool := _minigame_pool(int(def["stage"]), mode == "story")
+	var game := MinigameRegistry.make(id, pool, GameData.bal.minigames, GameData.rng)
+	main.show_screen(_views()[id].new(), {"id": id, "mode": mode, "game": game})
+
+
+## 01-rpg-base: 미니게임 단어는 그 마을에 배정된 단어 중 아직 못 얻은 것에서 고른다. 모자라면 얻은 것도 섞는다.
+func _minigame_pool(stage: int, story: bool) -> Array[WordData]:
+	var town := GameData.repo.first_tier(stage, "town")
+	var fresh: Array[WordData] = []
+	var old: Array[WordData] = []
+	for w in town:
+		if story and GameData.state and GameData.state.has_word(w.id):
+			old.append(w)
+		else:
+			fresh.append(w)
+	fresh.shuffle()
+	old.shuffle()
+	var need := int(GameData.bal.minigames.get("pool_size", 16))
+	while fresh.size() < need and not old.is_empty():
+		fresh.append(old.pop_back())
+	if fresh.size() < need:
+		for w in GameData.repo.first_tier(stage):
+			if fresh.size() >= need:
+				break
+			if not w in fresh:
+				fresh.append(w)
+	return fresh
+
+
+## 마을 미니게임이 끝남: 얻은 단어마다 뜻 4지선다, 맞힌 단어만 갖는다(01-rpg-base '단어 시험').
+func minigame_finished(_id: String, earned: Array[String]) -> void:
+	if earned.is_empty():
+		go_field(TranslationServer.translate("ui.board.none"))
+		return
+	main.show_screen(QuizScreen.new(), {"words": earned, "mode": "minigame",
+		"done": func(right: Array[bool]) -> void:
+			var got: Array[String] = []
+			for i in earned.size():
+				if right[i]:
+					got.append(earned[i])
+			if got.is_empty():
+				go_field(TranslationServer.translate("ui.board.none"))
+			else:
+				_give_words(got, "ui.result.minigame")})
 
 func name_entered(hero_name: String) -> void:
 	GameData.new_game(hero_name)
@@ -40,6 +119,7 @@ func name_entered(hero_name: String) -> void:
 
 
 func continue_game() -> void:
+	GameData.use_dev_save(false)
 	if GameData.continue_game():
 		go_field()
 	else:
@@ -80,7 +160,12 @@ func _after_encounter(word_ids: Array[String], right: Array[bool]) -> void:
 		go_battle_prep(word_ids, false)
 
 
-## 마을 게시판: 마을 단어 퀴즈(미니게임·퀘스트가 생기기 전 임시 길, 04-meta.md 6절). 맞힌 단어만 얻는다.
+## 마을 미니게임(스테이지 1: 주문 제작). 마을 단어는 이것으로만 얻는다(01-rpg-base '마을과 특수 행위').
+func town_minigame() -> void:
+	play_minigame(MinigameRegistry.for_stage(STAGE)["id"], "story")
+
+
+## (옛) 게시판 퀴즈. 미니게임이 생겨 쓰지 않지만 테스트를 위해 남긴다.
 func board_quiz(word_ids: Array[String]) -> void:
 	main.show_screen(QuizScreen.new(), {"words": word_ids, "mode": "board",
 		"done": func(right: Array[bool]) -> void:

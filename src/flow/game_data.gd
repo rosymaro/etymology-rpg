@@ -11,6 +11,7 @@ var evolution: EvolutionRule
 var coin_source: CoinSource
 var setup: BattleSetup
 var state: GameState
+var save_prefix := "user://"  ## 테스트는 다른 앞머리를 써서 진짜 저장을 건드리지 않는다
 var save_store := SaveStore.new()
 var settings := SettingsStore.new()
 var rng := RandomNumberGenerator.new()
@@ -28,6 +29,11 @@ func _ready() -> void:
 	coin_source = CoinSource.new(rng)
 	setup = BattleSetup.new(repo, bal, rules, coin_source)
 	TranslationServer.set_locale("ko")
+
+
+## 개발자 모드는 따로 저장해서 스토리 저장을 건드리지 않는다.
+func use_dev_save(dev: bool) -> void:
+	save_store = SaveStore.new(save_prefix + ("dev_save.json" if dev else "save.json"))
 
 
 func new_game(hero_name: String) -> void:
