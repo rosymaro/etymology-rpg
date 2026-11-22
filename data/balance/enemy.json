@@ -23,12 +23,12 @@
     },
     {
       "stage": 5,
-      "base_level": 25,
+      "base_level": 22,
       "coins": 2
     },
     {
       "stage": 6,
-      "base_level": 28,
+      "base_level": 22,
       "coins": 2
     },
     {
@@ -38,17 +38,17 @@
     },
     {
       "stage": 8,
-      "base_level": 43,
+      "base_level": 40,
       "coins": 3
     },
     {
       "stage": 9,
-      "base_level": 49,
+      "base_level": 46,
       "coins": 3
     },
     {
       "stage": 10,
-      "base_level": 52,
+      "base_level": 49,
       "coins": 4
     }
   ],

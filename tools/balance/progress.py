@@ -45,7 +45,7 @@ def _snapshot(W, leaves, s, boss_ratio=None, lazy=False, seed=0):
     evolved = set()
     if not lazy:
         for w, lv in leaves.items():
-            if all(x in got for x in lv): evolved.add(w)
+            if W[w]['차수'] != '1' and all(x in got for x in lv): evolved.add(w)
     exp = [0] * 12
     def give(base, unit):
         for u in range(12): exp[u] += base * (2 if UNITS[u] == unit else 1)

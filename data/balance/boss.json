@@ -16,7 +16,7 @@
     {
       "id": "predator",
       "stage": 2,
-      "level_delta": 8,
+      "level_delta": 4,
       "coins": 2,
       "ability": {
         "class": "HealOnKill",
@@ -28,7 +28,7 @@
     {
       "id": "wizard",
       "stage": 3,
-      "level_delta": 16,
+      "level_delta": 12,
       "coins": 2,
       "ability": {
         "class": "RandomAttackMagic",
@@ -38,7 +38,7 @@
     {
       "id": "hurricane",
       "stage": 4,
-      "level_delta": 20,
+      "level_delta": 16,
       "coins": 3,
       "ability": {
         "class": "BenchDamage",
@@ -51,7 +51,7 @@
     {
       "id": "pirate",
       "stage": 5,
-      "level_delta": 12,
+      "level_delta": 0,
       "coins": 4,
       "ability": {
         "class": "StealDefenseMagic",
@@ -61,7 +61,7 @@
     {
       "id": "dictator",
       "stage": 6,
-      "level_delta": 8,
+      "level_delta": 4,
       "coins": 4,
       "ability": {
         "class": "CoinLock",
@@ -73,7 +73,7 @@
     {
       "id": "vortex",
       "stage": 7,
-      "level_delta": 12,
+      "level_delta": -20,
       "coins": 5,
       "ability": {
         "class": "FlipAllCoins",
@@ -83,7 +83,7 @@
     {
       "id": "guardian",
       "stage": 8,
-      "level_delta": -12,
+      "level_delta": -20,
       "coins": 5,
       "ability": {
         "class": "BlockFirstHit",
@@ -95,7 +95,7 @@
     {
       "id": "dragon",
       "stage": 9,
-      "level_delta": -4,
+      "level_delta": -12,
       "coins": 5,
       "ability": {
         "class": "BurnBench",
