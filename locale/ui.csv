@@ -108,3 +108,53 @@ ui.boss.gate,길이 막혀 있어요. 이 스테이지 단어를 {need}개 모�
 ui.boss.lost,destroyer에게 졌어요. 단어를 더 모으고 진화해서 다시 도전해요.
 ui.boss.already,destroyer는 이미 물리쳤어요.
 ui.stage.clear,스테이지 1 클리어! re-·com-·sub- 마법을 얻었어요. 다음 스테이지는 준비 중이에요.
+ui.title.story_continue,스토리 모드 이어하기
+ui.title.story_new,스토리 모드 새로 시작
+ui.title.dev,개발자 모드 (스토리)
+ui.title.dev_note,모든 단어·유닛·마법·장비를 갖추고 평가용으로 시작해요. 저장은 따로 해요.
+ui.title.minigames,미니게임
+ui.dev.name,개발자
+ui.dev.badge,개발자 모드
+ui.dev.started,"개발자 모드: 단어 {count}개, 유닛 12명, 모든 마법을 갖췄어요."
+ui.field.order,주문 제작소
+ui.quiz.title_minigame,얻은 단어 시험: 맞힌 단어만 가져요
+ui.result.minigame,미니게임에서 단어를 얻었어요
+ui.mini.quit,그만하기
+ui.mini.score,얻은 단어 {n}/{max}
+ui.mini.time,남은 시간 {s}초
+ui.mini.free_result,이번 판에 단어 {n}개를 얻을 수 있었어요(미니게임 메뉴는 보상 없음).
+ui.mini.again,다시 하기
+ui.mini.list,목록
+ui.mini.hub_note,보상 없이 미니게임만 해 봐요. 단어는 그 마을에 배정된 단어로 나와요.
+ui.mini.order.ticket,주문서
+ui.mini.order.belt,흘러오는 단어 카드: 주문에 맞는 카드를 누르세요
+ui.mini.order.miss,실수 {n}/{max}
+ui.mini.trap.mode_look,지금: 살피기 (눌러서 덫으로)
+ui.mini.trap.mode_trap,지금: 덫 놓기 (눌러서 살피기로)
+ui.mini.trap.caught,잡음
+ui.mini.search.hints,뜻을 보고 단어를 찾아요 (처음 글자부터 끝 글자까지 끌기)
+ui.mini.kite.kite,연
+ui.mini.kite.sky,하늘
+ui.mini.fishing.info,"남은 바꾸기 {moves}
+낚싯줄 게이지 {gauge}/{per}"
+ui.mini.copy.hint,"뜻: {meaning}
+어원: {etym}"
+ui.mini.copy.undo,한 글자 지우기
+ui.mini.copy.skip,건너뛰기
+ui.mini.copy.wrong,철자가 달라요. 다시 해 봐요.
+ui.mini.copy.answer,정답은 {word}였어요.
+ui.mini.wheel.outer,바깥 고리
+ui.mini.wheel.inner,안쪽 고리
+ui.mini.wheel.gate,수문
+ui.mini.ore.target,광맥: {attr} 무늬만 깨요  ·  연속 {combo} ({per}개마다 단어 1개)
+ui.mini.pattern.stop,그만하기 (이은 선만큼 얻기)
+ui.mini.rule.order,주문서의 뜻에 맞는 단어 카드를 시간 안에 눌러요. 3번 틀리면 끝나요.
+ui.mini.rule.trap,숫자는 주변 8칸에 숨은 단어 수예요. 단어가 숨은 칸에 덫을 놓아요. 빈 칸에 덫을 놓거나 단어 칸을 살피면 끝나요.
+ui.mini.rule.search,글자 격자에서 가로·세로·대각선으로 숨은 단어를 찾아요.
+ui.mini.rule.kite,타일을 눌러 돌려서 연에서 하늘까지 바람길을 이어요. 길 위의 단어를 얻어요.
+ui.mini.rule.fishing,이웃한 물고기 둘을 바꿔 같은 물고기 3마리 이상을 줄지어요.
+ui.mini.rule.copy,섞인 글자를 바른 순서로 눌러 철자를 맞춰요.
+ui.mini.rule.wheel,두 고리를 돌려 수문 세 곳에서 단어와 뜻을 맞춰요.
+ui.mini.rule.guard,통을 누르고 옮길 통을 눌러요. 같은 무늬끼리 한 통에 모아요.
+ui.mini.rule.ore,화면을 그어 광맥 무늬와 같은 광석만 깨요. 다른 광석을 깨면 연속이 끊겨요.
+ui.mini.rule.pattern,같은 번호 조각끼리 선으로 이어요. 선은 겹칠 수 없고 모든 칸을 채워야 해요.

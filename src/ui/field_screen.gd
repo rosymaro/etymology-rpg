@@ -37,7 +37,7 @@ func open(args: Dictionary) -> void:
 	_spots = [
 		{"id": "forge", "pos": Vector2(300, 420), "key": "ui.field.forge", "color": UiKit.APRICOT},
 		{"id": "tree", "pos": Vector2(640, 260), "key": "ui.field.tree", "color": UiKit.LEAF},
-		{"id": "board", "pos": Vector2(320, 1060), "key": "ui.field.board", "color": UiKit.PINK},
+		{"id": "board", "pos": Vector2(320, 1060), "key": "ui.field.order", "color": UiKit.PINK},
 		{"id": "boss", "pos": Vector2(2450, 750), "key": "ui.field.boss", "color": UiKit.GRAY},
 	]
 	var drng := RandomNumberGenerator.new()
@@ -88,7 +88,7 @@ func _update_top() -> void:
 	var g := GameData.rules.boss_gate(GameData.state, GameFlow.STAGE)
 	_top.text = t("ui.field.top").format({"stage": t("name.stage.s01"), "have": g["have"],
 		"total": GameData.repo.first_tier(GameFlow.STAGE).size(), "need": g["need"],
-		"title": t("name.title.none")})
+		"title": t("ui.dev.badge") if GameData.state.dev_mode else t("name.title.none")})
 
 
 func _go(f: Callable) -> void:
@@ -212,13 +212,7 @@ func _act() -> void:
 		"tree":
 			main.notice(t("ui.field.tree_msg"))
 		"board":
-			var pool := GameData.repo.first_tier(GameFlow.STAGE, "town")
-			var ids: Array[String] = []
-			while ids.size() < mini(4, pool.size()):
-				var w := pool[_rng.randi_range(0, pool.size() - 1)]
-				if not w.id in ids:
-					ids.append(w.id)
-			main.flow.board_quiz(ids)
+			main.flow.town_minigame()
 		"boss":
 			main.flow.boss_gate()
 

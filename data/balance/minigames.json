@@ -1,0 +1,75 @@
+{
+  "_doc": "미니게임 수치. 한 판 1~2분, 한 판 최대 max_words개(01-rpg-base '미니게임 규칙 1차'). 레벨 테스트하며 고친다",
+  "max_words": 5,
+  "order": {
+    "duration": 100,
+    "order_time": 16,
+    "belt_size": 4,
+    "belt_step": 2.2,
+    "max_miss": 3,
+    "orders": 8
+  },
+  "trap": {
+    "rows": 6,
+    "cols": 8,
+    "words": 5
+  },
+  "search": {
+    "size": 10,
+    "words": 5,
+    "min_len": 3,
+    "max_len": 9,
+    "duration": 150
+  },
+  "kite": {
+    "rows": 5,
+    "cols": 6,
+    "words": 5,
+    "duration": 120
+  },
+  "fishing": {
+    "size": 7,
+    "kinds": 5,
+    "moves": 20,
+    "gauge_per_word": 15
+  },
+  "copy": {
+    "words": 5,
+    "min_len": 3,
+    "max_len": 10,
+    "tries": 2
+  },
+  "wheel": {
+    "ring": 6,
+    "gates": [
+      0,
+      2,
+      4
+    ],
+    "rounds": 5,
+    "duration": 150
+  },
+  "guard": {
+    "colors": 5,
+    "per_tube": 4,
+    "empty_tubes": 2,
+    "scramble": 400
+  },
+  "ore": {
+    "duration": 60,
+    "spawn_every": 0.65,
+    "target_chance": 0.55,
+    "combo_per_word": 5,
+    "radius": 46,
+    "gravity": 900
+  },
+  "pattern": {
+    "size": 5,
+    "pairs": 5,
+    "min_len": 3,
+    "duration": 150,
+    "shuffle": 400
+  },
+  "pool_size": 16,
+  "_pool_doc": "한 판에 쓰는 단어 수(보상 후보). 그 마을 단어 중 아직 못 얻은 것부터"
+}

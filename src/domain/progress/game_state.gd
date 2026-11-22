@@ -20,6 +20,8 @@ var place := "town"  ## town | field
 var pos := Vector2.ZERO
 var titles: Array[String] = []
 var exam_fail_date := ""
+var dev_mode := false  ## 개발자 모드(모든 단어를 갖고 평가용으로 시작). 저장 파일도 따로
+var roots_cache: Dictionary = {}  ## 가진 스킬 어근(저장하지 않음, ProgressRules가 채운다)
 
 
 func _init() -> void:
@@ -49,7 +51,7 @@ func to_dict() -> Dictionary:
 		"version": VERSION, "hero_name": hero_name, "stage": stage, "dex": dex, "unit_exp": unit_exp,
 		"joined": joined, "equipment": eqs, "magics": magics, "chosen_roots": _str_keys(chosen_roots),
 		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y],
-		"titles": titles, "exam_fail_date": exam_fail_date,
+		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode,
 	}
 
 
@@ -81,6 +83,7 @@ static func from_dict(d: Dictionary) -> GameState:
 	for t in d.get("titles", []):
 		g.titles.append(str(t))
 	g.exam_fail_date = d.get("exam_fail_date", "")
+	g.dev_mode = d.get("dev_mode", false)
 	return g
 
 
