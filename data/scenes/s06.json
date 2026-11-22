@@ -464,18 +464,18 @@
    ]
   },
   {
-   "id": "s06_tut_tiebreak",
-   "title": "story.s06.tut_tiebreak.title",
-   "place_note": "서기실 기록 보관소",
+   "id": "s06_skit_scribe",
+   "title": "story.s06.skit_scribe.title",
+   "place_note": "서기실",
    "cast": [
     "hero",
     "ttukttak",
-    "scribe",
     "jojal",
+    "scribe",
     "daejang"
    ],
-   "staging_note": "서기가 두꺼운 기록을 펼친다. 장비 다섯 칸이 무기부터 신발까지 위에서 아래로 그려진 도표.",
-   "game_note": "속성 동점 규칙 튜토리얼(무기→머리→가슴→장갑→신발)",
+   "staging_note": "조잘과 서기가 나란히 앉아 같은 자세로 받아 적는다. 대장이 붓을 들고 끼어든다.",
+   "game_note": "동료 잡담(유머)",
    "borrow": [
     {
      "game": "테일즈 오브 시리즈",
@@ -484,32 +484,55 @@
    ],
    "lines": [
     {
+     "speaker": "jojal",
+     "text": "story.s06.skit_scribe.001"
+    },
+    {
      "speaker": "scribe",
-     "text": "story.s06.tut_tiebreak.001"
+     "text": "story.s06.skit_scribe.002"
     },
     {
      "speaker": "ttukttak",
-     "text": "story.s06.tut_tiebreak.002"
-    },
-    {
-     "speaker": "jojal",
-     "text": "story.s06.tut_tiebreak.003"
+     "text": "story.s06.skit_scribe.003_etym"
     },
     {
      "speaker": "daejang",
-     "text": "story.s06.tut_tiebreak.004"
+     "text": "story.s06.skit_scribe.004"
+    },
+    {
+     "speaker": "jojal",
+     "text": "story.s06.skit_scribe.005"
     }
    ],
    "conti": [
     {
-     "shot": "close",
+     "shot": "mid",
      "bg": "castle",
-     "actors": [],
+     "actors": [
+      {
+       "id": "jojal",
+       "x": 40,
+       "y": 55,
+       "pose": ""
+      },
+      {
+       "id": "scribe",
+       "x": 58,
+       "y": 52,
+       "pose": ""
+      },
+      {
+       "id": "daejang",
+       "x": 75,
+       "y": 60,
+       "pose": "proud"
+      }
+     ],
      "fx": {
-      "slots5": ""
+      "note": ""
      },
-     "say": 1,
-     "note": "클로즈업: 장비 다섯 칸 도표. 무기부터 신발까지 위에서 아래로."
+     "say": 3,
+     "note": "조잘과 서기가 같은 자세로 받아 적는다."
     }
    ]
   },
@@ -600,7 +623,7 @@
     "king"
    ],
    "staging_note": "갇혀 있던 왕이 돌아와 devil의 과거를 이야기한다. 회상은 흑백 그림 한 장.",
-   "game_note": "마법 dis-·inter- 획득(14개 완성), 스테이지 7 개방",
+   "game_note": "필드 마법 dis-·inter- 획득, 스테이지 7 개방",
    "borrow": [
     {
      "game": "오오카미",

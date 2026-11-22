@@ -7,3 +7,6 @@ ui.quiz.correct,정답
 ui.quiz.wrong,오답
 ui.evolve.start,진화하기
 ui.evolve.need_recapture,"{word}를 다시 잡아야 진화에 도전할 수 있어요."
+ui.battle.next,다음
+ui.battle.back,이전
+ui.battle.root_pick,어근 고르기

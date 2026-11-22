@@ -11,17 +11,18 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
 /* 콘티 용지: 연필 선(잉크) 위에 마커 한 색(주황)으로 효과만 칠한다. 장면은 위에서 아래로, 컷은 왼쪽에서 오른쪽으로 읽는다. */
+/* 그림책 콘티: 남보라 부드러운 선, 파스텔 바탕, 살구색은 효과에만. 장면은 위에서 아래로, 컷은 왼쪽에서 오른쪽으로 읽는다. */
 :root{
-  --paper:#f3f5f8; --sheet:#ffffff; --ink:#1d2740; --pencil:#5a6b8c; --rule:#d5dbe6;
-  --marker:#e2733a; --marker-soft:#f7d9c7; --wash:#e7edf6; --night:#2b3550;
+  --paper:#eef4f8; --sheet:#ffffff; --ink:#4a4466; --pencil:#8a86a8; --rule:#dfe3ee;
+  --marker:#ef8a5e; --marker-soft:#fde3d6; --wash:#e6f1e3; --night:#3d4a78; --blush:#f6b3c0;
   --display:"Do Hyeon","Noto Sans KR",sans-serif; --body:"Noto Sans KR",system-ui,sans-serif; --hand:"Gaegu","Noto Sans KR",cursive;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --paper:#12161f; --sheet:#1a202c; --ink:#e3e8f2; --pencil:#9aa8c4; --rule:#2e3748;
-  --marker:#f08c55; --marker-soft:#4a3326; --wash:#232b3a; --night:#0c1018; color-scheme:dark}}
+  --paper:#1b1d2b; --sheet:#252839; --ink:#ece9f7; --pencil:#a9a6c8; --rule:#343852;
+  --marker:#f6a27a; --marker-soft:#5a3b31; --wash:#2f3b33; --night:#10132a; --blush:#c97a8a; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --paper:#12161f; --sheet:#1a202c; --ink:#e3e8f2; --pencil:#9aa8c4; --rule:#2e3748;
-  --marker:#f08c55; --marker-soft:#4a3326; --wash:#232b3a; --night:#0c1018; color-scheme:dark}
+  --paper:#1b1d2b; --sheet:#252839; --ink:#ece9f7; --pencil:#a9a6c8; --rule:#343852;
+  --marker:#f6a27a; --marker-soft:#5a3b31; --wash:#2f3b33; --night:#10132a; --blush:#c97a8a; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;margin:0}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -40,7 +41,7 @@ section.stage{margin-top:44px}
 .stage-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin-bottom:16px}
 .stage-head .no{font-family:var(--display);font-size:44px;color:var(--marker);line-height:1}
 .stage-head p{margin:0;color:var(--pencil);flex-basis:100%}
-article.scene{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:16px;margin-top:14px}
+article.scene{background:var(--sheet);border:1px solid var(--rule);border-radius:16px;padding:16px;margin-top:14px}
 .scene-top{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
 .beat{font-size:12px;font-weight:700;color:var(--sheet);background:var(--ink);border-radius:4px;padding:1px 7px}
 .sid{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--pencil)}
@@ -48,7 +49,7 @@ article.scene{background:var(--sheet);border:1px solid var(--rule);border-radius
 .cast{font-size:13px;margin-top:2px}
 .cuts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:12px}
 figure.cut{margin:0;min-width:0}
-figure.cut svg{display:block;width:100%;height:auto;border:1.5px solid var(--ink);border-radius:3px;background:var(--sheet)}
+figure.cut svg{display:block;width:100%;height:auto;border:2px solid var(--ink);border-radius:12px;background:var(--sheet)}
 figure.cut figcaption{font-family:var(--hand);font-size:17px;line-height:1.3;margin-top:6px}
 .cutno{font-family:var(--body);font-size:11px;letter-spacing:.06em;color:var(--marker);font-weight:700;margin-right:6px}
 .say{display:block;font-family:var(--body);font-size:12.5px;color:var(--pencil);margin-top:3px}
@@ -56,8 +57,8 @@ figure.cut figcaption{font-family:var(--hand);font-size:17px;line-height:1.3;mar
 .meta div{min-width:0}
 .meta b{display:block;font-size:11px;letter-spacing:.08em;color:var(--pencil);font-weight:500}
 .borrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-.bchip{display:flex;gap:10px;align-items:center;border:1px dashed var(--pencil);border-radius:6px;padding:6px 10px 6px 6px;text-decoration:none;color:var(--ink);max-width:100%}
-.bchip svg{width:112px;height:63px;flex:none;border:1px solid var(--rule);border-radius:3px;background:var(--sheet)}
+.bchip{display:flex;gap:10px;align-items:center;border:1px dashed var(--pencil);border-radius:14px;padding:6px 10px 6px 6px;text-decoration:none;color:var(--ink);max-width:100%}
+.bchip svg{width:112px;height:63px;flex:none;border:1px solid var(--rule);border-radius:8px;background:var(--sheet)}
 .bchip span{font-size:12.5px;line-height:1.35;min-width:0}
 .bchip:hover,.bchip:focus-visible{border-color:var(--marker);outline:none}
 details{margin-top:12px}
@@ -66,8 +67,8 @@ details ul{margin:8px 0 0;padding-left:18px;font-size:14px}
 details li{margin:2px 0}
 .tag{font-size:11px;border-radius:4px;padding:0 5px;margin-left:4px;background:var(--marker-soft);color:var(--ink)}
 .concepts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:14px}
-.concept{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:12px;scroll-margin-top:70px}
-.concept svg{display:block;width:100%;height:auto;border:1.5px solid var(--ink);border-radius:3px}
+.concept{background:var(--sheet);border:1px solid var(--rule);border-radius:16px;padding:12px;scroll-margin-top:70px}
+.concept svg{display:block;width:100%;height:auto;border:2px solid var(--ink);border-radius:12px}
 .concept h3{font-size:18px;margin-top:8px}
 .concept p{margin:2px 0 0;font-size:13px;color:var(--pencil)}
 .note{margin-top:14px;font-size:13px;color:var(--pencil);max-width:70ch}
@@ -79,7 +80,7 @@ details li{margin:2px 0}
 <div class="wrap">
   <header>
     <h1>말뿌리 스토리보드</h1>
-    <p class="lede">어원 RPG 10스테이지 101장면과 전투 흐름 11장면의 콘티다. 맵은 위에서 내려다본 타일 맵이고 인물은 가로(X)·세로(Y)로 움직인다. 장면마다 1~4컷을 그렸고, 컷 아래에 연출과 그 컷의 대사를 적었다. 다른 게임에서 빌려 온 개념은 그 개념이 어떤 모습인지 따로 그려 장면 옆에 붙였다.</p>
+    <p class="lede">어원 RPG 10스테이지 101장면과 전투 흐름 11장면의 콘티다. 맵은 위에서 내려다본 타일 맵이고 인물은 가로(X)·세로(Y)로 움직인다. 장면마다 1~4컷을 그렸고, 컷 아래에 연출과 그 컷의 대사를 적었다. 다른 게임에서 빌려 온 개념은 그 개념이 어떤 모습인지 따로 그려 장면 옆에 붙였다. 그림은 게임의 동화풍 방향(둥근 선, 파스텔, 볼터치)을 따른 개략 콘티다.</p>
     <div class="legend">
       <span><b>와이드</b> 위에서 본 맵 전체</span><span><b>미디엄</b> 맵을 가까이(인물 주변)</span><span><b>클로즈업</b> 옆에서 본 이벤트 일러스트</span><span><b>아래 대화창</b> 얼굴 그림 + 대사</span>
       <span><b>주황</b> 연출 효과(빛, 금, 문양, 자막)</span><span><b>점선 화살표</b> 움직임</span>
@@ -153,7 +154,7 @@ function actor(a){
     if(p==='surprised') return `<circle cx="${cx-2.5}" cy="${cy}" r="1.6" ${S} stroke-width="1"/><circle cx="${cx+2.5}" cy="${cy}" r="1.6" ${S} stroke-width="1"/>`;
     if(p==='dizzy') return `<path d="M${cx-4} ${cy-2} l3 3 m0 -3 l-3 3 M${cx+1} ${cy-2} l3 3 m0 -3 l-3 3" ${S} stroke-width="1"/>`;
     if(p==='closed'||p==='still') return `<path d="M${cx-4} ${cy} h3 M${cx+1} ${cy} h3" ${S} stroke-width="1"/>`;
-    return `<circle cx="${cx-2.5}" cy="${cy}" r=".9" fill="var(--ink)"/><circle cx="${cx+2.5}" cy="${cy}" r=".9" fill="var(--ink)"/>`;
+    return `<circle cx="${cx-2.5}" cy="${cy}" r="1.1" fill="var(--ink)"/><circle cx="${cx+2.5}" cy="${cy}" r="1.1" fill="var(--ink)"/><ellipse cx="${cx-5}" cy="${cy+3}" rx="2" ry="1.2" fill="var(--blush)"/><ellipse cx="${cx+5}" cy="${cy+3}" rx="2" ry="1.2" fill="var(--blush)"/>`;
   };
   const extra=(cx,top)=>{
     let e='';
@@ -373,7 +374,7 @@ function sprite(a){
     return `<g${o}>${g}${label(x,y+22,id)}</g>`;
   }
   if(UNIT[id]){
-    g+=`<ellipse cx="${x}" cy="${y}" rx="7" ry="8" fill="${UNIT[id]}" fill-opacity=".9" stroke="var(--ink)" stroke-width="1.2"/><ellipse cx="${x}" cy="${y+2}" rx="4" ry="5" fill="var(--sheet)"/><path d="M${x-2} ${y-4} l2 3 l2 -3" fill="var(--marker)"/>`;
+    g+=`<ellipse cx="${x}" cy="${y}" rx="7" ry="8" fill="${UNIT[id]}" fill-opacity=".9" stroke="var(--ink)" stroke-width="1.2"/><ellipse cx="${x}" cy="${y+2}" rx="4" ry="5" fill="var(--sheet)"/><path d="M${x-2} ${y-4} l2 3 l2 -3" fill="var(--marker)"/><ellipse cx="${x-4.5}" cy="${y-1}" rx="1.8" ry="1.1" fill="var(--blush)"/><ellipse cx="${x+4.5}" cy="${y-1}" rx="1.8" ry="1.1" fill="var(--blush)"/>`;
   } else if(id==='cow'||id==='calf'||id==='horse'){
     const s=id==='calf'?.7:1; g+=`<ellipse cx="${x}" cy="${y}" rx="${12*s}" ry="${7*s}" fill="var(--sheet)" stroke="var(--ink)"/><circle cx="${x+12*s}" cy="${y-2}" r="${4*s}" fill="var(--sheet)" stroke="var(--ink)"/>`;
     return `<g${o}>${g}</g>`;
@@ -381,7 +382,7 @@ function sprite(a){
     g+=`<rect x="${x-9}" y="${y-7}" width="18" height="12" rx="2" fill="var(--wash)" stroke="var(--ink)"/>`; return `<g${o}>${g}</g>`;
   } else {
     const isHero=id==='hero';
-    g+=`<ellipse cx="${x}" cy="${y+1}" rx="6" ry="5" fill="${isHero?'var(--marker-soft)':'var(--sheet)'}" stroke="var(--ink)" stroke-width="1.2"/><circle cx="${x}" cy="${y-6}" r="5.5" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.2"/>`;
+    g+=`<ellipse cx="${x}" cy="${y+1}" rx="6" ry="5" fill="${isHero?'var(--marker-soft)':'var(--sheet)'}" stroke="var(--ink)" stroke-width="1.2"/><circle cx="${x}" cy="${y-6}" r="6.5" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.2"/><ellipse cx="${x-3.5}" cy="${y-4}" rx="1.6" ry="1" fill="var(--blush)"/><ellipse cx="${x+3.5}" cy="${y-4}" rx="1.6" ry="1" fill="var(--blush)"/>`;
     if(isHero) g+=`<path d="M${x-5} ${y-8} q5 -6 10 0" stroke="var(--ink)" stroke-width="1.4" fill="none"/>`;
     const hat=NPC_HAT[id]||''; if(hat==='crown') g+=`<path d="M${x-4} ${y-12} l2 -4 l2 3 l2 -3 l2 4 z" fill="var(--marker)"/>`;
     if(hat==='brim'||hat==='helm'||hat==='cap') g+=`<ellipse cx="${x}" cy="${y-9}" rx="7" ry="2.5" ${S}/>`;
@@ -470,7 +471,7 @@ function allies(opt={}){
   let g=`<circle cx="30" cy="150" r="11" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.4"/>${label(30,172,'주인공')}`;
   const ids=['ttukttak','cheokcheok','deopseok','hilkkeum'];
   ids.forEach((id,i)=>{const x=opt.front===i?(opt.fx??130):62+i*24, y=opt.front===i?(opt.fy??110):150;
-    g+=`<ellipse cx="${x}" cy="${y}" rx="9" ry="11" fill="${UNIT[id]}" fill-opacity="${opt.fadeOthers&&opt.front!==i?.35:.9}" stroke="var(--ink)" stroke-width="1.2"/><ellipse cx="${x}" cy="${y+3}" rx="5" ry="6" fill="var(--sheet)"/>`;
+    g+=`<ellipse cx="${x}" cy="${y}" rx="9" ry="11" fill="${UNIT[id]}" fill-opacity="${opt.fadeOthers&&opt.front!==i?.35:.9}" stroke="var(--ink)" stroke-width="1.2"/><ellipse cx="${x}" cy="${y+3}" rx="5" ry="6" fill="var(--sheet)"/><ellipse cx="${x-5}" cy="${y-2}" rx="2" ry="1.2" fill="var(--blush)"/><ellipse cx="${x+5}" cy="${y-2}" rx="2" ry="1.2" fill="var(--blush)"/>`;
     if(opt.front!==i) g+=label(x,172,i+1);});
   return g;
 }
@@ -494,18 +495,28 @@ function battleView(cut){
   case 'capture':
     g+=cards()+allies()+`<rect x="40" y="70" width="40" height="30" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.4"/><path d="M60 70 v30" ${S}/>`+label(60,110,'도감')+[0,1,2,3].map(i=>`<path d="M${169+i*42} 66 Q${120+i*10} ${40+i*6} 70 72" ${M} stroke-dasharray="4 3"/>`).join('');
     break;
-  case 'prep_magic':
-    g+=cards(i=>({x:226+(i%2)*44,y:8+Math.floor(i/2)*56}))+`<rect x="10" y="10" width="200" height="110" rx="6" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.4"/>`+txt(110,24,'마법 고르기','font-size="9" font-weight="700"');
-    ['de-','sub-','re-','com-','ad-','ob-','prae-','in-','pro-','ex-','in-','un-','dis-','inter-'].forEach((m,i)=>{const x=18+(i%5)*38,y=32+Math.floor(i/5)*28,own=i<6,pick=i===3;
-      g+=`<rect x="${x}" y="${y}" width="34" height="22" rx="3" fill="${pick?'var(--marker-soft)':own?'var(--sheet)':'var(--wash)'}" stroke="${pick?'var(--marker)':own?'var(--ink)':'var(--rule)'}" stroke-width="${pick?2:1}"/>`+txt(x+17,y+14,m,`font-size="7.5"${own?'':' opacity=".4"'}`);});
-    g+=allies();
-    break;
-  case 'prep_root':
-    g+=cards(i=>({x:226+(i%2)*44,y:8+Math.floor(i/2)*56}))+`<text x="270" y="126" font-family="Noto Sans KR,sans-serif" font-size="7" fill="var(--pencil)" text-anchor="middle">적 출전 순서 1→4</text>`;
-    [['뚝딱',['fac','form','ple']],['척척',['not','cert']],['덥석',['cept','quest']],['힐끔',['vis','spect']]].forEach(([n,rs],i)=>{const y=12+i*27;
-      g+=`<rect x="10" y="${y}" width="200" height="22" rx="4" fill="var(--sheet)" stroke="var(--ink)"/>`+txt(32,y+14,n,'font-size="8" font-weight="700"')+rs.map((r,j)=>`<rect x="${58+j*44}" y="${y+4}" width="38" height="14" rx="7" fill="${j===0?'var(--marker-soft)':'var(--sheet)'}" stroke="${j===0?'var(--marker)':'var(--pencil)'}"/>`+txt(77+j*44,y+14,r,'font-size="7.5"')).join('');});
-    g+=`<rect x="70" y="128" width="80" height="20" rx="5" fill="var(--ink)"/>`+`<text x="110" y="141" font-family="Noto Sans KR,sans-serif" font-size="8.5" fill="var(--sheet)" text-anchor="middle">전투 시작</text>`;
-    break;
+  case 'prep_magic': case 'prep_magic_hold': {
+    g+=cards()+allies();
+    g+=`<rect x="4" y="70" width="312" height="106" rx="12" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>`+txt(52,84,'마법 고르기','font-size="9" font-weight="700"')+txt(250,84,'1/2','font-size="8" fill="var(--pencil)"');
+    ['de-','sub-','re-','com-','ad-','ob-','prae-','in-','pro-','ex-','in-','un-','dis-','inter-'].forEach((m,i)=>{const x=14+(i%7)*42,y=92+Math.floor(i/7)*30,own=i<6,pick=i===3;
+      g+=`<rect x="${x}" y="${y}" width="38" height="24" rx="8" fill="${pick?'var(--marker-soft)':own?'var(--sheet)':'var(--wash)'}" stroke="${pick?'var(--marker)':own?'var(--ink)':'var(--rule)'}" stroke-width="${pick?2:1}"/>`+txt(x+19,y+15,m,`font-size="8"${own?'':' opacity=".4"'}`);});
+    g+=`<rect x="248" y="152" width="60" height="18" rx="9" fill="var(--ink)"/>`+`<text x="278" y="164.5" font-family="Noto Sans KR,sans-serif" font-size="8.5" fill="var(--sheet)" text-anchor="middle">다음 ▶</text>`;
+    if(v==='prep_magic_hold'){
+      g+=`<circle cx="149" cy="104" r="9" fill="var(--marker)" opacity=".35"/><circle cx="149" cy="104" r="14" ${M} opacity=".6"/>`;
+      g+=`<rect x="100" y="8" width="170" height="74" rx="10" fill="var(--sheet)" stroke="var(--marker)" stroke-width="2"/>`+txt(185,24,'com- (함께) · 방어','font-size="9" font-weight="700"')+[`싸우는 아군이 받는 피해의 33%를`,`대기 중인 동료가 나눠 받는다.`,`걸 때 조합 뜻 고르기를 통과해야 한다.`].map((t,i)=>txt(185,40+i*12,t,'font-size="7.5"')).join('')+`<path d="M150 82 l-4 8 l10 -6" fill="var(--sheet)" stroke="var(--marker)" stroke-width="2"/>`;
+    }
+    break; }
+  case 'prep_root': case 'prep_root_hold': {
+    g+=cards()+allies();
+    g+=`<rect x="4" y="70" width="312" height="106" rx="12" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>`+txt(52,84,'어근 고르기','font-size="9" font-weight="700"')+txt(250,84,'2/2','font-size="8" fill="var(--pencil)"');
+    [['뚝딱','ttukttak',['fac','form','ple']],['척척','cheokcheok',['not','cert']],['덥석','deopseok',['cept','quest']],['힐끔','hilkkeum',['vis','spect']]].forEach(([n,id,rs],i)=>{const y=92+i*20;
+      g+=`<circle cx="22" cy="${y+8}" r="7" fill="${UNIT[id]}" stroke="var(--ink)"/>`+txt(46,y+11,n,'font-size="8" font-weight="700"')+rs.map((r,j)=>`<rect x="${66+j*44}" y="${y}" width="40" height="16" rx="8" fill="${j===0?'var(--marker-soft)':'var(--sheet)'}" stroke="${j===0?'var(--marker)':'var(--pencil)'}"/>`+txt(86+j*44,y+11,r,'font-size="7.5"')).join('');});
+    g+=`<rect x="200" y="152" width="44" height="18" rx="9" fill="var(--sheet)" stroke="var(--ink)"/>`+txt(222,164.5,'◀ 이전','font-size="8"')+`<rect x="248" y="152" width="60" height="18" rx="9" fill="var(--marker)"/>`+`<text x="278" y="164.5" font-family="Noto Sans KR,sans-serif" font-size="8.5" fill="var(--sheet)" text-anchor="middle">전투 시작</text>`;
+    if(v==='prep_root_hold'){
+      g+=`<circle cx="86" cy="100" r="9" fill="var(--marker)" opacity=".35"/><circle cx="86" cy="100" r="14" ${M} opacity=".6"/>`;
+      g+=`<rect x="40" y="8" width="170" height="74" rx="10" fill="var(--sheet)" stroke="var(--marker)" stroke-width="2"/>`+txt(125,24,'fac (만들다) · 뚝딱','font-size="9" font-weight="700"')+[`이번 전투에 건 마법을`,`한 번 더 발동한다.`,`코인 조건: 어려움(모두 앞면)`].map((t,i)=>txt(125,40+i*12,t,'font-size="7.5"')).join('')+`<path d="M88 82 l-4 8 l10 -6" fill="var(--sheet)" stroke="var(--marker)" stroke-width="2"/>`;
+    }
+    break; }
   case 'magic_cast':
     g+=cards()+allies()+`<circle cx="30" cy="100" r="22" fill="var(--marker-soft)" stroke="var(--marker)" stroke-width="2"/>`+txt(30,104,'com-','font-size="11" font-weight="700"')+`<path d="M52 100 Q120 90 150 130" ${M} stroke-dasharray="4 3"/>`+label(110,86,'아군 4개에게');
     break;

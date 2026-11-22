@@ -1,0 +1,25 @@
+{
+  "_doc": "적 성향표. 계열 어근이 있으면 root_family, 없으면 primary_attribute를 쓴다. 값: low | mid | high, coin_style은 유닛 공식의 코인 성향 이름",
+  "root_family": {
+    "1": { "atk": "mid", "def": "mid", "hp": "mid", "coin_style": "skill" },
+    "2": { "atk": "mid", "def": "low", "hp": "mid", "coin_style": "attack" },
+    "3": { "atk": "low", "def": "low", "hp": "low", "coin_style": "skill" },
+    "4": { "atk": "low", "def": "mid", "hp": "mid", "coin_style": "stable" },
+    "5": { "atk": "low", "def": "mid", "hp": "low", "coin_style": "skill" },
+    "6": { "atk": "mid", "def": "low", "hp": "low", "coin_style": "attack" },
+    "7": { "atk": "mid", "def": "mid", "hp": "high", "coin_style": "hp" },
+    "8": { "atk": "mid", "def": "mid", "hp": "mid", "coin_style": "skill" },
+    "9": { "atk": "high", "def": "low", "hp": "low", "coin_style": "attack" },
+    "10": { "atk": "mid", "def": "mid", "hp": "mid", "coin_style": "tails" },
+    "11": { "atk": "low", "def": "high", "hp": "high", "coin_style": "stable" },
+    "12": { "atk": "high", "def": "mid", "hp": "mid", "coin_style": "volatile" }
+  },
+  "primary_attribute": {
+    "14": { "atk": "high", "def": "low", "hp": "mid", "coin_style": "attack" },
+    "7":  { "atk": "low", "def": "high", "hp": "mid", "coin_style": "stable" },
+    "_default": { "atk": "mid", "def": "mid", "hp": "mid", "coin_style": "attack" }
+  },
+  "field_behavior": {
+    "11": "chase_fast", "9": "teleport", "7": "wander_short", "2": "night_only", "_default": "wander"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "_doc": "필드 마법. 이야기·퀘스트와 묶여 있으므로 늘리거나 바꾸지 않는다. 전투 마법이 늘어나도 이 목록은 그대로다",
+  "magics": [
+    { "id": "de",     "prefix": "de-",    "effect": "descend",      "from": "start" },
+    { "id": "sub",    "prefix": "sub-",   "effect": "sneak",        "from": "story.s01" },
+    { "id": "re",     "prefix": "re-",    "effect": "return_town",  "from": "boss.s01" },
+    { "id": "com",    "prefix": "com-",   "effect": "carry_together","from": "boss.s01" },
+    { "id": "ad",     "prefix": "ad-",    "effect": "approach",     "from": "boss.s02" },
+    { "id": "ob",     "prefix": "ob-",    "effect": "push_against", "from": "boss.s02" },
+    { "id": "prae",   "prefix": "prae-",  "effect": "foresee",      "from": "boss.s03" },
+    { "id": "in",     "prefix": "in-",    "effect": "enter",        "from": "boss.s03" },
+    { "id": "pro",    "prefix": "pro-",   "effect": "light_ahead",  "from": "boss.s04" },
+    { "id": "ex",     "prefix": "ex-",    "effect": "exit_dungeon", "from": "boss.s04" },
+    { "id": "in_neg", "prefix": "in-",    "effect": "invisible",    "from": "boss.s05" },
+    { "id": "un",     "prefix": "un-",    "effect": "unlock",       "from": "boss.s05" },
+    { "id": "dis",    "prefix": "dis-",   "effect": "untie",        "from": "boss.s06" },
+    { "id": "inter",  "prefix": "inter-", "effect": "bridge_between","from": "boss.s06" }
+  ]
+}

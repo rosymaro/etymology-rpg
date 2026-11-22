@@ -1,0 +1,22 @@
+{
+  "_doc": "적 능력치는 층을 쌓아 정한다: 스테이지 곡선 → 빈도 보정 → 성향(계열 어근, 없으면 주속성) → 단어별 덮어쓰기. 레벨 테스트 때는 위에서부터 고친다. 값은 10스테이지 재시뮬레이션 전 임시값",
+  "stage_curve": [
+    { "stage": 1,  "base_level": 1,  "coins": 1 },
+    { "stage": 2,  "base_level": 4,  "coins": 1 },
+    { "stage": 3,  "base_level": 9,  "coins": 1 },
+    { "stage": 4,  "base_level": 15, "coins": 2 },
+    { "stage": 5,  "base_level": 21, "coins": 3 },
+    { "stage": 6,  "base_level": 27, "coins": 3 },
+    { "stage": 7,  "base_level": 33, "coins": 4 },
+    { "stage": 8,  "base_level": 39, "coins": 5 },
+    { "stage": 9,  "base_level": 45, "coins": 5 },
+    { "stage": 10, "base_level": 51, "coins": 5 }
+  ],
+  "frequency_level_bonus": { "formula": "5 - frequency", "min": -2, "max": 3 },
+  "stat_formula": "unit_formula",
+  "tendency_from": ["root_family", "primary_attribute"],
+  "attribute_ability_from_stage": 3,
+  "team_bundle": { "same_primary_min": 3, "tier_at_3": 1, "tier_at_4": 2 },
+  "skill_pick": "random",
+  "_skill_pick_doc": "random | weighted | scripted. 적 스킬 고르는 방식. scripted면 overrides의 skills를 순서대로 쓴다"
+}

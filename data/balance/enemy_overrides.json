@@ -1,0 +1,6 @@
+{
+  "_doc": "단어 하나만 따로 고칠 때 쓴다. 레벨 테스트에서 너무 쉽거나 어려운 단어가 나오면 여기에 적는다. 적힌 항목만 덮어쓴다",
+  "words": {
+    "_example_word_id": { "level_delta": 2, "atk": "high", "skills": ["press"], "ability": "attr.14" }
+  }
+}

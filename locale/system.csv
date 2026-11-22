@@ -1,2 +1,6 @@
 keys,ko
 sys.attr.rule,"장비 5개 중 가장 많은 속성 하나의 능력이 켜집니다. 3~4개면 약하게, 5개면 강하게 켜집니다."
+sys.magic.com.name,com- (함께)
+sys.magic.com.desc,"싸우는 아군이 받는 피해의 {share_pct}%를 대기 중인 동료가 나눠 받는다. 동료는 그 {taken_pct}%만 받는다. 걸 때 조합 뜻 고르기를 통과해야 한다."
+sys.root.fac.desc,"이번 전투에 건 마법을 한 번 더 발동한다. 코인 조건: 어려움."
+sys.hint.long_press,"길게 누르면 설명이 나와요."

@@ -27,7 +27,7 @@ story.s01.tut_battle.001,저기 봐! 어원을 잊어서 길을 잃은 단어들
 story.s01.tut_battle.002,다가가면 뜻 맞히기가 나와. 다 맞히면 싸우지 않고 바로 데려올 수 있어.
 story.s01.tut_battle.003,틀리면?
 story.s01.tut_battle.004,"그럼 싸우는 거지! 이기면 데려오고, 지면… 다시 오면 돼. 잃는 건 없어."
-story.s01.tut_battle.005,"싸우기 전에 마법 하나랑, 우리가 쓸 어근을 하나씩 골라. 어근은 싸울 때만 끼는 거야."
+story.s01.tut_battle.005,싸우기 전에 준비 화면에서 쓸 것들을 골라. 어근은 싸울 때만 끼는 거야. 모르는 건 길게 누르면 설명이 나와!
 story.s01.skit_cheok.title,척척 합류
 story.s01.skit_cheok.001,안녕하십니까. 저는 척척. 모르는 게 없습니다.
 story.s01.skit_cheok.002,그럼 notify는 무슨 뜻이게?
@@ -77,7 +77,7 @@ story.s02.tut_attr.title,카드의 무늬
 story.s02.tut_attr.001,어? 카드 귀퉁이에 무늬가 있어. 이게 속성이야.
 story.s02.tut_attr.002,"공방 마을엔 파동밖에 없었는데, 여기엔 권위, 번영, 생명도 있네."
 story.s02.tut_attr.003,무늬 모으기! 잡는 거라면 자신 있지!
-story.s02.tut_attr.004,장비 다섯 개 중 같은 속성이 세 개를 넘으면 그 힘이 켜져. 다섯 개 다 맞추면 엄청 세지고!
+story.s02.tut_attr.004,같은 무늬 장비를 많이 모을수록 그 무늬의 힘이 켜진대!
 story.s02.town_market.title,쫓아가서 사기
 story.s02.town_market.001,"손님, 이 옷 퍼체이스 하실래요? …근데 퍼체이스가 뭐더라."
 story.s02.town_market.002,쫓아가서 잡는 거! 내가 할게!
@@ -129,11 +129,12 @@ story.s03.town_library.004,(작게) …자유롭게 조용히 할게요.
 story.s03.q_magic.title,ad- 퀘스트: 달아나는 단어
 story.s03.q_magic.001,희귀한 단어 하나가 서고에서 도망쳤어요.
 story.s03.q_magic.002_etym,"ad-는 ""~쪽으로"". advance는 앞쪽으로 나아가기. 다가가자!"
-story.s03.tut_defense.title,초록과 빨강
-story.s03.tut_defense.001,방어 마법은 그냥 안 걸려. 접두사랑 우리가 낀 어근을 합친 단어를 알아봐야 해.
-story.s03.tut_defense.002,예를 들어 com-에 port를 붙이면 comport! …그런 단어가 있습니까?
-story.s03.tut_defense.003,"있긴 해요. 하지만 문제에는 자주 쓰는 말이 먼저 나와요. 고른 뜻이 초록이면 우리가 만든 단어, 빨강이면 아무 단어예요."
-story.s03.tut_defense.004,빨강을 고르면 마법이 헛나가. 몇 개 골라야 하는지는 화면에 나와.
+story.s03.town_secret.title,비밀 서가
+story.s03.town_secret.001,이 서가는 비밀이에요. secret!
+story.s03.town_secret.002_pun,시크릿… 시크한 리트리버?
+story.s03.town_secret.003_etym,secret은 se-(따로) + cernere(가려내다). 따로 가려 떼어 둔 것이야.
+story.s03.town_secret.004_etym,(작게) 그래서 secretary는 비밀을 맡아 두는 사람…
+story.s03.town_secret.005,맞아요. 그러니 다들 조용히.
 story.s03.q_root.title,vis 퀘스트: 안개 속 길
 story.s03.q_root.001,(작게) 저기… 길이 있어요. 보여요.
 story.s03.q_root.002_etym,"vis가 ""보다""라면, invisible은 안 보이는 것, revise는 다시 보는 것!"
@@ -203,11 +204,11 @@ story.s05.ki.004,같이 가자! 나 힘세. 무거운 건 다 나한테 줘.
 story.s05.seung.title,낚시
 story.s05.seung.001,"안녕! 나 조잘. 들은 말은 다 적어 둬. 방금 네가 한 ""안녕""도."
 story.s05.seung.002,(미니게임 안내) 같은 물고기 세 마리를 줄 세워 터뜨려. 낚싯줄이 차오를 때마다 단어가 하나 걸린다.
-story.s05.tut_order.title,줄 서기 마법
-story.s05.tut_order.001,지난번에 얻은 pro-랑 ex-는 싸우는 순서를 바꾸는 마법이야.
-story.s05.tut_order.002,"pro-는 하나를 맨 앞으로, ex-는 양쪽 1번을 맨 뒤로 보내. 지나친 칸만큼 힘이 붙어."
-story.s05.tut_order.003,순서라면 나도 알지. 짐은 무거운 걸 맨 아래로!
-story.s05.tut_order.004,"적어 둘게. ""영차: 무거운 건 아래."""
+story.s05.town_offer.title,다 드려요
+story.s05.town_offer.001,짐꾼 할인! 아무거나 다 드려요. 이게 offer라던데?
+story.s05.town_offer.002,"형, 그건 그냥 다 주는 거잖아."
+story.s05.town_offer.003_etym,offer는 ob-(쪽으로) + ferre(나르다). 상대 쪽으로 내미는 거예요. 다 주라는 뜻은 아니에요!
+story.s05.town_offer.004,그럼 이 생선은 내밀기만 하고 안 줄게.
 story.s05.q_magic.title,pro- 퀘스트: 꺼진 등대
 story.s05.q_magic.001,등대 불이 꺼져서 배가 앞으로 못 나가.
 story.s05.q_magic.002_etym,"pro-는 ""앞으로"". project는 앞으로 던지기, progress는 앞으로 나아가기!"
@@ -266,11 +267,12 @@ story.s06.skit_direct.002_etym,"direct는 dis- + regere, 곧게 이끌다. 그�
 story.s06.skit_direct.003,벽도 곧게 생겼잖아!
 story.s06.q_word.title,단어 퀘스트: 왕의 문서
 story.s06.q_word.001_etym,"sign은 ""표시"", design은 밑그림으로 표시하기, legal은 lex, ""법""!"
-story.s06.tut_tiebreak.title,무기가 먼저
-story.s06.tut_tiebreak.001,"왕실 기록에 따르면, 같은 속성이 똑같이 많으면 무기 쪽 속성이 먼저랍니다."
-story.s06.tut_tiebreak.002,"무기, 머리, 가슴, 장갑, 신발 순서야. 그래서 무기를 고를 땐 속성을 잘 봐야 해."
-story.s06.tut_tiebreak.003,"적었다. ""무기가 대장."""
-story.s06.tut_tiebreak.004,내가 대장인데?
+story.s06.skit_scribe.title,적는 사람들
+story.s06.skit_scribe.001,서기님도 적는 사람이에요? 나랑 같네!
+story.s06.skit_scribe.002,"scribe, 쓰는 사람이죠."
+story.s06.skit_scribe.003_etym,"scribere는 ""쓰다"". describe는 de-(아래로) + 쓰다, 받아 적듯 그려 내는 것. 조잘이 매일 하는 거야."
+story.s06.skit_scribe.004,그럼 나는? 나도 뭔가 적고 싶다!
+story.s06.skit_scribe.005,"적었다. ""대장: 적고 싶어 함."""
 story.s06.jeon.title,dictator
 story.s06.jeon.001,나는 그분의 말을 전할 뿐. 반대는 금지다!
 story.s06.jeon.002,"금지 아니야. 아니, 금지야. 아니…"
@@ -373,8 +375,8 @@ story.s09.town_department.004,부서를 부수진 말아 줘.
 story.s09.q_word.title,단어 퀘스트: 광산 장부
 story.s09.q_word.001_etym,"corrupt는 완전히 깨진 것, decision은 잘라 내서 정하기, finish는 끝내기!"
 story.s09.tut_fullset.title,4차 장비
-story.s09.tut_fullset.001,우리 장비 중에 4차까지 진화한 게 생겼어! 이걸 다섯 칸 모두 같은 속성으로 맞추면…
-story.s09.tut_fullset.002,(작게) 그 속성 능력이 강하게 켜져요.
+story.s09.tut_fullset.001,우리 장비 중에 4차까지 진화한 게 생겼어! 이런 걸 같은 무늬로 모아 가면…
+story.s09.tut_fullset.002,(작게) 엄청 세져요.
 story.s09.tut_fullset.003,그건 제가 말하려 했습니다.
 story.s09.jeon.title,dragon
 story.s09.jeon.001,그분께 가는 길을 지키는 것이 나다. 지나가려면 나를 꺾어라.
