@@ -12,7 +12,7 @@
 
 ```
 godot --headless --import --quit
-godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/unit -ginclude_subdirs -gexit
+godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
 규칙 층(`src/domain`, `src/data`)은 화면 없이 돌아가므로 모두 단위 테스트를 단다. 커밋 전에 통과해야 한다.

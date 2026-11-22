@@ -52,7 +52,7 @@ jobs:
         run: godot --headless --import --quit || godot --headless --editor --quit
 
       - name: Unit tests (GUT)
-        run: godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/unit -ginclude_subdirs -gexit
+        run: godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 
       - name: Verify signing key (fixed debug keystore)
         run: |

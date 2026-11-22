@@ -10,7 +10,7 @@
 
 ## 빌드·테스트
 - 방법은 `docs/dev/build.md`. 커밋 전에 GUT 테스트가 통과해야 한다:
-  `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/unit -ginclude_subdirs -gexit`
+  `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`
 - 단어장 앱 저장소는 읽기만 한다(`tools/data/build_game_data.py`).
 
 ## 고정 디버그 서명 — 수정 금지
