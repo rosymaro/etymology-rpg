@@ -1,0 +1,233 @@
+{
+ "stage": 2,
+ "place": "name.stage.s02",
+ "theme_note": "잊힌 뿌리: 잡기(capere·quaerere). 사냥꾼이 잡는 법을 잊음.",
+ "scenes": [
+  {
+   "id": "s02_ki",
+   "title": "story.s02.ki.title",
+   "place_note": "초원 입구 울타리",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hunter"
+   ],
+   "staging_note": "울타리가 활짝 열려 있고 소들이 줄지어 탈출 중. 사냥꾼이 소에게 정중하게 부탁하고 있다.",
+   "game_note": "잡기 유닛 해금 단서",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "hunter",
+     "text": "story.s02.ki.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.ki.002"
+    },
+    {
+     "speaker": "hunter",
+     "text": "story.s02.ki.003_pun"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.ki.004_etym"
+    }
+   ]
+  },
+  {
+   "id": "s02_seung",
+   "title": "story.s02.seung.title",
+   "place_note": "사냥꾼 오두막",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hunter",
+    "deopseok"
+   ],
+   "staging_note": "오두막 앞에서 잡기 유닛 덥석이 합류(첫 cept 단어를 잡은 뒤). 덥석이 주인공 모자를 덥석 잡는다. 지뢰찾기 규칙의 덫 놓기 소개.",
+   "game_note": "미니게임 덫 놓기 개방, 잡기 유닛 합류 장면",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "지뢰찾기",
+     "part": "숫자로 주변의 숨은 칸을 추리하는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "deopseok",
+     "text": "story.s02.seung.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.seung.002"
+    },
+    {
+     "speaker": "hunter",
+     "text": "story.s02.seung.003"
+    },
+    {
+     "speaker": "hunter",
+     "text": "story.s02.seung.004"
+    }
+   ]
+  },
+  {
+   "id": "s02_q_magic",
+   "title": "story.s02.q_magic.title",
+   "place_note": "쓰러진 울타리",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hunter",
+    "villager_b"
+   ],
+   "staging_note": "거대한 울타리 기둥. 혼자서는 안 들린다. com- 마법을 쓰면 마을 사람들이 모여 함께 든다.",
+   "game_note": "마법 com- 필드 효과(함께 큰 장애물 옮기기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "villager_b",
+     "text": "story.s02.q_magic.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.q_magic.002_etym"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s02.q_magic.003"
+    }
+   ]
+  },
+  {
+   "id": "s02_q_root",
+   "title": "story.s02.q_root.title",
+   "place_note": "초원 깊은 풀숲",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "deopseok",
+    "hunter"
+   ],
+   "staging_note": "풀숲에 송아지 발자국이 흩어져 있다. quest 어근의 필드 능력(희귀 단어 탐지)으로 위치가 반짝인다.",
+   "game_note": "어근 quest 필드 능력(근처 희귀 단어·대상 탐지)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "hunter",
+     "text": "story.s02.q_root.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.q_root.002_etym"
+    },
+    {
+     "speaker": "deopseok",
+     "text": "story.s02.q_root.003"
+    }
+   ]
+  },
+  {
+   "id": "s02_q_word",
+   "title": "story.s02.q_word.title",
+   "place_note": "오두막",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hunter"
+   ],
+   "staging_note": "사냥꾼이 공책을 펼친다. 단어 세 개를 잡아 오면 공책에 어원이 적힌다.",
+   "game_note": "필드 단어 recover, request, receipt 잡기",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "hunter",
+     "text": "story.s02.q_word.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.q_word.002_etym"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.q_word.003"
+    }
+   ]
+  },
+  {
+   "id": "s02_jeon",
+   "title": "story.s02.jeon.title",
+   "place_note": "초원 한가운데",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hunter",
+    "predator"
+   ],
+   "staging_note": "풀이 갈라지며 predator 등장(이름 자막). 단어 카드를 꿀꺽 삼킬 때마다 몸집이 커진다.",
+   "game_note": "보스 전투 predator",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "predator",
+     "text": "story.s02.jeon.001"
+    },
+    {
+     "speaker": "hunter",
+     "text": "story.s02.jeon.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.jeon.003_etym"
+    }
+   ]
+  },
+  {
+   "id": "s02_gyeol",
+   "title": "story.s02.gyeol.title",
+   "place_note": "초원 언덕",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hunter",
+    "deopseok"
+   ],
+   "staging_note": "말뿌리 나무 쪽으로 빛이 날아가 뿌리가 이어진다. 사냥꾼이 망루 쪽을 가리킨다.",
+   "game_note": "마법 ad-·ob- 획득, 스테이지 3 개방",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "hunter",
+     "text": "story.s02.gyeol.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.gyeol.002_etym"
+    },
+    {
+     "speaker": "deopseok",
+     "text": "story.s02.gyeol.003"
+    }
+   ]
+  }
+ ]
+}

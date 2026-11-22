@@ -46,3 +46,42 @@ name.slot.head,머리
 name.slot.chest,가슴
 name.slot.hands,장갑
 name.slot.feet,신발
+name.char.hero,{hero}
+name.char.ttukttak,뚝딱
+name.char.deopseok,덥석
+name.char.hilkkeum,힐끔
+name.char.cheokcheok,척척
+name.char.jojal,조잘
+name.char.ssaeng,쌩
+name.char.yeongcha,영차
+name.char.daejang,대장
+name.char.hwik,휙
+name.char.bingeul,빙글
+name.char.kkumjjeok,꿈쩍
+name.char.wajang,와장
+name.char.blacksmith,대장장이
+name.char.villager_a,마을 사람
+name.char.villager_b,마을 사람
+name.char.hunter,사냥꾼
+name.char.watchman,망루지기
+name.char.librarian,사서
+name.char.kite_elder,연 할아버지
+name.char.porter,짐꾼
+name.char.sailor,늙은 선원
+name.char.scribe,서기
+name.char.guard_castle,성 경비
+name.char.king,왕
+name.char.miller,방앗간 주인
+name.char.sentry,보초병
+name.char.miner,광부
+name.char.tower_child,탑 아래 아이
+name.char.destroyer,destroyer
+name.char.predator,predator
+name.char.wizard,wizard
+name.char.hurricane,hurricane
+name.char.pirate,pirate
+name.char.dictator,dictator
+name.char.vortex,vortex
+name.char.guardian,guardian
+name.char.dragon,dragon
+name.char.devil,devil

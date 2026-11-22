@@ -523,6 +523,9 @@ de-는 처음부터 갖고, sub-는 공방 마을 이야기 보상으로 얻는�
 
 ## 이야기와 퀘스트 1차
 
+> 이 절은 12지역 기준이다. 10스테이지 기준 이야기는 [docs/story/00-overview.md](../story/00-overview.md)와 [장면 청사진](../story/blueprint.md)이 대신한다.
+
+
 지역별 대사와 장면 연출은 [대사와 장면 1차(12지역 기준)](../story/dialogue-v1-12regions.md)에 있다. 10스테이지 기준 이야기는 [docs/story](../story/)에서 새로 쓴다.
 
 ### devil 이야기 (전체 줄기)

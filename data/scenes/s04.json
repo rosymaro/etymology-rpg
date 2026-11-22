@@ -1,0 +1,215 @@
+{
+ "stage": 4,
+ "place": "name.stage.s04",
+ "theme_note": "잊힌 뿌리: 가기(ced·ven·it·grad). 아무도 출구를 못 찾음.",
+ "scenes": [
+  {
+   "id": "s04_ki",
+   "title": "story.s04.ki.title",
+   "place_note": "협곡 입구",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "kite_elder",
+    "ssaeng"
+   ],
+   "staging_note": "사람들이 협곡 입구에서 빙글빙글 같은 자리를 돈다. 가기 유닛 쌩이 그 사이를 엄청 빠르게 돌고 있다.",
+   "game_note": "가기 유닛 해금 단서",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    },
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "kite_elder",
+     "text": "story.s04.ki.001_pun"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.ki.002_etym"
+    },
+    {
+     "speaker": "ssaeng",
+     "text": "story.s04.ki.003"
+    },
+    {
+     "speaker": "kite_elder",
+     "text": "story.s04.ki.004"
+    }
+   ]
+  },
+  {
+   "id": "s04_seung",
+   "title": "story.s04.seung.title",
+   "place_note": "연 만드는 집",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "kite_elder",
+    "bingeul"
+   ],
+   "staging_note": "돌리기 유닛 빙글 합류. 말을 반대로 하는 버릇. 파이프 잇기 규칙의 연날리기 소개.",
+   "game_note": "미니게임 연날리기 개방, 돌리기 유닛 합류",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "파이프 매니아",
+     "part": "타일을 돌려 길을 잇는 규칙"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "bingeul",
+     "text": "story.s04.seung.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.seung.002_etym"
+    },
+    {
+     "speaker": "kite_elder",
+     "text": "story.s04.seung.003"
+    }
+   ]
+  },
+  {
+   "id": "s04_q_magic",
+   "title": "story.s04.q_magic.title",
+   "place_note": "절벽 길",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "kite_elder"
+   ],
+   "staging_note": "돌풍이 불 때마다 절벽 길이 막힌다. prae- 마법으로 다음 돌풍을 미리 보면 쉬는 틈에 지나갈 수 있다.",
+   "game_note": "마법 prae- 필드 효과(다음 것을 미리 보기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "kite_elder",
+     "text": "story.s04.q_magic.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.q_magic.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s04_q_root",
+   "title": "story.s04.q_root.title",
+   "place_note": "절벽 계단",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "ssaeng"
+   ],
+   "staging_note": "계단 칸이 지워져 있다. grad 장착 유닛이 있으면 한 칸씩 나타난다.",
+   "game_note": "어근 grad 필드 능력(계단 오르기)",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.q_root.001_etym"
+    },
+    {
+     "speaker": "ssaeng",
+     "text": "story.s04.q_root.002"
+    }
+   ]
+  },
+  {
+   "id": "s04_q_word",
+   "title": "story.s04.q_word.title",
+   "place_note": "연 만드는 집",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "kite_elder"
+   ],
+   "staging_note": "노인의 지도에 길 이름 세 개가 지워져 있다.",
+   "game_note": "필드 단어 process, progress, success 잡기",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "kite_elder",
+     "text": "story.s04.q_word.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.q_word.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s04_jeon",
+   "title": "story.s04.jeon.title",
+   "place_note": "협곡 꼭대기",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hurricane"
+   ],
+   "staging_note": "하늘이 어두워지고 hurricane이 협곡을 막는다(이름 자막). 대기 중인 유닛들이 바람에 밀리는 연출.",
+   "game_note": "보스 전투 hurricane",
+   "borrow": [
+    {
+     "game": "몬스터 헌터 시리즈",
+     "part": "대형 몬스터가 처음 등장할 때 화면에 이름 자막이 뜨는 연출"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "hurricane",
+     "text": "story.s04.jeon.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.jeon.002_etym"
+    }
+   ]
+  },
+  {
+   "id": "s04_gyeol",
+   "title": "story.s04.gyeol.title",
+   "place_note": "협곡 너머",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "ssaeng",
+    "yeongcha"
+   ],
+   "staging_note": "바람이 걷히고 바다와 항구가 내려다보인다. 멀리서 나르기 유닛 영차가 손을 크게 흔든다.",
+   "game_note": "마법 pro-·ex- 획득, 스테이지 5 개방",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.gyeol.001_etym"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s04.gyeol.002"
+    },
+    {
+     "speaker": "ssaeng",
+     "text": "story.s04.gyeol.003"
+    }
+   ]
+  }
+ ]
+}
