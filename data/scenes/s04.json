@@ -42,6 +42,50 @@
      "speaker": "kite_elder",
      "text": "story.s04.ki.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "kite_elder",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "villager_a",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "villager_b",
+       "x": 60,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "circle": ""
+     },
+     "say": 1,
+     "note": "사람들이 협곡 입구에서 빙글빙글 같은 자리를 돈다."
+    },
+    {
+     "shot": "mid",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "ssaeng",
+       "x": 55,
+       "pose": "fast"
+      }
+     ],
+     "fx": {
+      "dash": "away"
+     },
+     "say": 3,
+     "note": "쌩이 \"출구다!\" 외치고 반대쪽으로 질주."
+    }
    ]
   },
   {
@@ -79,6 +123,45 @@
      "speaker": "kite_elder",
      "text": "story.s04.seung.003"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "bingeul",
+       "x": 50,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "reverse": ""
+     },
+     "say": 1,
+     "note": "빙글이 말을 뒤집어 말한다(말풍선이 뒤집힘)."
+    },
+    {
+     "shot": "mid",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "kite_elder",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "pipe"
+     },
+     "say": 3,
+     "note": "연 할아버지가 연날리기(파이프 잇기)를 소개."
+    }
    ]
   },
   {
@@ -101,6 +184,30 @@
     {
      "speaker": "ttukttak",
      "text": "story.s04.q_magic.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "cliff",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "kite_elder",
+       "x": 60,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "wind": "",
+      "magic": "prae-"
+     },
+     "say": 2,
+     "note": "prae-로 다음 돌풍을 미리 보고(반투명 바람) 쉬는 틈에 지나간다."
     }
    ]
   },
@@ -125,6 +232,24 @@
      "speaker": "ssaeng",
      "text": "story.s04.q_root.002"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "cliff",
+     "actors": [
+      {
+       "id": "ssaeng",
+       "x": 45,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "stairs": ""
+     },
+     "say": 1,
+     "note": "지워진 계단이 한 칸씩 나타난다. 쌩이 답답해한다."
+    }
    ]
   },
   {
@@ -147,6 +272,29 @@
     {
      "speaker": "ttukttak",
      "text": "story.s04.q_word.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "kite_elder",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "map": ""
+     },
+     "say": 1,
+     "note": "지도의 길 이름 세 개가 채워진다."
     }
    ]
   },
@@ -175,6 +323,47 @@
     {
      "speaker": "ttukttak",
      "text": "story.s04.jeon.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "hurricane",
+       "x": 65,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "wind": "",
+      "dark": ""
+     },
+     "say": 1,
+     "note": "하늘이 어두워지고 hurricane이 협곡을 막는다."
+    },
+    {
+     "shot": "wide",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "hurricane",
+       "x": 60,
+       "pose": "boss"
+      }
+     ],
+     "fx": {
+      "namecap": "hurricane",
+      "push": ""
+     },
+     "say": 0,
+     "note": "이름 자막. 대기 중인 동료들이 바람에 밀린다."
     }
    ]
   },
@@ -208,6 +397,34 @@
     {
      "speaker": "ssaeng",
      "text": "story.s04.gyeol.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 20,
+       "pose": ""
+      },
+      {
+       "id": "ssaeng",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "yeongcha",
+       "x": 75,
+       "pose": "wave"
+      }
+     ],
+     "fx": {
+      "sea": ""
+     },
+     "say": 2,
+     "note": "협곡 너머 바다와 항구. 멀리서 영차가 손을 크게 흔든다."
     }
    ]
   }

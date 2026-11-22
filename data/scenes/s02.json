@@ -37,6 +37,62 @@
      "speaker": "ttukttak",
      "text": "story.s02.ki.004_etym"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hunter",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "cow",
+       "x": 55,
+       "pose": ""
+      },
+      {
+       "id": "cow",
+       "x": 68,
+       "pose": ""
+      },
+      {
+       "id": "cow",
+       "x": 81,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "fence_open": "",
+      "run": ""
+     },
+     "say": 1,
+     "note": "울타리가 열려 소들이 줄지어 탈출. 사냥꾼이 소에게 공손히 고개를 숙인다."
+    },
+    {
+     "shot": "mid",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hunter",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "card": "capture",
+      "camera": ""
+     },
+     "say": 3,
+     "note": "\"캡처… 사진?\" 사냥꾼 머리 위에 카메라 그림."
+    }
    ]
   },
   {
@@ -78,6 +134,50 @@
      "speaker": "hunter",
      "text": "story.s02.seung.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "deopseok",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "grab": "hat"
+     },
+     "say": 1,
+     "note": "덥석이 주인공 모자를 덥석 잡는다."
+    },
+    {
+     "shot": "mid",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hunter",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "mine"
+     },
+     "say": 3,
+     "note": "사냥꾼이 덫 놓기(지뢰찾기 규칙)를 소개."
+    }
    ]
   },
   {
@@ -105,6 +205,61 @@
     {
      "speaker": "hero",
      "text": "story.s02.q_magic.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "villager_b",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "bigpost": ""
+     },
+     "say": 1,
+     "note": "쓰러진 거대한 울타리 기둥."
+    },
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "villager_b",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "villager_a",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hunter",
+       "x": 75,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "magic": "com-",
+      "lift": ""
+     },
+     "say": 3,
+     "note": "com-! 마을 사람들이 모여 함께 든다."
     }
    ]
   },
@@ -134,6 +289,51 @@
      "speaker": "deopseok",
      "text": "story.s02.q_root.003"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "deopseok",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "hunter",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "tracks": "",
+      "sparkle": ""
+     },
+     "say": 1,
+     "note": "풀숲에 흩어진 발자국, 한 곳이 반짝인다."
+    },
+    {
+     "shot": "mid",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "deopseok",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "calf",
+       "x": 60,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "grab": "calf"
+     },
+     "say": 3,
+     "note": "덥석이 송아지를 잡았다가 미안해하며 놓는다."
+    }
    ]
   },
   {
@@ -160,6 +360,30 @@
     {
      "speaker": "ttukttak",
      "text": "story.s02.q_word.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hunter",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "book": "",
+      "split": "re-|capere"
+     },
+     "say": 2,
+     "note": "공책에 어원이 적힌다. \"다시 잡다\"."
     }
    ]
   },
@@ -194,6 +418,46 @@
      "speaker": "ttukttak",
      "text": "story.s02.jeon.003_etym"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "predator",
+       "x": 65,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "eatcards": ""
+     },
+     "say": 1,
+     "note": "풀이 갈라지며 predator가 단어 카드를 꿀꺽."
+    },
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "predator",
+       "x": 60,
+       "pose": "boss"
+      }
+     ],
+     "fx": {
+      "namecap": "predator",
+      "grow": ""
+     },
+     "say": 0,
+     "note": "이름 자막. 삼킬 때마다 몸이 커진다."
+    }
    ]
   },
   {
@@ -226,6 +490,35 @@
     {
      "speaker": "deopseok",
      "text": "story.s02.gyeol.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hunter",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "deopseok",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "point": "far",
+      "crackmark": ""
+     },
+     "say": 1,
+     "note": "사냥꾼이 멀리 탑 꼭대기의 문양을 가리킨다."
     }
    ]
   }

@@ -60,6 +60,7 @@
 
 - [장면 청사진](blueprint.md): 장면마다 장소, 등장, 연출, 게임 연결, 빌려 온 개념
 - [대본](script-ko.md): 읽기용 대사 모음
+- [스토리보드 페이지](storyboard/): 장면별 콘티 그림과 빌려 온 개념 그림
 - 원본 데이터: `data/scenes/s01.json` … `s10.json`(장면), `locale/story.csv`(문장), `locale/names.csv`(이름)
 - [대사와 장면 1차(12지역)](dialogue-v1-12regions.md): 이전 판. 참고용
 

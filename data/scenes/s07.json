@@ -38,6 +38,46 @@
      "speaker": "ttukttak",
      "text": "story.s07.ki.003_etym"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "miller",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "bingeul",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "millback": "",
+      "swirl": ""
+     },
+     "say": 1,
+     "note": "물레방아가 거꾸로 돈다."
+    },
+    {
+     "shot": "mid",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "bingeul",
+       "x": 50,
+       "pose": "happy"
+      }
+     ],
+     "fx": {
+      "reverse": ""
+     },
+     "say": 2,
+     "note": "모두 반대로 말하자 빙글만 신난다."
+    }
    ]
   },
   {
@@ -62,6 +102,29 @@
      "speaker": "miller",
      "text": "story.s07.seung.001"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "miller",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "fifteen"
+     },
+     "say": 1,
+     "note": "방앗간 주인이 물레방아(15 퍼즐)를 소개."
+    }
    ]
   },
   {
@@ -80,6 +143,30 @@
     {
      "speaker": "ttukttak",
      "text": "story.s07.q_magic.001_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 20,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "gap": "",
+      "magic": "inter-"
+     },
+     "say": 1,
+     "note": "두 기슭 사이가 끊겼다. inter-로 사이에 길이 나타난다."
     }
    ]
   },
@@ -105,6 +192,25 @@
      "speaker": "bingeul",
      "text": "story.s07.q_root.001"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "bingeul",
+       "x": 50,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "gate": "",
+      "turn": ""
+     },
+     "say": 1,
+     "note": "빙글이 수문을 반대로 돌린다."
+    }
    ]
   },
   {
@@ -123,6 +229,29 @@
     {
      "speaker": "ttukttak",
      "text": "story.s07.q_word.001_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "miller",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "board": "return version conversation"
+     },
+     "say": 1,
+     "note": "뒤집힌 간판 세 개가 바로 선다."
     }
    ]
   },
@@ -156,6 +285,55 @@
      "speaker": "hero",
      "text": "story.s07.jeon.003"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "vortex",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 20,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "swirl": ""
+     },
+     "say": 1,
+     "note": "물이 빨려 들며 vortex 등장."
+    },
+    {
+     "shot": "mid",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "vortex",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      },
+      {
+       "id": "yeongcha",
+       "x": 40,
+       "pose": "sweat"
+      }
+     ],
+     "fx": {
+      "namecap": "vortex"
+     },
+     "say": 2,
+     "note": "\"길이 미리 열려 있더군.\" 영차가 움찔."
+    }
    ]
   },
   {
@@ -184,6 +362,34 @@
     {
      "speaker": "yeongcha",
      "text": "story.s07.gyeol.002"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "miller",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 50,
+       "pose": ""
+      },
+      {
+       "id": "yeongcha",
+       "x": 85,
+       "pose": "back"
+      }
+     ],
+     "fx": {
+      "apart": ""
+     },
+     "say": 2,
+     "note": "일행에서 조금 떨어져 선 영차."
     }
    ]
   }

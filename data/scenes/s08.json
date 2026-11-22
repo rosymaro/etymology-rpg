@@ -29,6 +29,30 @@
      "speaker": "ttukttak",
      "text": "story.s08.ki.002_etym"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "guardian",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "wall": "",
+      "crumble": ""
+     },
+     "say": 1,
+     "note": "성벽 위 guardian이 내려다본다. 성벽이 조금씩 무너진다."
+    }
    ]
   },
   {
@@ -71,6 +95,50 @@
      "speaker": "sentry",
      "text": "story.s08.seung.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "kkumjjeok",
+       "x": 40,
+       "pose": "still"
+      },
+      {
+       "id": "hwik",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "throw": ""
+     },
+     "say": 2,
+     "note": "휙이 꿈쩍을 던지려 하고 꿈쩍은 꿈쩍도 안 한다."
+    },
+    {
+     "shot": "mid",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "sentry",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "ballsort"
+     },
+     "say": 4,
+     "note": "보초병이 보초 서기(통 정렬)를 소개."
+    }
    ]
   },
   {
@@ -89,6 +157,39 @@
     {
      "speaker": "ttukttak",
      "text": "story.s08.q_magic.001_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "sentry",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "sentry",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "sentry",
+       "x": 80,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 20,
+       "pose": "ghost"
+      }
+     ],
+     "fx": {
+      "magic": "in-"
+     },
+     "say": 1,
+     "note": "보초가 가득. in-(아닌)으로 반투명해져 지나간다."
     }
    ]
   },
@@ -113,6 +214,24 @@
      "speaker": "kkumjjeok",
      "text": "story.s08.q_root.002"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "kkumjjeok",
+       "x": 45,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "rope": ""
+     },
+     "say": 1,
+     "note": "꿈쩍이 밧줄로 두 성벽을 묶어 다리를 만든다."
+    }
    ]
   },
   {
@@ -136,6 +255,45 @@
     {
      "speaker": "guardian",
      "text": "story.s08.jeon.001"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "guardian",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "gate": ""
+     },
+     "say": 1,
+     "note": "성문 위 guardian과 싸움."
+    },
+    {
+     "shot": "mid",
+     "bg": "fortress",
+     "actors": [
+      {
+       "id": "guardian",
+       "x": 55,
+       "pose": "kneel"
+      }
+     ],
+     "fx": {
+      "namecap": "guardian"
+     },
+     "say": 1,
+     "note": "이긴 뒤 guardian이 무릎을 꿇는다."
     }
    ]
   },
@@ -182,6 +340,83 @@
     {
      "speaker": "yeongcha",
      "text": "story.s08.gyeol.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "court",
+     "actors": [
+      {
+       "id": "guardian",
+       "x": 70,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "jojal",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "yeongcha",
+       "x": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "court": ""
+     },
+     "say": 1,
+     "note": "성벽 안 재판정. guardian이 증언대에 선다."
+    },
+    {
+     "shot": "close",
+     "bg": "court",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 40,
+       "pose": "point"
+      }
+     ],
+     "fx": {
+      "evidence": "reliable rely alliance",
+      "burst": ""
+     },
+     "say": 3,
+     "note": "주인공이 모은 단어 카드를 증거로 들이민다(\"!\" 효과)."
+    },
+    {
+     "shot": "close",
+     "bg": "court",
+     "actors": [],
+     "fx": {
+      "card": "traitor",
+      "split": "trans-|dare"
+     },
+     "say": 4,
+     "note": "traitor 카드가 화면 가운데에서 trans- + dare로 갈라진다."
+    },
+    {
+     "shot": "mid",
+     "bg": "court",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 60,
+       "pose": "cry"
+      }
+     ],
+     "fx": {
+      "runaway": ""
+     },
+     "say": 5,
+     "note": "영차가 고개를 숙이고 화면 밖으로 달려 나간다."
     }
    ]
   }
