@@ -20,7 +20,7 @@ story.s01.seung.title,마을 고치기
 story.s01.seung.001_pun,"인포메이션 센터… 인포는 뭐고, 메이션은 또 뭐야?"
 story.s01.seung.002_etym,"in-은 ""안에"", form은 ""모양"". 머릿속에 모양을 잡아 주는 것. 알림이야!"
 story.s01.seung.003,아하! 그럼 여기 가면 뭘 알려 주는 거구나!
-story.s01.seung.004,(미니게임 안내) 쇳조각을 돌려서 틀을 빈틈없이 채워 봐. 물건이 완성될 때마다 그 물건의 단어가 나온다.
+story.s01.seung.004,"(미니게임 안내) 주문서에 적힌 뜻과 어근 무늬를 보고, 줄줄이 흘러오는 단어 카드 중 맞는 걸 틀에 넣어 봐. 시간 안에 낸 주문마다 단어가 하나 나온다."
 story.s01.seung.005,단어를 얻으면 뜻을 맞혀야 우리 거야. 틀리면 도망가!
 story.s01.tut_battle.title,첫 만남
 story.s01.tut_battle.001,저기 봐! 어원을 잊어서 길을 잃은 단어들이야.
@@ -284,7 +284,7 @@ story.s07.ki.001,"어서 가세요! …아니, 어서 오세요."
 story.s07.ki.002,"드디어 다들 나처럼 말해! 좋다. 아니, 별로야."
 story.s07.ki.003_etym,"vers는 ""돌리다"". reverse는 뒤로 돌리기, 지금 이 호수가 그래."
 story.s07.seung.title,물길 바로잡기
-story.s07.seung.001,(미니게임 안내) 물길 조각을 빈칸으로 밀어 물이 방아까지 가게 해 주세요. 방아가 한 바퀴 돌 때마다 단어가 떠올라요.
+story.s07.seung.001,"(미니게임 안내) 바깥 고리는 단어, 안쪽 고리는 뜻이에요. 두 고리를 돌려 수문 세 곳에서 단어와 뜻을 맞추면 방아가 한 바퀴 돌아요."
 story.s07.town_universe.title,거꾸로 도는 우주
 story.s07.town_universe.001,"이 호수에선 다 거꾸로라서, 우주(universe)도 거꾸로 돌아."
 story.s07.town_universe.002_etym,universe는 unus(하나) + vertere(돌리다). 하나로 함께 도는 모든 것이라는 뜻이야.
@@ -353,7 +353,7 @@ story.s09.ki.003_pun,우린 일을 끝내는 법을 잊었어. finish… 피니�
 story.s09.ki.004_etym,"fin은 ""끝"". finish는 끝내기, final은 마지막!"
 story.s09.seung.title,광석 캐기
 story.s09.seung.001,부순다! 다 부순다! …이건 부수면 안 되는 거야?
-story.s09.seung.002,(미니게임 안내) 같은 광석끼리 밀어 붙이면 더 큰 보석이 돼. 보석 안에 단어가 들어 있지.
+story.s09.seung.002,(미니게임 안내) 튀어 오르는 광석을 손가락으로 그어 깨. 광맥 색과 같은 무늬의 광석만 깨야 해. 돌을 깨면 연속이 끊긴다.
 story.s09.skit_missing.title,빈자리
 story.s09.skit_missing.001,짐 들 사람이 없으니 내가 들겠다! …무거워.
 story.s09.skit_missing.002,부숴서 작게 만들면 가벼워!

@@ -10,8 +10,9 @@ A collecting game inspired vocabulary RPG that makes learning English words, mea
 |---|---|
 | [docs/design/01-rpg-base.md](docs/design/01-rpg-base.md) | 기본 설계: 전투, 코인, 마법 14개, 유닛 12종, 어근 65개, 스테이지, 마을, 수치 1차 |
 | [docs/design/02-rpg-v2.md](docs/design/02-rpg-v2.md) | 2차 설계: 속성 20개, 1~4차 진화, 장비 5칸, 스테이지 10개 |
-| [docs/story/00-overview.md](docs/story/00-overview.md) | 이야기 개요, [장면 청사진](docs/story/blueprint.md), [대본](docs/story/script-ko.md) |
+| [docs/story/00-overview.md](docs/story/00-overview.md) | 이야기 개요, [장면 청사진](docs/story/blueprint.md), [대본](docs/story/script-ko.md), [스토리보드(전투 콘티 포함)](docs/story/storyboard/) |
 | [docs/i18n.md](docs/i18n.md) | 다국어 텍스트 관리 규칙 |
+| [docs/dev/architecture.md](docs/dev/architecture.md) | 코드 구조와 객체지향 규칙(바뀌는 규칙을 경계 뒤에 두기) |
 | [docs/archive/card-game.md](docs/archive/card-game.md) | 이전 카드게임 설계(참고용) |
 
 ## 폴더
