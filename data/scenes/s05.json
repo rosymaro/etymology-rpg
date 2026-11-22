@@ -170,39 +170,39 @@
    ]
   },
   {
-   "id": "s05_tut_order",
-   "title": "story.s05.tut_order.title",
-   "place_note": "부두 창고",
+   "id": "s05_town_offer",
+   "title": "story.s05.town_offer.title",
+   "place_note": "부두 생선 좌판",
    "cast": [
     "hero",
     "ttukttak",
-    "yeongcha",
-    "jojal"
+    "porter",
+    "yeongcha"
    ],
-   "staging_note": "창고에 상자를 줄 세우며 순서 마법을 설명한다. 상자 하나가 맨 앞으로 쏙 이동하는 연출.",
-   "game_note": "순서 마법 튜토리얼(pro-, ex-)",
+   "staging_note": "짐꾼이 생선, 밧줄, 자기 모자까지 일행에게 내민다.",
+   "game_note": "마을 이야기(유머)",
    "borrow": [
     {
-     "game": "테일즈 오브 시리즈",
-     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
     }
    ],
    "lines": [
     {
-     "speaker": "ttukttak",
-     "text": "story.s05.tut_order.001"
-    },
-    {
-     "speaker": "ttukttak",
-     "text": "story.s05.tut_order.002"
+     "speaker": "porter",
+     "text": "story.s05.town_offer.001"
     },
     {
      "speaker": "yeongcha",
-     "text": "story.s05.tut_order.003"
+     "text": "story.s05.town_offer.002"
     },
     {
-     "speaker": "jojal",
-     "text": "story.s05.tut_order.004"
+     "speaker": "ttukttak",
+     "text": "story.s05.town_offer.003_etym"
+    },
+    {
+     "speaker": "porter",
+     "text": "story.s05.town_offer.004"
     }
    ],
    "conti": [
@@ -211,23 +211,29 @@
      "bg": "port",
      "actors": [
       {
+       "id": "porter",
+       "x": 55,
+       "y": 45,
+       "pose": "happy"
+      },
+      {
        "id": "yeongcha",
-       "x": 40,
-       "y": 60,
+       "x": 35,
+       "y": 62,
        "pose": ""
       },
       {
-       "id": "jojal",
-       "x": 62,
-       "y": 62,
+       "id": "hero",
+       "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],
      "fx": {
-      "order": ""
+      "crates": ""
      },
-     "say": 2,
-     "note": "상자 넷이 한 줄. 하나가 맨 앞으로 쏙 이동한다(순서 마법)."
+     "say": 1,
+     "note": "짐꾼이 생선, 밧줄, 모자까지 내민다."
     }
    ]
   },
@@ -657,7 +663,7 @@
     "yeongcha"
    ],
    "staging_note": "뿌리가 이어지며 항구 간판들이 색을 되찾는다. 선원이 의미심장한 말을 남긴다.",
-   "game_note": "마법 in-(아닌)·un- 획득, 스테이지 6 개방",
+   "game_note": "필드 마법 in-(아닌)·un- 획득, 스테이지 6 개방",
    "borrow": [
     {
      "game": "오오카미",

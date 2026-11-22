@@ -339,17 +339,18 @@
    ]
   },
   {
-   "id": "s03_tut_defense",
-   "title": "story.s03.tut_defense.title",
-   "place_note": "도서관 열람실 책상",
+   "id": "s03_town_secret",
+   "title": "story.s03.town_secret.title",
+   "place_note": "도서관 깊은 서가",
    "cast": [
     "hero",
     "ttukttak",
+    "librarian",
     "cheokcheok",
-    "librarian"
+    "hilkkeum"
    ],
-   "staging_note": "책상 위에 뜻 카드 다섯 장이 펼쳐진다. 하나를 고르면 초록, 다른 하나를 고르면 빨강으로 물드는 시범.",
-   "game_note": "방어 마법 퀴즈 튜토리얼(조합 뜻 고르기)",
+   "staging_note": "사서가 커튼 뒤 작은 서가를 가린다. 척척이 고개를 들이민다.",
+   "game_note": "마을 이야기(유머)",
    "borrow": [
     {
      "game": "테일즈 오브 시리즈",
@@ -358,32 +359,53 @@
    ],
    "lines": [
     {
-     "speaker": "ttukttak",
-     "text": "story.s03.tut_defense.001"
+     "speaker": "librarian",
+     "text": "story.s03.town_secret.001"
     },
     {
      "speaker": "cheokcheok",
-     "text": "story.s03.tut_defense.002"
-    },
-    {
-     "speaker": "librarian",
-     "text": "story.s03.tut_defense.003"
+     "text": "story.s03.town_secret.002_pun"
     },
     {
      "speaker": "ttukttak",
-     "text": "story.s03.tut_defense.004"
+     "text": "story.s03.town_secret.003_etym"
+    },
+    {
+     "speaker": "hilkkeum",
+     "text": "story.s03.town_secret.004_etym"
+    },
+    {
+     "speaker": "librarian",
+     "text": "story.s03.town_secret.005"
     }
    ],
    "conti": [
     {
-     "shot": "close",
+     "shot": "mid",
      "bg": "library",
-     "actors": [],
-     "fx": {
-      "cards5": ""
-     },
-     "say": 3,
-     "note": "클로즈업: 책상 위 뜻 카드 다섯 장. 하나는 초록, 하나는 빨강으로 물든다."
+     "actors": [
+      {
+       "id": "librarian",
+       "x": 60,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "cheokcheok",
+       "x": 45,
+       "y": 55,
+       "pose": "proud"
+      },
+      {
+       "id": "hilkkeum",
+       "x": 30,
+       "y": 62,
+       "pose": "shy"
+      }
+     ],
+     "fx": {},
+     "say": 2,
+     "note": "커튼 뒤 작은 서가. 척척이 고개를 들이민다."
     }
    ]
   },
@@ -650,7 +672,7 @@
     "cheokcheok"
    ],
    "staging_note": "남은 책에서 문양의 이름을 찾는다. 페이지에 devil이라는 단어 카드가 회색으로 떠오르고, 두 조각(dia + ballein)으로 갈라졌다가 다시 붙는다.",
-   "game_note": "마법 prae-·in-(효과) 획득, 스테이지 4 개방, 2막 시작",
+   "game_note": "필드 마법 prae-·in-(효과) 획득, 스테이지 4 개방, 2막 시작",
    "borrow": [
     {
      "game": "오오카미",

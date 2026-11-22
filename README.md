@@ -10,6 +10,8 @@ A collecting game inspired vocabulary RPG that makes learning English words, mea
 |---|---|
 | [docs/design/01-rpg-base.md](docs/design/01-rpg-base.md) | 기본 설계: 전투, 코인, 마법 14개, 유닛 12종, 어근 65개, 스테이지, 마을, 수치 1차 |
 | [docs/design/02-rpg-v2.md](docs/design/02-rpg-v2.md) | 2차 설계: 속성 20개, 1~4차 진화, 장비 5칸, 스테이지 10개 |
+| [docs/design/03-tuning.md](docs/design/03-tuning.md) | 고정되는 것(이야기·필드 마법)과 고쳐 나갈 것(전투 마법·적·보스 수치)을 나누는 기준, 밸런스 데이터 구조 |
+| [docs/design/art-direction.md](docs/design/art-direction.md) | 그림 방향: 동화풍, 귀엽게 |
 | [docs/story/00-overview.md](docs/story/00-overview.md) | 이야기 개요, [장면 청사진](docs/story/blueprint.md), [대본](docs/story/script-ko.md), [스토리보드(전투 콘티 포함)](docs/story/storyboard/) |
 | [docs/i18n.md](docs/i18n.md) | 다국어 텍스트 관리 규칙 |
 | [docs/dev/architecture.md](docs/dev/architecture.md) | 코드 구조와 객체지향 규칙(바뀌는 규칙을 경계 뒤에 두기) |
@@ -18,6 +20,8 @@ A collecting game inspired vocabulary RPG that makes learning English words, mea
 ## 폴더
 
 - `data/words_v2_plan.csv` — 단어 10,000개의 차수·유닛·부위·진화 트리·스테이지·얻는 방법 배정표
+- `data/balance/` — 레벨 테스트하며 고치는 수치(전투 마법, 적, 보스, 속성 능력)
+- `data/field_magic.json` — 필드 마법 14개(고정)
 - `data/scenes/` — 장면 데이터(누가, 어떤 순서로, 어떤 연출로). 문장은 키만 적는다
 - `locale/` — 모든 게임 문장(한국어 `ko` 열, 언어를 늘리면 열 추가)
 - `tools/assign/` — 배정표를 다시 만드는 스크립트

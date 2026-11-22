@@ -1,0 +1,155 @@
+{
+  "_doc": "전투 마법. 레벨 테스트하며 자주 고친다. 필드 마법(data/field_magic.json)과 따로 관리한다. P = 마법 위력(power 식). 수치는 docs/design/01-rpg-base.md '마법 수치 1차'에서 옮긴 임시값",
+  "power": {
+    "base": 2,
+    "per_avg_level_div": 6
+  },
+  "cast_order": [
+    "order",
+    "effect",
+    "defense",
+    "attack"
+  ],
+  "enemy_first": true,
+  "magics": [
+    {
+      "id": "ex",
+      "prefix": "ex-",
+      "kind": "order",
+      "class": "SwapToBack",
+      "params": {
+        "hp_per_passed": "ceil(P/2)"
+      }
+    },
+    {
+      "id": "pro",
+      "prefix": "pro-",
+      "kind": "order",
+      "class": "MoveToFront",
+      "params": {
+        "atk_per_passed": "ceil(P/2)"
+      }
+    },
+    {
+      "id": "in",
+      "prefix": "in-",
+      "kind": "effect",
+      "class": "CoinBias",
+      "params": {
+        "heads_chance": 0.75
+      }
+    },
+    {
+      "id": "dis",
+      "prefix": "dis-",
+      "kind": "effect",
+      "class": "ZeroBaseAttack",
+      "params": {}
+    },
+    {
+      "id": "de",
+      "prefix": "de-",
+      "kind": "attack",
+      "class": "StrikeFirst",
+      "params": {
+        "damage": "2*P",
+        "atk_down": 1
+      }
+    },
+    {
+      "id": "un",
+      "prefix": "un-",
+      "kind": "attack",
+      "class": "StrikeAll",
+      "params": {
+        "damage": "ceil(P/2)",
+        "cancel_first_skill": true
+      }
+    },
+    {
+      "id": "in_neg",
+      "prefix": "in-",
+      "kind": "attack",
+      "class": "StrikeSilence",
+      "params": {
+        "damage": "P"
+      }
+    },
+    {
+      "id": "ob",
+      "prefix": "ob-",
+      "kind": "attack",
+      "class": "StrikeReflect",
+      "params": {
+        "damage": "P",
+        "reflect": 0.5
+      }
+    },
+    {
+      "id": "com",
+      "prefix": "com-",
+      "kind": "defense",
+      "class": "ShareDamage",
+      "params": {
+        "share": 0.333,
+        "taken_by_others": 0.5
+      },
+      "quiz": "combo"
+    },
+    {
+      "id": "re",
+      "prefix": "re-",
+      "kind": "defense",
+      "class": "HealOnWin",
+      "params": {
+        "heal": "P"
+      },
+      "quiz": "combo"
+    },
+    {
+      "id": "ad",
+      "prefix": "ad-",
+      "kind": "defense",
+      "class": "Shield",
+      "params": {
+        "shield": "P"
+      },
+      "quiz": "combo"
+    },
+    {
+      "id": "sub",
+      "prefix": "sub-",
+      "kind": "defense",
+      "class": "PoolToFirst",
+      "params": {
+        "give_ratio": 0.5
+      },
+      "quiz": "combo"
+    },
+    {
+      "id": "prae",
+      "prefix": "prae-",
+      "kind": "defense",
+      "class": "StrikeFirstAll",
+      "params": {},
+      "quiz": "combo"
+    },
+    {
+      "id": "inter",
+      "prefix": "inter-",
+      "kind": "defense",
+      "class": "DamageWall",
+      "params": {
+        "clashes": 2,
+        "reduce": "ceil(P/2)"
+      },
+      "quiz": "combo"
+    }
+  ],
+  "prefix_resist": {
+    "damage_ratio": 0.5,
+    "_doc": "그 접두사가 든 적 단어는 공격 마법 피해를 덜 받는다"
+  },
+  "default_unlock": "same_id_field_magic",
+  "_unlock_doc": "전투 마법을 얻는 방법. 기본은 같은 id의 필드 마법을 얻을 때. 필드 마법이 없는 전투 마법을 더할 때는 항목에 unlock을 적는다(예: {\"boss\": 7}, {\"dex_count\": 1500})"
+}

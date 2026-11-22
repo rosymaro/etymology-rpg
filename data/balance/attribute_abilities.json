@@ -1,0 +1,26 @@
+{
+  "_doc": "속성 능력 20개(약 = 3~4개, 강 = 5개). docs/design/02-rpg-v2.md '속성 능력 초안'의 임시값",
+  "thresholds": { "weak": 3, "strong": 5 },
+  "abilities": {
+    "1":  { "class": "RegenPerRound",   "weak": { "heal": 1 }, "strong": { "heal": 2 } },
+    "2":  { "class": "EndureOnce",      "weak": {}, "strong": { "atk_after": 2 } },
+    "3":  { "class": "RerollCoins",     "weak": { "count": 1 }, "strong": { "count": 2 } },
+    "4":  { "class": "SplashNext",      "weak": { "damage": 1 }, "strong": { "damage": 2 } },
+    "5":  { "class": "BenchRegen",      "weak": { "heal": 1 }, "strong": { "heal": 2 } },
+    "6":  { "class": "FirstRoundBonus", "weak": { "damage": 2 }, "strong": { "damage": 4 } },
+    "7":  { "class": "DefenseUp",       "weak": { "def": 1 }, "strong": { "def": 3 } },
+    "8":  { "class": "ClashShield",     "weak": { "shield": 2 }, "strong": { "shield": 5 } },
+    "9":  { "class": "BenchGuard",      "weak": { "reduce": 1 }, "strong": { "immune": true } },
+    "10": { "class": "LateRoundAtk",    "weak": { "from_round": 3, "atk": 1 }, "strong": { "from_round": 3, "atk": 3 } },
+    "11": { "class": "StrikeFirst",     "weak": { "rounds": 1 }, "strong": { "rounds": 2 } },
+    "12": { "class": "AvengeAtk",       "weak": { "atk": 1 }, "strong": { "atk": 3 } },
+    "13": { "class": "EnemyCoinTails",  "weak": { "count": 1 }, "strong": { "count": 2 } },
+    "14": { "class": "OverkillCarry",   "weak": { "damage": 2 }, "strong": { "carry_all": true } },
+    "15": { "class": "ExpBonus",        "weak": { "ratio": 0.2 }, "strong": { "ratio": 0.5 } },
+    "16": { "class": "EaseSkillCond",   "weak": { "steps": 1 }, "strong": { "steps": 2 } },
+    "17": { "class": "BlockDebuff",     "weak": { "count": 1 }, "strong": { "nullify_enemy_attr": true } },
+    "18": { "class": "AttackUp",        "weak": { "atk": 1 }, "strong": { "atk": 3 } },
+    "19": { "class": "ExecuteBonus",    "weak": { "below_hp": 0.5, "damage": 2 }, "strong": { "below_hp": 0.5, "damage": 4 } },
+    "20": { "class": "MinHeads",        "weak": { "min": 1 }, "strong": { "min": 2 } }
+  }
+}

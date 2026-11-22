@@ -34,7 +34,9 @@ flowchart TB
 |---|---|---|---|
 | 코인 식, 능력치 공식 | `StatFormula.evaluate(unit, coins) -> Stats` | `CoinStatFormula`, `FixedStatFormula` | 새 공식 클래스 + 밸런스 데이터 |
 | 스킬 65개 | `Skill.can_trigger(ctx)`, `Skill.apply(ctx)` | `ShieldSkill`, `CoinFlipSkill` | 스킬 클래스 하나 |
-| 마법 14개 | `Magic.cast(ctx)` + 종류(순서·효과·방어·공격) | `OrderMagic`, `DefenseMagic` | 마법 클래스 하나 |
+| 전투 마법(늘어날 수 있음) | `BattleMagic.cast(ctx)` + 종류(순서·효과·방어·공격) | `MoveToFront`, `ShareDamage` | `data/balance/battle_magic.json` 한 줄(+ 새 동작이면 클래스 하나) |
+| 필드 마법(고정) | `FieldMagic.use(field_ctx)` | `Descend`, `Unlock` | 바꾸지 않는다. 이야기와 묶여 있다 |
+| 적 능력치·대응·특수 능력 | `EnemyProfileBuilder.build(word, stage) -> EnemyProfile` (층: 스테이지 곡선 → 빈도 → 성향 → 속성 능력 → 단어별 덮어쓰기) | 층마다 작은 클래스 | `data/balance/enemy*.json`만 |
 | 속성 능력 20개 | `AttributeAbility.apply(ctx, tier)`, tier = 약·강 | `LifeRegen`, `WindFirstStrike` | 능력 클래스 하나 |
 | 켜지는 속성 고르기 | `AttributeResolver.resolve(equipment) -> {attr, tier}` | 주·보조 1점, 동점이면 무기→신발 | 해결자 하나 |
 | 진화 규칙 | `EvolutionRule.can_evolve`, `quiz_words`, `on_fail` | 트리 기반, 재포획 목표 | 규칙 하나 |
@@ -44,6 +46,8 @@ flowchart TB
 | 미니게임 | `Minigame` 장면 + `MinigameResult` | 마을마다 하나 | 장면 하나 |
 
 이 경계들은 **전략(Strategy) 패턴**이다. 규칙 층은 "지금 쓸 공식 객체"를 받아 부를 뿐, 어떤 공식인지 모른다. 어떤 객체를 쓸지는 데이터가 정한다(5절).
+
+레벨 테스트에서 자주 고치는 값과 그 파일은 [03-tuning.md](../design/03-tuning.md)에 정리했다. 원칙은 **튜닝은 `data/balance/`만 고치면 끝나야 한다**는 것이다. 코드나 이야기 파일을 고쳐야 한다면 경계가 잘못 잡힌 것이다.
 
 ## 4. 클래스 그림 (규칙 층 핵심)
 
@@ -56,7 +60,8 @@ classDiagram
   class AttributeAbility { <<interface>> apply(ctx, tier) }
   class StatFormula { <<interface>> evaluate(unit, coins) }
   class Skill { <<interface>> can_trigger(ctx); apply(ctx) }
-  class Magic { <<interface>> cast(ctx) }
+  class BattleMagic { <<interface>> cast(ctx) }
+  class EnemyProfileBuilder { build(word, stage) }
   class BattleState { allies; enemies; round; log }
   class BattleEngine { start(); clash(); step() }
   Unit --> Equipment
@@ -64,7 +69,8 @@ classDiagram
   BattleEngine --> BattleState
   BattleEngine ..> StatFormula
   BattleEngine ..> Skill
-  BattleEngine ..> Magic
+  BattleEngine ..> BattleMagic
+  BattleEngine ..> EnemyProfileBuilder
   BattleEngine ..> AttributeResolver
   AttributeResolver ..> AttributeAbility
 ```
@@ -123,7 +129,8 @@ src/
   ui/          # 장면과 화면 스크립트
   events/      # 이벤트 버스, 이벤트 객체
 data/
-  balance/     # 밸런스 수치(JSON): 코인, 능력치, 속성 능력, 스킬, 마법, 보스
+  balance/     # 밸런스 수치(JSON): 전투 마법, 적 곡선·성향·덮어쓰기, 보스, 속성 능력, 스킬, 코인
+  field_magic.json  # 필드 마법(고정)
   scenes/      # 이야기 장면(이미 있음)
 locale/        # 문장(이미 있음)
 tests/         # 규칙 층 단위 테스트

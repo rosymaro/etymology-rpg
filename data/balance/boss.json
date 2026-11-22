@@ -1,0 +1,16 @@
+{
+  "_doc": "보스. ability는 data/balance의 능력 정의 id. level_delta는 그 스테이지 예상 레벨에 더하는 값. 값은 임시",
+  "bosses": [
+    { "id": "destroyer", "stage": 1,  "level_delta": 1,  "coins": 2, "ability": { "class": "CoinLock",       "params": { "count": 1 } } },
+    { "id": "predator",  "stage": 2,  "level_delta": 0,  "coins": 2, "ability": { "class": "HealOnKill",     "params": { "heal": 3 } } },
+    { "id": "wizard",    "stage": 3,  "level_delta": 0,  "coins": 2, "ability": { "class": "RandomAttackMagic", "params": {} } },
+    { "id": "hurricane", "stage": 4,  "level_delta": 1,  "coins": 3, "ability": { "class": "BenchDamage",    "params": { "damage": 2, "when": "clash_start" } } },
+    { "id": "pirate",    "stage": 5,  "level_delta": 1,  "coins": 4, "ability": { "class": "StealDefenseMagic", "params": {} } },
+    { "id": "dictator",  "stage": 6,  "level_delta": 1,  "coins": 4, "ability": { "class": "CoinLock",       "params": { "count": 2 } } },
+    { "id": "vortex",    "stage": 7,  "level_delta": 1,  "coins": 5, "ability": { "class": "FlipAllCoins",   "params": {} } },
+    { "id": "guardian",  "stage": 8,  "level_delta": 0,  "coins": 5, "ability": { "class": "BlockFirstHit",  "params": { "per_clash": 1 } } },
+    { "id": "dragon",    "stage": 9,  "level_delta": 1,  "coins": 5, "ability": { "class": "BurnBench",      "params": { "damage": 1, "hp_mult": 1.5 } } },
+    { "id": "devil",     "stage": 10, "level_delta": 2,  "coins": 5, "ability": { "class": "Sever",          "params": { "steal_heads": 1 } } }
+  ],
+  "minions": { "from_tiers": [2, 3], "count": 3 }
+}
