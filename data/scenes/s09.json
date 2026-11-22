@@ -41,6 +41,46 @@
      "speaker": "ttukttak",
      "text": "story.s09.ki.004_etym"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "miner",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "partyslot": ""
+     },
+     "say": 2,
+     "note": "파티 화면의 빈자리(회색 실루엣). 뚝딱이 그 자리를 본다."
+    },
+    {
+     "shot": "mid",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "miner",
+       "x": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "card": "finish",
+      "pun": ""
+     },
+     "say": 3,
+     "note": "\"핀란드 사람?\" 광부 머리 위에 엉뚱한 그림."
+    }
    ]
   },
   {
@@ -74,6 +114,50 @@
      "speaker": "miner",
      "text": "story.s09.seung.002"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "wajang",
+       "x": 45,
+       "pose": "excited"
+      },
+      {
+       "id": "miner",
+       "x": 70,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "smash": ""
+     },
+     "say": 1,
+     "note": "와장이 다 부수려다 멈칫."
+    },
+    {
+     "shot": "mid",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "miner",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "2048"
+     },
+     "say": 2,
+     "note": "광부가 광석 캐기(2048 규칙)를 소개."
+    }
    ]
   },
   {
@@ -92,6 +176,30 @@
     {
      "speaker": "ttukttak",
      "text": "story.s09.q_magic.001_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "miner",
+       "x": 55,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "chain": "",
+      "magic": "dis-"
+     },
+     "say": 1,
+     "note": "사슬에 묶인 광부들. dis-로 사슬이 떨어진다."
     }
    ]
   },
@@ -121,6 +229,24 @@
      "speaker": "wajang",
      "text": "story.s09.q_root.002"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "wajang",
+       "x": 45,
+       "pose": "happy"
+      }
+     ],
+     "fx": {
+      "crackwall": ""
+     },
+     "say": 2,
+     "note": "드디어 부숴도 되는 벽. 와장이 감격."
+    }
    ]
   },
   {
@@ -139,6 +265,29 @@
     {
      "speaker": "ttukttak",
      "text": "story.s09.q_word.001_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "mine",
+     "actors": [
+      {
+       "id": "miner",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "board": "corrupt decision finish"
+     },
+     "say": 1,
+     "note": "장부의 빈칸이 채워진다."
     }
    ]
   },
@@ -168,6 +317,46 @@
      "speaker": "ttukttak",
      "text": "story.s09.jeon.002_etym"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "cave",
+     "actors": [
+      {
+       "id": "dragon",
+       "x": 65,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 20,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "embers": ""
+     },
+     "say": 1,
+     "note": "거대한 동굴. dragon이 눈을 뜬다."
+    },
+    {
+     "shot": "wide",
+     "bg": "cave",
+     "actors": [
+      {
+       "id": "dragon",
+       "x": 60,
+       "pose": "boss"
+      }
+     ],
+     "fx": {
+      "namecap": "dragon",
+      "embers": ""
+     },
+     "say": 0,
+     "note": "이름 자막. 숨 쉴 때마다 대기 동료들에게 불티."
+    }
    ]
   },
   {
@@ -194,6 +383,30 @@
     {
      "speaker": "hero",
      "text": "story.s09.gyeol.002"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "spire",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 20,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "crackmark": "",
+      "sky": ""
+     },
+     "say": 1,
+     "note": "무너진 벽 너머 두 갈래로 갈라진 탑과 하늘의 문양."
     }
    ]
   }

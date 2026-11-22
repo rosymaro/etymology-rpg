@@ -38,6 +38,51 @@
      "speaker": "scribe",
      "text": "story.s06.ki.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "dictator",
+       "x": 50,
+       "pose": "boss"
+      },
+      {
+       "id": "scribe",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "villager_a",
+       "x": 70,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "podium": "",
+      "scroll": ""
+     },
+     "say": 1,
+     "note": "광장 단상에서 dictator가 엉뚱한 법을 선포."
+    },
+    {
+     "shot": "mid",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "scribe",
+       "x": 45,
+       "pose": "sweat"
+      }
+     ],
+     "fx": {
+      "stutter": ""
+     },
+     "say": 2,
+     "note": "서기가 \"습…\"에서 말을 못 끝낸다."
+    }
    ]
   },
   {
@@ -75,6 +120,50 @@
      "speaker": "scribe",
      "text": "story.s06.seung.003"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "daejang",
+       "x": 45,
+       "pose": "proud"
+      },
+      {
+       "id": "hero",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "point": "lost"
+     },
+     "say": 1,
+     "note": "대장이 앞장서 가리키지만 방향이 제각각."
+    },
+    {
+     "shot": "mid",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "scribe",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "anagram"
+     },
+     "say": 3,
+     "note": "서기가 필사(애너그램)를 소개."
+    }
    ]
   },
   {
@@ -97,6 +186,30 @@
     {
      "speaker": "ttukttak",
      "text": "story.s06.q_magic.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "scribe",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "chest": "",
+      "magic": "un-"
+     },
+     "say": 2,
+     "note": "봉인된 법전 상자가 un-으로 열린다."
     }
    ]
   },
@@ -131,6 +244,29 @@
      "speaker": "guard_castle",
      "text": "story.s06.q_root.003"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "guard_castle",
+       "x": 65,
+       "pose": ""
+      },
+      {
+       "id": "jojal",
+       "x": 40,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "note": ""
+     },
+     "say": 2,
+     "note": "조잘이 수첩을 펴고 경비를 설득한다."
+    }
    ]
   },
   {
@@ -149,6 +285,29 @@
     {
      "speaker": "ttukttak",
      "text": "story.s06.q_word.001_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "scribe",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "board": "sign design legal"
+     },
+     "say": 1,
+     "note": "문서의 빈칸이 채워진다."
     }
    ]
   },
@@ -177,6 +336,51 @@
     {
      "speaker": "bingeul",
      "text": "story.s06.jeon.002"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "dictator",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "throne": "",
+      "scroll": ""
+     },
+     "say": 1,
+     "note": "왕좌의 방. dictator가 devil의 명령서를 들고 있다."
+    },
+    {
+     "shot": "wide",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "dictator",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "bingeul",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "namecap": "dictator"
+     },
+     "say": 2,
+     "note": "이름 자막. 빙글이 금지/금지 아님을 오간다."
     }
    ]
   },
@@ -213,6 +417,66 @@
     {
      "speaker": "hero",
      "text": "story.s06.gyeol.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "king",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {},
+     "say": 1,
+     "note": "돌아온 왕이 이야기를 시작한다."
+    },
+    {
+     "shot": "wide",
+     "bg": "flashback",
+     "actors": [
+      {
+       "id": "devil_young",
+       "x": 50,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "sepia": "",
+      "letters": ""
+     },
+     "say": 2,
+     "note": "회상(흑백 한 장): 어린 전령이 말을 이쪽 마을에서 저쪽 마을로 던져 전한다."
+    },
+    {
+     "shot": "wide",
+     "bg": "flashback",
+     "actors": [
+      {
+       "id": "villager_a",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "villager_b",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "sepia": "",
+      "argue": ""
+     },
+     "say": 3,
+     "note": "회상: 사람들이 말의 원래 뜻을 두고 다툰다."
     }
    ]
   }

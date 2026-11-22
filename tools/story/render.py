@@ -26,19 +26,22 @@ def cell(s):
 bp = ['# 장면 청사진', '',
       '스테이지마다 장면의 장소, 등장인물, 연출(동선·카메라·효과), 게임과의 연결, 다른 게임에서 빌려 온 개념을 적었다. '
       '빌려 온 것은 규칙·연출 방식뿐이고, 이름·그림·음악은 쓰지 않는다. 대사는 [대본](script-%s.md)에 있다.' % lang, '',
+      '콘티 그림과 빌려 온 개념 그림은 [스토리보드 페이지](storyboard/index.html)에 있다. 이 표는 각 컷의 설명이다.', '',
       '이 문서는 `tools/story/render.py`가 `data/scenes/*.json`으로 만든다. 고칠 때는 JSON을 고치고 다시 만든다.', '']
 used = collections.defaultdict(list)
 for st in stages:
     n = st['stage']
     bp += [f"## 스테이지 {n} {names.get(st['place'], '')}", '', st.get('theme_note', ''), '',
-           '| 장면 | 제목 | 장소 | 등장 | 연출 | 게임 연결 | 빌려 온 개념 |', '|---|---|---|---|---|---|---|']
+           '| 장면 | 제목 | 장소 | 등장 | 콘티(컷) | 게임 연결 | 빌려 온 개념 |', '|---|---|---|---|---|---|---|']
     for sc in st['scenes']:
         cast = ', '.join(who(c) for c in sc['cast'])
         bor = '<br>'.join(f"{b['game']}: {b['part']}" for b in sc['borrow']) or '—'
         for b in sc['borrow']:
             used[(b['game'], b['part'])].append(sc['id'])
-        bp.append('| ' + ' | '.join(cell(x) for x in [sc['id'], text.get(sc['title'], ''), sc['place_note'], cast,
-                                                   sc['staging_note'], sc['game_note'], bor]) + ' |')
+        shot = {'wide': '와이드', 'mid': '미디엄', 'close': '클로즈업'}
+        conti = '<br>'.join(f"#{i} {shot[c['shot']]}: {cell(c['note'])}" for i, c in enumerate(sc.get('conti', []), 1)) or cell(sc['staging_note'])
+        bp.append('| ' + ' | '.join([cell(sc['id']), cell(text.get(sc['title'], '')), cell(sc['place_note']), cell(cast),
+                                     conti, cell(sc['game_note']), bor]) + ' |')
     bp.append('')
 bp += ['## 빌려 온 개념 모음', '', '| 게임 | 빌려 온 부분 | 쓰는 장면 |', '|---|---|---|']
 for (g, part), ids in sorted(used.items()):

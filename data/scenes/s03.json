@@ -41,6 +41,41 @@
      "speaker": "watchman",
      "text": "story.s03.ki.005"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "tower",
+     "actors": [
+      {
+       "id": "watchman",
+       "x": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "fog": "",
+      "closedeyes": ""
+     },
+     "say": 1,
+     "note": "안개 낀 망루. 망루지기가 눈 감고 망원경을 들고 있다."
+    },
+    {
+     "shot": "close",
+     "bg": "tower",
+     "actors": [
+      {
+       "id": "watchman",
+       "x": 50,
+       "pose": "surprised"
+      }
+     ],
+     "fx": {
+      "fogclear": ""
+     },
+     "say": 5,
+     "note": "눈을 뜨자 \"안개가 보인다!\" 안개 너머 길이 살짝."
+    }
    ]
   },
   {
@@ -87,6 +122,72 @@
      "speaker": "librarian",
      "text": "story.s03.seung.005"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "library",
+     "actors": [
+      {
+       "id": "librarian",
+       "x": 70,
+       "pose": ""
+      },
+      {
+       "id": "cheokcheok",
+       "x": 40,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "fadetext": ""
+     },
+     "say": 1,
+     "note": "책장에서 글자가 한 줄씩 사라진다."
+    },
+    {
+     "shot": "mid",
+     "bg": "library",
+     "actors": [
+      {
+       "id": "cheokcheok",
+       "x": 40,
+       "pose": "proud"
+      },
+      {
+       "id": "hilkkeum",
+       "x": 60,
+       "pose": "shy"
+      }
+     ],
+     "fx": {
+      "card": "collection",
+      "cola": ""
+     },
+     "say": 2,
+     "note": "척척: \"콜라 모음!\" 뒤에서 힐끔이 작게 손을 든다."
+    },
+    {
+     "shot": "mid",
+     "bg": "library",
+     "actors": [
+      {
+       "id": "librarian",
+       "x": 65,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "wsearch"
+     },
+     "say": 5,
+     "note": "사서가 책 읽기(단어 찾기)를 소개."
+    }
    ]
   },
   {
@@ -109,6 +210,51 @@
     {
      "speaker": "ttukttak",
      "text": "story.s03.q_magic.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "garden",
+     "actors": [
+      {
+       "id": "rare",
+       "x": 75,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "run": ""
+     },
+     "say": 1,
+     "note": "희귀 단어가 사람을 보자 달아난다."
+    },
+    {
+     "shot": "mid",
+     "bg": "garden",
+     "actors": [
+      {
+       "id": "rare",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 45,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "magic": "ad-",
+      "stop": ""
+     },
+     "say": 2,
+     "note": "ad-로 다가가면 단어가 멈춘다."
     }
    ]
   },
@@ -133,6 +279,30 @@
      "speaker": "ttukttak",
      "text": "story.s03.q_root.002_etym"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "forest",
+     "actors": [
+      {
+       "id": "hilkkeum",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "fog": "",
+      "path": ""
+     },
+     "say": 1,
+     "note": "안개 속 갈림길, 숨은 길이 빛난다."
+    }
    ]
   },
   {
@@ -155,6 +325,29 @@
     {
      "speaker": "ttukttak",
      "text": "story.s03.q_word.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "library",
+     "actors": [
+      {
+       "id": "librarian",
+       "x": 65,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "board": "collection advice notice"
+     },
+     "say": 1,
+     "note": "대출 목록의 빈칸 세 개가 채워진다."
     }
    ]
   },
@@ -192,6 +385,51 @@
      "speaker": "cheokcheok",
      "text": "story.s03.jeon.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "library",
+     "actors": [
+      {
+       "id": "wizard",
+       "x": 65,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "burnbook": "",
+      "crackmark": ""
+     },
+     "say": 1,
+     "note": "탑 꼭대기에서 wizard가 책을 태우려 한다."
+    },
+    {
+     "shot": "mid",
+     "bg": "library",
+     "actors": [
+      {
+       "id": "wizard",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "cheokcheok",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "namecap": "wizard"
+     },
+     "say": 4,
+     "note": "이름 자막. 척척이 \"그건 제 이름인데요\"."
+    }
    ]
   },
   {
@@ -228,6 +466,45 @@
     {
      "speaker": "cheokcheok",
      "text": "story.s03.gyeol.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "close",
+     "bg": "library",
+     "actors": [],
+     "fx": {
+      "card": "devil",
+      "split": "dia|ballein"
+     },
+     "say": 2,
+     "note": "책 위로 회색 카드 devil이 떠올라 두 조각으로 갈라졌다 붙는다."
+    },
+    {
+     "shot": "mid",
+     "bg": "library",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "librarian",
+       "x": 65,
+       "pose": ""
+      },
+      {
+       "id": "cheokcheok",
+       "x": 50,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "question": ""
+     },
+     "say": 3,
+     "note": "\"왜 뿌리를 자르는 거지?\""
     }
    ]
   }

@@ -37,6 +37,72 @@
      "speaker": "tower_child",
      "text": "story.s10.ki.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "spiretown",
+     "actors": [
+      {
+       "id": "tower_child",
+       "x": 55,
+       "pose": ""
+      },
+      {
+       "id": "villager_a",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "villager_b",
+       "x": 75,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "grey": ""
+     },
+     "say": 1,
+     "note": "회색 마을. 사람들이 \"어… 그…\" 소리만 낸다."
+    },
+    {
+     "shot": "close",
+     "bg": "spiretown",
+     "actors": [
+      {
+       "id": "tower_child",
+       "x": 50,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "card": "defect",
+      "grey": ""
+     },
+     "say": 2,
+     "note": "아이가 든 회색 카드 defect. 첫 장면과 같은 구도."
+    },
+    {
+     "shot": "mid",
+     "bg": "spiretown",
+     "actors": [
+      {
+       "id": "tower_child",
+       "x": 55,
+       "pose": "happy"
+      },
+      {
+       "id": "ttukttak",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "colorspread": ""
+     },
+     "say": 4,
+     "note": "\"결함!\" 아이 주변부터 색이 돌아온다."
+    }
    ]
   },
   {
@@ -69,6 +135,29 @@
      "speaker": "tower_child",
      "text": "story.s10.seung.002"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "spiretown",
+     "actors": [
+      {
+       "id": "tower_child",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "flow"
+     },
+     "say": 1,
+     "note": "아이가 문양 잇기(선 잇기)를 소개."
+    }
    ]
   },
   {
@@ -90,6 +179,30 @@
     {
      "speaker": "hero",
      "text": "story.s10.q_magic.002"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "spire",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "splitgate": "",
+      "magic": "re-"
+     },
+     "say": 2,
+     "note": "두 쪽으로 갈라진 탑 입구가 re-로 다시 붙는다."
     }
    ]
   },
@@ -114,6 +227,24 @@
      "speaker": "bingeul",
      "text": "story.s10.q_root.002"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "spire",
+     "actors": [
+      {
+       "id": "bingeul",
+       "x": 50,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "foldstairs": ""
+     },
+     "say": 1,
+     "note": "종이처럼 접힌 계단을 펼친다."
+    }
    ]
   },
   {
@@ -136,6 +267,29 @@
     {
      "speaker": "ttukttak",
      "text": "story.s10.q_word.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "spiretown",
+     "actors": [
+      {
+       "id": "tower_child",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "board": "defect construction require"
+     },
+     "say": 1,
+     "note": "아이의 공책에 세 단어."
     }
    ]
   },
@@ -178,6 +332,70 @@
      "speaker": "hero",
      "text": "story.s10.jeon_a.005"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "spiretop",
+     "actors": [
+      {
+       "id": "devil",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "yeongcha",
+       "x": 78,
+       "pose": "sad"
+      },
+      {
+       "id": "hero",
+       "x": 20,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "crackmark": "",
+      "sky": ""
+     },
+     "say": 1,
+     "note": "탑 꼭대기. 하늘의 문양 아래 devil과 영차."
+    },
+    {
+     "shot": "close",
+     "bg": "spiretop",
+     "actors": [
+      {
+       "id": "devil",
+       "x": 50,
+       "pose": "boss"
+      }
+     ],
+     "fx": {
+      "namecap": "devil"
+     },
+     "say": 2,
+     "note": "devil의 독백. 이름 자막."
+    },
+    {
+     "shot": "mid",
+     "bg": "spiretop",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 60,
+       "pose": "sad"
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {},
+     "say": 4,
+     "note": "\"오지 마.\" 영차와 주인공의 마주 보기."
+    }
    ]
   },
   {
@@ -219,6 +437,65 @@
      "speaker": "tower_child",
      "text": "story.s10.jeon_b.005"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "spiretop",
+     "actors": [
+      {
+       "id": "devil",
+       "x": 65,
+       "pose": "boss"
+      },
+      {
+       "id": "yeongcha",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 20,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "battle": ""
+     },
+     "say": 1,
+     "note": "최종전 4 대 4(devil, 영차, 지역 보스 둘)."
+    },
+    {
+     "shot": "wide",
+     "bg": "spiretop",
+     "actors": [],
+     "fx": {
+      "cheer": "blacksmith hunter king tower_child"
+     },
+     "say": 2,
+     "note": "체력이 절반이 되면 마을 사람들의 얼굴이 차례로 떠오르며 단어를 외친다."
+    },
+    {
+     "shot": "wide",
+     "bg": "spiretop",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 45,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "powerup": ""
+     },
+     "say": 5,
+     "note": "외친 단어들이 빛이 되어 아군에게 모인다."
+    }
    ]
   },
   {
@@ -259,6 +536,72 @@
     {
      "speaker": "ttukttak",
      "text": "story.s10.gyeol.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "spiretop",
+     "actors": [
+      {
+       "id": "devil",
+       "x": 60,
+       "pose": "down"
+      }
+     ],
+     "fx": {
+      "crackmarkjoin": ""
+     },
+     "say": 1,
+     "note": "갈라진 문양이 하나로 붙는다."
+    },
+    {
+     "shot": "wide",
+     "bg": "tree",
+     "actors": [],
+     "fx": {
+      "rootsjoin": "",
+      "words": "",
+      "colorspread": ""
+     },
+     "say": 0,
+     "note": "장면이 말뿌리 나무로 바뀌고 모든 뿌리가 이어져 카드에 색이 돌아온다."
+    },
+    {
+     "shot": "mid",
+     "bg": "tree",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {},
+     "say": 3,
+     "note": "영차가 돌아오고, 주인공이 손을 내민다."
+    },
+    {
+     "shot": "close",
+     "bg": "tree",
+     "actors": [],
+     "fx": {
+      "card": "devil",
+      "split": "dia|ballein",
+      "join": ""
+     },
+     "say": 0,
+     "note": "마지막 컷: devil 카드가 갈라졌다가 하나로. 크레디트에 모은 단어가 흐른다."
     }
    ]
   }

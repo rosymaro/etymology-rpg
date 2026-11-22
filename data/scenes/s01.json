@@ -61,6 +61,54 @@
      "speaker": "ttukttak",
      "text": "story.s01.intro.009"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "tree",
+     "actors": [],
+     "fx": {
+      "roots": "",
+      "words": ""
+     },
+     "say": 1,
+     "note": "검은 화면에서 낭독. 말뿌리 나무가 화면을 채우고 뿌리 끝마다 단어가 매달려 있다."
+    },
+    {
+     "shot": "wide",
+     "bg": "tree",
+     "actors": [],
+     "fx": {
+      "rootscut": "",
+      "crackmark": ""
+     },
+     "say": 3,
+     "note": "갈라진 문양이 번지며 뿌리가 끊어지고 단어 카드가 회색으로 떨어진다."
+    },
+    {
+     "shot": "mid",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 55,
+       "pose": ""
+      },
+      {
+       "id": "blacksmith",
+       "x": 75,
+       "pose": ""
+      }
+     ],
+     "fx": {},
+     "say": 7,
+     "note": "아침. 대장간 앞. 대장장이가 뚝딱을 소개하고 뚝딱이 손을 번쩍 든다."
+    }
    ]
   },
   {
@@ -104,6 +152,73 @@
     {
      "speaker": "ttukttak",
      "text": "story.s01.ki.006"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "blacksmith",
+       "x": 70,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "anvil": ""
+     },
+     "say": 0,
+     "note": "주인공이 모루 앞에서 망치질(버튼 3번)."
+    },
+    {
+     "shot": "close",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 40,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "card": "defect",
+      "crack": "",
+      "grey": ""
+     },
+     "say": 2,
+     "note": "물건에 금이 가고 회색 카드 defect가 튀어나온다. 카메라가 카드로 다가간다."
+    },
+    {
+     "shot": "mid",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 50,
+       "pose": ""
+      },
+      {
+       "id": "blacksmith",
+       "x": 75,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "split": "de-|fac"
+     },
+     "say": 4,
+     "note": "뚝딱이 카드를 두 조각(de- / fac)으로 갈라 보여 준다."
     }
    ]
   },
@@ -150,6 +265,77 @@
      "speaker": "ttukttak",
      "text": "story.s01.seung.005"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "villager_a",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 42,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "board": "인포메이션: 어쩌고"
+     },
+     "say": 1,
+     "note": "광장 게시판 앞에서 마을 사람이 고개를 갸웃."
+    },
+    {
+     "shot": "mid",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "ttukttak",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "villager_a",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "split": "in-|form",
+      "bulb": ""
+     },
+     "say": 2,
+     "note": "뚝딱의 풀이에 마을 사람 머리 위로 전구."
+    },
+    {
+     "shot": "mid",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "blacksmith",
+       "x": 65,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "tetris"
+     },
+     "say": 4,
+     "note": "대장장이가 블록 채우기 미니게임을 소개."
+    }
    ]
   },
   {
@@ -176,6 +362,56 @@
     {
      "speaker": "hero",
      "text": "story.s01.q_magic.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "cliff",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 55,
+       "pose": ""
+      },
+      {
+       "id": "blacksmith",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "down": ""
+     },
+     "say": 1,
+     "note": "절벽 위. 아래 창고가 보이지만 길이 없다."
+    },
+    {
+     "shot": "mid",
+     "bg": "cliff",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "magic": "de-",
+      "float": ""
+     },
+     "say": 3,
+     "note": "de-를 외치면 일행이 천천히 내려앉는다(점선 화살표)."
     }
    ]
   },
@@ -213,6 +449,45 @@
      "speaker": "blacksmith",
      "text": "story.s01.q_root.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "ttukttak",
+       "x": 50,
+       "pose": ""
+      },
+      {
+       "id": "blacksmith",
+       "x": 70,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "bellows": ""
+     },
+     "say": 2,
+     "note": "뚝딱이 fac를 장착하고 풀무 앞에."
+    },
+    {
+     "shot": "close",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "ttukttak",
+       "x": 50,
+       "pose": "dizzy"
+      }
+     ],
+     "fx": {
+      "wind": "reverse"
+     },
+     "say": 3,
+     "note": "풀무에서 바람이 거꾸로 뿜어져 뚝딱 깃털이 날린다(스킷 개그)."
+    }
    ]
   },
   {
@@ -240,6 +515,51 @@
     {
      "speaker": "ttukttak",
      "text": "story.s01.q_word.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "villager_a",
+       "x": 65,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "board": "___ ___ ___"
+     },
+     "say": 1,
+     "note": "게시판의 빈칸 세 개."
+    },
+    {
+     "shot": "mid",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "villager_a",
+       "x": 65,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "board": "information inform format",
+      "colorspread": ""
+     },
+     "say": 2,
+     "note": "단어를 가져오면 빈칸이 채워지며 색이 번진다."
     }
    ]
   },
@@ -277,6 +597,73 @@
     {
      "speaker": "destroyer",
      "text": "story.s01.jeon.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "destroyer",
+       "x": 75,
+       "pose": "boss"
+      }
+     ],
+     "fx": {
+      "quake": "",
+      "bridgefall": ""
+     },
+     "say": 1,
+     "note": "땅이 울리고 다리가 무너지며 destroyer 등장."
+    },
+    {
+     "shot": "wide",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "destroyer",
+       "x": 60,
+       "pose": "boss"
+      }
+     ],
+     "fx": {
+      "namecap": "destroyer",
+      "crackmark": ""
+     },
+     "say": 0,
+     "note": "이름 자막이 화면 아래로 쾅. 몸에 갈라진 문양."
+    },
+    {
+     "shot": "mid",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 50,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "split": "de-|struct"
+     },
+     "say": 3,
+     "note": "주인공의 깨달음 컷: \"de- + struct… destroy!\""
     }
    ]
   },
@@ -318,6 +705,66 @@
     {
      "speaker": "hero",
      "text": "story.s01.gyeol.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "destroyer",
+       "x": 60,
+       "pose": "down"
+      }
+     ],
+     "fx": {
+      "beam": ""
+     },
+     "say": 0,
+     "note": "쓰러진 destroyer에서 빛이 말뿌리 나무로 날아간다."
+    },
+    {
+     "shot": "wide",
+     "bg": "tree",
+     "actors": [],
+     "fx": {
+      "rootsjoin": "",
+      "colorspread": ""
+     },
+     "say": 1,
+     "note": "뿌리 하나가 다시 이어지고 마을 간판에 색이 번진다."
+    },
+    {
+     "shot": "mid",
+     "bg": "square",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 50,
+       "pose": ""
+      },
+      {
+       "id": "blacksmith",
+       "x": 70,
+       "pose": ""
+      },
+      {
+       "id": "villager_a",
+       "x": 85,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "magic": "sub-"
+     },
+     "say": 4,
+     "note": "마을 사람들이 둘러서서 떠받쳐 준다(sub-)."
     }
    ]
   }

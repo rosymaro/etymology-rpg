@@ -38,6 +38,50 @@
      "speaker": "yeongcha",
      "text": "story.s05.ki.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "porter",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 60,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "crates": ""
+     },
+     "say": 1,
+     "note": "짐꾼들이 짐 앞에 멍하니 앉아 있다."
+    },
+    {
+     "shot": "mid",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 50,
+       "pose": "proud"
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "join": ""
+     },
+     "say": 3,
+     "note": "영차가 가슴을 펴며 합류. \"여기가 내 고향이야.\""
+    }
    ]
   },
   {
@@ -71,6 +115,50 @@
      "speaker": "sailor",
      "text": "story.s05.seung.002"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "jojal",
+       "x": 45,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "note": ""
+     },
+     "say": 1,
+     "note": "조잘이 수첩에 \"안녕\"을 받아 적는다."
+    },
+    {
+     "shot": "mid",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "sailor",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "mini": "match3"
+     },
+     "say": 2,
+     "note": "늙은 선원이 낚시(3개 맞추기)를 소개."
+    }
    ]
   },
   {
@@ -93,6 +181,25 @@
     {
      "speaker": "ttukttak",
      "text": "story.s05.q_magic.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "sailor",
+       "x": 30,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "lighthouse": "",
+      "magic": "pro-"
+     },
+     "say": 2,
+     "note": "꺼진 등대에 pro-, 빛이 앞으로 뻗는다."
     }
    ]
   },
@@ -122,6 +229,24 @@
     {
      "speaker": "ttukttak",
      "text": "story.s05.q_root.002_etym"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 50,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "lift": "crate"
+     },
+     "say": 1,
+     "note": "영차가 짐을 번쩍. 무척 신나 보인다."
     }
    ]
   },
@@ -160,6 +285,51 @@
      "speaker": "yeongcha",
      "text": "story.s05.q_word.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "tavern",
+     "actors": [
+      {
+       "id": "sailor",
+       "x": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "pose": ""
+      },
+      {
+       "id": "yeongcha",
+       "x": 45,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "split": "trans-|dare"
+     },
+     "say": 2,
+     "note": "선원이 tradere 단어들을 늘어놓는다."
+    },
+    {
+     "shot": "wide",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "yeongcha",
+       "x": 70,
+       "pose": "back"
+      }
+     ],
+     "fx": {
+      "night": "",
+      "alone": ""
+     },
+     "say": 4,
+     "note": "밤. 일행이 잠든 사이 영차가 혼자 부두로 걸어간다(뒷모습, 달빛)."
+    }
    ]
   },
   {
@@ -197,6 +367,51 @@
      "speaker": "yeongcha",
      "text": "story.s05.jeon.004"
     }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "sea",
+     "actors": [
+      {
+       "id": "pirate",
+       "x": 65,
+       "pose": "boss"
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "ship": "",
+      "block": ""
+     },
+     "say": 1,
+     "note": "해적선이 일행이 탈 배를 정확히 막고 기다린다."
+    },
+    {
+     "shot": "mid",
+     "bg": "sea",
+     "actors": [
+      {
+       "id": "pirate",
+       "x": 60,
+       "pose": "boss"
+      },
+      {
+       "id": "yeongcha",
+       "x": 30,
+       "pose": "sweat"
+      }
+     ],
+     "fx": {
+      "namecap": "pirate"
+     },
+     "say": 3,
+     "note": "\"누가 알려 줬을까?\" 영차가 시선을 피한다."
+    }
    ]
   },
   {
@@ -229,6 +444,29 @@
     {
      "speaker": "yeongcha",
      "text": "story.s05.gyeol.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "port",
+     "actors": [
+      {
+       "id": "sailor",
+       "x": 40,
+       "pose": ""
+      },
+      {
+       "id": "yeongcha",
+       "x": 70,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "colorspread": ""
+     },
+     "say": 1,
+     "note": "항구 간판에 색이 번진다. 선원이 혼잣말을 한다."
     }
    ]
   }
