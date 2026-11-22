@@ -46,16 +46,19 @@
       {
        "id": "tower_child",
        "x": 55,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "villager_a",
        "x": 30,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "villager_b",
        "x": 75,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -72,6 +75,7 @@
       {
        "id": "tower_child",
        "x": 50,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -89,11 +93,13 @@
       {
        "id": "tower_child",
        "x": 55,
+       "y": 44,
        "pose": "happy"
       },
       {
        "id": "ttukttak",
        "x": 35,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -144,11 +150,13 @@
       {
        "id": "tower_child",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -157,6 +165,63 @@
      },
      "say": 1,
      "note": "아이가 문양 잇기(선 잇기)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s10_town_communication",
+   "title": "story.s10.town_communication.title",
+   "place_note": "탑 아래 광장",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "villager_a"
+   ],
+   "staging_note": "문양 잇기로 광장 간판 하나가 색을 되찾자, 마을 사람이 처음으로 단어를 끝까지 말한다.",
+   "game_note": "마을 이야기(감정)",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "villager_a",
+     "text": "story.s10.town_communication.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.town_communication.002_etym"
+    },
+    {
+     "speaker": "villager_a",
+     "text": "story.s10.town_communication.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "spiretown",
+     "actors": [
+      {
+       "id": "villager_a",
+       "x": 50,
+       "y": 40,
+       "pose": "happy"
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "y": 72,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "colorspread": ""
+     },
+     "say": 3,
+     "note": "간판 하나가 색을 되찾고, 마을 사람이 처음으로 단어를 끝까지 말한다."
     }
    ]
   },
@@ -189,11 +254,13 @@
       {
        "id": "hero",
        "x": 40,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 55,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -215,7 +282,7 @@
     "ttukttak",
     "bingeul"
    ],
-   "staging_note": "계단이 종이처럼 접혀 있다. plic 장착 유닛이 펼친다.",
+   "staging_note": "계단이 종이처럼 접혀 있다. plic 어원을 갖고 있어서 빙글이 펼친다.",
    "game_note": "어근 plic 필드 능력(접힌 것 펼치기)",
    "borrow": [],
    "lines": [
@@ -236,6 +303,7 @@
       {
        "id": "bingeul",
        "x": 50,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -277,11 +345,13 @@
       {
        "id": "tower_child",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -290,6 +360,86 @@
      },
      "say": 1,
      "note": "아이의 공책에 세 단어."
+    }
+   ]
+  },
+  {
+   "id": "s10_skit_review",
+   "title": "story.s10.skit_review.title",
+   "place_note": "탑 계단 중간 쉼터",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "cheokcheok",
+    "deopseok",
+    "ssaeng",
+    "bingeul"
+   ],
+   "staging_note": "동료들이 둥글게 앉아 서로 퀴즈를 낸다. 얼굴 스킷이 빠르게 돌아간다.",
+   "game_note": "동료 잡담(복습)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s10.skit_review.001"
+    },
+    {
+     "speaker": "deopseok",
+     "text": "story.s10.skit_review.002"
+    },
+    {
+     "speaker": "ssaeng",
+     "text": "story.s10.skit_review.003"
+    },
+    {
+     "speaker": "bingeul",
+     "text": "story.s10.skit_review.004"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.skit_review.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "spire",
+     "actors": [
+      {
+       "id": "cheokcheok",
+       "x": 35,
+       "y": 50,
+       "pose": ""
+      },
+      {
+       "id": "deopseok",
+       "x": 50,
+       "y": 45,
+       "pose": ""
+      },
+      {
+       "id": "ssaeng",
+       "x": 65,
+       "y": 50,
+       "pose": ""
+      },
+      {
+       "id": "bingeul",
+       "x": 50,
+       "y": 65,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "ring": ""
+     },
+     "say": 1,
+     "note": "둥글게 앉은 동료들이 퀴즈를 주고받는다."
     }
    ]
   },
@@ -341,16 +491,19 @@
       {
        "id": "devil",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "yeongcha",
        "x": 78,
+       "y": 74,
        "pose": "sad"
       },
       {
        "id": "hero",
        "x": 20,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -368,6 +521,7 @@
       {
        "id": "devil",
        "x": 50,
+       "y": 32,
        "pose": "boss"
       }
      ],
@@ -384,11 +538,13 @@
       {
        "id": "yeongcha",
        "x": 60,
+       "y": 74,
        "pose": "sad"
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -446,16 +602,19 @@
       {
        "id": "devil",
        "x": 65,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "yeongcha",
        "x": 45,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 20,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -482,11 +641,13 @@
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 45,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -546,6 +707,7 @@
       {
        "id": "devil",
        "x": 60,
+       "y": 32,
        "pose": "down"
       }
      ],
@@ -574,16 +736,19 @@
       {
        "id": "yeongcha",
        "x": 60,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 40,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 25,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -602,6 +767,80 @@
      },
      "say": 0,
      "note": "마지막 컷: devil 카드가 갈라졌다가 하나로. 크레디트에 모은 단어가 흐른다."
+    }
+   ]
+  },
+  {
+   "id": "s10_epilogue",
+   "title": "story.s10.epilogue.title",
+   "place_note": "공방 마을 대장간",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith",
+    "yeongcha"
+   ],
+   "staging_note": "크레디트 뒤. 아침의 공방 마을. 첫 장면과 같은 구도로 대장간 앞에 일행이 모여 있다. 영차가 짐을 잔뜩 지고 있다.",
+   "game_note": "엔딩 후 계속 플레이 안내",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "blacksmith",
+     "text": "story.s10.epilogue.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s10.epilogue.002"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s10.epilogue.003"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s10.epilogue.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "blacksmith",
+       "x": 65,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 40,
+       "y": 70,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 50,
+       "y": 74,
+       "pose": ""
+      },
+      {
+       "id": "yeongcha",
+       "x": 60,
+       "y": 74,
+       "pose": "happy"
+      }
+     ],
+     "fx": {
+      "crates": ""
+     },
+     "say": 3,
+     "note": "첫 장면과 같은 구도. 영차가 짐을 잔뜩 지고 있다."
     }
    ]
   }

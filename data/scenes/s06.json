@@ -47,16 +47,19 @@
       {
        "id": "dictator",
        "x": 50,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "scribe",
        "x": 30,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "villager_a",
        "x": 70,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -74,6 +77,7 @@
       {
        "id": "scribe",
        "x": 45,
+       "y": 44,
        "pose": "sweat"
       }
      ],
@@ -129,11 +133,13 @@
       {
        "id": "daejang",
        "x": 45,
+       "y": 74,
        "pose": "proud"
       },
       {
        "id": "hero",
        "x": 65,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -150,11 +156,13 @@
       {
        "id": "scribe",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -163,6 +171,80 @@
      },
      "say": 3,
      "note": "서기가 필사(애너그램)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s06_town_legal",
+   "title": "story.s06.town_legal.title",
+   "place_note": "왕성 거리",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "villager_a",
+    "scribe"
+   ],
+   "staging_note": "거리의 사람들이 모두 발가락에 붓을 끼우고 서류를 쓰고 있다.",
+   "game_note": "마을 이야기(유머)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "villager_a",
+     "text": "story.s06.town_legal.001_pun"
+    },
+    {
+     "speaker": "scribe",
+     "text": "story.s06.town_legal.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s06.town_legal.003_etym"
+    },
+    {
+     "speaker": "villager_a",
+     "text": "story.s06.town_legal.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "villager_a",
+       "x": 45,
+       "y": 45,
+       "pose": ""
+      },
+      {
+       "id": "villager_b",
+       "x": 65,
+       "y": 50,
+       "pose": ""
+      },
+      {
+       "id": "scribe",
+       "x": 30,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 25,
+       "y": 80,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "footpen": ""
+     },
+     "say": 1,
+     "note": "거리 사람들이 모두 발가락에 붓을 끼우고 서류를 쓴다."
     }
    ]
   },
@@ -196,11 +278,13 @@
       {
        "id": "scribe",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -223,7 +307,7 @@
     "jojal",
     "guard_castle"
    ],
-   "staging_note": "경비가 길을 막는다. dict 장착 유닛(조잘)이 있으면 말로 설득할 수 있다.",
+   "staging_note": "경비가 길을 막는다. dict 어원을 갖고 있어서 조잘이 말로 설득할 수 있다.",
    "game_note": "어근 dict 필드 능력(NPC 설득)",
    "borrow": [
     {
@@ -253,11 +337,13 @@
       {
        "id": "guard_castle",
        "x": 65,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "jojal",
        "x": 40,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -266,6 +352,70 @@
      },
      "say": 2,
      "note": "조잘이 수첩을 펴고 경비를 설득한다."
+    }
+   ]
+  },
+  {
+   "id": "s06_skit_direct",
+   "title": "story.s06.skit_direct.title",
+   "place_note": "왕성 복도",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "daejang"
+   ],
+   "staging_note": "대장이 앞장서 복도 끝을 가리키는데, 그쪽은 벽이다. 일행이 줄줄이 벽 앞에 선다.",
+   "game_note": "동료 잡담(유머)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "daejang",
+     "text": "story.s06.skit_direct.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s06.skit_direct.002_etym"
+    },
+    {
+     "speaker": "daejang",
+     "text": "story.s06.skit_direct.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "castle",
+     "actors": [
+      {
+       "id": "daejang",
+       "x": 50,
+       "y": 60,
+       "pose": "proud"
+      },
+      {
+       "id": "hero",
+       "x": 40,
+       "y": 75,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 30,
+       "y": 78,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "move": "daejang>50/12",
+      "wallhit": ""
+     },
+     "say": 2,
+     "note": "대장이 앞장서 복도 끝을 가리키지만 그쪽은 벽. 일행이 줄줄이 벽 앞에 선다."
     }
    ]
   },
@@ -295,11 +445,13 @@
       {
        "id": "scribe",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -308,6 +460,56 @@
      },
      "say": 1,
      "note": "문서의 빈칸이 채워진다."
+    }
+   ]
+  },
+  {
+   "id": "s06_tut_tiebreak",
+   "title": "story.s06.tut_tiebreak.title",
+   "place_note": "서기실 기록 보관소",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "scribe",
+    "jojal",
+    "daejang"
+   ],
+   "staging_note": "서기가 두꺼운 기록을 펼친다. 장비 다섯 칸이 무기부터 신발까지 위에서 아래로 그려진 도표.",
+   "game_note": "속성 동점 규칙 튜토리얼(무기→머리→가슴→장갑→신발)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "scribe",
+     "text": "story.s06.tut_tiebreak.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s06.tut_tiebreak.002"
+    },
+    {
+     "speaker": "jojal",
+     "text": "story.s06.tut_tiebreak.003"
+    },
+    {
+     "speaker": "daejang",
+     "text": "story.s06.tut_tiebreak.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "close",
+     "bg": "castle",
+     "actors": [],
+     "fx": {
+      "slots5": ""
+     },
+     "say": 1,
+     "note": "클로즈업: 장비 다섯 칸 도표. 무기부터 신발까지 위에서 아래로."
     }
    ]
   },
@@ -346,11 +548,13 @@
       {
        "id": "dictator",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -368,11 +572,13 @@
       {
        "id": "dictator",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "bingeul",
        "x": 30,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -427,11 +633,13 @@
       {
        "id": "king",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -446,6 +654,7 @@
       {
        "id": "devil_young",
        "x": 50,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -463,11 +672,13 @@
       {
        "id": "villager_a",
        "x": 35,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "villager_b",
        "x": 65,
+       "y": 44,
        "pose": ""
       }
      ],

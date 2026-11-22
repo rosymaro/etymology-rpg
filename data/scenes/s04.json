@@ -51,16 +51,19 @@
       {
        "id": "kite_elder",
        "x": 30,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "villager_a",
        "x": 45,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "villager_b",
        "x": 60,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -77,6 +80,7 @@
       {
        "id": "ssaeng",
        "x": 55,
+       "y": 74,
        "pose": "fast"
       }
      ],
@@ -132,6 +136,7 @@
       {
        "id": "bingeul",
        "x": 50,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -148,11 +153,13 @@
       {
        "id": "kite_elder",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -161,6 +168,71 @@
      },
      "say": 3,
      "note": "연 할아버지가 연날리기(파이프 잇기)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s04_town_event",
+   "title": "story.s04.town_event.title",
+   "place_note": "협곡 마을 공터",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "villager_b",
+    "kite_elder"
+   ],
+   "staging_note": "공터에 사람들이 몰려든다. 돌풍이 한 번 지나가며 모자들이 날아간다.",
+   "game_note": "마을 이야기(유머)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "villager_b",
+     "text": "story.s04.town_event.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.town_event.002_etym"
+    },
+    {
+     "speaker": "kite_elder",
+     "text": "story.s04.town_event.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "villager_b",
+       "x": 50,
+       "y": 45,
+       "pose": ""
+      },
+      {
+       "id": "kite_elder",
+       "x": 70,
+       "y": 35,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "y": 75,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "crowd": "",
+      "wind": ""
+     },
+     "say": 1,
+     "note": "공터에 몰려든 사람들. 돌풍이 지나가며 모자가 날아간다."
     }
    ]
   },
@@ -194,11 +266,13 @@
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "kite_elder",
        "x": 60,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -220,7 +294,7 @@
     "ttukttak",
     "ssaeng"
    ],
-   "staging_note": "계단 칸이 지워져 있다. grad 장착 유닛이 있으면 한 칸씩 나타난다.",
+   "staging_note": "계단 칸이 지워져 있다. grad 어원을 갖고 있어서 계단이 한 칸씩 나타난다.",
    "game_note": "어근 grad 필드 능력(계단 오르기)",
    "borrow": [],
    "lines": [
@@ -241,6 +315,7 @@
       {
        "id": "ssaeng",
        "x": 45,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -249,6 +324,69 @@
      },
      "say": 1,
      "note": "지워진 계단이 한 칸씩 나타난다. 쌩이 답답해한다."
+    }
+   ]
+  },
+  {
+   "id": "s04_skit_proceed",
+   "title": "story.s04.skit_proceed.title",
+   "place_note": "절벽 계단 위",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "ssaeng",
+    "bingeul"
+   ],
+   "staging_note": "쌩이 앞으로 달려 나가고 빙글이 앞뒤로 한 칸씩 오간다. 결국 제자리.",
+   "game_note": "동료 잡담(유머)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ssaeng",
+     "text": "story.s04.skit_proceed.001"
+    },
+    {
+     "speaker": "bingeul",
+     "text": "story.s04.skit_proceed.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.skit_proceed.003_etym"
+    },
+    {
+     "speaker": "bingeul",
+     "text": "story.s04.skit_proceed.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "cliff",
+     "actors": [
+      {
+       "id": "ssaeng",
+       "x": 60,
+       "y": 55,
+       "pose": "fast"
+      },
+      {
+       "id": "bingeul",
+       "x": 40,
+       "y": 60,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "move": "ssaeng>85/40",
+      "pingpong": "bingeul"
+     },
+     "say": 4,
+     "note": "쌩은 앞으로 달려 나가고 빙글은 앞뒤로 한 칸씩 오간다."
     }
    ]
   },
@@ -282,11 +420,13 @@
       {
        "id": "kite_elder",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -295,6 +435,92 @@
      },
      "say": 1,
      "note": "지도의 길 이름 세 개가 채워진다."
+    }
+   ]
+  },
+  {
+   "id": "s04_tut_bossroad",
+   "title": "story.s04.tut_bossroad.title",
+   "place_note": "협곡 꼭대기로 가는 길목",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "kite_elder",
+    "ssaeng"
+   ],
+   "staging_note": "꼭대기로 가는 좁은 길이 회색 단어들로 꽉 차 있다. 화면 구석에 \"찾은 단어 / 이 스테이지 단어\" 숫자가 뜬다.",
+   "game_note": "보스 길 튜토리얼(그 스테이지 1차 단어 50% 넘으면 통과)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "kite_elder",
+     "text": "story.s04.tut_bossroad.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.tut_bossroad.002"
+    },
+    {
+     "speaker": "ssaeng",
+     "text": "story.s04.tut_bossroad.003"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s04.tut_bossroad.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "canyon",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 30,
+       "y": 85,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 40,
+       "y": 88,
+       "pose": ""
+      },
+      {
+       "id": "rare",
+       "x": 45,
+       "y": 50,
+       "pose": ""
+      },
+      {
+       "id": "rare",
+       "x": 55,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "rare",
+       "x": 50,
+       "y": 30,
+       "pose": ""
+      },
+      {
+       "id": "rare",
+       "x": 60,
+       "y": 20,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "counter": ""
+     },
+     "say": 2,
+     "note": "꼭대기로 가는 좁은 길이 회색 단어로 꽉 차 있다. 화면 구석에 찾은 단어 숫자."
     }
    ]
   },
@@ -333,11 +559,13 @@
       {
        "id": "hurricane",
        "x": 65,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -355,6 +583,7 @@
       {
        "id": "hurricane",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       }
      ],
@@ -407,16 +636,19 @@
       {
        "id": "hero",
        "x": 20,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ssaeng",
        "x": 30,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "yeongcha",
        "x": 75,
+       "y": 74,
        "pose": "wave"
       }
      ],

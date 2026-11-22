@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
 <title>말뿌리 스토리보드</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,6 +42,7 @@ section.stage{margin-top:44px}
 .stage-head p{margin:0;color:var(--pencil);flex-basis:100%}
 article.scene{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:16px;margin-top:14px}
 .scene-top{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.beat{font-size:12px;font-weight:700;color:var(--sheet);background:var(--ink);border-radius:4px;padding:1px 7px}
 .sid{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--pencil)}
 .place{font-size:13px;color:var(--pencil)}
 .cast{font-size:13px;margin-top:2px}
@@ -71,9 +79,9 @@ details li{margin:2px 0}
 <div class="wrap">
   <header>
     <h1>말뿌리 스토리보드</h1>
-    <p class="lede">어원 RPG 10스테이지 71장면의 콘티다. 장면마다 2~4컷을 그렸고, 컷 아래에 연출과 그 컷의 대사를 적었다. 다른 게임에서 빌려 온 개념은 그 개념이 어떤 모습인지 따로 그려 장면 옆에 붙였다.</p>
+    <p class="lede">어원 RPG 10스테이지 101장면의 콘티다. 맵은 위에서 내려다본 타일 맵이고 인물은 가로(X)·세로(Y)로 움직인다. 장면마다 1~4컷을 그렸고, 컷 아래에 연출과 그 컷의 대사를 적었다. 다른 게임에서 빌려 온 개념은 그 개념이 어떤 모습인지 따로 그려 장면 옆에 붙였다.</p>
     <div class="legend">
-      <span><b>와이드</b> 장소 전체</span><span><b>미디엄</b> 인물 허리 위</span><span><b>클로즈업</b> 얼굴·카드</span>
+      <span><b>와이드</b> 위에서 본 맵 전체</span><span><b>미디엄</b> 맵을 가까이(인물 주변)</span><span><b>클로즈업</b> 옆에서 본 이벤트 일러스트</span><span><b>아래 대화창</b> 얼굴 그림 + 대사</span>
       <span><b>주황</b> 연출 효과(빛, 금, 문양, 자막)</span><span><b>점선 화살표</b> 움직임</span>
     </div>
   </header>
@@ -304,22 +312,154 @@ function effects(fx,actors){
   return g;
 }
 
-function panel(cut,lines){
-  const sc=cut.shot==='close'?1.6:cut.shot==='wide'?.82:1;
+/* ---------- 클로즈업: 이벤트 일러스트(옆에서 본 그림) ---------- */
+function illustration(cut,lines){
+  const sc=1.6;
   const cx=cut.actors.length?cut.actors.reduce((s,a)=>s+a.x,0)/cut.actors.length*3.2:160;
-  const tf=sc===1?'':`transform="translate(${160-cx*sc} ${cut.shot==='close'?-120:30}) scale(${sc})"`;
-  const tf2=cut.shot==='close'?`transform="translate(${160-cx*sc} ${-110}) scale(${sc})"`:tf;
   let body=`<rect width="320" height="180" fill="var(--sheet)"/>`;
-  body+=`<g ${tf2}>${background(cut.bg)}${cut.actors.map(actor).join('')}</g>`;
+  body+=`<g transform="translate(${160-cx*sc} -120) scale(${sc})">${background(cut.bg)}${cut.actors.map(actor).join('')}</g>`;
   body+=effects(cut.fx,cut.actors);
   if(cut.say>0&&lines[cut.say-1]){
-    const l=lines[cut.say-1], a=cut.actors.find(a=>a.id===l.sp);
-    let ax=a?a.x*3.2:160; if(sc!==1&&a) ax=(ax-cx)*sc+160;
-    body+=bubble(Math.max(30,Math.min(290,ax)),'namecap' in cut.fx?8:(cut.fx.card||cut.fx.split||cut.fx.magic?120:62),l.t.replace('{hero}','주인공'));
+    const l=lines[cut.say-1];
+    body+=bubble(160,cut.fx.card||cut.fx.split||cut.fx.magic?124:10,l.t.replace('{hero}','주인공'));
   }
-  if(cut.bg==='black') body=`<rect width="320" height="180" fill="var(--ink)"/>`+body;
+  body+=`<rect x="4" y="4" width="64" height="14" rx="3" fill="var(--ink)"/>`+`<text x="36" y="14" font-family="Noto Sans KR,sans-serif" font-size="8" fill="var(--sheet)" text-anchor="middle">일러스트 컷</text>`;
   return svg(320,180,body);
 }
+
+/* ---------- 와이드·미디엄: 위에서 본 타일 맵 + 대화창 ---------- */
+const TILE=20;
+const MP=(a)=>[a.x/100*320, 12+(a.y??60)/100*106];
+function grid(){let g='';for(let x=0;x<=320;x+=TILE)g+=`<line x1="${x}" y1="0" x2="${x}" y2="180" stroke="var(--rule)" stroke-width=".6"/>`;for(let y=0;y<=180;y+=TILE)g+=`<line x1="0" y1="${y}" x2="320" y2="${y}" stroke="var(--rule)" stroke-width=".6"/>`;return g;}
+const house=(x,y,w=40,h=30)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.3"/><path d="M${x} ${y} L${x+w/2} ${y+h/2} L${x+w} ${y} M${x} ${y+h} L${x+w/2} ${y+h/2} L${x+w} ${y+h}" ${P}/>`;
+const treeTop=(x,y,r=12)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="var(--wash)" stroke="var(--pencil)" stroke-width="1.2"/><circle cx="${x-3}" cy="${y-3}" r="${r*.45}" ${P}/>`;
+const water=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--wash)"/>`+Array.from({length:Math.floor(h/12)},(_,i)=>`<path d="M${x+6} ${y+8+i*12} q6 -4 12 0 t12 0 t12 0" ${P}/>`).join('');
+const wallH=(y)=>`<rect x="0" y="${y}" width="320" height="12" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.3"/>`+Array.from({length:16},(_,i)=>`<rect x="${i*20+4}" y="${y-5}" width="10" height="5" fill="var(--wash)" stroke="var(--ink)"/>`).join('');
+function mapBg(bg){
+  switch(bg){
+  case 'tree': return `<circle cx="160" cy="52" r="38" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.4"/><circle cx="160" cy="52" r="10" ${S}/>`+[[60,140],[100,160],[220,160],[260,140],[40,90],[280,90]].map(([x,y])=>`<path d="M160 62 Q${(160+x)/2} ${y-30} ${x} ${y}" ${P}/>`).join('');
+  case 'forge': return `<rect x="6" y="6" width="308" height="168" fill="none" stroke="var(--ink)" stroke-width="2"/><rect x="230" y="12" width="70" height="40" fill="var(--wash)" stroke="var(--ink)"/><path d="M250 36 q15 -18 30 0" ${M}/><rect x="140" y="70" width="40" height="18" ${S}/>`+label(160,100,'모루')+label(265,62,'화덕')+`<rect x="150" y="166" width="30" height="8" fill="var(--sheet)" stroke="var(--ink)"/>`;
+  case 'square': return house(16,14)+house(70,14)+house(230,14)+house(270,20,36,26)+`<path d="M0 100 H320 M150 0 V180" stroke="var(--rule)" stroke-width="14" opacity=".7"/><circle cx="150" cy="100" r="16" ${P}/>`;
+  case 'cliff': return `<path d="M0 0 H320 V90 L280 96 L240 88 L200 98 L160 90 L120 98 L80 90 L40 96 L0 90 Z" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.4"/><rect x="0" y="96" width="320" height="84" fill="var(--wash)"/>`+label(290,140,'아래 땅')+`<rect x="250" y="120" width="30" height="20" ${S}/>`;
+  case 'field': return Array.from({length:40},(_,i)=>`<path d="M${(i*37)%320} ${(i*53)%170+5} l2 -4 l2 4" ${P}/>`).join('')+`<rect x="14" y="14" width="80" height="50" fill="none" stroke="var(--ink)" stroke-width="1.3" stroke-dasharray="6 3"/>`+label(54,74,'우리')+`<path d="M0 130 Q160 110 320 140" stroke="var(--rule)" stroke-width="12" fill="none"/>`;
+  case 'tower': return `<circle cx="160" cy="80" r="56" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="160" cy="80" r="48" ${P} stroke-dasharray="3 3"/><rect x="150" y="128" width="20" height="16" ${S}/>`+label(160,24,'망루 꼭대기');
+  case 'library': return `<rect x="6" y="6" width="308" height="168" fill="none" stroke="var(--ink)" stroke-width="2"/>`+[20,60,100].map(y=>`<rect x="20" y="${y}" width="90" height="14" fill="var(--wash)" stroke="var(--ink)"/><rect x="210" y="${y}" width="90" height="14" fill="var(--wash)" stroke="var(--ink)"/>`).join('')+`<rect x="130" y="70" width="60" height="30" ${S}/>`+label(160,110,'책상');
+  case 'garden': case 'forest': return [[30,30],[80,20],[260,30],[300,70],[40,140],[290,150],[120,160],[200,20]].map(([x,y])=>treeTop(x,y)).join('')+`<path d="M0 100 Q160 60 320 110" stroke="var(--rule)" stroke-width="12" fill="none"/>`;
+  case 'canyon': return `<path d="M0 0 H110 L100 60 L120 120 L105 180 H0 Z M320 0 H210 L222 60 L200 120 L215 180 H320 Z" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.4"/>`+label(55,90,'절벽')+label(265,90,'절벽');
+  case 'port': return water(0,120,320,60)+`<rect x="120" y="70" width="40" height="80" fill="var(--sheet)" stroke="var(--ink)"/><rect x="200" y="130" width="70" height="22" rx="10" fill="var(--sheet)" stroke="var(--ink)"/>`+house(20,14)+house(70,14)+`<rect x="80" y="80" width="14" height="14" ${S}/><rect x="96" y="84" width="10" height="10" ${S}/>`;
+  case 'tavern': return `<rect x="6" y="6" width="308" height="168" fill="none" stroke="var(--ink)" stroke-width="2"/>`+[[80,60],[160,60],[240,60],[120,120],[200,120]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="14" fill="var(--wash)" stroke="var(--ink)"/>`).join('')+`<rect x="20" y="14" width="80" height="12" ${S}/>`+label(60,36,'술통');
+  case 'sea': return water(0,0,320,180)+`<rect x="180" y="40" width="100" height="40" rx="18" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>`+label(230,90,'해적선')+`<rect x="40" y="120" width="70" height="26" rx="12" fill="var(--sheet)" stroke="var(--ink)"/>`;
+  case 'castle': return `<rect x="6" y="6" width="308" height="168" fill="none" stroke="var(--ink)" stroke-width="2"/><rect x="140" y="6" width="40" height="168" fill="var(--marker-soft)" opacity=".6"/>`+[40,80,120].map(y=>`<circle cx="100" cy="${y}" r="8" ${S}/><circle cx="220" cy="${y}" r="8" ${S}/>`).join('')+`<rect x="148" y="12" width="24" height="18" ${S}/>`+label(160,40,'왕좌');
+  case 'flashback': return `<rect x="4" y="4" width="312" height="172" fill="var(--wash)" stroke="var(--pencil)" stroke-dasharray="4 3"/>`+house(20,60)+house(260,60);
+  case 'lake': return `<ellipse cx="150" cy="100" rx="120" ry="60" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.4"/>`+`<path d="M100 100 q50 -30 100 0" ${P}/><rect x="270" y="30" width="40" height="30" fill="var(--sheet)" stroke="var(--ink)"/><circle cx="262" cy="45" r="10" ${S}/>`+label(290,70,'방앗간');
+  case 'fortress': return wallH(30)+`<rect x="140" y="26" width="40" height="20" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>`+label(160,58,'성문')+`<path d="M30 42 l10 8 l-6 6" ${M}/>`;
+  case 'court': return `<rect x="6" y="6" width="308" height="168" fill="none" stroke="var(--ink)" stroke-width="2"/><rect x="140" y="20" width="40" height="22" ${S}/>`+label(160,50,'증언대')+`<rect x="30" y="90" width="60" height="20" ${S}/><rect x="230" y="90" width="60" height="20" ${S}/>`;
+  case 'mine': return `<path d="M0 60 H320 M0 120 H320" stroke="var(--ink)" stroke-width="1.6"/><path d="M0 84 H320 M0 96 H320" ${P}/>`+Array.from({length:16},(_,i)=>`<line x1="${i*20+6}" y1="82" x2="${i*20+6}" y2="98" stroke="var(--pencil)"/>`).join('')+[[30,30],[120,20],[260,30],[60,150],[220,160]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="10" fill="var(--wash)" stroke="var(--pencil)"/>`).join('');
+  case 'cave': return `<ellipse cx="160" cy="95" rx="150" ry="80" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.6"/>`;
+  case 'spire': return `<rect x="130" y="10" width="28" height="50" fill="var(--wash)" stroke="var(--ink)"/><rect x="164" y="10" width="28" height="50" fill="var(--wash)" stroke="var(--ink)"/>`+label(160,72,'갈라진 탑')+`<path d="M160 180 V80" stroke="var(--rule)" stroke-width="14"/>`;
+  case 'spiretown': return house(16,20)+house(70,30)+house(230,20)+house(270,40,36,26)+`<rect x="140" y="6" width="18" height="30" fill="var(--wash)" stroke="var(--pencil)"/><rect x="162" y="6" width="18" height="30" fill="var(--wash)" stroke="var(--pencil)"/><path d="M0 110 H320" stroke="var(--rule)" stroke-width="14"/>`;
+  case 'spiretop': return `<circle cx="160" cy="95" r="80" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.6"/>`+crackmark(160,20,12);
+  default: return '';
+  }
+}
+function sprite(a){
+  const [x,y]=MP(a), id=a.id, p=a.pose||'';
+  const o=p==='ghost'?' opacity=".35"':'';
+  let g=`<ellipse cx="${x}" cy="${y+7}" rx="9" ry="3" fill="var(--pencil)" opacity=".25"/>`;
+  if(BOSS.has(id)){
+    if(p==='down') return `<g${o}><ellipse cx="${x}" cy="${y}" rx="26" ry="10" fill="var(--wash)" stroke="var(--ink)" stroke-width="1.6"/>${label(x,y+20,id)}</g>`;
+    g+=`<circle cx="${x}" cy="${y-6}" r="18" fill="var(--wash)" stroke="var(--ink)" stroke-width="2"/>${crackmark(x,y-6,6)}`;
+    if(id==='devil') g+=`<path d="M${x-12} ${y-20} l-6 -10 l10 4 M${x+12} ${y-20} l6 -10 l-10 4" ${S}/>`;
+    return `<g${o}>${g}${label(x,y+22,id)}</g>`;
+  }
+  if(UNIT[id]){
+    g+=`<ellipse cx="${x}" cy="${y}" rx="7" ry="8" fill="${UNIT[id]}" fill-opacity=".9" stroke="var(--ink)" stroke-width="1.2"/><ellipse cx="${x}" cy="${y+2}" rx="4" ry="5" fill="var(--sheet)"/><path d="M${x-2} ${y-4} l2 3 l2 -3" fill="var(--marker)"/>`;
+  } else if(id==='cow'||id==='calf'||id==='horse'){
+    const s=id==='calf'?.7:1; g+=`<ellipse cx="${x}" cy="${y}" rx="${12*s}" ry="${7*s}" fill="var(--sheet)" stroke="var(--ink)"/><circle cx="${x+12*s}" cy="${y-2}" r="${4*s}" fill="var(--sheet)" stroke="var(--ink)"/>`;
+    return `<g${o}>${g}</g>`;
+  } else if(id==='rare'){
+    g+=`<rect x="${x-9}" y="${y-7}" width="18" height="12" rx="2" fill="var(--wash)" stroke="var(--ink)"/>`; return `<g${o}>${g}</g>`;
+  } else {
+    const isHero=id==='hero';
+    g+=`<ellipse cx="${x}" cy="${y+1}" rx="6" ry="5" fill="${isHero?'var(--marker-soft)':'var(--sheet)'}" stroke="var(--ink)" stroke-width="1.2"/><circle cx="${x}" cy="${y-6}" r="5.5" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.2"/>`;
+    if(isHero) g+=`<path d="M${x-5} ${y-8} q5 -6 10 0" stroke="var(--ink)" stroke-width="1.4" fill="none"/>`;
+    const hat=NPC_HAT[id]||''; if(hat==='crown') g+=`<path d="M${x-4} ${y-12} l2 -4 l2 3 l2 -3 l2 4 z" fill="var(--marker)"/>`;
+    if(hat==='brim'||hat==='helm'||hat==='cap') g+=`<ellipse cx="${x}" cy="${y-9}" rx="7" ry="2.5" ${S}/>`;
+  }
+  if(p==='sweat') g+=`<path d="M${x+7} ${y-12} q2 3 0 5 q-2 -2 0 -5" stroke="var(--pencil)" fill="var(--wash)"/>`;
+  if(p==='happy'||p==='proud'||p==='excited') g+=`<path d="M${x-8} ${y-14} l2 2 M${x+8} ${y-14} l-2 2" ${M}/>`;
+  if(p==='sad'||p==='cry') g+=`<path d="M${x-3} ${y-3} v3 M${x+3} ${y-3} v3" stroke="var(--pencil)"/>`;
+  if(p==='surprised') g+=txt(x+9,y-12,'!','font-size="10" fill="var(--marker)"');
+  if(p==='down') return `<g transform="rotate(90 ${x} ${y})"${o}>${g}</g>`;
+  return `<g${o}>${g}${label(x,y+16,id==='hero'?'주인공':nm(id))}</g>`;
+}
+function arrow(x1,y1,x2,y2){const a=Math.atan2(y2-y1,x2-x1),h=6;return `<path d="M${x1} ${y1} L${x2} ${y2} M${x2-h*Math.cos(a-.5)} ${y2-h*Math.sin(a-.5)} L${x2} ${y2} L${x2-h*Math.cos(a+.5)} ${y2-h*Math.sin(a+.5)}" ${M} stroke-dasharray="5 3"/>`;}
+function moves(fx,actors){
+  let g='';
+  const find=id=>actors.find(a=>a.id===id);
+  if(fx.move){for(const m of fx.move.split(',')){const [id,t]=m.split('>');const a=find(id);if(!a)continue;const [tx,ty]=t.split('/').map(Number);const [x1,y1]=MP(a);const [x2,y2]=MP({x:tx,y:ty});g+=arrow(x1,y1,x2,y2);}}
+  if(fx.loop){const a=find(fx.loop);if(a){const [x,y]=MP(a);g+=`<ellipse cx="${x+40}" cy="${y-20}" rx="50" ry="26" ${M} stroke-dasharray="5 3"/>`;}}
+  if(fx.pingpong){const a=find(fx.pingpong);if(a){const [x,y]=MP(a);g+=arrow(x-14,y+12,x+14,y+12)+arrow(x+14,y+18,x-14,y+18);}}
+  const lead=actors[0];
+  if(lead&&('run' in fx||'dash' in fx||'runaway' in fx)){const [x,y]=MP(lead);g+=arrow(x,y,Math.min(310,x+70),Math.max(20,y-30));}
+  if('path' in fx) g+=`<path d="M60 170 Q120 80 260 60" ${M} stroke-dasharray="6 4"/>`;
+  if('circle' in fx&&lead){const [x,y]=MP(lead);g+=`<ellipse cx="${x+25}" cy="${y}" rx="45" ry="18" ${M} stroke-dasharray="5 3"/>`;}
+  if('float' in fx) g+=arrow(150,60,150,120);
+  if('wallhit' in fx) g+=`<path d="M150 6 h20" stroke="var(--marker)" stroke-width="4"/>`;
+  return g;
+}
+const MAP_SKIP=new Set(['anvil','bellows','bigpost','lift','crates','podium','chest','throne','ship','lighthouse','stairs','foldstairs','splitgate','crackwall','gate','wall','crumble','rope','tracks','fence_open','bridgefall','fogclear','closedeyes','fadetext','run','dash','runaway','path','circle','float','down','crack','grab','throw','push','apart','gap','swirl','millback','turn','sea','court','sky','night']);
+function mapOverlays(fx){
+  const keep={}; for(const k in fx) if(!MAP_SKIP.has(k)) keep[k]=fx[k];
+  let g=effects(keep,[]);
+  if('night' in fx) g=`<rect width="320" height="180" fill="var(--night)" opacity=".3"/>`+g;
+  if('swirl' in fx||'millback' in fx||'turn' in fx) g+=`<path d="M150 100 m-36 0 a36 18 0 1 0 72 0 a24 12 0 1 0 -48 0" ${M}/>`;
+  if('crumble' in fx||'wall' in fx) g+=`<path d="M40 30 l8 12 l-6 8 M250 30 l-6 14" ${M}/>`;
+  if('throw' in fx) g+=`<path d="M200 80 q-30 -50 -70 -20" ${M} stroke-dasharray="4 4"/>`;
+  if('rope' in fx) g+=`<path d="M40 60 Q160 90 280 60" stroke="var(--marker)" stroke-width="2.5" fill="none"/>`;
+  if('lighthouse' in fx) g+=`<circle cx="60" cy="40" r="10" ${S}/><path d="M70 40 L300 20 M70 44 L300 70" ${M}/>`;
+  if('ship' in fx||'block' in fx) g+='';
+  if('crates' in fx) g+=`<rect x="90" y="90" width="14" height="14" ${S}/><rect x="106" y="92" width="12" height="12" ${S}/><rect x="98" y="78" width="12" height="12" ${S}/>`;
+  if('furnace' in fx) g+=`<path d="M250 32 q15 -24 30 0" stroke="var(--marker)" stroke-width="3" fill="none"/>`;
+  if('attrrow' in fx) g+=['파동','권위','번영','생명'].map((t,i)=>`<circle cx="${100+i*40}" cy="24" r="12" fill="var(--marker-soft)" stroke="var(--marker)"/>${txt(100+i*40,27,t,'font-size="7"')}`).join('');
+  if('attricon' in fx) g+=`<circle cx="186" cy="36" r="8" fill="var(--marker-soft)" stroke="var(--marker)"/>`;
+  if('cards5' in fx) g+=[0,1,2,3,4].map(i=>`<rect x="${22+i*58}" y="60" width="50" height="60" rx="4" fill="${i===1?'var(--marker-soft)':i===3?'var(--wash)':'var(--sheet)'}" stroke="${i===1?'var(--marker)':i===3?'var(--pencil)':'var(--ink)'}" stroke-width="1.5"/>${txt(47+i*58,94,['지지하다','의심하다','생각하다','결정하다','용감한'][i],'font-size="8"')}`).join('')+label(105,134,'초록: 만든 단어')+label(221,134,'빨강: 아무 단어');
+  if('counter' in fx) g+=`<rect x="236" y="8" width="76" height="22" rx="4" fill="var(--sheet)" stroke="var(--ink)"/>${txt(274,23,'77 / 153','font-size="10" font-weight="700"')}`;
+  if('order' in fx) g+=[0,1,2,3].map(i=>`<rect x="${70+i*50}" y="40" width="36" height="28" ${S}/>${txt(88+i*50,58,i+1)}`).join('')+`<path d="M235 36 Q160 10 80 36" ${M} stroke-dasharray="4 3"/>`;
+  if('mapmark' in fx) g+=`<path d="M250 40 a10 10 0 1 1 20 0 q0 10 -10 20 q-10 -10 -10 -20" fill="var(--marker)" opacity=".8"/>`;
+  if('footpen' in fx) g+=`<path d="M120 110 l12 -14 M200 116 l12 -14" stroke="var(--marker)" stroke-width="2"/>`;
+  if('slots5' in fx) g+=['무기','머리','가슴','장갑','신발'].map((t,i)=>`<rect x="110" y="${12+i*32}" width="100" height="26" rx="4" fill="${'gold' in fx&&i===0?'var(--marker-soft)':'var(--sheet)'}" stroke="var(--ink)"/>${txt(160,29+i*32,t)}`).join('');
+  if('fire' in fx) g+=`<path d="M150 120 q10 -20 20 0 q-10 8 -20 0" fill="var(--marker)" opacity=".8"/>`;
+  if('fan' in fx) g+=[0,1,2,3,4].map(i=>`<rect x="${110+i*20}" y="130" width="34" height="44" rx="3" fill="var(--sheet)" stroke="var(--ink)" transform="rotate(${(i-2)*10} ${127+i*20} 174)"/>`).join('');
+  if('doors' in fx) g+=Array.from({length:12},(_,i)=>`<rect x="${10+i*26}" y="8" width="18" height="24" ${S}/>`).join('');
+  if('ring' in fx) g+=`<circle cx="160" cy="92" r="40" ${P} stroke-dasharray="3 3"/>`;
+  if('crowd' in fx) g+=[[140,70],[160,62],[180,72],[120,78]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" ${P}/>`).join('');
+  if('stall' in fx) g+=`<rect x="150" y="40" width="60" height="16" fill="var(--marker-soft)" stroke="var(--ink)"/>`;
+  return g;
+}
+function dialog(l){
+  const t=l.t.replace('{hero}','주인공'), name=l.sp==='narr'?'':nm(l.sp);
+  const a=t.length>26?[t.slice(0,26),t.slice(26,51)+(t.length>51?'…':'')]:[t];
+  const col=UNIT[l.sp]||(l.sp==='hero'?'var(--marker-soft)':'var(--wash)');
+  return `<rect x="6" y="128" width="308" height="48" rx="6" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>
+    ${l.sp==='narr'?'':`<rect x="12" y="133" width="38" height="38" rx="4" fill="var(--paper)" stroke="var(--ink)"/><circle cx="31" cy="152" r="11" fill="${col}" stroke="var(--ink)"/><circle cx="27" cy="150" r="1.2" fill="var(--ink)"/><circle cx="35" cy="150" r="1.2" fill="var(--ink)"/>`}
+    ${name?`<text x="58" y="142" font-family="Noto Sans KR,sans-serif" font-size="8" font-weight="700" fill="var(--marker)">${esc(name)}</text>`:''}
+    ${a.map((s,i)=>`<text x="${l.sp==='narr'?160:58}" y="${155+i*12}" font-family="Noto Sans KR,sans-serif" font-size="9" fill="var(--ink)" ${l.sp==='narr'?'text-anchor="middle"':''}>${esc(s)}</text>`).join('')}`;
+}
+function mapPanel(cut,lines){
+  const zoom=cut.shot==='mid'?1.45:1;
+  const pts=cut.actors.map(MP);
+  let cx=pts.length?pts.reduce((s,p)=>s+p[0],0)/pts.length:160, cy=pts.length?pts.reduce((s,p)=>s+p[1],0)/pts.length:90;
+  let tx=0,ty=0;
+  if(zoom>1){tx=Math.min(0,Math.max(320-320*zoom,160-cx*zoom));ty=Math.min(0,Math.max(180-180*zoom,70-cy*zoom));}
+  const world=`<g transform="translate(${tx} ${ty}) scale(${zoom})">${grid()}${mapBg(cut.bg)}${moves(cut.fx,cut.actors)}${[...cut.actors].sort((a,b)=>a.y-b.y).map(sprite).join('')}</g>`;
+  let body=`<rect width="320" height="180" fill="var(--sheet)"/>${world}${mapOverlays(cut.fx)}`;
+  if(cut.say>0&&lines[cut.say-1]&&!('namecap' in cut.fx)) body+=dialog(lines[cut.say-1]);
+  return svg(320,180,body);
+}
+function panel(cut,lines){return cut.shot==='close'?illustration(cut,lines):mapPanel(cut,lines);}
+const BEAT={intro:'시작',ki:'기',seung:'승',jeon:'전',jeon_a:'전 1',jeon_b:'전 2',gyeol:'결',q_magic:'마법 퀘스트',q_root:'어근 퀘스트',q_word:'단어 퀘스트',epilogue:'엔딩 후'};
+function beatOf(id){const k=id.replace(/^s\d\d_/,'');if(BEAT[k])return BEAT[k];if(k.startsWith('skit'))return '동료 잡담';if(k.startsWith('tut'))return '설명';if(k.startsWith('town'))return '마을 이야기';return k;}
 
 /* ---------- 빌려 온 개념 그림 ---------- */
 const CONCEPT={
@@ -356,7 +496,7 @@ function render(data){
       <div class="stage-head"><span class="no">${s.stage}</span><h2>${esc(s.name)}</h2><p>${esc(s.theme)}</p></div>
       ${s.scenes.map(sc=>`
       <article class="scene" id="${sc.id}">
-        <div class="scene-top"><h3>${esc(sc.title)}</h3><span class="sid">${sc.id}</span><span class="place">${esc(sc.place)}</span></div>
+        <div class="scene-top"><span class="beat">${beatOf(sc.id)}</span><h3>${esc(sc.title)}</h3><span class="sid">${sc.id}</span><span class="place">${esc(sc.place)}</span></div>
         <div class="cast">등장: ${sc.cast.map(nm).map(esc).join(', ')}</div>
         <div class="cuts">${sc.conti.map((c,i)=>{const l=c.say>0?sc.lines[c.say-1]:null;return `
           <figure class="cut">${panel(c,sc.lines)}
@@ -372,3 +512,6 @@ function render(data){
 fetch('storyboard.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(render)
  .catch(e=>{document.getElementById('loading').textContent='콘티 데이터(storyboard.json)를 불러오지 못했습니다. 같은 폴더에 storyboard.json이 있는지 확인하세요.';});
 </script>
+
+</body>
+</html>

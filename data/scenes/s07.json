@@ -47,11 +47,13 @@
       {
        "id": "miller",
        "x": 40,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "bingeul",
        "x": 65,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -69,6 +71,7 @@
       {
        "id": "bingeul",
        "x": 50,
+       "y": 74,
        "pose": "happy"
       }
      ],
@@ -111,11 +114,13 @@
       {
        "id": "miller",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -124,6 +129,70 @@
      },
      "say": 1,
      "note": "방앗간 주인이 물레방아(15 퍼즐)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s07_town_universe",
+   "title": "story.s07.town_universe.title",
+   "place_note": "호숫가 선착장",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "villager_b",
+    "bingeul"
+   ],
+   "staging_note": "물에 비친 하늘이 거꾸로 돈다. 마을 사람이 하늘과 물을 번갈아 가리킨다.",
+   "game_note": "마을 이야기(유머)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "villager_b",
+     "text": "story.s07.town_universe.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s07.town_universe.002_etym"
+    },
+    {
+     "speaker": "bingeul",
+     "text": "story.s07.town_universe.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "villager_b",
+       "x": 45,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "bingeul",
+       "x": 65,
+       "y": 62,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "y": 75,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "swirl": ""
+     },
+     "say": 1,
+     "note": "물에 비친 하늘이 거꾸로 돈다."
     }
    ]
   },
@@ -153,11 +222,13 @@
       {
        "id": "hero",
        "x": 20,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 30,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -179,7 +250,7 @@
     "ttukttak",
     "bingeul"
    ],
-   "staging_note": "vers 장착 유닛(빙글)이 있으면 수문을 반대로 돌려 물길을 바로잡는다.",
+   "staging_note": "vers 어원을 갖고 있어서 빙글이 수문을 반대로 돌려 물길을 바로잡는다.",
    "game_note": "어근 vers 필드 능력(돌리는 장치)",
    "borrow": [
     {
@@ -201,6 +272,7 @@
       {
        "id": "bingeul",
        "x": 50,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -210,6 +282,80 @@
      },
      "say": 1,
      "note": "빙글이 수문을 반대로 돌린다."
+    }
+   ]
+  },
+  {
+   "id": "s07_skit_walk",
+   "title": "story.s07.skit_walk.title",
+   "place_note": "호숫가 야영지",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "jojal",
+    "yeongcha",
+    "ssaeng"
+   ],
+   "staging_note": "모닥불 앞 얼굴 스킷. 조잘의 수첩 페이지가 클로즈업된다. 영차의 땀방울.",
+   "game_note": "동료 잡담(복선)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    },
+    {
+     "game": "파이널 판타지 IV",
+     "part": "동료가 꾐에 넘어가 적 편에 섰다가 돌아오는 줄기"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "jojal",
+     "text": "story.s07.skit_walk.001"
+    },
+    {
+     "speaker": "yeongcha",
+     "text": "story.s07.skit_walk.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s07.skit_walk.003"
+    },
+    {
+     "speaker": "ssaeng",
+     "text": "story.s07.skit_walk.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "jojal",
+       "x": 40,
+       "y": 55,
+       "pose": ""
+      },
+      {
+       "id": "yeongcha",
+       "x": 60,
+       "y": 55,
+       "pose": "sweat"
+      },
+      {
+       "id": "ssaeng",
+       "x": 75,
+       "y": 60,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "fire": "",
+      "note": ""
+     },
+     "say": 1,
+     "note": "모닥불 앞 얼굴 스킷. 조잘의 수첩, 영차의 땀방울."
     }
    ]
   },
@@ -239,11 +385,13 @@
       {
        "id": "miller",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -252,6 +400,64 @@
      },
      "say": 1,
      "note": "뒤집힌 간판 세 개가 바로 선다."
+    }
+   ]
+  },
+  {
+   "id": "s07_town_moment",
+   "title": "story.s07.town_moment.title",
+   "place_note": "방앗간",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "miller"
+   ],
+   "staging_note": "물레방아가 처음 바른 방향으로 한 바퀴 도는 순간. 방앗간 주인이 감격해 울먹인다.",
+   "game_note": "마을 이야기(설명)",
+   "borrow": [
+    {
+     "game": "오오카미",
+     "part": "저주받은 땅에 신목을 되살리면 색과 생기가 번져 돌아오는 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "miller",
+     "text": "story.s07.town_moment.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s07.town_moment.002_etym"
+    },
+    {
+     "speaker": "miller",
+     "text": "story.s07.town_moment.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "lake",
+     "actors": [
+      {
+       "id": "miller",
+       "x": 55,
+       "y": 45,
+       "pose": "happy"
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "y": 70,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "millback": "",
+      "colorspread": ""
+     },
+     "say": 1,
+     "note": "물레방아가 처음 바른 방향으로 돈다. 방앗간 주인이 울먹인다."
     }
    ]
   },
@@ -294,11 +500,13 @@
       {
        "id": "vortex",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 20,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -315,16 +523,19 @@
       {
        "id": "vortex",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "yeongcha",
        "x": 40,
+       "y": 74,
        "pose": "sweat"
       }
      ],
@@ -372,16 +583,19 @@
       {
        "id": "miller",
        "x": 35,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 50,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "yeongcha",
        "x": 85,
+       "y": 74,
        "pose": "back"
       }
      ],

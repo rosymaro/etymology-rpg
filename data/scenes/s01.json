@@ -92,16 +92,19 @@
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 55,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "blacksmith",
        "x": 75,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -162,11 +165,13 @@
       {
        "id": "hero",
        "x": 40,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "blacksmith",
        "x": 70,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -183,6 +188,7 @@
       {
        "id": "hero",
        "x": 40,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -201,16 +207,19 @@
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 50,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "blacksmith",
        "x": 75,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -274,16 +283,19 @@
       {
        "id": "villager_a",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 42,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -300,11 +312,13 @@
       {
        "id": "ttukttak",
        "x": 40,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "villager_a",
        "x": 65,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -322,11 +336,13 @@
       {
        "id": "blacksmith",
        "x": 65,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -335,6 +351,199 @@
      },
      "say": 4,
      "note": "대장장이가 블록 채우기 미니게임을 소개."
+    }
+   ]
+  },
+  {
+   "id": "s01_tut_battle",
+   "title": "story.s01.tut_battle.title",
+   "place_note": "마을 앞 들판",
+   "cast": [
+    "hero",
+    "ttukttak"
+   ],
+   "staging_note": "들판에 회색 단어들이 배회한다. 뚝딱이 손가락으로 하나씩 가리키며 조우와 전투를 설명한다. 1스테이지는 해금된 유닛 수만큼만 적이 나온다.",
+   "game_note": "조우·전투 튜토리얼(뜻 맞히기, 전투 준비, 보상)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.tut_battle.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.tut_battle.002"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s01.tut_battle.003"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.tut_battle.004"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.tut_battle.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 30,
+       "y": 75,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 40,
+       "y": 78,
+       "pose": ""
+      },
+      {
+       "id": "rare",
+       "x": 60,
+       "y": 30,
+       "pose": ""
+      },
+      {
+       "id": "rare",
+       "x": 78,
+       "y": 45,
+       "pose": ""
+      },
+      {
+       "id": "rare",
+       "x": 52,
+       "y": 55,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "move": "hero>48/58"
+     },
+     "say": 2,
+     "note": "들판을 위에서 본 맵. 회색 단어 셋이 배회하고, 주인공이 그중 하나 쪽으로 걸어간다."
+    },
+    {
+     "shot": "mid",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 40,
+       "y": 70,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 55,
+       "y": 72,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "battle": ""
+     },
+     "say": 5,
+     "note": "전투 준비 화면을 떠올리는 컷: 아군·적 동그라미 넷씩."
+    }
+   ]
+  },
+  {
+   "id": "s01_skit_cheok",
+   "title": "story.s01.skit_cheok.title",
+   "place_note": "들판 바위 위",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "cheokcheok"
+   ],
+   "staging_note": "바위 위에 학자 모자를 쓴 알기 유닛 척척이 서 있다. 첫 알기 단어(notify)를 잡은 직후. 스킷처럼 얼굴만 클로즈업해 주고받는다.",
+   "game_note": "알기 유닛 합류(잡담)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s01.skit_cheok.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.skit_cheok.002"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s01.skit_cheok.003_pun"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.skit_cheok.004_etym"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s01.skit_cheok.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "cheokcheok",
+       "x": 65,
+       "y": 30,
+       "pose": "proud"
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "y": 70,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 45,
+       "y": 74,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "move": "cheokcheok>55/55"
+     },
+     "say": 1,
+     "note": "바위 위 척척이 폴짝 내려와 일행 쪽으로 다가온다."
+    },
+    {
+     "shot": "close",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "cheokcheok",
+       "x": 50,
+       "y": 74,
+       "pose": "proud"
+      }
+     ],
+     "fx": {
+      "pun": ""
+     },
+     "say": 3,
+     "note": "척척의 클로즈업 일러스트: 머리 위에 차 없는 파이 그림."
     }
    ]
   },
@@ -372,16 +581,19 @@
       {
        "id": "hero",
        "x": 45,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 55,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "blacksmith",
        "x": 25,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -398,11 +610,13 @@
       {
        "id": "hero",
        "x": 45,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 55,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -424,7 +638,7 @@
     "ttukttak",
     "blacksmith"
    ],
-   "staging_note": "고장 난 풀무가 바람을 뿜지 못한다. 만들기 유닛(뚝딱)이 fac를 장착하고 있으면 고칠 수 있다.",
+   "staging_note": "고장 난 풀무가 바람을 뿜지 못한다. fac 어원을 갖고 있어서 뚝딱이 고칠 수 있다.",
    "game_note": "어근 fac 필드 능력(망가진 장치 고치기)",
    "borrow": [
     {
@@ -458,11 +672,13 @@
       {
        "id": "ttukttak",
        "x": 50,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "blacksmith",
        "x": 70,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -470,7 +686,7 @@
       "bellows": ""
      },
      "say": 2,
-     "note": "뚝딱이 fac를 장착하고 풀무 앞에."
+     "note": "fac 어원을 가진 뚝딱이 풀무 앞으로 걸어간다."
     },
     {
      "shot": "close",
@@ -479,6 +695,7 @@
       {
        "id": "ttukttak",
        "x": 50,
+       "y": 74,
        "pose": "dizzy"
       }
      ],
@@ -525,11 +742,13 @@
       {
        "id": "villager_a",
        "x": 65,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -546,11 +765,13 @@
       {
        "id": "villager_a",
        "x": 65,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -560,6 +781,88 @@
      },
      "say": 2,
      "note": "단어를 가져오면 빈칸이 채워지며 색이 번진다."
+    }
+   ]
+  },
+  {
+   "id": "s01_tut_evolve",
+   "title": "story.s01.tut_evolve.title",
+   "place_note": "대장간 용광로",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "blacksmith"
+   ],
+   "staging_note": "대장장이가 용광로 뚜껑을 연다. 단어 카드 두 장이 녹아 한 장으로 합쳐지는 시범.",
+   "game_note": "진화 튜토리얼(마을에서만, 재료 이하 뜻 모두 맞히기, 장비)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.tut_evolve.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.tut_evolve.002"
+    },
+    {
+     "speaker": "blacksmith",
+     "text": "story.s01.tut_evolve.003"
+    },
+    {
+     "speaker": "hero",
+     "text": "story.s01.tut_evolve.004"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.tut_evolve.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "forge",
+     "actors": [
+      {
+       "id": "blacksmith",
+       "x": 65,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 40,
+       "y": 70,
+       "pose": ""
+      },
+      {
+       "id": "ttukttak",
+       "x": 52,
+       "y": 74,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "furnace": ""
+     },
+     "say": 1,
+     "note": "대장간 안. 대장장이가 용광로 뚜껑을 연다."
+    },
+    {
+     "shot": "close",
+     "bg": "forge",
+     "actors": [],
+     "fx": {
+      "split": "word|word",
+      "join": ""
+     },
+     "say": 2,
+     "note": "클로즈업: 카드 두 장이 녹아 한 장으로 합쳐진다."
     }
    ]
   },
@@ -607,16 +910,19 @@
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 35,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "destroyer",
        "x": 75,
+       "y": 32,
        "pose": "boss"
       }
      ],
@@ -634,6 +940,7 @@
       {
        "id": "destroyer",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       }
      ],
@@ -651,11 +958,13 @@
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 50,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -715,6 +1024,7 @@
       {
        "id": "destroyer",
        "x": 60,
+       "y": 32,
        "pose": "down"
       }
      ],
@@ -742,21 +1052,25 @@
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 50,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "blacksmith",
        "x": 70,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "villager_a",
        "x": 85,
+       "y": 44,
        "pose": ""
       }
      ],

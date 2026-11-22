@@ -46,21 +46,25 @@
       {
        "id": "hunter",
        "x": 35,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "cow",
        "x": 55,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "cow",
        "x": 68,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "cow",
        "x": 81,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -78,11 +82,13 @@
       {
        "id": "hunter",
        "x": 40,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 65,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -143,11 +149,13 @@
       {
        "id": "deopseok",
        "x": 45,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 65,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -164,11 +172,13 @@
       {
        "id": "hunter",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -177,6 +187,147 @@
      },
      "say": 3,
      "note": "사냥꾼이 덫 놓기(지뢰찾기 규칙)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s02_tut_attr",
+   "title": "story.s02.tut_attr.title",
+   "place_note": "초원 오두막 앞",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "deopseok"
+   ],
+   "staging_note": "뚝딱이 단어 카드 귀퉁이의 속성 무늬를 확대해 보여 준다. 화면 위에 속성 아이콘 4개가 차례로 뜬다.",
+   "game_note": "속성 튜토리얼(속성 4개 열림, 장비 속성 3개 이상이면 능력)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.tut_attr.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.tut_attr.002"
+    },
+    {
+     "speaker": "deopseok",
+     "text": "story.s02.tut_attr.003"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.tut_attr.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "close",
+     "bg": "field",
+     "actors": [],
+     "fx": {
+      "card": "word",
+      "attricon": ""
+     },
+     "say": 1,
+     "note": "클로즈업: 카드 귀퉁이의 속성 무늬가 커진다."
+    },
+    {
+     "shot": "mid",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "deopseok",
+       "x": 45,
+       "y": 70,
+       "pose": "excited"
+      },
+      {
+       "id": "ttukttak",
+       "x": 60,
+       "y": 72,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "attrrow": ""
+     },
+     "say": 3,
+     "note": "화면 위에 속성 아이콘 4개가 차례로 뜬다."
+    }
+   ]
+  },
+  {
+   "id": "s02_town_market",
+   "title": "story.s02.town_market.title",
+   "place_note": "초원 장터",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "deopseok",
+    "merchant"
+   ],
+   "staging_note": "장터 좌판. 상인이 옷을 들고 고개를 갸웃. 덥석이 상인을 쫓아 장터를 한 바퀴 돈다(점선 경로).",
+   "game_note": "마을 이야기(유머)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "merchant",
+     "text": "story.s02.town_market.001"
+    },
+    {
+     "speaker": "deopseok",
+     "text": "story.s02.town_market.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.town_market.003_etym"
+    },
+    {
+     "speaker": "merchant",
+     "text": "story.s02.town_market.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "merchant",
+       "x": 55,
+       "y": 40,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "y": 75,
+       "pose": ""
+      },
+      {
+       "id": "deopseok",
+       "x": 40,
+       "y": 72,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "stall": "",
+      "loop": "deopseok"
+     },
+     "say": 2,
+     "note": "장터 좌판. 덥석이 상인을 쫓아 장터를 한 바퀴 돈다(점선 경로)."
     }
    ]
   },
@@ -215,11 +366,13 @@
       {
        "id": "villager_b",
        "x": 40,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 55,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -236,21 +389,25 @@
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "villager_b",
        "x": 45,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "villager_a",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hunter",
        "x": 75,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -273,8 +430,8 @@
     "deopseok",
     "hunter"
    ],
-   "staging_note": "풀숲에 송아지 발자국이 흩어져 있다. quest 어근의 필드 능력(희귀 단어 탐지)으로 위치가 반짝인다.",
-   "game_note": "어근 quest 필드 능력(근처 희귀 단어·대상 탐지)",
+   "staging_note": "풀숲에 송아지 발자국이 흩어져 있다. quest 어원을 갖고 있어서 송아지가 있는 곳이 반짝인다.",
+   "game_note": "어근 quest 필드 능력(근처 희귀 단어·대상 탐지). quest 어원을 갖고 있으면 쓸 수 있다",
    "borrow": [],
    "lines": [
     {
@@ -298,11 +455,13 @@
       {
        "id": "deopseok",
        "x": 40,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "hunter",
        "x": 65,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -320,11 +479,13 @@
       {
        "id": "deopseok",
        "x": 45,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "calf",
        "x": 60,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -333,6 +494,65 @@
      },
      "say": 3,
      "note": "덥석이 송아지를 잡았다가 미안해하며 놓는다."
+    }
+   ]
+  },
+  {
+   "id": "s02_skit_prison",
+   "title": "story.s02.skit_prison.title",
+   "place_note": "초원 언덕",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "deopseok"
+   ],
+   "staging_note": "덥석이 아직도 주인공 모자를 꼭 쥐고 있다. 얼굴 스킷.",
+   "game_note": "동료 잡담(유머)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "hero",
+     "text": "story.s02.skit_prison.001"
+    },
+    {
+     "speaker": "deopseok",
+     "text": "story.s02.skit_prison.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.skit_prison.003_etym"
+    },
+    {
+     "speaker": "deopseok",
+     "text": "story.s02.skit_prison.004"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s02.skit_prison.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "close",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "deopseok",
+       "x": 50,
+       "y": 74,
+       "pose": "proud"
+      }
+     ],
+     "fx": {
+      "grab": "hat"
+     },
+     "say": 2,
+     "note": "얼굴 스킷: 모자를 꼭 쥔 덥석."
     }
    ]
   },
@@ -370,11 +590,13 @@
       {
        "id": "hunter",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "ttukttak",
        "x": 35,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -427,11 +649,13 @@
       {
        "id": "predator",
        "x": 65,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -448,6 +672,7 @@
       {
        "id": "predator",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       }
      ],
@@ -500,16 +725,19 @@
       {
        "id": "hunter",
        "x": 40,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "deopseok",
        "x": 60,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],

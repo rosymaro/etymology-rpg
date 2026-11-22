@@ -50,6 +50,7 @@
       {
        "id": "watchman",
        "x": 55,
+       "y": 44,
        "pose": ""
       }
      ],
@@ -67,6 +68,7 @@
       {
        "id": "watchman",
        "x": 50,
+       "y": 44,
        "pose": "surprised"
       }
      ],
@@ -131,11 +133,13 @@
       {
        "id": "librarian",
        "x": 70,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "cheokcheok",
        "x": 40,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -152,11 +156,13 @@
       {
        "id": "cheokcheok",
        "x": 40,
+       "y": 74,
        "pose": "proud"
       },
       {
        "id": "hilkkeum",
        "x": 60,
+       "y": 74,
        "pose": "shy"
       }
      ],
@@ -174,11 +180,13 @@
       {
        "id": "librarian",
        "x": 65,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -187,6 +195,74 @@
      },
      "say": 5,
      "note": "사서가 책 읽기(단어 찾기)를 소개."
+    }
+   ]
+  },
+  {
+   "id": "s03_town_library",
+   "title": "story.s03.town_library.title",
+   "place_note": "도서관 열람실",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "librarian",
+    "villager_a"
+   ],
+   "staging_note": "열람실 한가운데서 마을 사람이 큰 소리로 외친다. 사서가 달려온다.",
+   "game_note": "마을 이야기(유머)",
+   "borrow": [
+    {
+     "game": "크로노 트리거·파이널 판타지 VI",
+     "part": "맵 위에서 캐릭터가 걸어 다니며 진행되는 이벤트 장면과 얼굴 그림 대화창"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "villager_a",
+     "text": "story.s03.town_library.001"
+    },
+    {
+     "speaker": "librarian",
+     "text": "story.s03.town_library.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.town_library.003_etym"
+    },
+    {
+     "speaker": "villager_a",
+     "text": "story.s03.town_library.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "wide",
+     "bg": "library",
+     "actors": [
+      {
+       "id": "villager_a",
+       "x": 50,
+       "y": 45,
+       "pose": "surprised"
+      },
+      {
+       "id": "librarian",
+       "x": 80,
+       "y": 30,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 30,
+       "y": 75,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "move": "librarian>58/42"
+     },
+     "say": 1,
+     "note": "열람실 한가운데서 외치는 마을 사람. 사서가 달려온다."
     }
    ]
   },
@@ -220,11 +296,13 @@
       {
        "id": "rare",
        "x": 75,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 30,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -241,11 +319,13 @@
       {
        "id": "rare",
        "x": 60,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 45,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -259,6 +339,55 @@
    ]
   },
   {
+   "id": "s03_tut_defense",
+   "title": "story.s03.tut_defense.title",
+   "place_note": "도서관 열람실 책상",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "cheokcheok",
+    "librarian"
+   ],
+   "staging_note": "책상 위에 뜻 카드 다섯 장이 펼쳐진다. 하나를 고르면 초록, 다른 하나를 고르면 빨강으로 물드는 시범.",
+   "game_note": "방어 마법 퀴즈 튜토리얼(조합 뜻 고르기)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.tut_defense.001"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s03.tut_defense.002"
+    },
+    {
+     "speaker": "librarian",
+     "text": "story.s03.tut_defense.003"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.tut_defense.004"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "close",
+     "bg": "library",
+     "actors": [],
+     "fx": {
+      "cards5": ""
+     },
+     "say": 3,
+     "note": "클로즈업: 책상 위 뜻 카드 다섯 장. 하나는 초록, 하나는 빨강으로 물든다."
+    }
+   ]
+  },
+  {
    "id": "s03_q_root",
    "title": "story.s03.q_root.title",
    "place_note": "망루 아래 숲",
@@ -267,7 +396,7 @@
     "ttukttak",
     "hilkkeum"
    ],
-   "staging_note": "안개 속 갈림길. vis 장착 유닛이 있으면 숨은 길이 빛난다.",
+   "staging_note": "안개 속 갈림길. vis 어원을 갖고 있어서 힐끔에게 숨은 길이 빛나 보인다.",
    "game_note": "어근 vis 필드 능력(숨은 길 보기)",
    "borrow": [],
    "lines": [
@@ -288,11 +417,13 @@
       {
        "id": "hilkkeum",
        "x": 40,
+       "y": 74,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 55,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -302,6 +433,76 @@
      },
      "say": 1,
      "note": "안개 속 갈림길, 숨은 길이 빛난다."
+    }
+   ]
+  },
+  {
+   "id": "s03_skit_spect",
+   "title": "story.s03.skit_spect.title",
+   "place_note": "안개 걷힌 숲길",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "hilkkeum",
+    "cheokcheok"
+   ],
+   "staging_note": "숲길을 걷는 세 유닛의 얼굴 스킷.",
+   "game_note": "동료 잡담(유머)",
+   "borrow": [
+    {
+     "game": "테일즈 오브 시리즈",
+     "part": "스킷: 얼굴 그림만 나오는 짧은 동료 잡담 장면"
+    }
+   ],
+   "lines": [
+    {
+     "speaker": "hilkkeum",
+     "text": "story.s03.skit_spect.001"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.skit_spect.002_etym"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s03.skit_spect.003_pun"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s03.skit_spect.004_etym"
+    },
+    {
+     "speaker": "hilkkeum",
+     "text": "story.s03.skit_spect.005"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "forest",
+     "actors": [
+      {
+       "id": "hilkkeum",
+       "x": 35,
+       "y": 65,
+       "pose": "shy"
+      },
+      {
+       "id": "cheokcheok",
+       "x": 55,
+       "y": 62,
+       "pose": "proud"
+      },
+      {
+       "id": "ttukttak",
+       "x": 72,
+       "y": 66,
+       "pose": ""
+      }
+     ],
+     "fx": {},
+     "say": 3,
+     "note": "숲길을 나란히 걷는 셋의 얼굴 스킷."
     }
    ]
   },
@@ -335,11 +536,13 @@
       {
        "id": "librarian",
        "x": 65,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -394,11 +597,13 @@
       {
        "id": "wizard",
        "x": 65,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "hero",
        "x": 25,
+       "y": 70,
        "pose": ""
       }
      ],
@@ -416,11 +621,13 @@
       {
        "id": "wizard",
        "x": 60,
+       "y": 32,
        "pose": "boss"
       },
       {
        "id": "cheokcheok",
        "x": 30,
+       "y": 74,
        "pose": ""
       }
      ],
@@ -487,16 +694,19 @@
       {
        "id": "hero",
        "x": 35,
+       "y": 70,
        "pose": ""
       },
       {
        "id": "librarian",
        "x": 65,
+       "y": 44,
        "pose": ""
       },
       {
        "id": "cheokcheok",
        "x": 50,
+       "y": 74,
        "pose": ""
       }
      ],
