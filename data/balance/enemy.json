@@ -1,22 +1,75 @@
 {
-  "_doc": "적 능력치는 층을 쌓아 정한다: 스테이지 곡선 → 빈도 보정 → 성향(계열 어근, 없으면 주속성) → 단어별 덮어쓰기. 레벨 테스트 때는 위에서부터 고친다. 값은 10스테이지 재시뮬레이션 전 임시값",
+  "_doc": "적 능력치는 층을 쌓아 정한다: 스테이지 곡선 → 빈도 보정 → 성향(계열 어근, 없으면 주속성) → 단어별 덮어쓰기. 레벨 테스트 때는 위에서부터 고친다. stage_curve는 10스테이지 시뮬레이션(docs/design/sim-10stage.md)으로 맞춘 값",
   "stage_curve": [
-    { "stage": 1,  "base_level": 1,  "coins": 1 },
-    { "stage": 2,  "base_level": 4,  "coins": 1 },
-    { "stage": 3,  "base_level": 9,  "coins": 1 },
-    { "stage": 4,  "base_level": 15, "coins": 2 },
-    { "stage": 5,  "base_level": 21, "coins": 3 },
-    { "stage": 6,  "base_level": 27, "coins": 3 },
-    { "stage": 7,  "base_level": 33, "coins": 4 },
-    { "stage": 8,  "base_level": 39, "coins": 5 },
-    { "stage": 9,  "base_level": 45, "coins": 5 },
-    { "stage": 10, "base_level": 51, "coins": 5 }
+    {
+      "stage": 1,
+      "base_level": 1,
+      "coins": 1
+    },
+    {
+      "stage": 2,
+      "base_level": 10,
+      "coins": 1
+    },
+    {
+      "stage": 3,
+      "base_level": 13,
+      "coins": 1
+    },
+    {
+      "stage": 4,
+      "base_level": 16,
+      "coins": 2
+    },
+    {
+      "stage": 5,
+      "base_level": 25,
+      "coins": 2
+    },
+    {
+      "stage": 6,
+      "base_level": 28,
+      "coins": 2
+    },
+    {
+      "stage": 7,
+      "base_level": 34,
+      "coins": 3
+    },
+    {
+      "stage": 8,
+      "base_level": 43,
+      "coins": 3
+    },
+    {
+      "stage": 9,
+      "base_level": 49,
+      "coins": 3
+    },
+    {
+      "stage": 10,
+      "base_level": 52,
+      "coins": 4
+    }
   ],
-  "frequency_level_bonus": { "formula": "5 - frequency", "min": -2, "max": 3 },
+  "frequency_level_bonus": {
+    "formula": "5 - frequency",
+    "min": -2,
+    "max": 3
+  },
   "stat_formula": "unit_formula",
-  "tendency_from": ["root_family", "primary_attribute"],
+  "tendency_from": [
+    "root_family",
+    "primary_attribute"
+  ],
   "attribute_ability_from_stage": 3,
-  "team_bundle": { "same_primary_min": 3, "tier_at_3": 1, "tier_at_4": 2 },
+  "team_bundle": {
+    "same_primary_min": 3,
+    "tier_at_3": 1,
+    "tier_at_4": 2
+  },
   "skill_pick": "random",
-  "_skill_pick_doc": "random | weighted | scripted. 적 스킬 고르는 방식. scripted면 overrides의 skills를 순서대로 쓴다"
+  "_skill_pick_doc": "random | weighted | scripted. 적 스킬 고르는 방식. scripted면 overrides의 skills를 순서대로 쓴다",
+  "gear_bonus_ratio": 1.0,
+  "_gear_bonus_doc": "적도 장비를 입은 것으로 본다: 같은 스테이지에 부지런히 진화한 플레이어 유닛의 평균 장비 능력치(공·방·체) × 이 비율을 더한다. 스테이지 곡선에 gear_bonus [공,방,체]를 적으면 그 값을 쓴다"
 }
