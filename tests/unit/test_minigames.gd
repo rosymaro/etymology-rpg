@@ -13,7 +13,8 @@ func _words(n: int) -> Array[WordData]:
 		"bridge", "dream", "ocean", "pencil", "tiger"]
 	var out: Array[WordData] = []
 	for i in n:
-		out.append(WordData.from_dict({"id": ids[i], "meaning": "뜻%d" % i, "attrs": [(i % 6) + 1], "tier": 1}))
+		out.append(WordData.from_dict({"id": ids[i], "meaning": "뜻%d" % i, "attrs": [(i % 6) + 1], "tier": 1,
+			"etym": [{"root": "r%d-" % i, "meaning": "앞%d" % i}, {"root": "x%d" % i, "meaning": "뒤%d" % i}]}))
 	return out
 
 
@@ -155,18 +156,6 @@ func test_pipe_solution_connects_when_rotated_back() -> void:
 	assert_eq(g.judge(partial), "missing")
 
 
-func test_match3_swap_clears_and_fills_gauge() -> void:
-	var g := _make(Match3Game, "fishing") as Match3Game
-	var b := [
-		[0, 0, 1, 0, 2, 3, 4], [1, 2, 3, 4, 0, 1, 2], [2, 3, 4, 0, 1, 2, 3], [3, 4, 0, 1, 2, 3, 4],
-		[4, 0, 1, 2, 3, 4, 0], [0, 1, 2, 3, 4, 0, 1], [1, 2, 3, 4, 0, 1, 2]]
-	g.set_board(b)
-	assert_false(g.swap(Vector2i(1, 0), Vector2i(2, 0)), "줄이 안 생기면 되돌린다")
-	assert_true(g.swap(Vector2i(0, 2), Vector2i(0, 3)))
-	assert_gte(g.last_cleared, 3)
-	assert_eq(g.moves_left, int(cfg["fishing"]["moves"]) - 1)
-
-
 func test_anagram_right_spelling_earns() -> void:
 	var g := _make(AnagramGame, "copy") as AnagramGame
 	var w := g.current().id
@@ -183,6 +172,29 @@ func test_anagram_right_spelling_earns() -> void:
 	assert_eq(g.earned, [w] as Array[String])
 
 
+func test_cryptex_turning_alone_never_scores() -> void:
+	var g := _make(CryptexGame, "wheel") as CryptexGame
+	for k in g.n * 2:
+		g.turn_inner(1)
+	assert_eq(g.score(), 0, "돌리기만 해서는 맞지 않는다. 수문을 열어야 한다")
+
+
+func test_cryptex_open_gates_tries_then_reveals() -> void:
+	var g := _make(CryptexGame, "wheel") as CryptexGame
+	assert_eq(g.open_gates(), "wrong")
+	assert_eq(g.open_gates(), "lost", "두 번 틀리면 답을 보여 준다")
+	assert_true(g.revealed and g.solved())
+	g.next_round()
+	assert_eq(g.rounds_done, 1)
+	assert_eq(g.score(), 0)
+	for k in g.n:
+		g.inner_rot = k
+		if g.solved():
+			break
+	assert_eq(g.open_gates(), "right")
+	assert_eq(g.score(), 1)
+
+
 func test_cryptex_one_offset_solves_all_gates() -> void:
 	var g := _make(CryptexGame, "wheel") as CryptexGame
 	assert_false(g.solved())
@@ -192,22 +204,6 @@ func test_cryptex_one_offset_solves_all_gates() -> void:
 		if g.solved():
 			hits += 1
 	assert_eq(hits, 1, "맞는 자리는 하나뿐")
-
-
-func test_sort_is_scrambled_and_solvable_moves_follow_rules() -> void:
-	var g := _make(SortGame, "guard") as SortGame
-	assert_false(g.all_sorted())
-	var total := 0
-	for t in g.tubes:
-		total += t.size()
-	assert_eq(total, g.colors * g.per_tube)
-	# 맨 위가 다른 무늬인 통으로는 못 옮긴다
-	for a in g.tubes.size():
-		for b in g.tubes.size():
-			if a != b and not g.tubes[a].is_empty() and not g.tubes[b].is_empty() and g.tubes[b].size() < g.per_tube \
-					and g.tubes[a][-1] != g.tubes[b][-1]:
-				assert_false(g.can_move(a, b))
-				return
 
 
 func test_ore_combo_of_five_earns_and_rock_breaks_combo() -> void:
@@ -221,35 +217,59 @@ func test_ore_combo_of_five_earns_and_rock_breaks_combo() -> void:
 	assert_eq(g.combo, 0)
 
 
-func test_flow_board_has_solution_and_solving_earns_all() -> void:
-	var g := _make(FlowGame, "pattern") as FlowGame
-	var cells := 0
-	for seg in g.solution:
-		cells += seg.size()
-		assert_gte(seg.size(), int(cfg["pattern"]["min_len"]))
-	assert_eq(cells, g.size * g.size)
-	for k in g.pairs:
-		var seg: Array = g.solution[k]
-		assert_true(g.begin(seg[0]))
-		for i in range(1, seg.size()):
-			assert_true(g.extend(seg[i]))
-		g.end_stroke()
+func test_fishing_catch_fish_with_the_meaning() -> void:
+	var g := _make(FishingGame, "fishing") as FishingGame
+	var w := g.current()
+	var right := -1
+	var wrong := -1
+	for i in g.fish.size():
+		if g.words[g.fish[i]["w"]].meaning == w.meaning:
+			right = i
+		else:
+			wrong = i
+	assert_gt(right, -1, "정답 물고기가 있다")
+	assert_eq(g.fish.size(), int(cfg["fishing"]["fish"]))
+	assert_true(g.catch(right))
+	assert_eq(g.earned, [w.id] as Array[String])
+	var w2 := g.current()
+	for i in g.fish.size():
+		if g.words[g.fish[i]["w"]].meaning != w2.meaning:
+			assert_false(g.catch(i))
+			break
+	assert_eq(g.misses, 1)
+
+
+func test_guard_judge_true_and_false_pairs() -> void:
+	var g := _make(GuardGame, "guard") as GuardGame
+	var trues := 0
+	var falses := 0
+	for t in g.travelers:
+		if t["true"]:
+			trues += 1
+			assert_eq(t["shown"], g.words[t["w"]].meaning)
+		else:
+			falses += 1
+			assert_ne(t["shown"], g.words[t["w"]].meaning)
+	assert_gt(trues + falses, 0)
+	var cur := g.current()
+	assert_true(g.judge(bool(cur["true"])), "바르게 판정하면 얻는다")
+	assert_eq(g.score(), 1)
+	var cur2 := g.current()
+	assert_false(g.judge(not bool(cur2["true"])))
+	assert_eq(g.misses, 1)
+
+
+func test_root_link_word_to_its_etymology() -> void:
+	var g := _make(RootLinkGame, "pattern") as RootLinkGame
+	assert_eq(g.left.size(), int(cfg["pattern"]["pairs"]))
+	var a := 0
+	var right_b := g.right.find(g.left[a])
+	var wrong_b := (right_b + 1) % g.right.size()
+	assert_false(g.link(a, wrong_b))
+	assert_eq(g.misses, 1)
+	assert_true(g.link(a, right_b))
+	assert_eq(g.score(), 1)
+	assert_string_contains(RootLinkGame.etym_text(g.words[g.left[a]]), " + ")
+	for i in g.left.size():
+		g.link(i, g.right.find(g.left[i]))
 	assert_true(g.finished)
-	assert_eq(g.score(), g.pairs)
-
-
-func test_flow_lines_cannot_cross() -> void:
-	var g := _make(FlowGame, "pattern") as FlowGame
-	var s0: Array = g.solution[0]
-	var s1: Array = g.solution[1]
-	g.begin(s0[0])
-	for i in range(1, s0.size()):
-		g.extend(s0[i])
-	g.end_stroke()
-	g.begin(s1[0])
-	# s1의 첫 칸 이웃 중 s0이 지난 칸이 있으면 들어갈 수 없다
-	for c in s0:
-		if absi(c.x - s1[0].x) + absi(c.y - s1[0].y) == 1:
-			assert_false(g.extend(c))
-			return
-	pass_test("이웃에 다른 선이 없다")

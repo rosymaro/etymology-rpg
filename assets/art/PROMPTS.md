@@ -43,7 +43,7 @@ blood, wounds, scary, text, letters, watermark, logo, existing game characters
 | `boss/destroyer.png` | a big clumsy destroyer monster made of broken tools and bricks, exaggerated surprised face, grey crack pattern on its body, more silly than scary |
 | `mini/order_belt.png` | side view of a seamless horizontal conveyor belt with rollers, soft grey-violet, wide 1280x200, no objects on it |
 | `mini/order_card.png` | a blank rounded rectangle wooden tag, white and very light grey, empty center for text, slight shadow |
-| `mini/fish_0.png` ~ `fish_4.png` | a cute round fish, top view; five versions clearly different in color and shape: (0) sky blue round (1) pink long (2) yellow puffer (3) mint striped (4) lavender with big fins |
+| `mini/fish_meaning.png` | a cute long fish seen from the side, wide pale cream body with an empty space in the middle for text, small tail fin, 300x80 |
 | `mini/ore_vein.png` | a rounded ore rock with a shining vein, drawn in white and very light grey only |
 | `mini/ore_rock.png` | a plain grey round rock with a small grumpy face |
 | `ui/order_ticket.png` | a small paper order slip icon with a pin |

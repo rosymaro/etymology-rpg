@@ -3,6 +3,8 @@ extends MinigameScreen
 ## 7 물레방아: 고리를 펼친 그림. 왼쪽이 바깥 고리(단어), 오른쪽이 안쪽 고리(뜻). 수문 칸에서 둘을 맞춘다.
 
 var _rows: VBoxContainer
+var _open_btn: Button
+var _msg: Label
 
 
 func build() -> void:
@@ -22,27 +24,54 @@ func build() -> void:
 	rb.add_child(UiKit.button("▲", func() -> void: _turn(false, -1), UiKit.LEAF, 26))
 	rb.add_child(UiKit.button("▼", func() -> void: _turn(false, 1), UiKit.LEAF, 26))
 	h.add_child(rb)
+	var bottom := UiKit.hbox(16)
+	bottom.position = Vector2(30, 440)
+	body.add_child(bottom)
+	_open_btn = UiKit.button(t("ui.mini.wheel.open"), _open, UiKit.ACCENT.lightened(0.35), 26)
+	_open_btn.custom_minimum_size = Vector2(260, 76)
+	bottom.add_child(_open_btn)
+	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.ACCENT.darkened(0.2)), 800)
+	bottom.add_child(_msg)
 
 
 func _turn(outer: bool, step: int) -> void:
 	var g := game as CryptexGame
-	var before := g.rounds_done
 	if outer:
 		g.turn_outer(step)
 	else:
 		g.turn_inner(step)
-	if g.rounds_done > before:
-		GameData.vibrate(true)
+	changed()
+
+
+func _open() -> void:
+	var g := game as CryptexGame
+	if g.revealed:
+		g.next_round()
+		_msg.text = ""
+		changed()
+		return
+	var r := g.open_gates()
+	match r:
+		"right":
+			_msg.text = t("ui.mini.wheel.right")
+			GameData.vibrate(true)
+		"wrong":
+			_msg.text = t("ui.mini.wheel.wrong").format({"n": g.tries_left})
+			GameData.vibrate()
+		"lost":
+			_msg.text = t("ui.mini.wheel.lost")
+			GameData.vibrate()
 	changed()
 
 
 func refresh() -> void:
 	var g := game as CryptexGame
+	_open_btn.text = t("ui.mini.wheel.next") if g.revealed else t("ui.mini.wheel.open").format({"n": g.tries_left})
 	for c in _rows.get_children():
 		c.queue_free()
 	for p in g.n:
 		var gate := p in g.gates
-		var ok := gate and g.gate_ok(p)
+		var ok := gate and g.revealed
 		var row := UiKit.hbox(10)
 		var tag := UiKit.label(t("ui.mini.wheel.gate") if gate else "", 18, UiKit.ACCENT.darkened(0.2))
 		tag.custom_minimum_size = Vector2(60, 0)

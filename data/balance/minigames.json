@@ -29,10 +29,12 @@
     "decoys": 3
   },
   "fishing": {
-    "size": 7,
-    "kinds": 5,
-    "moves": 20,
-    "gauge_per_word": 15
+    "questions": 10,
+    "fish": 5,
+    "max_miss": 3,
+    "speed_min": 60,
+    "speed_max": 130,
+    "duration": 120
   },
   "copy": {
     "words": 5,
@@ -48,13 +50,14 @@
       4
     ],
     "rounds": 5,
-    "duration": 150
+    "duration": 150,
+    "tries": 2
   },
   "guard": {
-    "colors": 5,
-    "per_tube": 4,
-    "empty_tubes": 2,
-    "scramble": 400
+    "travelers": 12,
+    "true_chance": 0.5,
+    "max_miss": 3,
+    "duration": 120
   },
   "ore": {
     "duration": 60,
@@ -65,15 +68,14 @@
     "gravity": 900
   },
   "pattern": {
-    "size": 5,
     "pairs": 5,
-    "min_len": 3,
-    "duration": 150,
-    "shuffle": 400
+    "max_miss": 3,
+    "duration": 150
   },
   "pool_size": 16,
   "_pool_doc": "한 판에 쓰는 단어 수(보상 후보). 그 마을 단어 중 아직 못 얻은 것부터",
   "_order_doc": "belt_size = 벨트 위 카드 수, belt_speed = 1초에 벨트 길이의 몇 분의 1만큼 흐르는지(0.09면 약 11초에 끝까지)",
   "_search_doc": "fade_every = 몇 초마다 정답에 쓰이지 않는 글자를 하나씩 지우는지",
-  "_kite_doc": "words = 정답 단어 수(뜻을 보여 줌), decoys = 함정 단어 수. 정답을 모두 지나고 함정을 지나지 않아야 성공"
+  "_kite_doc": "words = 정답 단어 수(뜻을 보여 줌), decoys = 함정 단어 수. 정답을 모두 지나고 함정을 지나지 않아야 성공",
+  "_wheel_doc": "tries = 바퀴마다 수문을 열어 볼 수 있는 횟수. 다 틀리면 답을 보여 주고 그 바퀴는 놓친다"
 }
