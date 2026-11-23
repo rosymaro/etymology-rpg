@@ -48,6 +48,8 @@ func _draw_ores() -> void:
 	var r := float(g.cfg["radius"]) * s.x
 	for o in g.ores:
 		var p: Vector2 = o["pos"] * s
+		if Art.draw(_canvas, "mini", "ore_vein" if o["target"] else "ore_rock", p, Vector2(r, r) * 2.4, tc if o["target"] else Color.WHITE):
+			continue
 		_canvas.draw_circle(p, r, tc if o["target"] else UiKit.GRAY.darkened(0.15))
 		_canvas.draw_arc(p, r, 0, TAU, 20, UiKit.INK, 3)
 	for i in range(1, _trail.size()):

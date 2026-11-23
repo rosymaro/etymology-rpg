@@ -1,14 +1,15 @@
 class_name OrderGame
 extends Minigame
 ## 1 공방 마을 '주문 제작'(주문 처리 퍼즐): 주문서(뜻과 속성 무늬)가 차례로 오고,
-## 흘러오는 단어 카드 중 맞는 것을 집는다. 주문마다 제한 시간. 시간 안에 맞게 낸 주문마다 1개.
+## 컨베이어 벨트 위로 단어 카드가 왼쪽에서 오른쪽으로 흘러간다. 맞는 카드를 집는다. 주문마다 제한 시간.
+## 시간 안에 맞게 낸 주문마다 1개. 카드 위치 x는 벨트 위 0(왼쪽 끝)~1(오른쪽 끝)이다.
 
 var orders: Array[String] = []  ## 주문 단어 id 차례
 var current := 0
 var order_left := 0.0
-var belt: Array[String] = []
+var items: Array[Dictionary] = []  ## 벨트 위 카드 {id, x}
 var misses := 0
-var _belt_t := 0.0
+var _spacing := 0.25
 
 
 func _build() -> void:
@@ -19,8 +20,9 @@ func _build() -> void:
 	for i in mini(int(cfg["orders"]), ids.size()):
 		orders.append(ids[i])
 	order_left = float(cfg["order_time"])
-	for i in int(cfg["belt_size"]):
-		belt.append(_random_card())
+	_spacing = 1.0 / float(cfg["belt_size"])
+	for k in int(cfg["belt_size"]):
+		items.append({"id": _random_card(), "x": 1.0 - _spacing * (k + 0.5)})
 	_ensure_answer()
 
 
@@ -28,24 +30,49 @@ func current_word() -> String:
 	return orders[current] if current < orders.size() else ""
 
 
+## 지금 벨트 위 카드 id(오른쪽부터).
+func belt_ids() -> Array[String]:
+	var out: Array[String] = []
+	for it in items:
+		out.append(it["id"])
+	return out
+
+
+## 벨트에 아직 없는 단어 하나(같은 카드가 두 장 보이지 않게).
 func _random_card() -> String:
+	var on := {}
+	for it in items:
+		on[it["id"]] = true
+	for k in 30:
+		var id: String = words[rng.randi_range(0, words.size() - 1)].id
+		if not on.has(id):
+			return id
 	return words[rng.randi_range(0, words.size() - 1)].id
 
 
+## 답 카드가 벨트에 없으면(오른쪽 끝으로 떨어졌으면), 가장 왼쪽 카드를 답으로 바꾼다. 같은 카드가 두 장이 되지 않게 한다.
 func _ensure_answer() -> void:
 	var ans := current_word()
-	if ans != "" and not ans in belt:
-		belt[rng.randi_range(0, belt.size() - 1)] = ans
+	if ans == "" or items.is_empty():
+		return
+	for it in items:
+		if it["id"] == ans:
+			return
+	var last: Dictionary = items[0]
+	for it in items:
+		if it["x"] < last["x"]:
+			last = it
+	last["id"] = ans
 
 
-## 카드 하나를 집는다. 맞으면 얻고 다음 주문, 틀리면 실수.
+## 카드 하나(items 순번)를 집는다. 맞으면 얻고 다음 주문, 틀리면 실수.
 func pick(i: int) -> bool:
-	if finished or i < 0 or i >= belt.size():
+	if finished or i < 0 or i >= items.size():
 		return false
-	var ok := belt[i] == current_word()
+	var ok: bool = items[i]["id"] == current_word()
 	if ok:
-		earn(belt[i])
-		belt[i] = _random_card()
+		earn(items[i]["id"])
+		items.remove_at(i)
 		_next_order()
 	else:
 		_miss()
@@ -73,9 +100,12 @@ func _tick(dt: float) -> void:
 		_miss()
 		if not finished:
 			_next_order()
-	_belt_t += dt
-	if _belt_t >= float(cfg["belt_step"]):
-		_belt_t = 0.0
-		belt.pop_front()
-		belt.append(_random_card())
-		_ensure_answer()
+	var v := float(cfg["belt_speed"])
+	var min_x := 1.0
+	for it in items:
+		it["x"] += v * dt
+		min_x = minf(min_x, it["x"])
+	items = items.filter(func(it: Dictionary) -> bool: return it["x"] <= 1.05)
+	if items.is_empty() or min_x >= _spacing:
+		items.append({"id": _random_card(), "x": -0.05})
+	_ensure_answer()

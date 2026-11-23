@@ -5,9 +5,9 @@
     "duration": 100,
     "order_time": 16,
     "belt_size": 4,
-    "belt_step": 2.2,
     "max_miss": 3,
-    "orders": 8
+    "orders": 8,
+    "belt_speed": 0.09
   },
   "trap": {
     "rows": 6,
@@ -71,5 +71,6 @@
     "shuffle": 400
   },
   "pool_size": 16,
-  "_pool_doc": "한 판에 쓰는 단어 수(보상 후보). 그 마을 단어 중 아직 못 얻은 것부터"
+  "_pool_doc": "한 판에 쓰는 단어 수(보상 후보). 그 마을 단어 중 아직 못 얻은 것부터",
+  "_order_doc": "belt_size = 벨트 위 카드 수, belt_speed = 1초에 벨트 길이의 몇 분의 1만큼 흐르는지(0.09면 약 11초에 끝까지)"
 }
