@@ -85,7 +85,22 @@ func _end() -> void:
 		return
 	_ended = true
 	GameData.vibrate(game.score() > 0)
+	if show_review():
+		var next := UiKit.button(t("ui.mini.next"), _proceed, UiKit.LEAF, 26)
+		next.custom_minimum_size = Vector2(220, 72)
+		add_child(next)
+		UiKit.pin(next, 1, 1, -24, -24)
+		return
 	await get_tree().create_timer(0.6).timeout
+	_proceed()
+
+
+## 끝난 판을 그대로 두고 답을 보여 줄지(학습용). true면 '다음'을 눌러야 넘어간다.
+func show_review() -> bool:
+	return false
+
+
+func _proceed() -> void:
 	if mode == "story":
 		main.flow.minigame_finished(game_id, game.earned)
 	else:

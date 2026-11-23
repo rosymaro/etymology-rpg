@@ -1,6 +1,7 @@
 class_name WordSearchGame
 extends Minigame
 ## 3 망루 도서관 '책 읽기'(단어 찾기): 알파벳 격자에 가로·세로·대각선으로 숨은 단어를 찾는다. 뜻이 힌트.
+## 너무 어렵지 않게, fade_every초마다 정답에 쓰이지 않는 글자를 하나씩 지운다(지운 칸은 removed). 끝나면 화면이 못 찾은 답을 보여 준다.
 
 const DIRS := [Vector2i(0, 1), Vector2i(1, 0), Vector2i(1, 1), Vector2i(-1, 1),
 	Vector2i(0, -1), Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(1, -1)]
@@ -9,6 +10,8 @@ var size: int
 var grid: Array = []  ## [row][col] 글자
 var placed: Array[Dictionary] = []  ## {id, start, dir, len}
 var found: Array[String] = []
+var removed: Dictionary = {}  ## Vector2i -> 지운 순서
+var _fade_t := 0.0
 
 
 func _build() -> void:
@@ -55,6 +58,39 @@ func _try_place(s: String) -> bool:
 			placed.append({"id": s, "start": st, "dir": d, "len": s.length()})
 			return true
 	return false
+
+
+## 정답 단어가 지나는 칸.
+func answer_cells() -> Dictionary:
+	var out := {}
+	for p in placed:
+		for i in int(p["len"]):
+			out[p["start"] + p["dir"] * i] = p["id"]
+	return out
+
+
+func _tick(dt: float) -> void:
+	_fade_t += dt
+	var every := float(cfg.get("fade_every", 0))
+	if every > 0.0 and _fade_t >= every:
+		_fade_t -= every
+		remove_one()
+
+
+## 정답에 쓰이지 않는 글자 하나를 지운다. 지운 칸을 돌려준다(더 지울 칸이 없으면 (-1,-1)).
+func remove_one() -> Vector2i:
+	var keep := answer_cells()
+	var cand: Array[Vector2i] = []
+	for r in size:
+		for c in size:
+			var p := Vector2i(r, c)
+			if not keep.has(p) and not removed.has(p):
+				cand.append(p)
+	if cand.is_empty():
+		return Vector2i(-1, -1)
+	var p := cand[rng.randi_range(0, cand.size() - 1)]
+	removed[p] = removed.size() + 1
+	return p
 
 
 func hidden_ids() -> Array[String]:

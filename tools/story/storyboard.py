@@ -14,7 +14,7 @@ text, names = load('locale/story.csv'), load('locale/names.csv')
 KEY = {  # 빌려 온 게임 → 스토리보드의 개념 그림 키
  '포켓몬스터 시리즈': 'poke', '크로노 트리거·파이널 판타지 VI': 'snes', '테일즈 오브 시리즈': 'skit',
  '몬스터 헌터 시리즈': 'mh', '오오카미': 'okami', '역전재판 시리즈': 'ace', '파이널 판타지 IV': 'ff4',
- 'MOTHER 2': 'mother2', '테트리스': 'tetris', '지뢰찾기': 'mine', '단어 찾기(워드 서치) 퍼즐': 'wsearch',
+ 'MOTHER 2': 'mother2', '테트리스': 'tetris', '지뢰찾기': 'mine', '짝 맞추기(카드 뒤집기)': 'memory', '단어 찾기(워드 서치) 퍼즐': 'wsearch',
  '파이프 매니아': 'pipe', '비주얼드·캔디 크러시': 'match3', '애너그램 퍼즐': 'anagram',
  '볼 소트 퍼즐': 'ballsort', '플로우 프리': 'flow', '오버쿡드 시리즈': 'overcooked',
  '크립텍스(돌려 맞추는 원통 자물쇠)': 'cryptex', '프루트 닌자': 'ninja'}

@@ -1,7 +1,9 @@
 class_name PipeGame
 extends Minigame
 ## 4 바람 협곡 '연날리기'(파이프 잇기): 바람길 타일을 돌려 왼쪽 연에서 오른쪽 하늘 끝까지 잇는다.
-## 이어진 바람길 위에 걸린 단어마다 1개. 연결은 N=1 E=2 S=4 W=8 비트.
+## 판에는 단어 words+decoys개(정답 5, 함정 3). 옆에 정답 단어의 뜻이 나온다.
+## 하늘에 닿았을 때 바람길이 정답을 모두 지나고 함정을 하나도 지나지 않으면 성공(정답 모두 얻음).
+## 함정이 섞이거나 정답이 빠지면 오답을 알려 주고 계속한다. 연결은 N=1 E=2 S=4 W=8 비트.
 
 const N := 1
 const E := 2
@@ -15,6 +17,8 @@ var word_at_cell: Dictionary = {}  ## Vector2i -> 단어 순번
 var start_row: int
 var end_row: int
 var solution: Array[Vector2i] = []
+var targets := 0  ## 정답 단어 수(단어 순번 0..targets-1이 정답, 그 뒤가 함정)
+var last_judge := ""  ## 하늘에 닿았을 때 판정: "" | "ok" | "trap" | "missing"
 
 
 func _build() -> void:
@@ -39,10 +43,20 @@ func _build() -> void:
 		for c in cols:
 			if tiles[r][c] == 0:
 				tiles[r][c] = shapes[rng.randi_range(0, shapes.size() - 1)]
+	# 정답은 정답 길 위에, 함정은 길 밖에 둔다(정답 길로 돌리면 함정을 지나지 않는다)
 	var order := range(solution.size())
 	order.shuffle()
-	for k in mini(int(cfg["words"]), mini(solution.size(), words.size())):
+	targets = mini(int(cfg["words"]), mini(solution.size(), words.size()))
+	for k in targets:
 		word_at_cell[solution[order[k]]] = k
+	var off: Array[Vector2i] = []
+	for r in rows:
+		for c in cols:
+			if not Vector2i(r, c) in solution:
+				off.append(Vector2i(r, c))
+	off.shuffle()
+	for k in mini(int(cfg.get("decoys", 0)), mini(off.size(), words.size() - targets)):
+		word_at_cell[off[k]] = targets + k
 	for r in rows:
 		for c in cols:
 			for t in rng.randi_range(0, 3):
@@ -97,11 +111,32 @@ func turn(p: Vector2i) -> void:
 	if finished:
 		return
 	rotate(p)
+	last_judge = ""
 	if _reaches_end():
-		for c in connected():
-			if word_at_cell.has(c):
-				earn(words[word_at_cell[c]].id)
-		finish()
+		last_judge = judge(connected())
+		if last_judge == "ok":
+			for k in targets:
+				earn(words[k].id)
+			finish()
+
+
+## 바람이 지나는 칸들을 보고 판정한다: 함정이 있으면 "trap", 정답이 빠지면 "missing", 아니면 "ok".
+func judge(cells: Array[Vector2i]) -> String:
+	var hit := {}
+	for c in cells:
+		if word_at_cell.has(c):
+			hit[word_at_cell[c]] = true
+	for k in hit:
+		if k >= targets:
+			return "trap"
+	for k in targets:
+		if not hit.has(k):
+			return "missing"
+	return "ok"
+
+
+func is_decoy(cell: Vector2i) -> bool:
+	return word_at_cell.has(cell) and word_at_cell[cell] >= targets
 
 
 ## 연(왼쪽, start_row)에서 바람이 닿는 칸들.
