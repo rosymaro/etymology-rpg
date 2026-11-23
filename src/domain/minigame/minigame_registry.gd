@@ -9,12 +9,12 @@ static func _classes() -> Dictionary:
 		"MemoryGame": MemoryGame,
 		"WordSearchGame": WordSearchGame,
 		"PipeGame": PipeGame,
-		"Match3Game": Match3Game,
+		"FishingGame": FishingGame,
 		"AnagramGame": AnagramGame,
 		"CryptexGame": CryptexGame,
-		"SortGame": SortGame,
+		"GuardGame": GuardGame,
 		"OreSlashGame": OreSlashGame,
-		"FlowGame": FlowGame,
+		"RootLinkGame": RootLinkGame,
 	}
 
 

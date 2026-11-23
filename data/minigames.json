@@ -28,8 +28,8 @@
     {
       "id": "fishing",
       "stage": 5,
-      "class": "Match3Game",
-      "borrow": "3개 맞추기"
+      "class": "FishingGame",
+      "borrow": "움직이는 과녁 맞히기(뜻 낚시)"
     },
     {
       "id": "copy",
@@ -46,8 +46,8 @@
     {
       "id": "guard",
       "stage": 8,
-      "class": "SortGame",
-      "borrow": "색 정렬(통 정렬)"
+      "class": "GuardGame",
+      "borrow": "참·거짓 가리기(검문)"
     },
     {
       "id": "ore",
@@ -58,8 +58,10 @@
     {
       "id": "pattern",
       "stage": 10,
-      "class": "FlowGame",
-      "borrow": "선 잇기(같은 색 점 잇기)"
+      "class": "RootLinkGame",
+      "borrow": "줄긋기(짝 잇기)",
+      "min_etym": 2
     }
-  ]
+  ],
+  "_min_etym_doc": "min_etym = 어원 조각이 이만큼 있는 단어만 쓴다(문양 잇기는 2)"
 }

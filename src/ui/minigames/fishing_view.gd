@@ -1,60 +1,77 @@
 class_name FishingView
 extends MinigameScreen
-## 5 낚시: 물고기를 하나 누르고 이웃한 물고기를 누르면 바꾼다. 게이지가 차면 단어 1개.
-
-const CELL := 76.0
-const FISH := ["a8d8ea", "f4a6a6", "ffd59e", "b5e5b5", "c9b6e4", "f2b5d4"]
+## 5 낚시: 위의 낚싯줄에 영어 단어, 물속에는 뜻이 적힌 물고기가 헤엄친다. 그 단어의 뜻인 물고기를 누르면 낚는다.
 
 var _canvas: Control
-var _sel := Vector2i(-1, -1)
-var _info: Label
+var _word: Label
+var _msg: Label
 
 
 func build() -> void:
-	var g := game as Match3Game
+	var top := UiKit.hbox(20)
+	top.position = Vector2(40, 0)
+	body.add_child(top)
+	top.add_child(UiKit.label(t("ui.mini.fishing.hook"), 24))
+	_word = UiKit.label("", 44)
+	top.add_child(_word)
+	_msg = UiKit.label("", 22, UiKit.ACCENT.darkened(0.2))
+	top.add_child(_msg)
 	_canvas = Control.new()
-	_canvas.position = Vector2(60, 10)
-	_canvas.custom_minimum_size = Vector2(CELL * g.size, CELL * g.size)
-	_canvas.size = _canvas.custom_minimum_size
-	_canvas.draw.connect(_draw_board)
-	_canvas.gui_input.connect(func(ev: InputEvent) -> void:
-		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
-			_tap(Vector2i(int(ev.position.y / CELL), int(ev.position.x / CELL))))
+	_canvas.position = Vector2(40, 70)
+	_canvas.custom_minimum_size = FishingGame.AREA + Vector2(160, 40)
+	_canvas.draw.connect(_draw_sea)
+	_canvas.gui_input.connect(_input)
 	body.add_child(_canvas)
-	_info = UiKit.label("", 26)
-	_info.position = Vector2(CELL * g.size + 120, 30)
-	_info.custom_minimum_size = Vector2(500, 0)
-	body.add_child(_info)
 
 
-func _tap(p: Vector2i) -> void:
-	var g := game as Match3Game
-	if p.x < 0 or p.y < 0 or p.x >= g.size or p.y >= g.size:
+func _scale() -> Vector2:
+	return (_canvas.size - Vector2(0, 40)) / FishingGame.AREA
+
+
+func _input(ev: InputEvent) -> void:
+	if not (ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT):
 		return
-	if _sel.x < 0:
-		_sel = p
-	elif _sel == p:
-		_sel = Vector2i(-1, -1)
-	else:
-		if not g.swap(_sel, p):
-			GameData.vibrate()
-		_sel = Vector2i(-1, -1)
-	changed()
+	var g := game as FishingGame
+	var s := _scale()
+	for i in g.fish.size():
+		if _fish_rect(g.fish[i], s).has_point(ev.position):
+			var right_word := g.current()
+			if g.catch(i):
+				_msg.text = t("ui.quiz.right")
+				GameData.vibrate(true)
+			else:
+				_msg.text = t("ui.mini.fishing.wrong").format({"word": right_word.id, "meaning": right_word.meaning})
+				GameData.vibrate()
+			changed()
+			return
+
+
+func _fish_rect(f: Dictionary, s: Vector2) -> Rect2:
+	var p: Vector2 = f["pos"] * s + Vector2(0, 40)
+	return Rect2(p - Vector2(130, 30), Vector2(260, 60))
 
 
 func refresh() -> void:
-	var g := game as Match3Game
-	_info.text = t("ui.mini.fishing.info").format({"moves": g.moves_left, "gauge": g.gauge, "per": int(g.cfg["gauge_per_word"])})
+	var g := game as FishingGame
+	_word.text = g.current().id if g.current() else ""
+
+
+func tick(_d: float) -> void:
 	_canvas.queue_redraw()
 
 
-func _draw_board() -> void:
-	var g := game as Match3Game
-	for r in g.size:
-		for c in g.size:
-			var ctr := Vector2(c * CELL + CELL / 2, r * CELL + CELL / 2)
-			var k: int = g.board[r][c]
-			if not Art.draw(_canvas, "mini", "fish_%d" % k, ctr, Vector2(CELL, CELL) * 0.9):
-				_canvas.draw_circle(ctr, CELL * 0.4, Color(FISH[k % FISH.size()]))
-				_canvas.draw_circle(ctr + Vector2(10, -6), 4, UiKit.INK)
-			_canvas.draw_arc(ctr, CELL * 0.4, 0, TAU, 24, UiKit.INK if Vector2i(r, c) != _sel else UiKit.ACCENT, 3 if Vector2i(r, c) != _sel else 7)
+func _draw_sea() -> void:
+	var g := game as FishingGame
+	var s := _scale()
+	var font := ThemeDB.fallback_font
+	_canvas.draw_rect(Rect2(Vector2(0, 40), _canvas.size - Vector2(0, 40)), Color("bfe3f0"))
+	_canvas.draw_line(Vector2(_canvas.size.x / 2, 0), Vector2(_canvas.size.x / 2, 40), UiKit.INK, 3)
+	for f in g.fish:
+		var r := _fish_rect(f, s)
+		var w := g.words[f["w"]]
+		if not Art.draw(_canvas, "mini", "fish_meaning", r.get_center(), r.size + Vector2(40, 20)):
+			_canvas.draw_style_box(UiKit.box(Color("fff3c4"), 30, 3), r)
+			var tail := r.position + Vector2(r.size.x if f["vx"] < 0 else 0, r.size.y / 2)
+			var d := 1.0 if f["vx"] < 0 else -1.0
+			_canvas.draw_colored_polygon([tail, tail + Vector2(22 * d, -16), tail + Vector2(22 * d, 16)], Color("ffd59e"))
+		_canvas.draw_string(font, r.position + Vector2(8, 38), w.meaning, HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 16, 20, UiKit.INK)

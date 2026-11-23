@@ -1,51 +1,67 @@
 class_name GuardView
 extends MinigameScreen
-## 8 보초 서기: 통을 눌러 맨 위 패를 고르고, 옮길 통을 누른다. 같은 무늬(속성)끼리 한 통에 모은다.
+## 8 보초 서기: 성문으로 단어와 뜻이 하나씩 온다. 맞는 짝이면 통과, 틀린 짝이면 막기.
 
-var _row: HBoxContainer
-var _sel := -1
+var _word: Label
+var _meaning: Label
+var _msg: Label
+var _left: Label
 
 
 func build() -> void:
-	_row = UiKit.hbox(14)
-	_row.position = Vector2(30, 10)
-	body.add_child(_row)
+	var c := CenterContainer.new()
+	c.anchor_right = 1.0
+	c.anchor_bottom = 1.0
+	body.add_child(c)
+	var v := UiKit.vbox(16)
+	c.add_child(v)
+	var gate := UiKit.card(UiKit.PAPER)
+	gate.custom_minimum_size = Vector2(760, 0)
+	var gv := UiKit.vbox(8)
+	gate.add_child(gv)
+	gv.add_child(UiKit.label(t("ui.mini.guard.ask"), 22))
+	_word = UiKit.label("", 52)
+	_word.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	gv.add_child(_word)
+	_meaning = UiKit.wrap(UiKit.label("", 30), 700)
+	_meaning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	gv.add_child(_meaning)
+	v.add_child(gate)
+	var h := UiKit.hbox(40)
+	h.alignment = BoxContainer.ALIGNMENT_CENTER
+	var pass_b := UiKit.button(t("ui.mini.guard.pass"), func() -> void: _judge(true), UiKit.LEAF, 30)
+	pass_b.custom_minimum_size = Vector2(300, 100)
+	var stop_b := UiKit.button(t("ui.mini.guard.stop"), func() -> void: _judge(false), UiKit.PINK, 30)
+	stop_b.custom_minimum_size = Vector2(300, 100)
+	h.add_child(pass_b)
+	h.add_child(stop_b)
+	v.add_child(h)
+	_msg = UiKit.wrap(UiKit.label("", 24, UiKit.ACCENT.darkened(0.2)), 760)
+	v.add_child(_msg)
+	_left = UiKit.label("", 20)
+	v.add_child(_left)
 
 
-func _press(i: int) -> void:
-	var g := game as SortGame
-	if _sel < 0:
-		if not g.tubes[i].is_empty():
-			_sel = i
+func _judge(pass_gate: bool) -> void:
+	var g := game as GuardGame
+	var ok := g.judge(pass_gate)
+	var tr_: Dictionary = g.last.get("traveler", {})
+	if tr_.is_empty():
+		return
+	var w := g.words[tr_["w"]]
+	if ok:
+		_msg.text = t("ui.quiz.right")
 	else:
-		if _sel != i and not g.move(_sel, i):
-			GameData.vibrate()
-		_sel = -1
+		_msg.text = t("ui.mini.guard.wrong").format({"word": w.id, "meaning": w.meaning})
+		GameData.vibrate()
 	changed()
 
 
 func refresh() -> void:
-	var g := game as SortGame
-	for c in _row.get_children():
-		c.queue_free()
-	for i in g.tubes.size():
-		var idx := i
-		var col := UiKit.vbox(4)
-		var tube: Array = g.tubes[i]
-		var flag := ""
-		if tube.size() == g.per_tube and g.done_colors.has(tube[0]):
-			flag = g.words[tube[0]].id
-		col.add_child(UiKit.label(flag, 16, UiKit.GOOD.darkened(0.3)))
-		for k in range(g.per_tube - 1, -1, -1):
-			var txt := ""
-			var bg := UiKit.PAPER
-			if k < tube.size():
-				var a: int = g.color_attr[tube[k]]
-				txt = t("name.attr.%02d" % a)
-				bg = MinigameScreen.attr_color(a)
-			var b := UiKit.button(txt, func() -> void: _press(idx), bg, 20)
-			b.custom_minimum_size = Vector2(130, 92)
-			if i == _sel and k == tube.size() - 1:
-				b.add_theme_stylebox_override("normal", UiKit.box(bg, 30, 7))
-			col.add_child(b)
-		_row.add_child(col)
+	var g := game as GuardGame
+	var cur := g.current()
+	if cur.is_empty():
+		return
+	_word.text = g.words[cur["w"]].id
+	_meaning.text = cur["shown"]
+	_left.text = t("ui.mini.guard.left").format({"n": g.travelers.size() - g.index, "miss": g.misses, "max": int(g.cfg["max_miss"])})

@@ -64,16 +64,30 @@ func go_minigames() -> void:
 ## mode "free": 미니게임 메뉴(보상 없음, 그 마을 단어로). "story": 마을에서(아직 못 얻은 마을 단어로, 끝나면 뜻 문제).
 func play_minigame(id: String, mode: String) -> void:
 	var def := MinigameRegistry.game_def(id)
-	var pool := _minigame_pool(int(def["stage"]), mode == "story")
+	var pool := _minigame_pool(int(def["stage"]), mode == "story", int(def.get("min_etym", 0)))
 	var game := MinigameRegistry.make(id, pool, GameData.bal.minigames, GameData.rng)
 	main.show_screen(_views()[id].new(), {"id": id, "mode": mode, "game": game})
 
 
 ## 01-rpg-base: 미니게임 단어는 그 마을에 배정된 단어 중 아직 못 얻은 것에서 고른다. 모자라면 얻은 것도 섞는다.
-func _minigame_pool(stage: int, story: bool) -> Array[WordData]:
+## min_etym > 0이면 어원 조각이 그만큼 있는 단어를 앞에 둔다(문양 잇기). 마을 단어로 모자라면 그 스테이지 필드 단어에서 채운다.
+func _minigame_pool(stage: int, story: bool, min_etym: int = 0) -> Array[WordData]:
 	var town := GameData.repo.first_tier(stage, "town")
 	var fresh: Array[WordData] = []
 	var old: Array[WordData] = []
+	if min_etym > 0:
+		var rich: Array[WordData] = []
+		for w in town + GameData.repo.first_tier(stage, "field"):
+			if w.etym.size() >= min_etym:
+				rich.append(w)
+		rich.shuffle()
+		rich.sort_custom(func(a: WordData, b: WordData) -> bool: return a.obtain == "town" and b.obtain != "town")
+		var out: Array[WordData] = []
+		for w in rich:
+			if out.size() >= int(GameData.bal.minigames.get("pool_size", 16)):
+				break
+			out.append(w)
+		return out
 	for w in town:
 		if story and GameData.state and GameData.state.has_word(w.id):
 			old.append(w)

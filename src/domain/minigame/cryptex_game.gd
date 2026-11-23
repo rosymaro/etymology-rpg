@@ -1,7 +1,8 @@
 class_name CryptexGame
 extends Minigame
 ## 7 소용돌이 호수 '물레방아'(회전 고리): 바깥 고리(단어)와 안쪽 고리(뜻)를 돌려 수문 세 곳에서 단어와 뜻을 맞춘다.
-## 세 수문이 모두 맞으면 바퀴가 한 바퀴 돌고 1개를 얻는다. 다음 바퀴가 나온다.
+## 돌리기만 해서는 맞지 않는다: 맞췄다고 생각하면 '수문 열기'(open_gates)를 누른다. 바퀴마다 tries번까지.
+## 세 수문이 모두 맞으면 바퀴가 돌고 1개, 다 틀리면 답을 보여 주고(revealed) 그 바퀴는 놓친다.
 
 var n: int
 var gates: Array[int] = []
@@ -11,6 +12,9 @@ var outer_rot := 0
 var inner_rot := 0
 var rounds_done := 0
 var _answer_word := ""
+var tries_left := 0
+var revealed := false  ## 이번 바퀴를 놓쳐서 답을 보여 주는 중
+var last := ""  ## "right" | "wrong" | "lost" | ""
 
 
 func _build() -> void:
@@ -50,6 +54,8 @@ func _new_round() -> void:
 			k += 1
 	outer_rot = 0
 	inner_rot = 0
+	tries_left = int(cfg["tries"])
+	revealed = false
 	_answer_word = outer[gates[0]] if not gates.is_empty() else ""
 	# 처음부터 맞지 않게
 	if solved():
@@ -84,19 +90,44 @@ func solved() -> bool:
 
 
 func turn_outer(step: int) -> void:
-	outer_rot = posmod(outer_rot + step, n)
-	_check()
+	if not revealed:
+		outer_rot = posmod(outer_rot + step, n)
 
 
 func turn_inner(step: int) -> void:
-	inner_rot = posmod(inner_rot + step, n)
-	_check()
+	if not revealed:
+		inner_rot = posmod(inner_rot + step, n)
 
 
-func _check() -> void:
-	if finished or not solved():
-		return
-	earn(outer_at(gates[0]))
+## 수문을 연다. 맞으면 1개, 틀리면 시도가 줄고, 다 쓰면 맞는 자리로 돌려 답을 보여 준다(그 바퀴는 놓침).
+func open_gates() -> String:
+	if finished or revealed:
+		return ""
+	if solved():
+		earn(outer_at(gates[0]))
+		last = "right"
+		round_done()
+		return last
+	tries_left -= 1
+	if tries_left > 0:
+		last = "wrong"
+		return last
+	for k in n:
+		inner_rot = k
+		if solved():
+			break
+	revealed = true
+	last = "lost"
+	return last
+
+
+## 답을 본 뒤 다음 바퀴로.
+func next_round() -> void:
+	if revealed:
+		round_done()
+
+
+func round_done() -> void:
 	rounds_done += 1
 	if rounds_done >= int(cfg["rounds"]) or finished:
 		finish()
