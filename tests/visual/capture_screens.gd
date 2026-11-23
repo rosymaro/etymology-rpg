@@ -58,10 +58,11 @@ func _run() -> void:
 	(main.current() as BattlePrepScreen)._start()
 	for i in 60:
 		await get_tree().process_frame
+	await get_tree().create_timer(2.5).timeout
 	await _shot("09_battle")
 	var bs := main.current() as BattleScreen
 	if bs:
-		bs._skip = true
+		bs.skip_all()
 		await get_tree().create_timer(1.0).timeout
 		await _shot("09_battle_end")
 		bs._a_box.show_base(true)
