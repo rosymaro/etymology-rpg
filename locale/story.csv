@@ -248,7 +248,7 @@ story.s06.ki.004,"진짜다! …아, ""다""로 끝났다."
 story.s06.seung.title,원래의 법전
 story.s06.seung.001,내가 앞장선다! 나를 따르라! …어디로 가지?
 story.s06.seung.002_etym,"duc는 ""이끌다"". 이끌려면 길부터 알아야지."
-story.s06.seung.003,(미니게임 안내) 수문을 열면 물레방아가 돌고 활이 나가요. 몰려오는 쪽 물길을 열어 성을 지켜 주세요!
+story.s06.seung.003,(미니게임 안내) 법전 글자가 얼어붙었어요. 두드려 얼음을 깨고, 글자를 끌어 바른 철자로 늘어놓아 주세요. 뜻과 어원이 힌트예요.
 story.s06.town_legal.title,다리의 법
 story.s06.town_legal.001_pun,"들었어? 새 법이래. legal은 leg, 다리로 하는 일만 된대."
 story.s06.town_legal.002,그래서 다들 발로 서류를 쓰고 있어요.
@@ -286,7 +286,7 @@ story.s07.ki.001,"어서 가세요! …아니, 어서 오세요."
 story.s07.ki.002,"드디어 다들 나처럼 말해! 좋다. 아니, 별로야."
 story.s07.ki.003_etym,"vers는 ""돌리다"". reverse는 뒤로 돌리기, 지금 이 호수가 그래."
 story.s07.seung.title,물길 바로잡기
-story.s07.seung.001,"(미니게임 안내) 바깥 고리는 단어, 안쪽 고리는 뜻이에요. 두 고리를 돌려 수문 세 곳을 맞춘 다음 수문을 여세요. 바퀴마다 두 번까지예요."
+story.s07.seung.001,(미니게임 안내) 수문을 열면 물레방아가 돌고 활이 나가요. 몰려오는 쪽 물길을 열어 호수 마을을 지켜 주세요!
 story.s07.town_universe.title,거꾸로 도는 우주
 story.s07.town_universe.001,"이 호수에선 다 거꾸로라서, 우주(universe)도 거꾸로 돌아."
 story.s07.town_universe.002_etym,universe는 unus(하나) + vertere(돌리다). 하나로 함께 도는 모든 것이라는 뜻이야.
@@ -355,7 +355,7 @@ story.s09.ki.003_pun,우린 일을 끝내는 법을 잊었어. finish… 피니�
 story.s09.ki.004_etym,"fin은 ""끝"". finish는 끝내기, final은 마지막!"
 story.s09.seung.title,광석 캐기
 story.s09.seung.001,부순다! 다 부순다! …이건 부수면 안 되는 거야?
-story.s09.seung.002,(미니게임 안내) 튀어 오르는 광석을 손가락으로 그어 깨. 광맥 색과 같은 무늬의 광석만 깨야 해. 돌을 깨면 연속이 끊긴다.
+story.s09.seung.002,(미니게임 안내) 오늘의 광맥 어원은 저 두 개야. 튀어 오르는 광석 중 그 어원이 든 단어만 그어 깨. 엉뚱한 걸 깨면 광산이 흔들린다.
 story.s09.skit_missing.title,빈자리
 story.s09.skit_missing.001,짐 들 사람이 없으니 내가 들겠다! …무거워.
 story.s09.skit_missing.002,부숴서 작게 만들면 가벼워!

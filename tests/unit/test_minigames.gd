@@ -80,6 +80,27 @@ func test_order_incomplete_or_mixed_breaks_and_wrong_shelf_is_miss() -> void:
 	assert_eq(g.misses, 1)
 
 
+func test_order_fragments_never_overlap_over_a_long_game() -> void:
+	var g := _make(OrderGame, "order") as OrderGame
+	var gap := float(cfg["order"]["min_gap"])
+	for step in 600:
+		if step % 7 == 0 and not g.items.is_empty():  # 가끔 조각을 집어 가서 빈자리를 만든다
+			var it: Dictionary = g.items[step % g.items.size()]
+			it["d"] = 0.3
+			g.carry = {}
+			g.pick(it["uid"])
+			g.carry = {}
+		g.update(0.1)
+		if g.finished:
+			break
+		for a in g.items.size():
+			for b in range(a + 1, g.items.size()):
+				var diff := absf(fposmod(g.items[a]["d"] - g.items[b]["d"] + g.perimeter() / 2.0, g.perimeter()) - g.perimeter() / 2.0)
+				assert_gte(diff, gap - 0.001, "조각끼리 겹치지 않는다")
+				if diff < gap - 0.001:
+					return
+
+
 func test_order_belt_loops_and_left_side_is_hidden() -> void:
 	var g := _make(OrderGame, "order") as OrderGame
 	var it: Dictionary = g.items[0]
@@ -129,6 +150,24 @@ func test_word_search_hidden_words_are_readable() -> void:
 	assert_eq(g.read(Vector2i(0, 0), Vector2i(1, 2)), "", "직선이 아니면 안 읽는다")
 
 
+func test_pipe_straight_tiles_have_direction() -> void:
+	var g := _make(PipeGame, "kite") as PipeGame
+	for p in g.solution:
+		while g.turns[p] != 0:
+			g.rotate(p)
+	assert_true(g._reaches_end(), "정답 방향이면 이어진다")
+	var straight := Vector2i(-1, -1)
+	for p in g.solution:
+		if g.is_straight(p):
+			straight = p
+			break
+	assert_ne(straight, Vector2i(-1, -1), "정답 길에 일자 타일이 있다")
+	g.rotate(straight)
+	g.rotate(straight)
+	assert_true(g.is_straight(straight))
+	assert_false(g._reaches_end(), "일자 타일을 반 바퀴 돌리면 화살표가 거꾸로라 막힌다")
+
+
 func test_pipe_paths_are_long_for_many_seeds() -> void:
 	for sd in range(1, 40):
 		var g := _make(PipeGame, "kite", 12, sd) as PipeGame
@@ -171,49 +210,32 @@ func test_pipe_word_tiles_show_right_meaning_only_on_path_turn() -> void:
 	assert_eq(g.score(), int(cfg["kite"]["words"]))
 
 
-func test_cryptex_turning_alone_never_scores() -> void:
-	var g := _make(CryptexGame, "wheel") as CryptexGame
-	for k in g.n * 2:
-		g.turn_inner(1)
-	assert_eq(g.score(), 0, "돌리기만 해서는 맞지 않는다. 수문을 열어야 한다")
-
-
-func test_cryptex_open_gates_tries_then_reveals() -> void:
-	var g := _make(CryptexGame, "wheel") as CryptexGame
-	assert_eq(g.open_gates(), "wrong")
-	assert_eq(g.open_gates(), "lost", "두 번 틀리면 답을 보여 준다")
-	assert_true(g.revealed and g.solved())
-	g.next_round()
-	assert_eq(g.rounds_done, 1)
-	assert_eq(g.score(), 0)
-	for k in g.n:
-		g.inner_rot = k
-		if g.solved():
-			break
-	assert_eq(g.open_gates(), "right")
-	assert_eq(g.score(), 1)
-
-
-func test_cryptex_one_offset_solves_all_gates() -> void:
-	var g := _make(CryptexGame, "wheel") as CryptexGame
-	assert_false(g.solved())
-	var hits := 0
-	for k in g.n:
-		g.inner_rot = k
-		if g.solved():
-			hits += 1
-	assert_eq(hits, 1, "맞는 자리는 하나뿐")
-
-
-func test_ore_combo_of_five_earns_and_rock_breaks_combo() -> void:
-	var g := _make(OreSlashGame, "ore") as OreSlashGame
-	for i in 5:
-		g.spawn(true, Vector2(100 + i * 100, 300), Vector2(0, -1))
-	g.slash(Vector2(50, 300), Vector2(700, 300))
-	assert_eq(g.score(), 1)
+func test_ore_shows_two_roots_and_only_their_words_count() -> void:
+	var ws: Array[WordData] = []
+	var rows := [["transport", [["trans-", "가로질러"], ["portare", "나르다"]]], ["export", [["ex-", "밖"], ["portare", "나르다"]]],
+		["inspect", [["in-", "안"], ["specere", "보다"]]], ["respect", [["re-", "다시"], ["specere", "보다"]]],
+		["import", [["in-", "안"], ["portare", "나르다"]]], ["river", [["ripa", "강둑"]]], ["music", [["mousa", "뮤즈"]]]]
+	for r in rows:
+		var et := []
+		for e in r[1]:
+			et.append({"root": e[0], "meaning": e[1]})
+		ws.append(WordData.from_dict({"id": r[0], "meaning": r[0] + "뜻", "attrs": [1], "tier": 1, "etym": et}))
+	var g := OreSlashGame.new()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3
+	g.setup(ws, cfg["ore"], 5, rng)
+	assert_eq(g.roots.size(), 2, "어원 2개를 알려 준다")
+	assert_eq(g.roots[0]["key"], "portare", "가장 많이 쓰인 어근부터")
+	assert_eq(g.roots[1]["key"], "specere")
+	assert_eq(g.targets.size(), 5)
+	g.spawn(true, Vector2(300, 300), Vector2(0, -1))
+	g.spawn(true, Vector2(500, 300), Vector2(0, -1))
+	g.slash(Vector2(250, 300), Vector2(550, 300))
+	assert_gt(g.score(), 0, "어원이 든 단어를 깨면 얻는다")
 	g.spawn(false, Vector2(300, 500), Vector2(0, -1))
 	g.slash(Vector2(250, 500), Vector2(350, 500))
-	assert_eq(g.combo, 0)
+	assert_eq(g.misses, 1, "다른 단어를 깨면 실수")
+	assert_false(g.has_root(ws[5]))
 
 
 func _hook(g: FishingGame, i: int) -> void:
@@ -473,3 +495,46 @@ func test_trap_can_pick_up_trap_again() -> void:
 	assert_eq(g.traps.size(), 0)
 	assert_eq(g.tray.size(), int(cfg["trap"]["words"]))
 	assert_true(g.hide(), "덫을 놓은 뒤 다시 숨을 수 있다")
+
+
+func _spell(g: AnagramGame, word: String) -> void:
+	var left: Array[int] = []
+	for i in g.tiles.size():
+		left.append(i)
+	for k in word.length():
+		for i in left:
+			if g.tiles[i] == word[k]:
+				while g.ice[i] > 0:
+					g.hit(i)
+				g.put(i, k)
+				left.erase(i)
+				break
+
+
+func test_anagram_ice_must_break_before_drag() -> void:
+	var g := _make(AnagramGame, "copy") as AnagramGame
+	var hp := int(cfg["copy"]["ice_hp"])
+	assert_eq(g.ice[0], hp, "글자는 얼음에 갇혀 있다")
+	assert_false(g.put(0, 0), "얼음이 있으면 끌 수 없다")
+	for k in hp:
+		g.hit(0)
+	assert_eq(g.ice[0], 0)
+	assert_true(g.put(0, 0), "깨면 끌어서 놓을 수 있다")
+	assert_eq(g.slot_of(0), 0)
+	g.take(0)
+	assert_eq(g.slot_of(0), -1, "칸에서 다시 내릴 수 있다")
+
+
+func test_anagram_right_spelling_earns_and_wrong_retries() -> void:
+	var g := _make(AnagramGame, "copy") as AnagramGame
+	var w := g.current().id
+	var wrong := w.substr(1) + w[0]
+	if wrong == w:
+		wrong = w.reverse()
+	if wrong != w:
+		_spell(g, wrong)
+		assert_eq(g.last, "wrong", "틀린 철자")
+		assert_eq(g.ice.max(), 0, "깬 얼음은 그대로")
+		assert_false(g.slots.any(func(x: int) -> bool: return x >= 0), "틀리면 글자가 아래로 돌아간다")
+	_spell(g, w)
+	assert_eq(g.earned, [w] as Array[String])

@@ -57,11 +57,16 @@ func _draw_board() -> void:
 				if m & pair[0]:
 					_canvas.draw_line(ctr, ctr + pair[1] * CELL / 2, col, 14)
 			_canvas.draw_circle(ctr, 8, col)
+			if g.arrows.has(p) and g.is_straight(p):  # 일자 타일의 방향 >>>
+				var d := {PipeGame.N: Vector2(0, -1), PipeGame.E: Vector2(1, 0), PipeGame.S: Vector2(0, 1), PipeGame.W: Vector2(-1, 0)}[g.arrows[p]] as Vector2
+				for k in [-1, 0, 1]:
+					var tip: Vector2 = ctr + d * (k * 16 + 8)
+					_canvas.draw_polyline([tip - d * 9 + d.orthogonal() * 9, tip, tip - d * 9 - d.orthogonal() * 9], Color.WHITE, 4)
 			if g.word_at_cell.has(p):
 				var w := g.words[g.word_at_cell[p]]
 				# 단어와 지금 방향의 뜻. 뜻이 맞는지는 색으로 알려 주지 않는다(스스로 가린다)
 				_canvas.draw_rect(Rect2(o + Vector2(4, 4), Vector2(CELL - 8, 24)), Color(UiKit.PAPER, 0.95))
-				_canvas.draw_string(font, o + Vector2(6, 22), w.id, HORIZONTAL_ALIGNMENT_CENTER, CELL - 12, 15, UiKit.INK)
+				_canvas.draw_string(font, o + Vector2(6, 22), w.id, HORIZONTAL_ALIGNMENT_CENTER, CELL - 12, 15 if w.id.length() <= 8 else 12, UiKit.INK)
 				_canvas.draw_rect(Rect2(o + Vector2(4, CELL - 28), Vector2(CELL - 8, 24)), Color(UiKit.APRICOT, 0.95))
 				_canvas.draw_string(font, o + Vector2(6, CELL - 10), g.shown_meaning(p), HORIZONTAL_ALIGNMENT_CENTER, CELL - 12, 13, UiKit.INK)
 	_canvas.draw_circle(Vector2(50, g.start_row * CELL + CELL / 2), 30, UiKit.PINK)

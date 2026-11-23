@@ -53,7 +53,7 @@ func dev_game() -> void:
 static func _views() -> Dictionary:
 	return {
 		"order": OrderView, "trap": TrapView, "search": SearchView, "kite": KiteView, "fishing": FishingView,
-		"copy": MoatView, "wheel": WheelView, "guard": GuardView, "ore": OreView, "pattern": PatternView,
+		"copy": CopyView, "wheel": MoatView, "guard": GuardView, "ore": OreView, "pattern": PatternView,
 	}
 
 
@@ -65,8 +65,45 @@ func go_minigames() -> void:
 func play_minigame(id: String, mode: String) -> void:
 	var def := MinigameRegistry.game_def(id)
 	var pool := _minigame_pool(int(def["stage"]), mode == "story", int(def.get("min_etym", 0)))
+	if def.get("pool", "") == "root_pair":
+		pool = _root_pair_pool(int(def["stage"]))
 	var game := MinigameRegistry.make(id, pool, GameData.bal.minigames, GameData.rng)
 	main.show_screen(_views()[id].new(), {"id": id, "mode": mode, "game": game})
+
+
+## 광석 캐기: 그 스테이지 단어(마을 먼저, 필드까지)에서 가장 많이 쓰인 어근 2개를 고르고,
+## 그 어근이 든 단어(최대 8개)와 들지 않은 단어로 판을 채운다.
+func _root_pair_pool(stage: int) -> Array[WordData]:
+	var all: Array[WordData] = GameData.repo.first_tier(stage, "town") + GameData.repo.first_tier(stage, "field")
+	var count := {}
+	for w in all:
+		for e in w.etym:
+			var k := OreSlashGame.key(e)
+			if k != "" and OreSlashGame.is_stem(k):
+				count[k] = int(count.get(k, 0)) + 1
+	var ks: Array = count.keys()
+	ks.sort_custom(func(a: String, b: String) -> bool: return count[a] > count[b])
+	var pick: Array = ks.slice(0, 2)
+	var hit: Array[WordData] = []
+	var miss: Array[WordData] = []
+	for w in all:
+		var has := false
+		for e in w.etym:
+			has = has or OreSlashGame.key(e) in pick
+		if has:
+			hit.append(w)
+		elif not w.etym.is_empty():
+			miss.append(w)
+	hit.shuffle()
+	hit.sort_custom(func(a: WordData, b: WordData) -> bool: return a.obtain == "town" and b.obtain != "town")
+	miss.shuffle()
+	var need := int(GameData.bal.minigames.get("pool_size", 16))
+	var out: Array[WordData] = hit.slice(0, 8)
+	for w in miss:
+		if out.size() >= need:
+			break
+		out.append(w)
+	return out
 
 
 ## 01-rpg-base: 미니게임 단어는 그 마을에 배정된 단어 중 아직 못 얻은 것에서 고른다. 모자라면 얻은 것도 섞는다.

@@ -1,11 +1,11 @@
 extends GutTest
-## 6 해자 지키기(물레방아 디펜스): 물길 나누기, 사정거리, 100마리 보상, 난이도.
+## 7 물레방아(해자 지키기, 물레방아 디펜스): 물길 나누기, 사정거리, 100마리 보상, 난이도.
 
 var cfg: Dictionary
 
 
 func before_all() -> void:
-	cfg = JsonFile.read("res://data/balance/minigames.json")["copy"]
+	cfg = JsonFile.read("res://data/balance/minigames.json")["wheel"]
 
 
 func _make(sd: int = 3) -> MoatGame:
