@@ -22,11 +22,11 @@ func build() -> void:
 	_canvas.offset_bottom = -50
 	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	_canvas.draw.connect(_draw_field)
-	_canvas.gui_input.connect(_input)
+	_canvas.gui_input.connect(_on_canvas_input)
 	body.add_child(_canvas)
 
 
-func _input(ev: InputEvent) -> void:
+func _on_canvas_input(ev: InputEvent) -> void:
 	var press: bool = ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT
 	var drag: bool = ev is InputEventMouseMotion and (ev.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0
 	if press or drag:

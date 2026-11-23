@@ -26,7 +26,7 @@ func build() -> void:
 	_canvas.offset_bottom = -10
 	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	_canvas.draw.connect(_draw_board)
-	_canvas.gui_input.connect(_input)
+	_canvas.gui_input.connect(_on_canvas_input)
 	body.add_child(_canvas)
 	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.ACCENT.darkened(0.25)), 900)
 	body.add_child(_msg)
@@ -86,7 +86,7 @@ func _word_under(p: Vector2) -> int:
 	return -1
 
 
-func _input(ev: InputEvent) -> void:
+func _on_canvas_input(ev: InputEvent) -> void:
 	var g := game as RootLinkGame
 	if g.finished:
 		return

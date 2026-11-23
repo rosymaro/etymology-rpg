@@ -50,7 +50,8 @@
     "note_time_hard": 0.8,
     "note_gap": 0.35,
     "hit_from": 0.75,
-    "hit_until": 1.25
+    "hit_until": 1.25,
+    "need_hard": 5
   },
   "copy": {
     "words": 5,
@@ -129,7 +130,7 @@
   "_kite_doc": "words = 정답 단어 수(뜻을 보여 줌), decoys = 함정 단어 수. 정답을 모두 지나고 함정을 지나지 않아야 성공. min_path = 정답 바람길이 지나는 최소 칸 수",
   "_wheel_doc": "물레방아(해자 지키기). 좌표는 0~1 비율. goal = 잡아야 할 수(못 잡으면 단어 절반), total_fire = 물레방아 셋이 나눠 쓰는 1초 화살 수, range = 활 사정거리, spawn_* = 적이 나오는 간격(처음→끝), speed_* = 적 빠르기, tough_from = 이 진행부터 체력 2 적이 섞임, lane_change = 적이 몰리는 쪽이 바뀌는 간격",
   "_guard_doc": "좌표는 0~1 비율. gate_every = 손님이 오는 간격(초), walk_time = 성문까지 걸리는 시간, climb_every/climb_time = 담 넘는 단어, unit_w = 내 유닛이 막는 폭, unit_speed = 1초에 움직이는 거리. climber_words = 담 넘는 단어(도둑·범죄자 단어)",
-  "_fishing_doc": "좌표는 0~1 비율. bite_time = 입질 원이 다 주는 시간, hook_ring = 이 크기 이하에서 떼면 걸림, notes = 싸움에서 날아오는 점 수, need_match = 뜻이 맞을 때 맞혀야 할 수(틀리면 notes개 모두), note_time_* = 점이 원에 닿는 시간, hit_from~hit_until = 누르면 맞는 구간",
+  "_fishing_doc": "좌표는 0~1 비율. bite_time = 입질 원이 다 주는 시간, hook_ring = 이 크기 이하에서 떼면 걸림, notes = 싸움에서 날아오는 점 수, need_match / need_hard = 점이 모두 지나간 뒤 잡히려면 맞혀야 할 수(뜻이 맞을 때 / 틀릴 때), note_time_* = 점이 원에 닿는 시간, hit_from~hit_until = 누르면 맞는 구간",
   "_pattern_doc": "좌표는 0~1 비율. decoys = 함정 어원 수, roam_speed = 어원이 돌아다니는 빠르기, arrow_speed = 화살 빠르기, hit_r = 맞는 거리, down_time = 쓰러져 있는 시간(지나면 다시 달아남), max_roots = 한 단어에 놓을 수 있는 어원 수(어원 수를 숨기려고 실제보다 많이 둔다)",
   "_trap_doc": "좌표는 0~1 비율. period = 단어들이 길을 한 바퀴 도는 시간(사냥도 한 바퀴), catch_r = 덫에 걸리는 거리, hero_speed = 캐릭터 빠르기",
   "_copy_doc": "필사. ice_hp = 글자 얼음을 깨는 데 두드리는 횟수",

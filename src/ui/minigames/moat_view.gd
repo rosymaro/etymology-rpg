@@ -15,7 +15,7 @@ func build() -> void:
 	_canvas.offset_bottom = -10
 	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	_canvas.draw.connect(_draw_moat)
-	_canvas.gui_input.connect(_input)
+	_canvas.gui_input.connect(_on_canvas_input)
 	body.add_child(_canvas)
 
 
@@ -27,7 +27,7 @@ func _gate_rect(i: int) -> Rect2:
 	return Rect2(_px((game as MoatGame).wheel_pos(i)) - Vector2(90, 70), Vector2(180, 150))
 
 
-func _input(ev: InputEvent) -> void:
+func _on_canvas_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
 		var g := game as MoatGame
 		for i in 3:

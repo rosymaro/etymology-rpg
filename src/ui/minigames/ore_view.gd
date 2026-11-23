@@ -14,11 +14,11 @@ func build() -> void:
 	_canvas.anchor_right = 1.0
 	_canvas.anchor_bottom = 1.0
 	_canvas.draw.connect(_draw_ores)
-	_canvas.gui_input.connect(_input)
+	_canvas.gui_input.connect(_on_canvas_input)
 	body.add_child(_canvas)
 
 
-func _input(ev: InputEvent) -> void:
+func _on_canvas_input(ev: InputEvent) -> void:
 	var g := game as OreSlashGame
 	var s := OreSlashGame.AREA / _canvas.size if _canvas.size.x > 0 else Vector2.ONE
 	if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:

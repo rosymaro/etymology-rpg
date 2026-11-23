@@ -8,6 +8,7 @@ var sfx := true
 var sfx_volume := 0.8
 var bgm := true
 var bgm_volume := 0.7
+var touch_marker := false  ## 누른 자리에 표시(터치 위치 확인용)
 
 
 func _init(file_path: String = "user://settings.cfg") -> void:
@@ -23,6 +24,7 @@ func load_settings() -> void:
 	sfx_volume = cf.get_value("options", "sfx_volume", 0.8)
 	bgm = cf.get_value("options", "bgm", true)
 	bgm_volume = cf.get_value("options", "bgm_volume", 0.7)
+	touch_marker = cf.get_value("options", "touch_marker", false)
 
 
 func save_settings() -> void:
@@ -32,4 +34,5 @@ func save_settings() -> void:
 	cf.set_value("options", "sfx_volume", sfx_volume)
 	cf.set_value("options", "bgm", bgm)
 	cf.set_value("options", "bgm_volume", bgm_volume)
+	cf.set_value("options", "touch_marker", touch_marker)
 	cf.save(path)

@@ -280,7 +280,7 @@ func test_fishing_hold_bite_release_then_rhythm_fight() -> void:
 	assert_eq(g.fish.size(), n, "다음 판에도 물고기 수가 그대로")
 	var wrong := _index_of(g, false)
 	_hook(g, wrong)
-	assert_eq(g.need(), int(cfg["fishing"]["notes"]), "뜻이 틀리면 전부 맞혀야 잡힌다")
+	assert_eq(g.need(), int(cfg["fishing"]["need_hard"]), "뜻이 틀리면 더 많이 맞혀야 잡힌다")
 	_fight(g, false)
 	assert_eq(g.misses, 1, "못 맞히면 놓친다")
 
@@ -305,14 +305,12 @@ func test_fishing_early_release_scares_and_wrong_circle_misses() -> void:
 			break
 		g.update(0.02)
 	assert_false(g.tap((g.note_dir + 1) % FishingGame.DIRS), "다른 원을 누르면 틀림")
-	assert_eq(g.state, "idle", "뜻이 틀린 물고기는 하나만 틀려도 놓친다")
-	assert_eq(g.misses, 1)
-	# 뜻이 다른 물고기도 모두 맞히면 잡힌다
-	_hook(g, _index_of(g, false))
-	var before := g.score()
+	assert_eq(g.state, "fight", "하나 틀려도 끝까지 한다")
+	assert_eq(g.notes_left, int(cfg["fishing"]["notes"]) - 1)
 	_fight(g, true)
-	assert_eq(g.score(), before + 1)
-
+	assert_eq(g.hits, int(cfg["fishing"]["notes"]) - 1)
+	assert_eq(g.score(), 1, "6개 중 5개를 맞혀서 뜻이 다른 물고기도 잡혔다")
+	assert_eq(g.misses, 0)
 
 func test_guard_pass_true_block_false_and_climbers() -> void:
 	var g := _make(GuardGame, "guard") as GuardGame

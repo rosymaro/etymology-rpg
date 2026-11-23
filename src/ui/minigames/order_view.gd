@@ -20,7 +20,7 @@ func build() -> void:
 	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	_canvas.clip_contents = true
 	_canvas.draw.connect(_draw_shop)
-	_canvas.gui_input.connect(_input)
+	_canvas.gui_input.connect(_on_canvas_input)
 	body.add_child(_canvas)
 	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.INK), 700)
 	_msg.position = Vector2(260, 2)
@@ -43,7 +43,7 @@ func _slot_rect(k: int) -> Rect2:
 	return Rect2(_px((game as OrderGame).shelf_pos(k)) - Vector2(130, 36), Vector2(260, 72))
 
 
-func _input(ev: InputEvent) -> void:
+func _on_canvas_input(ev: InputEvent) -> void:
 	if not (ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT):
 		return
 	var g := game as OrderGame
