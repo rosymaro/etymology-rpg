@@ -55,6 +55,11 @@ blood, wounds, scary, text, letters, watermark, logo, existing game characters
 | `mini/trap_critter.png` | a small cute field critter with round ears seen from above, empty pale space for text, 130x56 |
 | `mini/trap_snare.png` | a cute toothed snare trap seen from above with an empty plank for text, 170x60 |
 | `mini/trap_hunter.png` | the apprentice hero with a hunter hat seen from above, 56x56 |
+| `mini/furnace.png` | a small cute glowing smelting furnace, 160x100 |
+| `mini/anvil.png` | a cute anvil with a hammer resting on it, 160x68 |
+| `mini/order_hero.png` | the apprentice hero with an apron seen from above, 64x64 |
+| `mini/moat_soldier.png` | a small cute soldier holding a blank flag board for text, 150x60 |
+| `mini/waterwheel.png` | a cute wooden waterwheel with a small bow mounted on top, 110x110 |
 | `slot/weapon.png` · `head.png` · `chest.png` · `hands.png` · `feet.png` | five small cute equipment icons (sword, helmet, armor top, glove, boot), thick soft indigo outline, transparent background, 48x48 each |
 | `mini/ore_vein.png` | a rounded ore rock with a shining vein, drawn in white and very light grey only |
 | `mini/ore_rock.png` | a plain grey round rock with a small grumpy face |

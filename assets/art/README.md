@@ -82,6 +82,11 @@
 | `mini/trap_critter.png` | 130×56 | 덫 놓기 | 귀가 달린 작은 들짐승. 가운데에 단어 자리 |
 | `mini/trap_snare.png` | 170×60 | 덫 놓기 | 위에서 본 덫(이빨 달린 고리). 가운데에 뜻 자리 |
 | `mini/trap_hunter.png` | 56×56 | 덫 놓기 | 위에서 본 내 캐릭터(사냥꾼 모자) |
+| `mini/furnace.png` | 160×100 | 주문 제작 | 불이 이글거리는 작은 용광로 |
+| `mini/anvil.png` | 160×68 | 주문 제작 | 망치가 걸친 모루 |
+| `mini/order_hero.png` | 64×64 | 주문 제작 | 위에서 본 앞치마 두른 주인공 |
+| `mini/moat_soldier.png` | 150×60 | 해자 지키기 | 깃발을 든 작은 병사. 가운데에 단어와 뜻 자리 |
+| `mini/waterwheel.png` | 110×110 | 해자 지키기 | 활이 달린 나무 물레방아 |
 | `slot/weapon.png` · `head.png` · `chest.png` · `hands.png` · `feet.png` | 48×48 | 단어 카드 앞 착용 부위 아이콘 | 검, 투구, 갑옷, 장갑, 장화. 배경 투명, 남보라 외곽선 |
 | `mini/ore_vein.png` | 128×128 | 광석 캐기 | 목표 광석. **흰색·밝은 회색**으로(게임이 광맥 색을 입힌다) |
 | `mini/ore_rock.png` | 128×128 | 광석 캐기 | 깨면 안 되는 돌 |

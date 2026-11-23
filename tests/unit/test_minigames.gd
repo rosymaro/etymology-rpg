@@ -27,46 +27,81 @@ func _make(script: GDScript, key: String, n: int = 12, seed: int = 5) -> Minigam
 	return g
 
 
-func test_order_right_card_earns_and_wrong_counts_miss() -> void:
+func _frag_uid(g: OrderGame, w: int, p: int) -> int:
+	for it in g.items:
+		if it["w"] == w and it["piece"] == p:
+			it["d"] = 0.3  # 위 변(보이는 곳)으로 옮긴다
+			return it["uid"]
+	return -1
+
+
+func _craft(g: OrderGame, w: int, pieces: Array) -> void:
+	for p in pieces:
+		assert_true(g.pick(_frag_uid(g, w, p)), "보이는 조각을 집는다")
+		g.action = {"kind": "furnace"}
+		g.act()
+	g.action = {"kind": "hammer"}
+	g.act()
+
+
+func test_order_fragments_hammered_into_word_then_shelved() -> void:
 	var g := _make(OrderGame, "order") as OrderGame
-	var ans := g.current_word()
-	var right := g.belt_ids().find(ans)
-	assert_gt(right, -1, "답 카드는 늘 벨트에 있다")
-	var before := g.items.size()
-	assert_true(g.pick(right))
-	assert_eq(g.earned, [ans] as Array[String])
-	assert_eq(g.items.size(), before, "집은 자리에 새 카드가 들어온다")
-	assert_ne(g.items[right]["id"], ans)
-	var wrong := -1
-	for i in g.items.size():
-		if g.items[i]["id"] != g.current_word():
-			wrong = i
-	g.pick(wrong)
+	assert_eq(g.shelf.size(), int(cfg["order"]["shelf"]))
+	var w: int = g.shelf[0]
+	var n := g.pieces(w)
+	assert_between(n, 2, 3, "단어는 2~3조각으로 깨져 있다")
+	var joined := ""
+	for p in n:
+		joined += g.piece_text(w, p)
+	assert_eq(joined, g.words[w].id, "조각을 이으면 단어")
+	for p in n:
+		assert_gt(_frag_uid(g, w, p), -1, "주문 단어의 조각은 모두 벨트에 있다")
+	_craft(g, w, range(n))
+	assert_eq(g.carry.get("word", -1), w, "두드리면 완성 단어를 든다")
+	var next := g.orders[0] if not g.orders.is_empty() else -1
+	assert_true(g.place(0))
+	assert_eq(g.earned, [g.words[w].id] as Array[String])
+	assert_eq(g.shelf[0], next, "빈 진열장 칸에 다음 주문")
+
+
+func test_order_incomplete_or_mixed_breaks_and_wrong_shelf_is_miss() -> void:
+	var g := _make(OrderGame, "order") as OrderGame
+	var w: int = g.shelf[0]
+	_craft(g, w, [0])  # 한 조각만
+	assert_true(g.carry.is_empty(), "조각이 모자라면 실패")
+	assert_true(g.furnace.is_empty(), "실패하면 조각이 사라진다")
+	for _s in 40:
+		g.update(0.5)
+	assert_gt(_frag_uid(g, w, 0), -1, "사라진 조각은 창고에서 다시 나온다")
+	var w2: int = g.shelf[1]
+	_craft(g, w2, range(g.pieces(w2)))
+	assert_eq(g.carry.get("word", -1), w2)
+	assert_false(g.place(0), "뜻이 다른 칸")
 	assert_eq(g.misses, 1)
 
 
-func test_order_cards_flow_left_to_right_and_answer_stays_on_belt() -> void:
+func test_order_belt_loops_and_left_side_is_hidden() -> void:
 	var g := _make(OrderGame, "order") as OrderGame
-	var x0: float = g.items[0]["x"]
+	var it: Dictionary = g.items[0]
+	it["d"] = 0.0
+	var d0: float = it["d"]
 	g.update(0.5)
-	assert_gt(g.items[0]["x"], x0, "카드는 오른쪽으로 흐른다")
-	for k in 60:
-		g.update(0.25)
-		if g.finished:
+	assert_gt(it["d"], d0, "벨트가 돈다")
+	it["d"] = g.perimeter() - 0.1  # 왼쪽 변
+	assert_false(g.visible(it), "왼쪽은 창고 벽에 가려 보이지 않는다")
+	assert_false(g.pick(it["uid"]), "안 보이는 조각은 집을 수 없다")
+	it["d"] = 0.5
+	assert_true(g.visible(it))
+	g.update(g.perimeter() / float(cfg["order"]["belt_speed"]))
+	assert_almost_eq(fposmod(it["d"], g.perimeter()), 0.5, 0.05, "한 바퀴 돌아 제자리")
+	# 캐릭터가 걸어가서 집는다
+	it["d"] = 0.4
+	g.go_pick(it["uid"])
+	for _s in 300:
+		g.update(0.02)
+		if g.action.is_empty():
 			break
-		assert_true(g.current_word() in g.belt_ids())
-		var ids := g.belt_ids()
-		var uniq := {}
-		for id in ids:
-			uniq[id] = true
-		assert_eq(uniq.size(), ids.size(), "같은 카드가 두 장 올라오지 않는다")
-
-
-func test_order_timeout_is_a_miss() -> void:
-	var g := _make(OrderGame, "order") as OrderGame
-	g.update(float(cfg["order"]["order_time"]) + 0.1)
-	assert_eq(g.misses, 1)
-	assert_eq(g.current, 1)
+	assert_false(g.carry.is_empty(), "걸어가서 집었다")
 
 
 func test_search_removes_one_unused_letter_every_ten_seconds() -> void:
@@ -134,22 +169,6 @@ func test_pipe_word_tiles_show_right_meaning_only_on_path_turn() -> void:
 		g.turn(p)
 	assert_true(g.finished)
 	assert_eq(g.score(), int(cfg["kite"]["words"]))
-
-
-func test_anagram_right_spelling_earns() -> void:
-	var g := _make(AnagramGame, "copy") as AnagramGame
-	var w := g.current().id
-	var order: Array[int] = []
-	var left := g.tiles.duplicate()
-	for ch in w:
-		var i := left.find(ch)
-		order.append(i)
-		left[i] = "*"
-	var res := ""
-	for i in order:
-		res = g.pick(i)
-	assert_eq(res, "right")
-	assert_eq(g.earned, [w] as Array[String])
 
 
 func test_cryptex_turning_alone_never_scores() -> void:

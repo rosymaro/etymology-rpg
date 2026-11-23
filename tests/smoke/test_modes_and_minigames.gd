@@ -80,8 +80,19 @@ func test_order_view_play_and_story_reward_goes_through_quiz() -> void:
 	var scr := main.current() as OrderView
 	assert_not_null(scr)
 	var g := scr.game as OrderGame
-	var first := g.current_word()
-	g.pick(g.belt_ids().find(first))
+	var w: int = g.shelf[0]
+	var first := g.words[w].id
+	for p in g.pieces(w):
+		for it in g.items:
+			if it["w"] == w and it["piece"] == p:
+				it["d"] = 0.3
+				g.pick(it["uid"])
+				break
+		g.action = {"kind": "furnace"}
+		g.act()
+	g.action = {"kind": "hammer"}
+	g.act()
+	g.place(0)
 	scr.changed()
 	scr._quit()
 	await wait_seconds(0.9)

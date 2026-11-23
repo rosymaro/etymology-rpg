@@ -10,7 +10,7 @@ static func _classes() -> Dictionary:
 		"WordSearchGame": WordSearchGame,
 		"PipeGame": PipeGame,
 		"FishingGame": FishingGame,
-		"AnagramGame": AnagramGame,
+		"MoatGame": MoatGame,
 		"CryptexGame": CryptexGame,
 		"GuardGame": GuardGame,
 		"OreSlashGame": OreSlashGame,
