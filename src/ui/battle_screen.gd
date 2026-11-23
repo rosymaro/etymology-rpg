@@ -47,6 +47,9 @@ func open(args: Dictionary) -> void:
 	for i in _ctx.enemies.size():
 		var e := _ctx.enemies[i]
 		var l := UiKit.label("%s Lv%d" % [e.word_id, e.level], 18)
+		var ew := GameData.repo.get_word(e.word_id)
+		if ew and not WordCard.is_owned(ew):
+			l.add_theme_color_override("font_color", WordCard.FRESH)
 		var c := UiKit.card(UiKit.PINK if not e.is_boss else UiKit.ACCENT.lightened(0.5))
 		var row := UiKit.hbox(6)
 		var face := Art.rect("boss", e.word_id, Vector2(48, 48)) if e.is_boss else Art.rect("enemy", "attr_%02d" % GameData.repo.get_word(e.word_id).primary_attr(), Vector2(48, 48))

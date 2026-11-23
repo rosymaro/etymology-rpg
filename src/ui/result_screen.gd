@@ -19,12 +19,10 @@ func open(args: Dictionary) -> void:
 	var roots: Array[String] = []
 	for ev in args["events"]:
 		var w := GameData.repo.get_word(ev["word"])
-		var line := "%s  %s  %s" % [w.id, w.meaning, t("ui.result.new") if ev["new"] else t("ui.result.dup")]
+		var line := "%s  %s" % [w.meaning, t("ui.result.new") if ev["new"] else t("ui.result.dup")]
 		if ev["equipped"] > 0:
 			line += "  " + t("ui.result.equipped").format({"name": UiKit.unit_name(ev["equipped"])})
-		var c := UiKit.card(UiKit.LEAF if ev["new"] else UiKit.SKY)
-		c.add_child(UiKit.label(line, 22))
-		list.add_child(c)
+		list.add_child(WordCard.make(w, line, 22, Callable(), 0 if ev["new"] else 1))
 		for u in ev["level_ups"]:
 			ups[u[0]] = u[2]
 			EventBus.level_up.emit(u[0], u[2])

@@ -70,6 +70,7 @@ func _show() -> void:
 	var w := GameData.repo.get_word(q.word_id)
 	_prog.text = "%d / %d" % [_i + 1, _qs.size()]
 	_word_lbl.text = w.id
+	_word_lbl.add_theme_color_override("font_color", WordCard.OWNED if WordCard.is_owned(w) else WordCard.FRESH)
 	_info_lbl.text = w.ipa
 	for k in q.options.size():
 		var idx := k

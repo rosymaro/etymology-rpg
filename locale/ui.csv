@@ -81,7 +81,7 @@ ui.result.new_root,새 어근 {root}를 얻었어요! 전투 준비에서 장착
 ui.join,{name}이(가) 동료가 되었어요!
 ui.evolve.title,대장간 용광로: 진화
 ui.evolve.none,지금 진화할 수 있는 단어가 없어요. 재료 단어를 더 모아 보세요.
-ui.evolve.row,{word} = {mats}  ·  {unit} {slot}
+ui.evolve.row,= {mats}  ·  {unit} {slot}
 ui.evolve.go,진화하기
 ui.evolve.intro,"{word}는 {mats}에서 태어나요.
 어원: {etym}

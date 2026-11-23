@@ -46,9 +46,7 @@ func open(_args: Dictionary) -> void:
 		list.add_child(flow)
 		for w in groups[g]:
 			var word: WordData = w
-			var b := UiKit.button(word.id, func() -> void: _show(word), UiKit.SKY, 20)
-			b.custom_minimum_size = Vector2(0, 50)
-			flow.add_child(b)
+			flow.add_child(WordCard.make(word, "", 20, func() -> void: _show(word)))
 	var right := UiKit.card()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.add_child(right)
