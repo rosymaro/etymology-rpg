@@ -162,9 +162,21 @@ func _run() -> void:
 			og.go_pick(og.items[0]["uid"])
 			await get_tree().create_timer(1.5).timeout
 			await _shot("%d_mini_order_later" % n)
-		if g["id"] == "copy":
+		if g["id"] == "wheel":
 			await get_tree().create_timer(9.0).timeout
-			await _shot("%d_mini_copy_later" % n)
+			await _shot("%d_mini_wheel_later" % n)
+		if g["id"] == "copy":
+			var cv := main.current() as CopyView
+			var cg := cv.game as AnagramGame
+			cg.hit(0)
+			cg.hit(1)
+			cg.hit(1)
+			cg.put(1, 0)
+			cv.changed()
+			await _shot("%d_mini_copy_ice" % n)
+		if g["id"] == "ore":
+			await get_tree().create_timer(2.0).timeout
+			await _shot("%d_mini_ore_later" % n)
 		n += 1
 	main.flow.go_title()
 	await _shot("30_title_modes")

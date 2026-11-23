@@ -11,7 +11,7 @@ static func _classes() -> Dictionary:
 		"PipeGame": PipeGame,
 		"FishingGame": FishingGame,
 		"MoatGame": MoatGame,
-		"CryptexGame": CryptexGame,
+		"AnagramGame": AnagramGame,
 		"GuardGame": GuardGame,
 		"OreSlashGame": OreSlashGame,
 		"RootLinkGame": RootLinkGame,

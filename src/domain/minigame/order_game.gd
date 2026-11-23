@@ -95,6 +95,16 @@ func _put(frag: Dictionary, d: float) -> void:
 	items.append({"uid": _uid, "w": frag["w"], "piece": frag["piece"], "d": d})
 
 
+## 벨트 d 자리 앞뒤로 min_gap 안에 다른 조각이 없는가(조각끼리 겹치지 않게).
+func gap_free(d: float) -> bool:
+	var gap := float(cfg["min_gap"])
+	for it in items:
+		var diff := absf(fposmod(it["d"] - d + perimeter() / 2.0, perimeter()) - perimeter() / 2.0)
+		if diff < gap:
+			return false
+	return true
+
+
 func item_by_uid(uid: int) -> int:
 	for i in items.size():
 		if items[i]["uid"] == uid:
@@ -238,8 +248,10 @@ func _tick(dt: float) -> void:
 	if _spawn_t <= 0.0:
 		_spawn_t = float(cfg["spawn_gap"])
 		_refill()
-		if not _queue.is_empty() and items.size() < int(cfg["belt_size"]) + 4:
-			_put(_queue.pop_front(), perimeter() - BELT.size.y * 0.5)  # 창고 안(왼쪽 변)에서 나온다
+	# 창고 안(왼쪽 변)에서 나온다. 빈자리가 지나갈 때만 올린다(조각끼리 겹치지 않게)
+	var at := perimeter() - BELT.size.y * 0.5
+	if not _queue.is_empty() and items.size() < int(cfg["belt_size"]) and gap_free(at):
+		_put(_queue.pop_front(), at)
 	if action.is_empty():
 		return
 	var to := _target()

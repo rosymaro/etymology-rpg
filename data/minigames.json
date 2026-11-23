@@ -34,14 +34,14 @@
     {
       "id": "copy",
       "stage": 6,
-      "class": "MoatGame",
-      "borrow": "타워 디펜스(물길을 나눠 물레방아 활 돌리기)"
+      "class": "AnagramGame",
+      "borrow": "애너그램(글자 섞기) + 얼음 깨기"
     },
     {
       "id": "wheel",
       "stage": 7,
-      "class": "CryptexGame",
-      "borrow": "돌려 맞추는 원통 자물쇠(크립텍스)"
+      "class": "MoatGame",
+      "borrow": "타워 디펜스(물길을 나눠 물레방아 활 돌리기)"
     },
     {
       "id": "guard",
@@ -53,7 +53,8 @@
       "id": "ore",
       "stage": 9,
       "class": "OreSlashGame",
-      "borrow": "그어 베기(프루트 닌자)"
+      "borrow": "그어 베기(프루트 닌자) + 어원 가리기",
+      "pool": "root_pair"
     },
     {
       "id": "pattern",

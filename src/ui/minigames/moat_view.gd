@@ -1,6 +1,6 @@
 class_name MoatView
 extends MinigameScreen
-## 6 해자 지키기: 위에서 단어 병사가 내려온다. 아래 물레방아 셋의 수문을 눌러 열고 닫는다.
+## 7 물레방아(해자 지키기): 위에서 단어 병사가 내려온다. 아래 물레방아 셋의 수문을 눌러 열고 닫는다.
 ## 하나만 열면 그 활이 빠르게, 여럿 열면 나눠서 쏜다. 100마리를 잡으면 단어를 모두 얻는다.
 
 var _canvas: Control
@@ -96,5 +96,6 @@ func _draw_moat() -> void:
 		if open:
 			label += " ×%.1f" % (g.fire_rate(i) / (float(g.cfg["total_fire"]) / 3.0))
 		_canvas.draw_string(font, gate.position + Vector2(0, 24), label, HORIZONTAL_ALIGNMENT_CENTER, gate.size.x, 18, UiKit.INK)
-	_canvas.draw_string(font, Vector2(20, 30), t("ui.mini.moat.kills").format({"n": g.kills, "goal": int(g.cfg["goal"]), "leak": g.leaks}),
+	_canvas.draw_style_box(UiKit.box(Color(UiKit.PAPER, 0.92), 14, 2), Rect2(10, 6, 420, 40))
+	_canvas.draw_string(font, Vector2(22, 34), t("ui.mini.moat.kills").format({"n": g.kills, "goal": int(g.cfg["goal"]), "leak": g.leaks}),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 24, UiKit.INK)

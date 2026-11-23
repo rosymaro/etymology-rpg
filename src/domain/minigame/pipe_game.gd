@@ -4,6 +4,7 @@ extends Minigame
 ## 7×7 판, 정답 길은 min_path칸 이상. 단어 5개는 모두 정답 길 위에 있다(함정 없음).
 ## 단어 칸에는 영어 단어와 뜻이 적혀 있고, 돌릴 때마다 뜻이 바뀐다(정답 1 + 오답 3).
 ## 뜻이 맞게 돌린 방향이 정답 길의 방향이다(힌트). 하늘에 닿았을 때 단어를 모두 지나고 모두 맞는 뜻이면 성공.
+## 일자 타일에는 화살표(>>>)가 있어서 바람은 화살표 쪽으로만 지나간다(반 바퀴 돌리면 방향이 바뀐다).
 ## 연결은 N=1 E=2 S=4 W=8 비트.
 
 const N := 1
@@ -15,6 +16,7 @@ var rows: int
 var cols: int
 var tiles: Array = []  ## [r][c] 연결 비트
 var turns: Dictionary = {}  ## Vector2i -> 돌린 횟수(0~3), 정답 방향이 0
+var arrows: Dictionary = {}  ## Vector2i -> 일자 타일 화살표가 가리키는 쪽(N/E/S/W 비트)
 var word_at_cell: Dictionary = {}  ## Vector2i -> 단어 순번
 var meanings: Dictionary = {}  ## Vector2i -> [정답 뜻, 오답 3]  (turns 값으로 고른다)
 var start_row: int
@@ -46,12 +48,16 @@ func _build() -> void:
 		var prev := Vector2i(p.x, p.y - 1) if i == 0 else solution[i - 1]
 		var next := Vector2i(p.x, p.y + 1) if i == solution.size() - 1 else solution[i + 1]
 		tiles[p.x][p.y] = _dir(p, prev) | _dir(p, next)
+		if is_straight(p):
+			arrows[p] = _dir(p, next)  # 바람이 가는 쪽
 	var shapes := [N | S, N | E, N | E | S]
 	for r in rows:
 		for c in cols:
 			turns[Vector2i(r, c)] = 0
 			if tiles[r][c] == 0:
 				tiles[r][c] = shapes[rng.randi_range(0, shapes.size() - 1)]
+				if is_straight(Vector2i(r, c)):
+					arrows[Vector2i(r, c)] = N if rng.randf() < 0.5 else S
 	# 단어는 모두 정답 길 위에, 길 전체에 고르게 흩어 둔다
 	targets = mini(int(cfg["words"]), mini(solution.size(), words.size()))
 	for k in targets:
@@ -131,9 +137,19 @@ func _dir(from: Vector2i, to: Vector2i) -> int:
 
 
 ## 시계 방향으로 90도.
-func rotate(p: Vector2i) -> void:
+func is_straight(p: Vector2i) -> bool:
 	var m: int = tiles[p.x][p.y]
-	tiles[p.x][p.y] = ((m << 1) | (m >> 3)) & 15
+	return m == (N | S) or m == (E | W)
+
+
+static func _rot(m: int) -> int:
+	return ((m << 1) | (m >> 3)) & 15
+
+
+func rotate(p: Vector2i) -> void:
+	tiles[p.x][p.y] = _rot(tiles[p.x][p.y])
+	if arrows.has(p):
+		arrows[p] = _rot(arrows[p])
 	turns[p] = (int(turns.get(p, 0)) + 1) % 4
 
 
@@ -168,7 +184,7 @@ func judge(cells: Array[Vector2i]) -> String:
 func connected() -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	var s := Vector2i(start_row, 0)
-	if not (tiles[s.x][s.y] & W):
+	if not (tiles[s.x][s.y] & W) or not _can_enter(s, E):
 		return out
 	var seen := {s: true}
 	var stack: Array[Vector2i] = [s]
@@ -177,13 +193,23 @@ func connected() -> Array[Vector2i]:
 		out.append(p)
 		for pair in [[N, Vector2i(-1, 0), S], [E, Vector2i(0, 1), W], [S, Vector2i(1, 0), N], [W, Vector2i(0, -1), E]]:
 			var n: Vector2i = p + pair[1]
-			if tiles[p.x][p.y] & pair[0] and n.x >= 0 and n.y >= 0 and n.x < rows and n.y < cols \
-					and tiles[n.x][n.y] & pair[2] and not seen.has(n):
+			if tiles[p.x][p.y] & pair[0] and _can_leave(p, pair[0]) and n.x >= 0 and n.y >= 0 and n.x < rows and n.y < cols \
+					and tiles[n.x][n.y] & pair[2] and _can_enter(n, pair[0]) and not seen.has(n):
 				seen[n] = true
 				stack.append(n)
 	return out
 
 
+## 일자 타일은 화살표 쪽으로만 나간다.
+func _can_leave(p: Vector2i, side: int) -> bool:
+	return not arrows.has(p) or not is_straight(p) or arrows[p] == side
+
+
+## 바람이 move 쪽으로 움직여 들어올 때, 일자 타일이면 화살표가 같은 쪽이어야 한다.
+func _can_enter(p: Vector2i, move: int) -> bool:
+	return not arrows.has(p) or not is_straight(p) or arrows[p] == move
+
+
 func _reaches_end() -> bool:
 	var e := Vector2i(end_row, cols - 1)
-	return tiles[e.x][e.y] & E and connected().has(e)
+	return tiles[e.x][e.y] & E and _can_leave(e, E) and connected().has(e)
