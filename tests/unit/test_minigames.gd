@@ -69,43 +69,6 @@ func test_order_timeout_is_a_miss() -> void:
 	assert_eq(g.current, 1)
 
 
-func test_trap_memory_pairs_word_with_its_meaning() -> void:
-	var g := _make(MemoryGame, "trap") as MemoryGame
-	assert_eq(g.cards.size(), int(cfg["trap"]["pairs"]) * 2)
-	# 짝이 아닌 두 장 → 틀림, 덮인다
-	var a := 0
-	var b := -1
-	for k in range(1, g.cards.size()):
-		if g.cards[k]["w"] != g.cards[a]["w"]:
-			b = k
-			break
-	assert_eq(g.flip(a), "open")
-	assert_eq(g.flip(b), "miss")
-	g.close_mismatch()
-	assert_false(g.cards[a]["open"])
-	# 짝인 두 장 → 걸림
-	var mate := -1
-	for k in g.cards.size():
-		if k != a and g.cards[k]["w"] == g.cards[a]["w"]:
-			mate = k
-	g.flip(a)
-	assert_eq(g.flip(mate), "match")
-	assert_eq(g.score(), 1)
-	assert_ne(g.cards[a]["side"], g.cards[mate]["side"], "한 장은 단어, 한 장은 뜻")
-
-
-func test_trap_memory_finishes_when_all_pairs_found() -> void:
-	var g := _make(MemoryGame, "trap") as MemoryGame
-	var by := {}
-	for k in g.cards.size():
-		by.get_or_add(g.cards[k]["w"], []).append(k)
-	for w in by:
-		g.flip(by[w][0])
-		g.flip(by[w][1])
-	assert_true(g.finished)
-	assert_eq(g.score(), mini(g.pairs(), int(cfg["max_words"])))
-
-
 func test_search_removes_one_unused_letter_every_ten_seconds() -> void:
 	var g := _make(WordSearchGame, "search") as WordSearchGame
 	var answer := g.answer_cells()
@@ -234,56 +197,80 @@ func test_ore_combo_of_five_earns_and_rock_breaks_combo() -> void:
 	assert_eq(g.combo, 0)
 
 
-func _fight(g: FishingGame, follow: bool) -> void:
-	## follow = 막대가 물고기를 따라가도록 누른다(잘 싸움). false면 손을 뗀다.
-	for _i in 4000:
+func _hook(g: FishingGame, i: int) -> void:
+	for f in g.fish:
+		f["vel"] = Vector2.ZERO
+	g.cast(g.fish[i]["pos"] + Vector2(0.01, 0))
+	for _s in 400:
+		if g.state == "bite" and g.ring <= float(g.cfg["hook_ring"]):
+			break
+		g.update(0.02)
+	assert_eq(g.release(), "hook")
+
+
+func _fight(g: FishingGame, good: bool) -> void:
+	for _s in 2000:
 		if g.state != "fight":
 			return
-		g.hold(follow and g.bar_pos + g.bar_size() / 2.0 < g.fish_pos)
+		if good and g.note_dir >= 0 and g.note_t >= 0.85:
+			g.tap(g.note_dir)
 		g.update(0.02)
 
 
-func test_fishing_bait_gathers_constant_school_and_match_is_easier() -> void:
+func _index_of(g: FishingGame, want_match: bool) -> int:
+	for i in g.fish.size():
+		if g.is_match(g.fish[i]["w"]) == want_match:
+			return i
+	return -1
+
+
+func test_fishing_hold_bite_release_then_rhythm_fight() -> void:
 	var g := _make(FishingGame, "fishing") as FishingGame
 	var n := int(cfg["fishing"]["fish"])
-	var right := -1
-	for i in g.fish.size():
-		if g.is_match(g.fish[i]["w"]):
-			right = i
+	assert_eq(g.fish.size(), n)
+	var right := _index_of(g, true)
 	assert_gt(right, -1, "미끼와 뜻이 맞는 물고기가 있다")
-	assert_eq(g.fish.size(), n)
 	var w: WordData = g.words[g.fish[right]["w"]]
-	assert_true(g.hook(right))
+	_hook(g, right)
 	assert_eq(g.state, "fight")
-	var easy := g.bar_size()
-	var easy_speed := g.fish_speed()
+	assert_eq(g.need(), int(cfg["fishing"]["need_match"]), "뜻이 맞으면 적게 맞혀도 잡힌다")
 	_fight(g, true)
-	assert_eq(g.earned, [w.id] as Array[String], "잘 싸우면 낚는다")
-	assert_eq(g.fish.size(), n, "다음 판에도 물고기 수가 그대로다")
-	var wrong := -1
-	for i in g.fish.size():
-		if not g.is_match(g.fish[i]["w"]):
-			wrong = i
-	g.hook(wrong)
-	assert_lt(g.bar_size(), easy, "뜻이 안 맞으면 막대가 작다")
-	assert_gt(g.fish_speed(), easy_speed, "뜻이 안 맞으면 물고기가 빠르다")
+	assert_eq(g.earned, [w.id] as Array[String])
+	assert_eq(g.fish.size(), n, "다음 판에도 물고기 수가 그대로")
+	var wrong := _index_of(g, false)
+	_hook(g, wrong)
+	assert_eq(g.need(), int(cfg["fishing"]["notes"]), "뜻이 틀리면 전부 맞혀야 잡힌다")
 	_fight(g, false)
-	assert_eq(g.misses, 1, "손을 놓으면 놓친다")
-	assert_eq(g.fish.size(), n)
+	assert_eq(g.misses, 1, "못 맞히면 놓친다")
 
 
-func test_fishing_mismatch_fish_can_still_be_caught() -> void:
+func test_fishing_early_release_scares_and_wrong_circle_misses() -> void:
 	var g := _make(FishingGame, "fishing", 12, 9) as FishingGame
-	var caught := 0
-	for _r in 3:
-		var wrong := -1
-		for i in g.fish.size():
-			if not g.is_match(g.fish[i]["w"]):
-				wrong = i
-		g.hook(wrong)
-		_fight(g, true)
-		caught = g.score()
-	assert_gt(caught, 0, "뜻이 다른 물고기도 잘 싸우면 낚인다")
+	for f in g.fish:
+		f["vel"] = Vector2.ZERO
+	g.cast(g.fish[0]["pos"] + Vector2(0.01, 0))
+	for _s in 200:
+		if g.state == "bite":
+			break
+		g.update(0.02)
+	assert_eq(g.state, "bite")
+	assert_eq(g.release(), "early", "원이 크면 너무 이르다")
+	assert_eq(g.state, "idle")
+	assert_eq(g.misses, 0, "달아난 것은 실수가 아니다")
+	var wrong := _index_of(g, false)
+	_hook(g, wrong)
+	for _s in 400:
+		if g.note_dir >= 0 and g.note_t >= 0.85:
+			break
+		g.update(0.02)
+	assert_false(g.tap((g.note_dir + 1) % FishingGame.DIRS), "다른 원을 누르면 틀림")
+	assert_eq(g.state, "idle", "뜻이 틀린 물고기는 하나만 틀려도 놓친다")
+	assert_eq(g.misses, 1)
+	# 뜻이 다른 물고기도 모두 맞히면 잡힌다
+	_hook(g, _index_of(g, false))
+	var before := g.score()
+	_fight(g, true)
+	assert_eq(g.score(), before + 1)
 
 
 func test_guard_pass_true_block_false_and_climbers() -> void:
@@ -430,3 +417,40 @@ func test_root_link_knocked_root_gets_up_and_time_out_reviews() -> void:
 	g.update(float(cfg["pattern"]["duration"]) + 1.0)
 	assert_true(g.finished)
 	assert_false(g.complete(), "시간이 다 되면 미완성(정답을 보여 준다)")
+
+func _trap_spot(g: TrapGame, i: int) -> Vector2:
+	return g.pos(i, g.period() * 0.3)
+
+
+func test_trap_watch_place_hunt_catches_matching_meanings() -> void:
+	var g := _make(TrapGame, "trap") as TrapGame
+	var n := int(cfg["trap"]["words"])
+	assert_eq(g.paths.size(), n)
+	assert_eq(g.tray.size(), n, "단어마다 뜻 덫 하나")
+	assert_true(g.visible(), "처음엔 지켜본다")
+	g.update(1.0)
+	var p0 := g.pos(0, 0.0)
+	assert_eq(g.pos(0, g.period()), p0, "한 바퀴 돌면 같은 자리(똑같이 움직인다)")
+	# 단어 0, 1에는 맞는 뜻의 덫, 단어 2가 지나는 자리에는 다른 뜻의 덫
+	g.place_trap(g.tray.find(0), _trap_spot(g, 0))
+	assert_false(g.visible(), "캐릭터가 움직이면 단어들이 숨는다")
+	g.place_trap(g.tray.find(1), _trap_spot(g, 1))
+	g.place_trap(g.tray.find(3), _trap_spot(g, 2))
+	assert_true(g.hide())
+	assert_eq(g.phase, "hunt")
+	for _s in int(g.period() / 0.02) + 5:
+		g.update(0.02)
+	assert_true(g.finished, "한 바퀴가 끝나면 판이 끝난다")
+	assert_true(g.caught[0] and g.caught[1], "뜻이 맞는 덫에 걸린다")
+	assert_false(g.caught[2], "뜻이 다른 덫은 그냥 지나간다")
+	assert_eq(g.score(), 2)
+
+
+func test_trap_can_pick_up_trap_again() -> void:
+	var g := _make(TrapGame, "trap") as TrapGame
+	g.place_trap(0, Vector2(0.5, 0.5))
+	assert_eq(g.traps.size(), 1)
+	assert_true(g.pick_trap(0))
+	assert_eq(g.traps.size(), 0)
+	assert_eq(g.tray.size(), int(cfg["trap"]["words"]))
+	assert_true(g.hide(), "덫을 놓은 뒤 다시 숨을 수 있다")

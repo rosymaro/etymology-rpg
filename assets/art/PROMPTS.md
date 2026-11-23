@@ -51,6 +51,10 @@ blood, wounds, scary, text, letters, watermark, logo, existing game characters
 | `mini/guard_unit.png` | a cute guard seen from behind holding a wide shield, blocking stance, 200x90 |
 | `mini/sprout.png` | a tiny two-leaf sprout popping up, 60x60 |
 | `mini/root_wisp.png` | a floating round root spirit with tiny root tendrils, empty pale space in the middle for text, 190x70 |
+| `mini/fish_top.png` | a cute fish seen from directly above facing right, pale cream body with empty space for text, 150x54 |
+| `mini/trap_critter.png` | a small cute field critter with round ears seen from above, empty pale space for text, 130x56 |
+| `mini/trap_snare.png` | a cute toothed snare trap seen from above with an empty plank for text, 170x60 |
+| `mini/trap_hunter.png` | the apprentice hero with a hunter hat seen from above, 56x56 |
 | `slot/weapon.png` · `head.png` · `chest.png` · `hands.png` · `feet.png` | five small cute equipment icons (sword, helmet, armor top, glove, boot), thick soft indigo outline, transparent background, 48x48 each |
 | `mini/ore_vein.png` | a rounded ore rock with a shining vein, drawn in white and very light grey only |
 | `mini/ore_rock.png` | a plain grey round rock with a small grumpy face |

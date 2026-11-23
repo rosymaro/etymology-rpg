@@ -143,16 +143,15 @@ ui.mini.wheel.inner,안쪽 고리
 ui.mini.wheel.gate,수문
 ui.mini.ore.target,광맥: {attr} 무늬만 깨요  ·  연속 {combo} ({per}개마다 단어 1개)
 ui.mini.rule.order,주문서의 뜻에 맞는 단어 카드를 시간 안에 눌러요. 3번 틀리면 끝나요.
-ui.mini.rule.trap,엎어 둔 덫을 두 개씩 열어요. 영어 단어와 그 뜻이 짝이면 덫에 걸려요.
+ui.mini.rule.trap,"숨어서 단어들의 길을 지켜보고, 그 길목에 뜻이 맞는 덫을 놓아요. 다시 숨으면 단어가 걸려요."
 ui.mini.rule.search,글자 격자에서 가로·세로·대각선으로 숨은 단어를 찾아요. 10초마다 필요 없는 글자가 하나씩 사라져요.
 ui.mini.rule.kite,타일을 눌러 돌려요. 단어 칸의 뜻이 맞으면 그 방향이 바른 길이에요. 단어 5개를 모두 지나 하늘까지 이어요.
-ui.mini.rule.fishing,뜻이 맞는 물고기를 눌러 채요. 누르고 있으면 막대가 올라가요. 물고기를 막대 안에 두세요.
+ui.mini.rule.fishing,누르고 있으면 찌를 던져요. 입질하면 원이 줄어요. 원이 작아지면 손을 떼요. 싸움에서는 점이 닿는 원을 눌러요.
 ui.mini.rule.copy,섞인 글자를 바른 순서로 눌러 철자를 맞춰요.
 ui.mini.rule.wheel,두 고리를 돌려 수문 세 곳에서 단어와 뜻을 맞춘 뒤 수문을 열어요. 바퀴마다 두 번까지예요.
 ui.mini.rule.guard,"뜻이 맞는 손님은 비켜 주고, 틀린 손님과 담 넘는 도둑은 막아요. 3번 틀리면 끝나요."
 ui.mini.rule.ore,화면을 그어 광맥 무늬와 같은 광석만 깨요. 다른 광석을 깨면 연속이 끊겨요.
 ui.mini.rule.pattern,"어원을 눌러 화살로 맞히고, 쓰러지면 끌어서 그 어원의 단어 아래에 놓아요. 새싹 5개를 모두 틔우면 완성!"
-ui.mini.trap.closed,덫
 ui.mini.next,다음
 ui.mini.search.answer,✗ {word}  {meaning} (판에 분홍색으로 표시)
 ui.mini.kite.goal,단어 5개를 모두 지나 하늘까지 이어요. 단어 칸은 돌릴 때마다 뜻이 바뀌어요. 단어와 뜻이 맞는 방향이 바른 길이에요.
@@ -163,9 +162,8 @@ ui.mini.wheel.right,맞았어요! 물레방아가 한 바퀴 돌아요.
 ui.mini.wheel.wrong,수문이 안 열려요. {n}번 남았어요.
 ui.mini.wheel.lost,이번 바퀴는 놓쳤어요. 맞는 자리를 보여 줄게요.
 ui.mini.fishing.bait,미끼(뜻):
-ui.mini.fishing.fight_easy,뜻이 맞는 물고기예요! 막대가 커요.
-ui.mini.fishing.fight_hard,뜻이 다른 물고기예요. 거세게 버텨요!
-ui.mini.fishing.hold,누르고 있으면 막대가 올라가요
+ui.mini.fishing.fight_easy,뜻이 맞는 물고기예요! {n}번만 맞히면 잡혀요.
+ui.mini.fishing.fight_hard,뜻이 다른 물고기예요. {n}번을 모두 맞혀야 잡혀요!
 ui.mini.fishing.caught,낚았어요! {word} = 「{meaning}」
 ui.mini.fishing.lost,놓쳤어요. {word}의 뜻은 「{meaning}」이에요.
 ui.mini.guard.gate,성문
@@ -181,3 +179,13 @@ ui.mini.kite.meaning,길은 이어졌지만 뜻이 맞지 않는 단어가 있�
 ui.mini.search.etym,어원: {etym}
 ui.mini.guard.wrong_blocked,✗ 맞는 짝이었어요. 통과시켜야 해요\n{word} = {meaning}
 ui.mini.guard.wrong_passed,✗ 틀린 짝이었어요. 막아야 해요\n{word} ≠ {shown}
+ui.mini.fishing.wait,물고기가 다가와요…
+ui.mini.fishing.bite,입질! 원이 작아지면 손을 떼요
+ui.mini.fishing.early,너무 일찍 당겼어요. 물고기가 달아났어요.
+ui.mini.fishing.ate,미끼만 먹고 갔어요.
+ui.mini.fishing.hits,맞힘 {n}/{need} · 남은 점 {left}
+ui.mini.trap.watch,숨어서 지켜봐요. 단어들의 길을 기억하세요. 덫을 끌어 놓으면 단어들이 숨어요.
+ui.mini.trap.place,단어가 지나갈 자리에 뜻이 맞는 덫을 놓아요. 놓은 덫을 누르면 다시 집어요.
+ui.mini.trap.hunt,쉿… 단어들이 다시 나왔어요.
+ui.mini.trap.hide,숨어서 기다리기
+ui.mini.trap.caught,잡은 단어 {n}/{max} · {s}초
