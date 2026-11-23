@@ -18,7 +18,8 @@ func open(args: Dictionary) -> void:
 	v.add_child(UiKit.label(t("name.minigame." + id), 34))
 	v.add_child(UiKit.label(t("ui.mini.free_result").format({"n": earned.size()}), 26))
 	for w in earned:
-		v.add_child(UiKit.label("· %s  %s" % [w, GameData.repo.get_word(w).meaning], 22))
+		var wd := GameData.repo.get_word(w)
+		v.add_child(WordCard.make(wd, wd.meaning, 22))
 	var h := UiKit.hbox()
 	h.add_child(UiKit.button(t("ui.mini.again"), func() -> void: main.flow.play_minigame(id, "free"), UiKit.LEAF))
 	h.add_child(UiKit.button(t("ui.mini.list"), func() -> void: main.flow.go_minigames(), UiKit.PAPER))

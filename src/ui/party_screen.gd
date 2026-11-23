@@ -72,8 +72,8 @@ func _choose(unit: int, slot: String) -> void:
 	_detail.add_child(flow)
 	for w in opts:
 		var id := w.id
-		flow.add_child(UiKit.button("%s (%s)" % [w.id, t("ui.dex.tier").format({"tier": w.tier})], func() -> void:
+		flow.add_child(WordCard.make(w, t("ui.dex.tier").format({"tier": w.tier}), 20, func() -> void:
 			s.eq(unit).put(slot, id)
 			GameData.save()
-			_refresh(), UiKit.APRICOT, 20))
+			_refresh()))
 	flow.add_child(UiKit.button(t("ui.common.back"), _refresh, UiKit.PAPER, 20))

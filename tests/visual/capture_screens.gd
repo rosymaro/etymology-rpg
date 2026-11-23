@@ -133,5 +133,30 @@ func _run() -> void:
 		n += 1
 	main.flow.go_title()
 	await _shot("30_title_modes")
+	await _card_gallery(gd)
 	gd.save_store.erase()
 	get_tree().quit()
+
+
+## 단어 카드 견본: 속성 1·2·3개, 부위 다섯 가지, 가진 단어/처음 단어.
+func _card_gallery(gd: Node) -> void:
+	var layer := ColorRect.new()
+	layer.color = UiKit.PAPER
+	layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	main.add_child(layer)
+	var v := UiKit.vbox(10)
+	v.position = Vector2(30, 30)
+	layer.add_child(v)
+	var picked := {1: [], 2: [], 3: []}
+	for id in gd.repo.all_ids():
+		var w: WordData = gd.repo.get_word(id)
+		var n := mini(3, w.attrs.size())
+		if n > 0 and picked[n].size() < 5 and w.slot != "":
+			picked[n].append(w)
+	for n in [1, 2, 3]:
+		var row := UiKit.hbox(10)
+		v.add_child(row)
+		for i in picked[n].size():
+			row.add_child(WordCard.make(picked[n][i], "", 22, Callable(), 1 if i % 2 == 0 else 0))
+	await _shot("31_word_cards")
+	layer.queue_free()

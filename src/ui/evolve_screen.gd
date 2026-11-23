@@ -29,6 +29,7 @@ func open(_args: Dictionary) -> void:
 	for w in avail:
 		var id := w.id
 		var row := UiKit.hbox()
+		row.add_child(WordCard.make(w, "", 22))
 		var info := UiKit.label(t("ui.evolve.row").format({"word": w.id, "mats": " + ".join(w.mats),
 			"unit": UiKit.unit_name(w.unit), "slot": t("name.slot." + w.slot)}), 22)
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL

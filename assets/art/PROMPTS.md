@@ -51,6 +51,7 @@ blood, wounds, scary, text, letters, watermark, logo, existing game characters
 | `mini/guard_unit.png` | a cute guard seen from behind holding a wide shield, blocking stance, 200x90 |
 | `mini/sprout.png` | a tiny two-leaf sprout popping up, 60x60 |
 | `mini/root_wisp.png` | a floating round root spirit with tiny root tendrils, empty pale space in the middle for text, 190x70 |
+| `slot/weapon.png` · `head.png` · `chest.png` · `hands.png` · `feet.png` | five small cute equipment icons (sword, helmet, armor top, glove, boot), thick soft indigo outline, transparent background, 48x48 each |
 | `mini/ore_vein.png` | a rounded ore rock with a shining vein, drawn in white and very light grey only |
 | `mini/ore_rock.png` | a plain grey round rock with a small grumpy face |
 | `ui/order_ticket.png` | a small paper order slip icon with a pin |
