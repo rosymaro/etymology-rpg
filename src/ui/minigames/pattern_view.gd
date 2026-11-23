@@ -1,89 +1,198 @@
 class_name PatternView
 extends MinigameScreen
-## 10 문양 잇기(갈라진 말뿌리 잇기): 왼쪽 단어를 누르고 오른쪽의 어원 풀이를 누르면 선으로 잇는다.
+## 10 문양 잇기(갈라진 말뿌리 되찾기): 돌아다니는 어원을 화살로 맞혀 쓰러뜨리고, 끌어서 단어 아래 뿌리 자리에 놓는다.
+## 단어의 어원이 모두 바르게 자리 잡으면 새싹이 오른다. 시간이 다 되면 새싹이 안 오른 단어의 정답 어원을 보여 준다.
 
-const ROW := 92.0
-const LEFT_X := 40.0
-const RIGHT_X := 560.0
-const LEFT_W := 280.0
-const RIGHT_W := 620.0
+const CARD := Vector2(210, 66)
+const ROOT := Vector2(164, 50)
+const ROOT_DROP := 44.0  ## 카드 아래에서 뿌리 끝까지
 
 var _canvas: Control
-var _sel := -1
-var _wrong := Vector2i(-1, -1)
-var _wrong_t := 0.0
 var _msg: Label
+var _drag := -1
+var _drag_pos := Vector2.ZERO
+var _review := false
+var _seen_sprouts := 0
 
 
 func build() -> void:
 	_canvas = Control.new()
-	_canvas.position = Vector2(0, 10)
-	_canvas.custom_minimum_size = Vector2(1240, ROW * 5 + 20)
-	_canvas.draw.connect(_draw_links)
+	_canvas.anchor_right = 1.0
+	_canvas.anchor_bottom = 1.0
+	_canvas.offset_left = 16
+	_canvas.offset_right = -16
+	_canvas.offset_bottom = -10
+	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
+	_canvas.draw.connect(_draw_board)
 	_canvas.gui_input.connect(_input)
 	body.add_child(_canvas)
-	_msg = UiKit.label("", 22, UiKit.BAD.darkened(0.2))
-	_msg.position = Vector2(40, ROW * 5 + 40)
+	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.ACCENT.darkened(0.25)), 900)
 	body.add_child(_msg)
+	_msg.position = Vector2(28, 4)
 
 
-func _left_rect(i: int) -> Rect2:
-	return Rect2(Vector2(LEFT_X, i * ROW), Vector2(LEFT_W, ROW - 16))
+func _px(p: Vector2) -> Vector2:
+	return p * _canvas.size
 
 
-func _right_rect(i: int) -> Rect2:
-	return Rect2(Vector2(RIGHT_X, i * ROW), Vector2(RIGHT_W, ROW - 16))
+func _norm(p: Vector2) -> Vector2:
+	return p / _canvas.size
+
+
+func _card_rect(k: int) -> Rect2:
+	var g := game as RootLinkGame
+	var c := _px(g.word_pos[k])
+	c.x = clampf(c.x, CARD.x / 2 + 4, _canvas.size.x - CARD.x / 2 - 4)
+	return Rect2(c - CARD / 2, CARD)
+
+
+## 단어 칸 k의 뿌리 끝 s번 자리(화면 좌표)
+func _slot_pos(k: int, s: int) -> Vector2:
+	var g := game as RootLinkGame
+	var n := g.slots(k)
+	var r := _card_rect(k)
+	var spread := 0.0 if n == 1 else (s - (n - 1) / 2.0) * (ROOT.x + 8.0)
+	return Vector2(r.get_center().x + spread, r.end.y + ROOT_DROP)
+
+
+func _root_pos(i: int) -> Vector2:
+	var g := game as RootLinkGame
+	var r: Dictionary = g.roots[i]
+	if i == _drag:
+		return _drag_pos
+	if r["state"] == "placed":
+		return _slot_pos(r["at"], r["slot"])
+	return _px(r["pos"])
+
+
+func _root_under(p: Vector2) -> int:
+	var g := game as RootLinkGame
+	for i in range(g.roots.size() - 1, -1, -1):
+		if g.roots[i]["state"] in ["down", "placed"] and Rect2(_root_pos(i) - ROOT / 2, ROOT).grow(8).has_point(p):
+			return i
+	return -1
+
+
+func _word_under(p: Vector2) -> int:
+	var g := game as RootLinkGame
+	for k in g.targets.size():
+		var r := _card_rect(k)
+		r = r.expand(Vector2(r.get_center().x, r.end.y + ROOT_DROP + ROOT.y / 2)).grow(20)
+		if r.has_point(p):
+			return k
+	return -1
 
 
 func _input(ev: InputEvent) -> void:
-	if not (ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT):
-		return
 	var g := game as RootLinkGame
-	for i in g.left.size():
-		if _left_rect(i).has_point(ev.position) and not g.linked.has(i):
-			_sel = i
-			_canvas.queue_redraw()
-			return
-	if _sel < 0:
+	if g.finished:
 		return
-	for j in g.right.size():
-		if _right_rect(j).has_point(ev.position):
-			if not g.link(_sel, j):
-				_wrong = Vector2i(_sel, j)
-				_wrong_t = 0.8
-				_msg.text = t("ui.mini.pattern.wrong")
-				GameData.vibrate()
+	if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:
+		if ev.pressed:
+			var i := _root_under(ev.position)
+			if i >= 0:
+				_drag = i
+				_drag_pos = ev.position
 			else:
-				_msg.text = ""
-			_sel = -1
+				g.shoot(_norm(ev.position))
+		elif _drag >= 0:
+			var i := _drag
+			_drag = -1
+			var k := _word_under(ev.position)
+			var drop := _norm(ev.position)
+			drop.y = minf(drop.y, RootLinkGame.ROAM_BOTTOM)
+			if not g.place(i, k, drop):
+				g.place(i, -1, drop)
 			changed()
-			return
+	elif ev is InputEventMouseMotion and _drag >= 0:
+		_drag_pos = ev.position
 
 
-func tick(delta: float) -> void:
-	if _wrong_t > 0.0:
-		_wrong_t -= delta
-		if _wrong_t <= 0.0:
-			_wrong = Vector2i(-1, -1)
-		_canvas.queue_redraw()
-
-
-func refresh() -> void:
+func tick(_d: float) -> void:
+	var g := game as RootLinkGame
+	var n := g.sprouted.count(true)
+	if n > _seen_sprouts:
+		_seen_sprouts = n
+		_msg.text = t("ui.mini.pattern.sprout").format({"n": n, "max": g.targets.size()})
+		GameData.vibrate(true)
 	_canvas.queue_redraw()
 
 
-func _draw_links() -> void:
+func show_review() -> bool:
+	var g := game as RootLinkGame
+	_drag = -1
+	if g.complete():
+		return false
+	_review = true
+	_msg.text = t("ui.mini.pattern.review")
+	_canvas.queue_redraw()
+	return true
+
+
+func _draw_root_card(c: Vector2, root: String, meaning: String, bg: Color, alpha := 1.0) -> void:
+	var font := ThemeDB.fallback_font
+	var r := Rect2(c - ROOT / 2, ROOT)
+	_canvas.draw_style_box(UiKit.box(Color(bg, alpha), 20, 3), r)
+	_canvas.draw_string(font, r.position + Vector2(4, 22), root, HORIZONTAL_ALIGNMENT_CENTER, ROOT.x - 8, 18, Color(UiKit.INK, alpha))
+	_canvas.draw_string(font, r.position + Vector2(4, 42), meaning, HORIZONTAL_ALIGNMENT_CENTER, ROOT.x - 8, 15, Color(UiKit.INK.lightened(0.2), alpha))
+
+
+func _draw_board() -> void:
 	var g := game as RootLinkGame
 	var font := ThemeDB.fallback_font
-	for a in g.linked:
-		_canvas.draw_line(_left_rect(a).get_center() + Vector2(LEFT_W / 2, 0), _right_rect(g.linked[a]).get_center() - Vector2(RIGHT_W / 2, 0), UiKit.GOOD, 6)
-	if _wrong.x >= 0:
-		_canvas.draw_line(_left_rect(_wrong.x).get_center() + Vector2(LEFT_W / 2, 0), _right_rect(_wrong.y).get_center() - Vector2(RIGHT_W / 2, 0), UiKit.BAD, 6)
-	for i in g.left.size():
-		var bg := UiKit.GOOD.lightened(0.45) if g.linked.has(i) else (UiKit.ACCENT.lightened(0.45) if i == _sel else UiKit.SKY)
-		_canvas.draw_style_box(UiKit.box(bg, 24), _left_rect(i))
-		_canvas.draw_string(font, _left_rect(i).position + Vector2(0, 48), g.words[g.left[i]].id, HORIZONTAL_ALIGNMENT_CENTER, LEFT_W, 28, UiKit.INK)
-	for j in g.right.size():
-		var done := j in g.linked.values()
-		_canvas.draw_style_box(UiKit.box(UiKit.GOOD.lightened(0.45) if done else UiKit.APRICOT.lightened(0.3), 24), _right_rect(j))
-		_canvas.draw_string(font, _right_rect(j).position + Vector2(14, 46), RootLinkGame.etym_text(g.words[g.right[j]]), HORIZONTAL_ALIGNMENT_LEFT, RIGHT_W - 28, 20, UiKit.INK)
+	var S := _canvas.size
+	_canvas.draw_rect(Rect2(Vector2.ZERO, Vector2(S.x, S.y * (RootLinkGame.ROAM_BOTTOM + 0.04))), Color("e9e1f2"))
+	_canvas.draw_rect(Rect2(0, S.y * (RootLinkGame.ROAM_BOTTOM + 0.04), S.x, S.y), Color("efe4cf"))
+	# 단어, 뿌리 선, 새싹
+	for k in g.targets.size():
+		var w := g.words[g.targets[k]]
+		var r := _card_rect(k)
+		var root_col := Color("8a6a40")
+		for s in g.slots(k):
+			var e := _slot_pos(k, s)
+			var a := Vector2(r.get_center().x, r.end.y)
+			_canvas.draw_polyline([a, a.lerp(e, 0.5) + Vector2(0, 8), e - Vector2(0, ROOT.y / 2)], root_col, 4)
+			_canvas.draw_arc(e, 22, 0, TAU, 20, Color(root_col, 0.35), 2)
+		if g.sprouted[k]:
+			var top := Vector2(r.get_center().x, r.position.y)
+			if not Art.draw(_canvas, "mini", "sprout", top - Vector2(0, 26), Vector2(60, 60)):
+				_canvas.draw_line(top, top - Vector2(0, 34), UiKit.GOOD.darkened(0.2), 4)
+				_canvas.draw_circle(top + Vector2(-12, -34), 11, UiKit.GOOD)
+				_canvas.draw_circle(top + Vector2(12, -38), 11, UiKit.GOOD)
+		var bg := UiKit.GOOD.lightened(0.45) if g.sprouted[k] else (UiKit.PINK.lightened(0.3) if _review else UiKit.SKY)
+		_canvas.draw_style_box(UiKit.box(bg, 20), r)
+		_canvas.draw_string(font, r.position + Vector2(4, 30), w.id, HORIZONTAL_ALIGNMENT_CENTER, CARD.x - 8, 26, UiKit.INK)
+		_canvas.draw_string(font, r.position + Vector2(4, 56), w.meaning, HORIZONTAL_ALIGNMENT_CENTER, CARD.x - 8, 16, UiKit.INK.lightened(0.2))
+		if _review and not g.sprouted[k]:  # 정답 어원을 뿌리 끝에 보여 준다
+			for s in w.etym.size():
+				var e2 := _slot_pos(k, s)
+				_draw_root_card(e2, "✔ " + String(w.etym[s].get("root", "")), String(w.etym[s].get("meaning", "")), UiKit.PINK.lightened(0.2))
+	# 어원
+	for i in g.roots.size():
+		var ro: Dictionary = g.roots[i]
+		var c := _root_pos(i)
+		if ro["state"] == "roam":
+			if not Art.draw(_canvas, "mini", "root_wisp", c, ROOT + Vector2(30, 20)):
+				_draw_root_card(c, ro["root"], ro["meaning"], UiKit.APRICOT.lightened(0.3))
+			else:
+				_canvas.draw_string(font, c + Vector2(-ROOT.x / 2, 0), ro["root"], HORIZONTAL_ALIGNMENT_CENTER, ROOT.x, 20, UiKit.INK)
+		elif ro["state"] == "down":
+			_draw_root_card(c, "💫 " + String(ro["root"]), ro["meaning"], Color("d8d2c8"), 0.95)
+		else:
+			if _review and not g.sprouted[ro["at"]]:
+				continue  # 정답 어원이 그 자리에 대신 나온다
+			var bad: bool = _review and ro["owner"] != g.targets[ro["at"]]
+			_draw_root_card(c, ro["root"], ro["meaning"], UiKit.BAD.lightened(0.4) if bad else Color("f6e7c8"))
+	# 활과 화살
+	var bow := _px(RootLinkGame.BOW)
+	_canvas.draw_arc(bow, 34, PI / 2, PI * 1.5, 16, Color("6b4a2f"), 5)
+	_canvas.draw_line(bow + Vector2(0, -34), bow + Vector2(0, 34), UiKit.INK, 1)
+	for a in g.arrows:
+		var p := _px(a["pos"])
+		var d := (_px(a["to"]) - _px(RootLinkGame.BOW)).normalized()
+		_canvas.draw_line(p - d * 30, p, UiKit.INK, 3)
+		_canvas.draw_colored_polygon([p + d * 10, p + d.orthogonal() * 6, p - d.orthogonal() * 6], UiKit.INK)
+	if _review:
+		return
+	_canvas.draw_string(font, Vector2(S.x - 330, S.y - 8), t("ui.mini.pattern.left").format({"n": g.sprouted.count(true), "max": g.targets.size()}),
+		HORIZONTAL_ALIGNMENT_RIGHT, 320, 20, UiKit.INK)

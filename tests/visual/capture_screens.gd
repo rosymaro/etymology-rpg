@@ -98,6 +98,25 @@ func _run() -> void:
 			mv._flip(0)
 			mv._flip(1)
 			await _shot("%d_mini_trap_open" % n)
+		if g["id"] == "pattern":
+			var pv := main.current() as PatternView
+			var pg := pv.game as RootLinkGame
+			for k in 2:
+				for ro in pg.roots:
+					if ro["owner"] == pg.targets[k]:
+						ro["state"] = "down"
+						pg.place(pg.roots.find(ro), k)
+			for ro in pg.roots:
+				if ro["state"] == "roam":
+					ro["state"] = "down"
+					ro["down_t"] = 99.0
+					break
+			pg.shoot(Vector2(0.3, 0.2))
+			await get_tree().create_timer(0.3).timeout
+			await _shot("%d_mini_pattern_play" % n)
+			pv._quit()
+			await get_tree().create_timer(0.5).timeout
+			await _shot("%d_mini_pattern_review" % n)
 		if g["id"] == "guard":
 			((main.current() as MinigameScreen).game as GuardGame).spawn_climber()
 			await get_tree().create_timer(3.0).timeout
