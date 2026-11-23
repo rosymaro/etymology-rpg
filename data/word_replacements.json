@@ -1,0 +1,105 @@
+{
+ "_doc": "단어장 앱이 일부러 뺀 성인·비속어 25개를 같은 자리(차수·유닛·부위·속성·트리·스테이지)에서 바꿀 단어. tools/assign/replace_words.py가 words_v2_plan.csv에 적용한다. 새 단어의 뜻·어원은 data/words_supplement.json",
+ "pairs": [
+  {
+   "old": "damn",
+   "new": "amen"
+  },
+  {
+   "old": "ass",
+   "new": "foal"
+  },
+  {
+   "old": "pornography",
+   "new": "iconography"
+  },
+  {
+   "old": "threesome",
+   "new": "triplet"
+  },
+  {
+   "old": "pussy",
+   "new": "whisker"
+  },
+  {
+   "old": "shit",
+   "new": "droppings"
+  },
+  {
+   "old": "whore",
+   "new": "confidant"
+  },
+  {
+   "old": "slut",
+   "new": "aristocrat"
+  },
+  {
+   "old": "hooker",
+   "new": "matchmaker"
+  },
+  {
+   "old": "porn",
+   "new": "lullaby"
+  },
+  {
+   "old": "bum",
+   "new": "chaperone"
+  },
+  {
+   "old": "kinky",
+   "new": "indigestion"
+  },
+  {
+   "old": "masturbation",
+   "new": "respiration"
+  },
+  {
+   "old": "fart",
+   "new": "burp"
+  },
+  {
+   "old": "cock",
+   "new": "drake"
+  },
+  {
+   "old": "horny",
+   "new": "antler"
+  },
+  {
+   "old": "bastard",
+   "new": "stepchild"
+  },
+  {
+   "old": "crap",
+   "new": "gibberish"
+  },
+  {
+   "old": "crappy",
+   "new": "shoddy"
+  },
+  {
+   "old": "bitch",
+   "new": "grumble"
+  },
+  {
+   "old": "orgy",
+   "new": "festivity"
+  },
+  {
+   "old": "piss",
+   "new": "drool"
+  },
+  {
+   "old": "pimp",
+   "new": "middleman"
+  },
+  {
+   "old": "brothel",
+   "new": "sanatorium"
+  },
+  {
+   "old": "butt",
+   "new": "kneecap"
+  }
+ ]
+}

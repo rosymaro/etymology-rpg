@@ -22,6 +22,8 @@ def main():
     vw = json.load(open(os.path.join(a.vocab, 'app/src/main/assets/data/words.json'), encoding='utf-8'))['words']
     vr = json.load(open(os.path.join(a.vocab, 'app/src/main/assets/data/roots.json'), encoding='utf-8'))['roots']
     V = {w['word']: w for w in vw}; R = {r['id']: r for r in vr}
+    # 단어장 앱에 없는 단어(비속어 자리를 바꾼 25개)는 게임 저장소의 보충 파일에서
+    sup = {w['word']: w for w in json.load(open(os.path.join(ROOT, 'data/words_supplement.json'), encoding='utf-8'))['words']}
     skill_roots = [s[0] for s in skills.S]
     # 단어장 어근 id → 스킬 어근 이름(modernEnglishForms에 그 이름이 있으면)
     to_skill = {}
@@ -37,7 +39,8 @@ def main():
     out = []; missing = []
     for r in rows:
         v = V.get(r['word'])
-        if v is None: missing.append(r['word'])
+        s = sup.get(r['word'])
+        if v is None and s is None: missing.append(r['word'])
         tier = 0 if r['차수'] == '보스' else int(r['차수'])
         roots = [x['rootId'] for x in (v['roots'] if v else [])]
         sk = sorted({to_skill[x] for x in roots if x in to_skill})
@@ -55,9 +58,9 @@ def main():
             'stage': int(r['스테이지']) if r['스테이지'] else 0,
             'obtain': OBTAIN.get(r['얻는 방법'], ''),
             'skill_roots': sk,
-            'etym': [{'root': R[x['rootId']]['root'] if x['rootId'] in R else x['rootId'], 'meaning': x.get('derivedMeaning', '')} for x in (v['roots'] if v else [])],
-            'example': (v or {}).get('example', {}),
-            'ipa': (v or {}).get('ipa', ''),
+            'etym': [{'root': R[x['rootId']]['root'] if x['rootId'] in R else x['rootId'], 'meaning': x.get('derivedMeaning', '')} for x in (v['roots'] if v else [])] if v else (s or {}).get('roots', []),
+            'example': (v or s or {}).get('example', {}),
+            'ipa': (v or s or {}).get('ipa', ''),
         })
     os.makedirs(os.path.join(ROOT, 'data/game'), exist_ok=True)
     json.dump({'version': 1, 'source': 'words_v2_plan.csv + etymology-english-vocabulary', 'words': out},
@@ -65,7 +68,8 @@ def main():
     fam = {s: f for f, v in FAM.items() for s in v.split()}
     json.dump({'version': 1, 'roots': [{'id': s, 'family': fam[s], 'tier': t} for s, t, _ in skills.S]},
               open(os.path.join(ROOT, 'data/game/skill_roots.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    print('words', len(out), 'missing in vocab', len(missing), 'with skill roots', sum(1 for o in out if o['skill_roots']))
+    assert not missing, ('뜻·어원이 없는 단어', missing)
+    print('words', len(out), 'missing', len(missing), 'with skill roots', sum(1 for o in out if o['skill_roots']))
 
 if __name__ == '__main__':
     main()

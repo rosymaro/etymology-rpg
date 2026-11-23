@@ -26,8 +26,9 @@ godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs 
 3. 고정 디버그 키스토어의 지문을 `keystore/debug.sha256`과 비교한다.
 4. `export_presets.cfg`의 "Android" 설정으로 APK를 만들고, APK 서명 지문을 다시 비교한다.
 5. APK를 Actions 결과물(`etymology-rpg-debug-apk`)로 올린다.
+6. `main`에 들어오거나 수동 실행(workflow_dispatch)하면 **`debug-latest` 릴리스**의 APK를 새것으로 바꾼다(단어장 앱과 같은 방식). PR에서는 릴리스를 건드리지 않는다.
 
-폰에는 Actions 실행 화면에서 결과물을 내려받아 설치한다. 처음 한 번만 '알 수 없는 앱 설치'를 허용하면 된다.
+폰에서는 저장소의 Releases → `debug-latest`에서 `etymology-rpg-debug.apk`를 받아 설치한다. 처음 한 번만 '알 수 없는 앱 설치'를 허용하면 된다.
 
 ## 고정 디버그 키스토어
 
