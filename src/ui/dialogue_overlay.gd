@@ -8,6 +8,7 @@ var _done: Callable
 var _name: Label
 var _text: Label
 var _title: Label
+var _face: TextureRect
 
 
 func play(scene_id: String, done: Callable) -> void:
@@ -39,8 +40,17 @@ func _build(scene: Dictionary) -> void:
 	box.anchor_top = 0.66
 	box.anchor_bottom = 0.96
 	add_child(box)
+	var row := UiKit.hbox(14)
+	box.add_child(row)
+	_face = TextureRect.new()
+	_face.custom_minimum_size = Vector2(150, 150)
+	_face.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_face.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_face.visible = false
+	row.add_child(_face)
 	var v := UiKit.vbox(6)
-	box.add_child(v)
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(v)
 	_name = UiKit.label("", 24, UiKit.ACCENT.darkened(0.2))
 	v.add_child(_name)
 	_text = UiKit.wrap(UiKit.label("", 28))
@@ -60,6 +70,11 @@ func _show() -> void:
 	var ln: Dictionary = _lines[_i]
 	var sp: String = ln.get("speaker", "narr")
 	_name.text = "" if sp == "narr" else GameData.say("name.char." + sp)
+	var face := Art.tex("face", sp + "_" + str(ln.get("face", "normal")))
+	if face == null:
+		face = Art.tex("face", sp + "_normal")
+	_face.texture = face
+	_face.visible = face != null
 	_text.text = GameData.say(ln["text"])
 
 

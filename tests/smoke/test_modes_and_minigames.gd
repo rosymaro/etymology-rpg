@@ -73,7 +73,7 @@ func test_order_view_play_and_story_reward_goes_through_quiz() -> void:
 	assert_not_null(scr)
 	var g := scr.game as OrderGame
 	var first := g.current_word()
-	g.pick(g.belt.find(first))
+	g.pick(g.belt_ids().find(first))
 	scr.changed()
 	scr._quit()
 	await wait_seconds(0.9)

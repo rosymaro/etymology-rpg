@@ -221,37 +221,44 @@ func _act() -> void:
 
 func _draw() -> void:
 	var o := -_cam
-	draw_rect(Rect2(o, Vector2(TOWN_W, WORLD.y)), Color("f3ead8"))
-	draw_rect(Rect2(o + Vector2(TOWN_W, 0), Vector2(WORLD.x - TOWN_W, WORLD.y)), Color("d8eec9"))
+	if not Art.draw(self, "map", "s01_world", o + WORLD / 2, WORLD):
+		draw_rect(Rect2(o, Vector2(TOWN_W, WORLD.y)), Color("f3ead8"))
+		draw_rect(Rect2(o + Vector2(TOWN_W, 0), Vector2(WORLD.x - TOWN_W, WORLD.y)), Color("d8eec9"))
 	# 울타리와 문
 	draw_line(o + Vector2(TOWN_W, 0), o + Vector2(TOWN_W, GATE.x), UiKit.INK, 8)
 	draw_line(o + Vector2(TOWN_W, GATE.y), o + Vector2(TOWN_W, WORLD.y), UiKit.INK, 8)
 	for d in _decor:
-		draw_circle(o + d, 10, Color("a9d59a"))
-		draw_circle(o + d + Vector2(8, -6), 3, UiKit.PINK)
+		if not Art.draw(self, "map", "grass_tuft", o + d, Vector2(40, 40)):
+			draw_circle(o + d, 10, Color("a9d59a"))
+			draw_circle(o + d + Vector2(8, -6), 3, UiKit.PINK)
 	var font := ThemeDB.fallback_font
 	for sp in _spots:
 		var p: Vector2 = o + sp["pos"]
 		var col: Color = sp["color"]
 		if sp["id"] == "boss" and main.flow.seen("boss_s01"):
 			col = UiKit.LEAF
-		draw_circle(p, 54, col)
-		draw_arc(p, 54, 0, TAU, 40, UiKit.INK, 4)
+		var art_id: String = "boss_gate_open" if sp["id"] == "boss" and main.flow.seen("boss_s01") else str(sp["id"])
+		if not Art.draw(self, "building", art_id, p, Vector2(160, 160)):
+			draw_circle(p, 54, col)
+			draw_arc(p, 54, 0, TAU, 40, UiKit.INK, 4)
 		draw_string(font, p + Vector2(-80, 86), t(sp["key"]), HORIZONTAL_ALIGNMENT_CENTER, 160, 22, UiKit.INK)
 	for e in _enemies:
 		var p: Vector2 = o + e["pos"]
+		if Art.draw(self, "enemy", "field_wanderer", p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
+			continue
 		draw_circle(p, ENEMY_R, Color("c7b8e0"))
 		draw_arc(p, ENEMY_R, 0, TAU, 32, UiKit.INK, 3)
 		draw_circle(p + Vector2(-9, -4), 3, UiKit.INK)
 		draw_circle(p + Vector2(9, -4), 3, UiKit.INK)
 	# 주인공과 칭호 리본(04-meta.md 5절)
 	var h := o + _hero
-	draw_circle(h, HERO_R, Color("fff3c4"))
-	draw_arc(h, HERO_R, 0, TAU, 32, UiKit.INK, 4)
-	draw_circle(h + Vector2(-9, -3), 3.5, UiKit.INK)
-	draw_circle(h + Vector2(9, -3), 3.5, UiKit.INK)
-	draw_circle(h + Vector2(-15, 6), 5, UiKit.PINK)
-	draw_circle(h + Vector2(15, 6), 5, UiKit.PINK)
+	if not Art.draw(self, "hero", "look0", h + Vector2(0, -12), Vector2(HERO_R * 3.2, HERO_R * 3.6)):
+		draw_circle(h, HERO_R, Color("fff3c4"))
+		draw_arc(h, HERO_R, 0, TAU, 32, UiKit.INK, 4)
+		draw_circle(h + Vector2(-9, -3), 3.5, UiKit.INK)
+		draw_circle(h + Vector2(9, -3), 3.5, UiKit.INK)
+		draw_circle(h + Vector2(-15, 6), 5, UiKit.PINK)
+		draw_circle(h + Vector2(15, 6), 5, UiKit.PINK)
 	var tag := t("name.title.none")
 	draw_rect(Rect2(h + Vector2(-60, -64), Vector2(120, 26)), UiKit.PINK)
 	draw_string(font, h + Vector2(-60, -45), tag, HORIZONTAL_ALIGNMENT_CENTER, 120, 18, UiKit.INK)

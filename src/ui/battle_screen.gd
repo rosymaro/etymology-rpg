@@ -33,7 +33,12 @@ func open(args: Dictionary) -> void:
 	for i in _party.size():
 		var l := UiKit.label(UiKit.unit_name(_party[i]), 18)
 		var c := UiKit.card(UiKit.LEAF)
-		c.add_child(l)
+		var row := UiKit.hbox(6)
+		var face := Art.rect("unit", "u%02d" % _party[i], Vector2(48, 48))
+		if face:
+			row.add_child(face)
+		row.add_child(l)
+		c.add_child(row)
 		left.add_child(c)
 		_ally_cards.append(l)
 	var right := UiKit.vbox(8)
@@ -43,7 +48,12 @@ func open(args: Dictionary) -> void:
 		var e := _ctx.enemies[i]
 		var l := UiKit.label("%s Lv%d" % [e.word_id, e.level], 18)
 		var c := UiKit.card(UiKit.PINK if not e.is_boss else UiKit.ACCENT.lightened(0.5))
-		c.add_child(l)
+		var row := UiKit.hbox(6)
+		var face := Art.rect("boss", e.word_id, Vector2(48, 48)) if e.is_boss else Art.rect("enemy", "attr_%02d" % GameData.repo.get_word(e.word_id).primary_attr(), Vector2(48, 48))
+		if face:
+			row.add_child(face)
+		row.add_child(l)
+		c.add_child(row)
 		right.add_child(c)
 		_enemy_cards.append(l)
 	var mid := UiKit.hbox(60)

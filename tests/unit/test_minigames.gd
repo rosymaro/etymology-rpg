@@ -29,16 +29,33 @@ func _make(script: GDScript, key: String, n: int = 12, seed: int = 5) -> Minigam
 func test_order_right_card_earns_and_wrong_counts_miss() -> void:
 	var g := _make(OrderGame, "order") as OrderGame
 	var ans := g.current_word()
-	var right := g.belt.find(ans)
+	var right := g.belt_ids().find(ans)
 	assert_gt(right, -1, "답 카드는 늘 벨트에 있다")
 	assert_true(g.pick(right))
 	assert_eq(g.earned, [ans] as Array[String])
 	var wrong := -1
-	for i in g.belt.size():
-		if g.belt[i] != g.current_word():
+	for i in g.items.size():
+		if g.items[i]["id"] != g.current_word():
 			wrong = i
 	g.pick(wrong)
 	assert_eq(g.misses, 1)
+
+
+func test_order_cards_flow_left_to_right_and_answer_stays_on_belt() -> void:
+	var g := _make(OrderGame, "order") as OrderGame
+	var x0: float = g.items[0]["x"]
+	g.update(0.5)
+	assert_gt(g.items[0]["x"], x0, "카드는 오른쪽으로 흐른다")
+	for k in 60:
+		g.update(0.25)
+		if g.finished:
+			break
+		assert_true(g.current_word() in g.belt_ids())
+		var ids := g.belt_ids()
+		var uniq := {}
+		for id in ids:
+			uniq[id] = true
+		assert_eq(uniq.size(), ids.size(), "같은 카드가 두 장 올라오지 않는다")
 
 
 func test_order_timeout_is_a_miss() -> void:

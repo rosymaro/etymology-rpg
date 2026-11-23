@@ -87,6 +87,9 @@ func _run() -> void:
 	for g in MinigameRegistry.games():
 		main.flow.play_minigame(g["id"], "free")
 		await _shot("%d_mini_%s" % [n, g["id"]])
+		if g["id"] == "order":
+			await get_tree().create_timer(1.5).timeout
+			await _shot("%d_mini_order_later" % n)
 		n += 1
 	main.flow.go_title()
 	await _shot("30_title_modes")

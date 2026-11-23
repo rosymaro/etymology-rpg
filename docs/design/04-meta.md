@@ -48,8 +48,8 @@
 
 ## 4. 그림 파일 바꿔 넣기
 
-- 그림은 `assets/art/<종류>/<id>.png`에 둔다(예: `assets/art/unit/u01_idle.png`, `assets/art/hero/look3.png`).
-- 코드는 id로만 그림을 찾는다. 같은 이름으로 덮어쓰면 바로 바뀐다.
+- 그림은 `assets/art/<종류>/<id>.png`에 둔다(예: `assets/art/unit/u01.png`, `assets/art/hero/look3.png`). 파일 목록·크기·우선순위는 [assets/art/README.md](../../assets/art/README.md).
+- 코드는 id로만 그림을 찾고(`src/ui/art.gd`), 파일이 없으면 임시 도형을 그린다. 그래서 그림을 하나 넣을 때마다 그 자리만 바뀐다.
 - AI로 만들 때 쓴 프롬프트는 `assets/art/PROMPTS.md`에 남긴다. 그림 방향은 [art-direction.md](art-direction.md)를 따른다.
 
 ## 5. 칭호

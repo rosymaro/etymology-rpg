@@ -54,6 +54,7 @@ func _draw_board() -> void:
 		for c in g.size:
 			var ctr := Vector2(c * CELL + CELL / 2, r * CELL + CELL / 2)
 			var k: int = g.board[r][c]
-			_canvas.draw_circle(ctr, CELL * 0.4, Color(FISH[k % FISH.size()]))
-			_canvas.draw_arc(ctr, CELL * 0.4, 0, TAU, 24, UiKit.INK, 3 if Vector2i(r, c) != _sel else 7)
-			_canvas.draw_circle(ctr + Vector2(10, -6), 4, UiKit.INK)
+			if not Art.draw(_canvas, "mini", "fish_%d" % k, ctr, Vector2(CELL, CELL) * 0.9):
+				_canvas.draw_circle(ctr, CELL * 0.4, Color(FISH[k % FISH.size()]))
+				_canvas.draw_circle(ctr + Vector2(10, -6), 4, UiKit.INK)
+			_canvas.draw_arc(ctr, CELL * 0.4, 0, TAU, 24, UiKit.INK if Vector2i(r, c) != _sel else UiKit.ACCENT, 3 if Vector2i(r, c) != _sel else 7)
