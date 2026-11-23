@@ -23,7 +23,7 @@ func build() -> void:
 	_canvas.offset_bottom = -10
 	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	_canvas.draw.connect(_draw_ground)
-	_canvas.gui_input.connect(_input)
+	_canvas.gui_input.connect(_on_canvas_input)
 	body.add_child(_canvas)
 	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.INK), 760)
 	_msg.position = Vector2(30, 6)
@@ -57,7 +57,7 @@ func _trap_rect(p: Vector2) -> Rect2:
 	return Rect2(_px(p) - TRAP / 2, TRAP)
 
 
-func _input(ev: InputEvent) -> void:
+func _on_canvas_input(ev: InputEvent) -> void:
 	var g := game as TrapGame
 	if g.finished or g.phase == "hunt":
 		return

@@ -65,6 +65,9 @@ static func button(text: String, on_press: Callable, bg: Color = APRICOT, size: 
 static func card(bg: Color = PAPER) -> PanelContainer:
 	var p := PanelContainer.new()
 	p.add_theme_stylebox_override("panel", box(bg))
+	# PanelContainer는 기본으로 누름을 삼킨다(STOP). 카드는 그림일 뿐이므로 뒤(부모)로 넘긴다.
+	# 예: 대화 상자 위를 눌러도 대화가 넘어가야 한다.
+	p.mouse_filter = Control.MOUSE_FILTER_PASS
 	return p
 
 

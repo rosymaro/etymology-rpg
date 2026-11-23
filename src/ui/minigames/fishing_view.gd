@@ -29,7 +29,7 @@ func build() -> void:
 	_canvas.offset_bottom = -12
 	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	_canvas.draw.connect(_draw_water)
-	_canvas.gui_input.connect(_input)
+	_canvas.gui_input.connect(_on_canvas_input)
 	body.add_child(_canvas)
 	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.INK), 900)
 	_msg.position = Vector2(40, 60)
@@ -49,7 +49,7 @@ func _note_pos(d: int, k: float) -> Vector2:
 	return _center() + Vector2(cos(a), sin(a)) * FIGHT_R * k
 
 
-func _input(ev: InputEvent) -> void:
+func _on_canvas_input(ev: InputEvent) -> void:
 	if not (ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT):
 		return
 	var g := game as FishingGame

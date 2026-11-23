@@ -4,7 +4,7 @@ extends Minigame
 ## 1. 누르고 있으면 그 자리에 찌를 던진다. 가장 가까운 물고기가 다가와 입질하면 큰 원이 점점 줄어든다.
 ## 2. 원이 작아졌을 때(hook_ring 이하) 손을 떼면 걸린다 → 싸움. 너무 일찍 떼면 달아나고, 원이 다 줄면 미끼만 먹고 간다.
 ## 3. 싸움: 물고기 둘레 6방향에 원이 있다. 물고기에서 점이 6개 중 하나로 날아가고, 원에 닿을 때 그 원을 누른다(리듬 게임).
-##    미끼와 뜻이 맞는 물고기는 need_match번만 맞히면 잡힌다. 뜻이 틀린 물고기는 notes개를 모두 맞혀야 잡힌다.
+##    점 notes개가 모두 지나간 뒤 맞힌 수로 판정한다. 뜻이 맞는 물고기는 need_match번, 틀린 물고기는 need_hard번 이상 맞히면 잡힌다.
 ## 잡으면 그 단어 1개, 놓치면 실수(max_miss번이면 끝). 판마다 물고기 수는 같다(cfg.fish). 좌표는 0~1 비율.
 
 const DIRS := 6
@@ -117,7 +117,7 @@ func _start_fight(w: int) -> void:
 
 
 func need() -> int:
-	return int(cfg["need_match"]) if match_ else int(cfg["notes"])
+	return int(cfg["need_match"]) if match_ else int(cfg.get("need_hard", cfg["notes"]))
 
 
 func note_time() -> float:
@@ -140,10 +140,8 @@ func _judge_note(ok: bool) -> void:
 	if ok:
 		hits += 1
 	_gap = float(cfg["note_gap"])
-	if hits >= need():
-		_end_fight(true)
-	elif hits + notes_left < need():
-		_end_fight(false)
+	if notes_left <= 0:  # 점이 모두 지나간 뒤 맞힌 수로 판정(하나 틀려도 끝까지 한다)
+		_end_fight(hits >= need())
 
 
 func _end_fight(caught: bool) -> void:

@@ -27,7 +27,7 @@ func build() -> void:
 	_canvas.offset_bottom = -90
 	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	_canvas.draw.connect(_draw_desk)
-	_canvas.gui_input.connect(_input)
+	_canvas.gui_input.connect(_on_canvas_input)
 	body.add_child(_canvas)
 	var h := UiKit.hbox()
 	body.add_child(h)
@@ -61,7 +61,7 @@ func _tile_rect(i: int) -> Rect2:
 	return _slot_rect(k) if k >= 0 else _tray_rect(i)
 
 
-func _input(ev: InputEvent) -> void:
+func _on_canvas_input(ev: InputEvent) -> void:
 	var g := game as AnagramGame
 	if g.finished:
 		return

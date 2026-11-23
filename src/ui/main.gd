@@ -14,6 +14,8 @@ func _ready() -> void:
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_overlay.z_index = 10
 	add_child(_overlay)
+	var marker := TouchMarker.new()
+	add_child(marker)
 	flow = GameFlow.new(self)
 	flow.start()
 	for a in OS.get_cmdline_user_args():
