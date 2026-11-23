@@ -146,10 +146,10 @@ ui.mini.rule.order,주문서의 뜻에 맞는 단어 카드를 시간 안에 눌
 ui.mini.rule.trap,엎어 둔 덫을 두 개씩 열어요. 영어 단어와 그 뜻이 짝이면 덫에 걸려요.
 ui.mini.rule.search,글자 격자에서 가로·세로·대각선으로 숨은 단어를 찾아요. 10초마다 필요 없는 글자가 하나씩 사라져요.
 ui.mini.rule.kite,"타일을 눌러 돌려요. 오른쪽 뜻 5개에 맞는 단어를 모두 지나고, 함정 단어는 피해서 연에서 하늘까지 이어요."
-ui.mini.rule.fishing,낚싯줄에 걸린 영어 단어의 뜻이 적힌 물고기를 눌러 낚아요. 3번 틀리면 끝나요.
+ui.mini.rule.fishing,"뜻이 맞는 물고기를 눌러 채요. 누르고 있으면 막대가 올라가요. 물고기를 막대 안에 두세요."
 ui.mini.rule.copy,섞인 글자를 바른 순서로 눌러 철자를 맞춰요.
 ui.mini.rule.wheel,두 고리를 돌려 수문 세 곳에서 단어와 뜻을 맞춘 뒤 수문을 열어요. 바퀴마다 두 번까지예요.
-ui.mini.rule.guard,"성문에 온 단어와 뜻이 맞는 짝이면 통과, 틀린 짝이면 막아요. 3번 틀리면 끝나요."
+ui.mini.rule.guard,"뜻이 맞는 손님은 비켜 주고, 틀린 손님과 담 넘는 단어는 막아요. 3번 틀리면 끝나요."
 ui.mini.rule.ore,화면을 그어 광맥 무늬와 같은 광석만 깨요. 다른 광석을 깨면 연속이 끊겨요.
 ui.mini.rule.pattern,"왼쪽 단어를 누르고, 그 단어의 갈라진 말뿌리(어원)를 오른쪽에서 눌러 이어요."
 ui.mini.trap.closed,덫
@@ -158,16 +158,22 @@ ui.mini.search.answer,✗ {word}  {meaning} (판에 분홍색으로 표시)
 ui.mini.kite.goal,이 뜻의 단어를 모두 지나요 (함정 3개는 피하기)
 ui.mini.kite.trap,함정 단어를 지났어요! 다른 길로 돌려 봐요.
 ui.mini.kite.missing,아직 지나지 않은 정답 단어가 있어요.
-ui.mini.fishing.hook,낚싯줄의 단어:
-ui.mini.fishing.wrong,아쉬워요. {word}의 뜻은 「{meaning}」이에요.
-ui.mini.guard.ask,이 단어와 뜻은 맞는 짝일까요?
-ui.mini.guard.pass,통과 (맞는 짝)
-ui.mini.guard.stop,막기 (틀린 짝)
 ui.mini.guard.wrong,틀렸어요. {word}의 뜻은 「{meaning}」이에요.
-ui.mini.guard.left,남은 손님 {n} · 실수 {miss}/{max}
 ui.mini.pattern.wrong,이 단어의 말뿌리가 아니에요.
 ui.mini.wheel.open,수문 열기 (남은 {n}번)
 ui.mini.wheel.next,다음 바퀴
 ui.mini.wheel.right,맞았어요! 물레방아가 한 바퀴 돌아요.
 ui.mini.wheel.wrong,수문이 안 열려요. {n}번 남았어요.
 ui.mini.wheel.lost,이번 바퀴는 놓쳤어요. 맞는 자리를 보여 줄게요.
+ui.mini.fishing.bait,미끼(뜻):
+ui.mini.fishing.fight_easy,뜻이 맞는 물고기예요! 막대가 커요.
+ui.mini.fishing.fight_hard,뜻이 다른 물고기예요. 거세게 버텨요!
+ui.mini.fishing.hold,누르고 있으면 막대가 올라가요
+ui.mini.fishing.caught,낚았어요! {word} = 「{meaning}」
+ui.mini.fishing.lost,놓쳤어요. {word}의 뜻은 「{meaning}」이에요.
+ui.mini.guard.gate,성문
+ui.mini.guard.me,나
+ui.mini.guard.ok,잘했어요. {word} = 「{meaning}」
+ui.mini.guard.climb_ok,담 넘는 {word}를 막았어요!
+ui.mini.guard.climb_miss,{word}가 담을 넘었어요!
+ui.mini.guard.miss,실수 {miss}/{max}

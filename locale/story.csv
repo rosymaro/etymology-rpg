@@ -203,7 +203,7 @@ story.s05.ki.003,여기가 내 고향이야. 이 항구를 지키는 게 내 꿈
 story.s05.ki.004,같이 가자! 나 힘세. 무거운 건 다 나한테 줘.
 story.s05.seung.title,낚시
 story.s05.seung.001,"안녕! 나 조잘. 들은 말은 다 적어 둬. 방금 네가 한 ""안녕""도."
-story.s05.seung.002,(미니게임 안내) 낚싯줄에 걸린 단어를 잘 봐. 그 뜻이 적힌 물고기를 낚아야 한다.
+story.s05.seung.002,(미니게임 안내) 뜻 미끼를 던지면 단어 물고기가 모여. 뜻이 맞는 놈을 채야 싸움이 쉽지.
 story.s05.town_offer.title,다 드려요
 story.s05.town_offer.001,짐꾼 할인! 아무거나 다 드려요. 이게 offer라던데?
 story.s05.town_offer.002,"형, 그건 그냥 다 주는 거잖아."
@@ -320,7 +320,7 @@ story.s08.seung.title,보초 서기
 story.s08.seung.001,……(꿈쩍도 안 한다)
 story.s08.seung.002,안 움직이면 내가 던져 줄까? 휙!
 story.s08.seung.003,…안 돼.
-story.s08.seung.004,"(미니게임 안내) 성문에 온 단어와 뜻이 맞는 짝이면 통과, 틀린 짝이면 막으세요!"
+story.s08.seung.004,"(미니게임 안내) 뜻이 맞는 손님은 비켜 주고, 틀린 손님과 담 넘는 놈은 막아서세요!"
 story.s08.town_stable.title,마구간
 story.s08.town_stable.001,stable이 튼튼하다는 뜻이라고? 마구간 아니었어?
 story.s08.town_stable.002_etym,"둘 다 맞아요! 마구간 stable도 stare, ""서다""에서 왔어요. 말이 서 있는 곳이니까요."

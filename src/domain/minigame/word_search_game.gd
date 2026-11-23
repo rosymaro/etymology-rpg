@@ -1,10 +1,10 @@
 class_name WordSearchGame
 extends Minigame
-## 3 망루 도서관 '책 읽기'(단어 찾기): 알파벳 격자에 가로·세로·대각선으로 숨은 단어를 찾는다. 뜻이 힌트.
+## 3 망루 도서관 '책 읽기'(단어 찾기): 알파벳 격자에 숨은 단어를 찾는다(오른쪽·아래·오른쪽 아래 방향만). 뜻이 힌트.
 ## 너무 어렵지 않게, fade_every초마다 정답에 쓰이지 않는 글자를 하나씩 지운다(지운 칸은 removed). 끝나면 화면이 못 찾은 답을 보여 준다.
 
-const DIRS := [Vector2i(0, 1), Vector2i(1, 0), Vector2i(1, 1), Vector2i(-1, 1),
-	Vector2i(0, -1), Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(1, -1)]
+## 왼쪽 → 오른쪽, 위 → 아래, 왼쪽 위 → 오른쪽 아래로만 숨긴다(거꾸로는 너무 어렵다, 사용자 의견).
+const DIRS := [Vector2i(0, 1), Vector2i(1, 0), Vector2i(1, 1)]
 
 var size: int
 var grid: Array = []  ## [row][col] 글자
