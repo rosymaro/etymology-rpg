@@ -53,6 +53,25 @@ func coin_terms(style: String, k: int, flips: Array[bool]) -> Stats:
 	return Stats.new()
 
 
+## 코인 항의 표기: 어느 능력치에 "+kCn"(앞면 1개마다 +k, 코인 n개 중)이 붙는지. coin_terms와 같은 규칙이다.
+## 돌려주는 값 {"atk": "+2C3", "hp": ""}. T는 뒷면 수로 센다는 뜻.
+func coin_notation(style: String, k: int, n: int) -> Dictionary:
+	match style:
+		"atk":
+			return {"atk": "+%dC%d" % [k, n], "hp": ""}
+		"hp":
+			return {"atk": "", "hp": "+%dC%d" % [2 * k, n]}
+		"skill":
+			return {"atk": "+%dC%d" % [k, maxi(1, n / 2)], "hp": ""}
+		"stable":
+			return {"atk": "+%dC1" % k, "hp": ""}
+		"tails":
+			return {"atk": "+%dT%d" % [k, n], "hp": ""}
+		"swing":
+			return {"atk": "+%dC%d" % [2 * k, n], "hp": "-%dC1" % k}
+	return {"atk": "", "hp": ""}
+
+
 ## 스킬이 발동하는 최소 앞면 수(unit.json skill_min_heads).
 func skill_min_heads(tier: String, n: int) -> int:
 	return Formula.int_value(_u["skill_min_heads"].get(tier, "n"), {"n": n})

@@ -59,6 +59,14 @@ func _run() -> void:
 	for i in 60:
 		await get_tree().process_frame
 	await _shot("09_battle")
+	var bs := main.current() as BattleScreen
+	if bs:
+		bs._skip = true
+		await get_tree().create_timer(1.0).timeout
+		await _shot("09_battle_end")
+		bs._a_box.show_base(true)
+		await _shot("09_battle_hold")
+		bs._a_box.show_base(false)
 	var r: Array = []
 	for i in 3:
 		r.append(gd.rules.gain_word(s, field[60 + i].id))
