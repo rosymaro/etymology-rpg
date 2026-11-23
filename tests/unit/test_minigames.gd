@@ -343,17 +343,75 @@ func test_guard_unit_moves_toward_finger_and_words_keep_coming() -> void:
 			assert_ne(w["shown"], g.words[w["w"]].meaning)
 
 
-func test_root_link_word_to_its_etymology() -> void:
+func _root_of(g: RootLinkGame, k: int, wrong := false) -> int:
+	for i in g.roots.size():
+		var r: Dictionary = g.roots[i]
+		if r["state"] != "placed" and ((r["owner"] == g.targets[k]) != wrong):
+			return i
+	return -1
+
+
+func _knock(g: RootLinkGame, i: int) -> void:
+	## 다른 어원을 길에서 치지 않도록, 과녁만 활 바로 위로 옮겨 둔다
+	g.roots[i]["vel"] = Vector2.ZERO
+	g.roots[i]["pos"] = RootLinkGame.BOW + Vector2(-0.05, -0.04)
+	g.shoot(g.roots[i]["pos"])
+	for _s in 60:
+		g.update(0.05)
+		if g.roots[i]["state"] == "down":
+			return
+
+
+func test_root_link_board_has_words_roots_and_decoys() -> void:
 	var g := _make(RootLinkGame, "pattern") as RootLinkGame
-	assert_eq(g.left.size(), int(cfg["pattern"]["pairs"]))
-	var a := 0
-	var right_b := g.right.find(g.left[a])
-	var wrong_b := (right_b + 1) % g.right.size()
-	assert_false(g.link(a, wrong_b))
-	assert_eq(g.misses, 1)
-	assert_true(g.link(a, right_b))
+	var pc: Dictionary = cfg["pattern"]
+	assert_eq(g.targets.size(), int(pc["pairs"]))
+	var need := 0
+	for k in g.targets.size():
+		need += g.slots(k)
+		assert_eq(g.slots(k), g.words[g.targets[k]].etym.size(), "어원 수만큼 뿌리 자리")
+	var decoys := g.roots.filter(func(r: Dictionary) -> bool: return r["owner"] == -1).size()
+	assert_eq(decoys, int(pc["decoys"]))
+	assert_eq(g.roots.size(), need + decoys)
+	for r in g.roots:
+		assert_ne(String(r["meaning"]), "", "어원에도 뜻이 적힌다")
+
+
+func test_root_link_shoot_drag_and_sprout() -> void:
+	var g := _make(RootLinkGame, "pattern") as RootLinkGame
+	var i := _root_of(g, 0)
+	assert_false(g.place(i, 0), "돌아다니는 어원은 끌 수 없다")
+	_knock(g, i)
+	assert_eq(g.roots[i]["state"], "down", "화살에 맞으면 쓰러진다")
+	assert_true(g.place(i, 0))
+	assert_false(g.sprouted[0], "어원 하나로는 아직")
+	var bad := _root_of(g, 0, true)
+	_knock(g, bad)
+	assert_true(g.place(bad, 0))
+	assert_false(g.sprouted[0], "틀린 어원이 섞이면 새싹이 안 오른다")
+	var extra := _root_of(g, 0)
+	_knock(g, extra)
+	assert_false(g.place(extra, 0), "뿌리 자리가 차면 더 못 놓는다")
+	assert_true(g.place(bad, -1, Vector2(0.5, 0.3)), "놓은 어원을 떼어 낼 수 있다")
+	assert_true(g.place(extra, 0))
+	assert_true(g.sprouted[0], "어원이 모두 맞으면 새싹")
 	assert_eq(g.score(), 1)
-	assert_string_contains(RootLinkGame.etym_text(g.words[g.left[a]]), " + ")
-	for i in g.left.size():
-		g.link(i, g.right.find(g.left[i]))
+	for k in range(1, g.targets.size()):
+		for _n in g.slots(k):
+			var j := _root_of(g, k)
+			_knock(g, j)
+			g.place(j, k)
+	assert_true(g.complete())
+	assert_true(g.finished, "새싹 5개면 완성")
+
+
+func test_root_link_knocked_root_gets_up_and_time_out_reviews() -> void:
+	var g := _make(RootLinkGame, "pattern") as RootLinkGame
+	var i := _root_of(g, 0)
+	_knock(g, i)
+	for _s in int(float(cfg["pattern"]["down_time"]) / 0.1) + 2:
+		g.update(0.1)
+	assert_eq(g.roots[i]["state"], "roam", "오래 두면 다시 달아난다")
+	g.update(float(cfg["pattern"]["duration"]) + 1.0)
 	assert_true(g.finished)
+	assert_false(g.complete(), "시간이 다 되면 미완성(정답을 보여 준다)")

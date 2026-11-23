@@ -49,6 +49,8 @@ blood, wounds, scary, text, letters, watermark, logo, existing game characters
 | `mini/guard_traveler.png` | a cute traveler holding a wide blank sign board for text, 240x110 |
 | `mini/guard_climber.png` | a sneaky cute figure carrying a ladder, blank space for text in the middle, 180x70 |
 | `mini/guard_unit.png` | a cute guard seen from behind holding a wide shield, blocking stance, 200x90 |
+| `mini/sprout.png` | a tiny two-leaf sprout popping up, 60x60 |
+| `mini/root_wisp.png` | a floating round root spirit with tiny root tendrils, empty pale space in the middle for text, 190x70 |
 | `mini/ore_vein.png` | a rounded ore rock with a shining vein, drawn in white and very light grey only |
 | `mini/ore_rock.png` | a plain grey round rock with a small grumpy face |
 | `ui/order_ticket.png` | a small paper order slip icon with a pin |

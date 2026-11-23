@@ -63,6 +63,10 @@ func test_hub_lists_ten_and_each_game_opens_and_ends() -> void:
 			assert_true((main.current() as SearchView)._review, "못 찾은 답을 판에 보여 준다")
 			(main.current() as MinigameScreen)._proceed()
 			await wait_physics_frames(2)
+		if main.current() is PatternView:
+			assert_true((main.current() as PatternView)._review, "끝나고 정답 어원을 보여 준다")
+			(main.current() as MinigameScreen)._proceed()
+			await wait_physics_frames(2)
 		assert_true(main.current() is MinigameResultScreen, "보상 없는 결과 화면: " + g["id"])
 
 
