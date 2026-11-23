@@ -8,6 +8,13 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: android-debug-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   GODOT_VERSION: 4.7.2
   GODOT_RELEASE: 4.7.2-stable
@@ -83,3 +90,18 @@ jobs:
         with:
           name: etymology-rpg-debug-apk
           path: build/etymology-rpg-debug.apk
+
+      # 단어장 앱과 같이: main에 들어오거나 수동 실행하면 'debug-latest' 릴리스의 APK를 새것으로 바꾼다.
+      # PR에서는 올리지 않는다(결과물로만 남김).
+      - name: Publish to debug-latest release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHORT_SHA=${GITHUB_SHA::7}
+          gh release delete debug-latest --yes --cleanup-tag || true
+          gh release create debug-latest build/etymology-rpg-debug.apk \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Debug ${GITHUB_REF_NAME} @ ${SHORT_SHA}" \
+            --notes "Branch: ${GITHUB_REF_NAME}, commit: ${GITHUB_SHA}. 고정 디버그 키로 서명되어 기존 설치 위에 덮어 설치된다."
