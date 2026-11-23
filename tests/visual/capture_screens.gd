@@ -150,8 +150,21 @@ func _run() -> void:
 			await get_tree().create_timer(1.2).timeout
 			await _shot("%d_mini_fishing_fight" % n)
 		if g["id"] == "order":
+			var og := (main.current() as MinigameScreen).game as OrderGame
+			var ow: int = og.shelf[0]
+			for it in og.items:
+				if it["w"] == ow and it["piece"] == 0:
+					it["d"] = 0.3
+					og.pick(it["uid"])
+					og.action = {"kind": "furnace"}
+					og.act()
+					break
+			og.go_pick(og.items[0]["uid"])
 			await get_tree().create_timer(1.5).timeout
 			await _shot("%d_mini_order_later" % n)
+		if g["id"] == "copy":
+			await get_tree().create_timer(9.0).timeout
+			await _shot("%d_mini_copy_later" % n)
 		n += 1
 	main.flow.go_title()
 	await _shot("30_title_modes")

@@ -5,7 +5,7 @@
       "id": "order",
       "stage": 1,
       "class": "OrderGame",
-      "borrow": "주문 처리(오버쿡드 시리즈)"
+      "borrow": "주문 처리(오버쿡드 시리즈) + 깨진 조각 맞추기"
     },
     {
       "id": "trap",
@@ -34,8 +34,8 @@
     {
       "id": "copy",
       "stage": 6,
-      "class": "AnagramGame",
-      "borrow": "애너그램(글자 섞기)"
+      "class": "MoatGame",
+      "borrow": "타워 디펜스(물길을 나눠 물레방아 활 돌리기)"
     },
     {
       "id": "wheel",

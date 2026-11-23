@@ -2,12 +2,14 @@
   "_doc": "미니게임 수치. 한 판 1~2분, 한 판 최대 max_words개(01-rpg-base '미니게임 규칙 1차'). 레벨 테스트하며 고친다",
   "max_words": 5,
   "order": {
-    "duration": 100,
-    "order_time": 16,
-    "belt_size": 4,
-    "max_miss": 3,
+    "duration": 150,
     "orders": 8,
-    "belt_speed": 0.09
+    "shelf": 3,
+    "belt_size": 12,
+    "belt_speed": 0.12,
+    "spawn_gap": 1.5,
+    "hero_speed": 0.75,
+    "max_miss": 3
   },
   "trap": {
     "words": 5,
@@ -50,10 +52,18 @@
     "hit_until": 1.25
   },
   "copy": {
-    "words": 5,
-    "min_len": 3,
-    "max_len": 10,
-    "tries": 2
+    "duration": 100.0,
+    "goal": 100,
+    "total_fire": 4.0,
+    "range": 0.22,
+    "arrow_speed": 1.4,
+    "hit_r": 0.04,
+    "spawn_start": 1.2,
+    "spawn_end": 0.42,
+    "speed_start": 0.09,
+    "speed_end": 0.2,
+    "tough_from": 0.35,
+    "lane_change": 6.0
   },
   "wheel": {
     "ring": 6,
@@ -117,12 +127,13 @@
   },
   "pool_size": 16,
   "_pool_doc": "한 판에 쓰는 단어 수(보상 후보). 그 마을 단어 중 아직 못 얻은 것부터",
-  "_order_doc": "belt_size = 벨트 위 카드 수, belt_speed = 1초에 벨트 길이의 몇 분의 1만큼 흐르는지(0.09면 약 11초에 끝까지)",
+  "_order_doc": "좌표는 0~1 비율. belt_speed = 벨트가 1초에 도는 거리(고리 둘레 약 2.1), shelf = 진열장 주문 칸 수, belt_size = 벨트 위 조각 수, spawn_gap = 창고에서 조각이 나오는 간격, hero_speed = 캐릭터 빠르기",
   "_search_doc": "fade_every = 몇 초마다 정답에 쓰이지 않는 글자를 하나씩 지우는지",
   "_kite_doc": "words = 정답 단어 수(뜻을 보여 줌), decoys = 함정 단어 수. 정답을 모두 지나고 함정을 지나지 않아야 성공. min_path = 정답 바람길이 지나는 최소 칸 수",
   "_wheel_doc": "tries = 바퀴마다 수문을 열어 볼 수 있는 횟수. 다 틀리면 답을 보여 주고 그 바퀴는 놓친다",
   "_guard_doc": "좌표는 0~1 비율. gate_every = 손님이 오는 간격(초), walk_time = 성문까지 걸리는 시간, climb_every/climb_time = 담 넘는 단어, unit_w = 내 유닛이 막는 폭, unit_speed = 1초에 움직이는 거리. climber_words = 담 넘는 단어(도둑·범죄자 단어)",
   "_fishing_doc": "좌표는 0~1 비율. bite_time = 입질 원이 다 주는 시간, hook_ring = 이 크기 이하에서 떼면 걸림, notes = 싸움에서 날아오는 점 수, need_match = 뜻이 맞을 때 맞혀야 할 수(틀리면 notes개 모두), note_time_* = 점이 원에 닿는 시간, hit_from~hit_until = 누르면 맞는 구간",
   "_pattern_doc": "좌표는 0~1 비율. decoys = 함정 어원 수, roam_speed = 어원이 돌아다니는 빠르기, arrow_speed = 화살 빠르기, hit_r = 맞는 거리, down_time = 쓰러져 있는 시간(지나면 다시 달아남), max_roots = 한 단어에 놓을 수 있는 어원 수(어원 수를 숨기려고 실제보다 많이 둔다)",
-  "_trap_doc": "좌표는 0~1 비율. period = 단어들이 길을 한 바퀴 도는 시간(사냥도 한 바퀴), catch_r = 덫에 걸리는 거리, hero_speed = 캐릭터 빠르기"
+  "_trap_doc": "좌표는 0~1 비율. period = 단어들이 길을 한 바퀴 도는 시간(사냥도 한 바퀴), catch_r = 덫에 걸리는 거리, hero_speed = 캐릭터 빠르기",
+  "_copy_doc": "해자 지키기. 좌표는 0~1 비율. goal = 잡아야 할 수(못 잡으면 단어 절반), total_fire = 물레방아 셋이 나눠 쓰는 1초 화살 수, range = 활 사정거리, spawn_* = 적이 나오는 간격(처음→끝), speed_* = 적 빠르기, tough_from = 이 진행부터 체력 2 적이 섞임, lane_change = 적이 몰리는 쪽이 바뀌는 간격"
 }

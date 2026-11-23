@@ -53,7 +53,7 @@ func dev_game() -> void:
 static func _views() -> Dictionary:
 	return {
 		"order": OrderView, "trap": TrapView, "search": SearchView, "kite": KiteView, "fishing": FishingView,
-		"copy": CopyView, "wheel": WheelView, "guard": GuardView, "ore": OreView, "pattern": PatternView,
+		"copy": MoatView, "wheel": WheelView, "guard": GuardView, "ore": OreView, "pattern": PatternView,
 	}
 
 
