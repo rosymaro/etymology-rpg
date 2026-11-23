@@ -26,15 +26,23 @@
     "cols": 6,
     "words": 5,
     "duration": 120,
-    "decoys": 3
+    "decoys": 3,
+    "min_path": 10
   },
   "fishing": {
+    "duration": 150,
     "questions": 10,
     "fish": 5,
     "max_miss": 3,
-    "speed_min": 60,
-    "speed_max": 130,
-    "duration": 120
+    "bar_easy": 0.34,
+    "bar_hard": 0.18,
+    "fish_easy": 0.35,
+    "fish_hard": 0.8,
+    "lift": 2.2,
+    "gravity": 1.6,
+    "fill": 0.35,
+    "drain": 0.25,
+    "start_progress": 0.3
   },
   "copy": {
     "words": 5,
@@ -54,10 +62,16 @@
     "tries": 2
   },
   "guard": {
-    "travelers": 12,
-    "true_chance": 0.5,
+    "duration": 120,
     "max_miss": 3,
-    "duration": 120
+    "true_chance": 0.5,
+    "gate_every": 4.5,
+    "walk_time": 5.0,
+    "climb_every": 7.0,
+    "climb_time": 4.0,
+    "unit_w": 0.16,
+    "gate_w": 0.14,
+    "unit_speed": 0.9
   },
   "ore": {
     "duration": 60,
@@ -76,6 +90,8 @@
   "_pool_doc": "한 판에 쓰는 단어 수(보상 후보). 그 마을 단어 중 아직 못 얻은 것부터",
   "_order_doc": "belt_size = 벨트 위 카드 수, belt_speed = 1초에 벨트 길이의 몇 분의 1만큼 흐르는지(0.09면 약 11초에 끝까지)",
   "_search_doc": "fade_every = 몇 초마다 정답에 쓰이지 않는 글자를 하나씩 지우는지",
-  "_kite_doc": "words = 정답 단어 수(뜻을 보여 줌), decoys = 함정 단어 수. 정답을 모두 지나고 함정을 지나지 않아야 성공",
-  "_wheel_doc": "tries = 바퀴마다 수문을 열어 볼 수 있는 횟수. 다 틀리면 답을 보여 주고 그 바퀴는 놓친다"
+  "_kite_doc": "words = 정답 단어 수(뜻을 보여 줌), decoys = 함정 단어 수. 정답을 모두 지나고 함정을 지나지 않아야 성공. min_path = 정답 바람길이 지나는 최소 칸 수",
+  "_wheel_doc": "tries = 바퀴마다 수문을 열어 볼 수 있는 횟수. 다 틀리면 답을 보여 주고 그 바퀴는 놓친다",
+  "_guard_doc": "좌표는 0~1 비율. gate_every = 손님이 오는 간격(초), walk_time = 성문까지 걸리는 시간, climb_every/climb_time = 담 넘는 단어, unit_w = 내 유닛이 막는 폭, unit_speed = 1초에 움직이는 거리",
+  "_fishing_doc": "싸움 칸 높이를 1로 본다. bar_* = 잡이 막대 크기(easy = 미끼와 뜻이 맞는 물고기), fish_* = 물고기 빠르기(1초에 움직이는 비율), lift/gravity = 누를 때 오르는 힘/뗄 때 내려가는 힘, fill/drain = 손맛 게이지가 1초에 차는/주는 양"
 }

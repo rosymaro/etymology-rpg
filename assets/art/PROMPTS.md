@@ -43,7 +43,12 @@ blood, wounds, scary, text, letters, watermark, logo, existing game characters
 | `boss/destroyer.png` | a big clumsy destroyer monster made of broken tools and bricks, exaggerated surprised face, grey crack pattern on its body, more silly than scary |
 | `mini/order_belt.png` | side view of a seamless horizontal conveyor belt with rollers, soft grey-violet, wide 1280x200, no objects on it |
 | `mini/order_card.png` | a blank rounded rectangle wooden tag, white and very light grey, empty center for text, slight shadow |
-| `mini/fish_meaning.png` | a cute long fish seen from the side, wide pale cream body with an empty space in the middle for text, small tail fin, 300x80 |
+| `mini/fish_word.png` | a cute long fish seen from the side, wide pale cream body with an empty space in the middle for text, small tail fin, 240x80 |
+| `mini/fish_bait.png` | a small cute bait on a fishing hook, 60x60 |
+| `mini/guard_wall.png` | a stone castle wall seen from outside with a round wooden gate in the center, wide banner shape, 1280x190 |
+| `mini/guard_traveler.png` | a cute traveler holding a wide blank sign board for text, 240x110 |
+| `mini/guard_climber.png` | a sneaky cute figure carrying a ladder, blank space for text in the middle, 180x70 |
+| `mini/guard_unit.png` | a cute guard seen from behind holding a wide shield, blocking stance, 200x90 |
 | `mini/ore_vein.png` | a rounded ore rock with a shining vein, drawn in white and very light grey only |
 | `mini/ore_rock.png` | a plain grey round rock with a small grumpy face |
 | `ui/order_ticket.png` | a small paper order slip icon with a pin |

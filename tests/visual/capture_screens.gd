@@ -98,6 +98,16 @@ func _run() -> void:
 			mv._flip(0)
 			mv._flip(1)
 			await _shot("%d_mini_trap_open" % n)
+		if g["id"] == "guard":
+			((main.current() as MinigameScreen).game as GuardGame).spawn_climber()
+			await get_tree().create_timer(3.0).timeout
+			await _shot("%d_mini_guard_later" % n)
+		if g["id"] == "fishing":
+			var fg := (main.current() as MinigameScreen).game as FishingGame
+			fg.hook(0)
+			fg.hold(true)
+			await get_tree().create_timer(0.6).timeout
+			await _shot("%d_mini_fishing_fight" % n)
 		if g["id"] == "order":
 			await get_tree().create_timer(1.5).timeout
 			await _shot("%d_mini_order_later" % n)

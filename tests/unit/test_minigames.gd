@@ -125,9 +125,16 @@ func test_word_search_hidden_words_are_readable() -> void:
 	var p: Dictionary = g.placed[0]
 	var a: Vector2i = p["start"]
 	var b: Vector2i = a + p["dir"] * (p["len"] - 1)
+	assert_true(p["dir"] in [Vector2i(0, 1), Vector2i(1, 0), Vector2i(1, 1)], "오른쪽·아래·오른쪽 아래로만 숨긴다")
 	assert_eq(g.select(b, a), p["id"], "거꾸로 그어도 찾는다")
 	assert_eq(g.score(), 1)
 	assert_eq(g.read(Vector2i(0, 0), Vector2i(1, 2)), "", "직선이 아니면 안 읽는다")
+
+
+func test_pipe_paths_are_long_for_many_seeds() -> void:
+	for sd in range(1, 30):
+		var g := _make(PipeGame, "kite", 12, sd) as PipeGame
+		assert_gte(g.solution.size(), int(cfg["kite"]["min_path"]))
 
 
 func test_pipe_solution_connects_when_rotated_back() -> void:
@@ -144,6 +151,7 @@ func test_pipe_solution_connects_when_rotated_back() -> void:
 				break
 			g.rotate(p)
 	assert_true(g._reaches_end())
+	assert_gte(g.solution.size(), int(cfg["kite"]["min_path"]), "정답 길은 10칸 이상")
 	assert_eq(g.word_at_cell.size(), 8, "정답 5 + 함정 3")
 	var path: Array[Vector2i] = g.solution.duplicate()
 	assert_eq(g.judge(path), "ok", "정답 길은 정답을 모두 지나고 함정을 지나지 않는다")
@@ -217,46 +225,122 @@ func test_ore_combo_of_five_earns_and_rock_breaks_combo() -> void:
 	assert_eq(g.combo, 0)
 
 
-func test_fishing_catch_fish_with_the_meaning() -> void:
+func _fight(g: FishingGame, follow: bool) -> void:
+	## follow = 막대가 물고기를 따라가도록 누른다(잘 싸움). false면 손을 뗀다.
+	for _i in 4000:
+		if g.state != "fight":
+			return
+		g.hold(follow and g.bar_pos + g.bar_size() / 2.0 < g.fish_pos)
+		g.update(0.02)
+
+
+func test_fishing_bait_gathers_constant_school_and_match_is_easier() -> void:
 	var g := _make(FishingGame, "fishing") as FishingGame
-	var w := g.current()
+	var n := int(cfg["fishing"]["fish"])
 	var right := -1
+	for i in g.fish.size():
+		if g.is_match(g.fish[i]["w"]):
+			right = i
+	assert_gt(right, -1, "미끼와 뜻이 맞는 물고기가 있다")
+	assert_eq(g.fish.size(), n)
+	var w: WordData = g.words[g.fish[right]["w"]]
+	assert_true(g.hook(right))
+	assert_eq(g.state, "fight")
+	var easy := g.bar_size()
+	var easy_speed := g.fish_speed()
+	_fight(g, true)
+	assert_eq(g.earned, [w.id] as Array[String], "잘 싸우면 낚는다")
+	assert_eq(g.fish.size(), n, "다음 판에도 물고기 수가 그대로다")
 	var wrong := -1
 	for i in g.fish.size():
-		if g.words[g.fish[i]["w"]].meaning == w.meaning:
-			right = i
-		else:
+		if not g.is_match(g.fish[i]["w"]):
 			wrong = i
-	assert_gt(right, -1, "정답 물고기가 있다")
-	assert_eq(g.fish.size(), int(cfg["fishing"]["fish"]))
-	assert_true(g.catch(right))
-	assert_eq(g.earned, [w.id] as Array[String])
-	var w2 := g.current()
-	for i in g.fish.size():
-		if g.words[g.fish[i]["w"]].meaning != w2.meaning:
-			assert_false(g.catch(i))
-			break
-	assert_eq(g.misses, 1)
+	g.hook(wrong)
+	assert_lt(g.bar_size(), easy, "뜻이 안 맞으면 막대가 작다")
+	assert_gt(g.fish_speed(), easy_speed, "뜻이 안 맞으면 물고기가 빠르다")
+	_fight(g, false)
+	assert_eq(g.misses, 1, "손을 놓으면 놓친다")
+	assert_eq(g.fish.size(), n)
 
 
-func test_guard_judge_true_and_false_pairs() -> void:
+func test_fishing_mismatch_fish_can_still_be_caught() -> void:
+	var g := _make(FishingGame, "fishing", 12, 9) as FishingGame
+	var caught := 0
+	for _r in 3:
+		var wrong := -1
+		for i in g.fish.size():
+			if not g.is_match(g.fish[i]["w"]):
+				wrong = i
+		g.hook(wrong)
+		_fight(g, true)
+		caught = g.score()
+	assert_gt(caught, 0, "뜻이 다른 물고기도 잘 싸우면 낚인다")
+
+
+func test_guard_pass_true_block_false_and_climbers() -> void:
 	var g := _make(GuardGame, "guard") as GuardGame
-	var trues := 0
-	var falses := 0
-	for t in g.travelers:
-		if t["true"]:
-			trues += 1
-			assert_eq(t["shown"], g.words[t["w"]].meaning)
-		else:
-			falses += 1
-			assert_ne(t["shown"], g.words[t["w"]].meaning)
-	assert_gt(trues + falses, 0)
-	var cur := g.current()
-	assert_true(g.judge(bool(cur["true"])), "바르게 판정하면 얻는다")
-	assert_eq(g.score(), 1)
-	var cur2 := g.current()
-	assert_false(g.judge(not bool(cur2["true"])))
+	g.walkers.clear()
+	# 맞는 짝: 비켜서 통과시키면 얻는다
+	g.spawn_gate_word()
+	var w: Dictionary = g.walkers[0]
+	w["true"] = true
+	w["shown"] = g.words[w["w"]].meaning
+	g.unit_x = 0.0
+	g.move_to(0.0)
+	w["y"] = 0.999
+	w["x"] = g.gate_x
+	g.update(0.01)
+	assert_eq(g.score(), 1, "맞는 짝을 통과시켰다")
+	# 틀린 짝: 막으면 맞다
+	g.spawn_gate_word()
+	w = g.walkers[-1]
+	w["true"] = false
+	g.unit_x = g.gate_x
+	g.move_to(g.gate_x)
+	w["y"] = 0.999
+	w["x"] = g.gate_x
+	g.update(0.01)
+	assert_eq(g.misses, 0, "틀린 짝을 막았다")
+	# 맞는 짝을 막으면 실수
+	g.spawn_gate_word()
+	w = g.walkers[-1]
+	w["true"] = true
+	w["y"] = 0.999
+	w["x"] = g.gate_x
+	g.update(0.01)
 	assert_eq(g.misses, 1)
+	# 담 넘는 단어: 막으면 괜찮고, 놓치면 실수
+	g.spawn_climber()
+	var c: Dictionary = g.walkers[-1]
+	g.unit_x = c["x"]
+	g.move_to(c["x"])
+	c["y"] = 0.999
+	g.update(0.01)
+	assert_eq(g.misses, 1, "담 넘는 단어를 막았다")
+	g.spawn_climber()
+	c = g.walkers[-1]
+	c["x"] = fposmod(g.unit_x + 0.5, 1.0)
+	c["y"] = 0.999
+	g.update(0.01)
+	assert_eq(g.misses, 2, "담 넘는 단어를 놓쳤다")
+
+
+func test_guard_unit_moves_toward_finger_and_words_keep_coming() -> void:
+	var g := _make(GuardGame, "guard") as GuardGame
+	g.move_to(1.0)
+	g.update(0.5)
+	assert_almost_eq(g.unit_x, 0.5 + float(cfg["guard"]["unit_speed"]) * 0.5, 0.001)
+	var seen_climb := false
+	var seen_gate := false
+	for _i in 300:
+		g.update(0.05)
+		for w in g.walkers:
+			seen_climb = seen_climb or w["kind"] == "climb"
+			seen_gate = seen_gate or w["kind"] == "gate"
+	assert_true(seen_gate and seen_climb, "손님과 담 넘는 단어가 모두 온다")
+	for w in g.walkers:
+		if w["kind"] == "gate" and not w["true"]:
+			assert_ne(w["shown"], g.words[w["w"]].meaning)
 
 
 func test_root_link_word_to_its_etymology() -> void:

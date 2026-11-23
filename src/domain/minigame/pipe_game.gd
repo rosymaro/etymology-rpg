@@ -31,7 +31,13 @@ func _build() -> void:
 		row.fill(0)
 		tiles.append(row)
 	start_row = rng.randi_range(0, rows - 1)
+	# 정답 길이 너무 짧으면 쉬워서(사용자 의견) min_path칸 이상이 될 때까지 다시 만든다
 	solution = _random_path(Vector2i(start_row, 0))
+	for k in 400:
+		if solution.size() >= int(cfg.get("min_path", 0)):
+			break
+		start_row = rng.randi_range(0, rows - 1)
+		solution = _random_path(Vector2i(start_row, 0))
 	end_row = solution[-1].x
 	for i in solution.size():
 		var p := solution[i]
@@ -71,10 +77,11 @@ func _random_path(start: Vector2i) -> Array[Vector2i]:
 	var seen := {start: true}
 	while true:
 		var p := path[-1]
-		if p.y == cols - 1 and rng.randf() < 0.5:
+		if p.y == cols - 1 and (path.size() >= int(cfg.get("min_path", 0)) or rng.randf() < 0.2):
 			break
 		var opts: Array[Vector2i] = []
-		for d in [Vector2i(0, 1), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1)]:
+		# 위아래로 더 자주 꺾어서 길을 길게 만든다
+		for d in [Vector2i(0, 1), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(-1, 0)]:
 			var n: Vector2i = p + d
 			if n.x >= 0 and n.x < rows and n.y >= 0 and n.y < cols and not seen.has(n):
 				opts.append(n)

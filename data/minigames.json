@@ -29,7 +29,7 @@
       "id": "fishing",
       "stage": 5,
       "class": "FishingGame",
-      "borrow": "움직이는 과녁 맞히기(뜻 낚시)"
+      "borrow": "스타듀 밸리 낚시(막대 안에 물고기 붙잡기)"
     },
     {
       "id": "copy",
@@ -47,7 +47,7 @@
       "id": "guard",
       "stage": 8,
       "class": "GuardGame",
-      "borrow": "참·거짓 가리기(검문)"
+      "borrow": "막아서기 검문(뜻 판정 + 담 넘기 막기)"
     },
     {
       "id": "ore",
