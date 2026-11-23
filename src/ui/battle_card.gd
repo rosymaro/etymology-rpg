@@ -16,6 +16,7 @@ var _hp: Label
 var _now := {}  ## 지금 모습 {name, atk, def, hp, note_atk, note_hp}
 var _base := {}  ## 처음 모습
 var hold_enabled := false
+var skip := false  ## 빨리 보기: 깜빡임을 바로 끝낸다
 var _showing_base := false
 
 
@@ -46,6 +47,44 @@ func show_now(c: Combatant, name_text: String, a: int, d: int, h: int, formula: 
 	_now = {"name": name_text, "atk": a, "def": d, "hp": h, "note_atk": note["atk"], "note_hp": note["hp"]}
 	_base = {"name": name_text, "atk": c.base.atk, "def": c.base.def, "hp": c.base.hp, "note_atk": note["atk"], "note_hp": note["hp"]}
 	coins.set_flips(c.flips, spin)
+	_render()
+
+
+## 능력치만 바꾼다(표기와 코인은 그대로).
+func set_values(a: int, d: int, h: int) -> void:
+	if _now.is_empty():
+		return
+	_now["atk"] = a
+	_now["def"] = d
+	_now["hp"] = h
+	_render()
+
+
+func value(key: String) -> int:
+	return int(_now.get(key, 0))
+
+
+## 능력치 key("atk"|"def"|"hp")가 from → to로 바뀌는 것을 깜빡여 보여 준 뒤 새 값으로 둔다.
+## 화살표와 함께 col 색으로 dur초 동안 깜빡인다. fast면 기다리지 않는다.
+func flash(key: String, from: int, to: int, col: Color, dur: float = 1.0, fast := false) -> void:
+	if _now.is_empty():
+		return
+	var l: Label = {"atk": _atk, "def": _def, "hp": _hp}[key]
+	_now[key] = to
+	if fast or from == to:
+		_render()
+		return
+	var name_key: String = {"atk": "ui.battle.atk", "def": "ui.battle.def", "hp": "ui.battle.hp"}[key]
+	var note: String = _now.get("note_" + key, "")
+	l.text = (_line(name_key, note, from) + "  →  %d" % to)
+	l.add_theme_color_override("font_color", col)
+	var t := 0.0
+	while t < dur and not skip:  # 깜빡임(빨리 보기를 누르면 바로 멈춘다)
+		l.modulate.a = 0.35 if int(t / (dur / 6.0)) % 2 == 0 else 1.0
+		await get_tree().process_frame
+		t += get_process_delta_time()
+	l.modulate.a = 1.0
+	l.add_theme_color_override("font_color", UiKit.INK)
 	_render()
 
 

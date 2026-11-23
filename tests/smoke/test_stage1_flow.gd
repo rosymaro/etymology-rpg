@@ -96,9 +96,13 @@ func test_stage1_loop() -> void:
 	await wait_physics_frames(2)
 	assert_true(main.current() is BattleScreen)
 	var bs := main.current() as BattleScreen
-	bs._skip = true
+	bs.skip_all()
 	await wait_seconds(1.0)
 	assert_true(bs._end_btn.visible)
+	var hist := "\n".join(bs.lines)
+	assert_string_contains(hist, "1턴", "기록에 턴이 남는다")
+	assert_string_contains(hist, "코인", "기록에 코인 결과가 남는다")
+	assert_string_contains(hist, "체력", "기록에 체력 변화가 남는다")
 	bs._end_btn.pressed.emit()
 	await wait_physics_frames(3)
 	if main.current() is ResultScreen:
@@ -147,7 +151,7 @@ func test_stage1_loop() -> void:
 	var boss_screen := main.current() as BattleScreen
 	assert_not_null(boss_screen)
 	assert_true(boss_screen._ctx.enemies[-1].is_boss)
-	boss_screen._skip = true
+	boss_screen.skip_all()
 	await wait_seconds(1.0)
 	boss_screen._end_btn.pressed.emit()
 	await wait_physics_frames(3)

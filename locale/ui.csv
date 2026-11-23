@@ -66,12 +66,23 @@ ui.battle.def,방어
 ui.battle.hp,체력
 ui.battle.base,(처음 모습)
 ui.battle.hold_hint,카드를 누르고 있으면 코인과 피해 전의 처음 모습이 보여요
-ui.battle.magic_cast,{magic} 발동! {target}에게 피해 {damage}
-ui.battle.skill,{who}의 {root} 발동!
+ui.battle.magic_cast,"마법 {magic} 발동! {target}에게 피해 {damage}, 공격 −{down}"
+ui.battle.skill,{who}의 {root} 스킬 발동!
 ui.battle.skill_copy,{root} 스킬을 따라 했다!
-ui.battle.boss_ability,결함! 코인 {count}개가 뒷면이 됐다
-ui.battle.round,"{n}라운드: 아군 −{to_a}, 적 −{to_b}"
+ui.battle.boss_ability,보스 능력 '결함'! 아군 코인 {count}개가 뒷면이 됐다
 ui.battle.end,적 {total}개 중 {kills}개를 쓰러뜨렸다
+ui.battle.turn,{n}턴
+ui.battle.enter,{who} 등장! 코인을 던진다
+ui.battle.coin_change,{who}: 코인만큼 능력치가 바뀐다
+ui.battle.magic_hit,{who}: 시작 마법을 맞았다
+ui.battle.attack,{a} → {b} 피해 {to_b}  ·  {b} → {a} 피해 {to_a}
+ui.battle.first,({who}가 먼저 쳤다)
+ui.battle.down,{who} 쓰러짐
+ui.battle.coins_word,코인
+ui.battle.h_enter,▶ {who} 등장 · 코인 {coins} → {change}
+ui.battle.h_no_change,능력치 그대로
+ui.battle.h_magic_hit,"{who} 마법 효과: 체력 {h0}→{h1}, 공격 {a0}→{a1}"
+ui.battle.h_round,"{n}턴: {a} → {b} 피해 {to_b} (체력 {bh0}→{bh}), {b} → {a} 피해 {to_a} (체력 {ah0}→{ah})"
 ui.result.caught_all,모두 맞혀서 싸우지 않고 잡았어요!
 ui.result.won,승리! 단어를 모두 얻었어요
 ui.result.partial,일부를 쓰러뜨려 단어 하나를 얻었어요

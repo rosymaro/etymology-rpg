@@ -23,4 +23,4 @@ func cast(ctx: BattleContext, side: int) -> void:
 	else:
 		target.pre_damage += dmg
 	target.perm_atk -= down
-	ctx.add_log({"t": "magic", "id": id, "side": side, "target": foes.find(target), "damage": dmg})
+	ctx.add_log({"t": "magic", "id": id, "side": side, "target": foes.find(target), "damage": dmg, "atk_down": down})

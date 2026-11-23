@@ -45,6 +45,7 @@ func run() -> BattleResult:
 
 
 func _enter(u: Combatant, idx: int) -> void:
+	var magic_hit := u.pre_damage  # 전투 시작 마법으로 미리 받은 피해(roll이 지운다)
 	u.roll(ctx.coin_source, ctx.formula)
 	var r: int = ctx.reroll_next[u.side]
 	if r > 0:
@@ -54,8 +55,27 @@ func _enter(u: Combatant, idx: int) -> void:
 				u.flips[k] = ctx.coin_source.flip(1, u.heads_chance)[0]
 				r -= 1
 		u.recalc_atk(ctx.formula)
+	# 화면이 '코인 전 → 코인 후'를 보여 줄 수 있게 코인 항과 코인 전 값을 함께 남긴다
+	var t := ctx.formula.coin_terms(u.coin_style, u.coin_value, u.flips)
 	ctx.add_log({"t": "enter", "side": u.side, "idx": idx, "flips": u.flips.duplicate(),
-		"atk": u.atk, "def": u.def, "hp": u.hp})
+		"atk": u.atk, "def": u.def, "hp": u.hp, "pre_atk": u.atk - t.atk, "pre_hp": u.hp - t.hp + magic_hit,
+		"gain_atk": t.atk, "gain_hp": t.hp, "magic_hit": magic_hit})
+
+
+## 두 전투원의 지금 값(기록에 '전 → 후'로 남긴다)
+static func _snap(a: Combatant, b: Combatant) -> Dictionary:
+	return {"a": [a.atk, a.def, a.hp], "b": [b.atk, b.def, b.hp], "a_flips": a.flips.duplicate(), "b_flips": b.flips.duplicate()}
+
+
+## f()를 부르고, 그 사이에 새로 생긴 기록에 전·후 값을 붙인다.
+func _traced(a: Combatant, b: Combatant, f: Callable) -> void:
+	var before := _snap(a, b)
+	var n := ctx.log.size()
+	f.call()
+	var after := _snap(a, b)
+	for k in range(n, ctx.log.size()):
+		ctx.log[k]["before"] = before
+		ctx.log[k]["after"] = after
 
 
 func _clash(a: Combatant, b: Combatant, i: int, j: int) -> void:
@@ -64,12 +84,14 @@ func _clash(a: Combatant, b: Combatant, i: int, j: int) -> void:
 	for pair in [[b, a], [a, b]]:
 		var boss: Combatant = pair[0]
 		if boss.boss_ability and ctx.is_boss_battle:
-			boss.boss_ability.on_clash(ctx, boss, pair[1])
+			_traced(a, b, func() -> void:
+				boss.boss_ability.on_clash(ctx, boss, pair[1]))
 	for pair in [[a, b], [b, a]]:
 		var u: Combatant = pair[0]
 		if u.skill and not u.sealed and u.heads() >= ctx.formula.skill_min_heads(u.skill.tier, u.coins):
-			u.skill.on_clash(ctx, u, pair[1])
-			ctx.add_log({"t": "skill", "side": u.side, "root": u.skill.root})
+			_traced(a, b, func() -> void:
+				u.skill.on_clash(ctx, u, pair[1])
+				ctx.add_log({"t": "skill", "side": u.side, "root": u.skill.root}))
 	ctx.add_log({"t": "clash", "a": i, "b": j, "a_atk": a.atk, "a_def": a.def, "a_hp": a.hp,
 		"b_atk": b.atk, "b_def": b.def, "b_hp": b.hp})
 	var rnd := 0
@@ -92,7 +114,8 @@ func _clash(a: Combatant, b: Combatant, i: int, j: int) -> void:
 		else:
 			a.hp -= db
 			b.hp -= da
-		ctx.add_log({"t": "round", "n": rnd, "to_b": da, "to_a": db, "a_hp": maxi(a.hp, 0), "b_hp": maxi(b.hp, 0)})
+		var first := Combatant.ALLY if a.first_strike and not b.first_strike else (Combatant.ENEMY if b.first_strike and not a.first_strike else -1)
+		ctx.add_log({"t": "round", "n": rnd, "to_b": da, "to_a": db, "a_hp": maxi(a.hp, 0), "b_hp": maxi(b.hp, 0), "first": first})
 
 
 func _damage(x: Combatant, y: Combatant, rnd: int) -> int:
