@@ -1,8 +1,8 @@
 class_name KiteView
 extends MinigameScreen
-## 4 연날리기: 바람길 타일을 눌러 돌린다. 오른쪽의 뜻 5개에 맞는 단어를 모두 지나고, 함정 단어는 피해서 하늘까지 잇는다.
+## 4 연날리기: 바람길 타일을 눌러 돌린다. 단어 칸은 돌릴 때마다 뜻이 바뀐다. 단어와 뜻이 맞는 방향이 바른 길이다.
 
-const CELL := 96.0
+const CELL := 84.0
 
 var _canvas: Control
 var _side: VBoxContainer
@@ -21,7 +21,7 @@ func build() -> void:
 			var c := Vector2i(int(ev.position.y / CELL), int((ev.position.x - 100) / CELL))
 			if ev.position.x >= 100 and c.x >= 0 and c.y >= 0 and c.x < g.rows and c.y < g.cols:
 				g.turn(c)
-				if g.last_judge == "trap" or g.last_judge == "missing":
+				if g.last_judge == "meaning" or g.last_judge == "missing":
 					GameData.vibrate()
 				changed())
 	body.add_child(_canvas)
@@ -30,8 +30,6 @@ func build() -> void:
 	_side.custom_minimum_size = Vector2(360, 0)
 	body.add_child(_side)
 	_side.add_child(UiKit.wrap(UiKit.label(t("ui.mini.kite.goal"), 22), 360))
-	for k in g.targets:
-		_side.add_child(UiKit.wrap(UiKit.label("· " + g.words[k].meaning, 20), 360))
 	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.BAD.darkened(0.2)), 360)
 	_side.add_child(_msg)
 
@@ -61,9 +59,11 @@ func _draw_board() -> void:
 			_canvas.draw_circle(ctr, 8, col)
 			if g.word_at_cell.has(p):
 				var w := g.words[g.word_at_cell[p]]
-				# 정답과 함정은 같은 모양으로 그린다(뜻을 보고 가려야 한다)
-				_canvas.draw_rect(Rect2(o + Vector2(6, 6), Vector2(CELL - 12, 26)), Color(UiKit.PAPER, 0.92))
-				_canvas.draw_string(font, o + Vector2(8, 25), w.id, HORIZONTAL_ALIGNMENT_CENTER, CELL - 16, 16, UiKit.INK)
+				# 단어와 지금 방향의 뜻. 뜻이 맞는지는 색으로 알려 주지 않는다(스스로 가린다)
+				_canvas.draw_rect(Rect2(o + Vector2(4, 4), Vector2(CELL - 8, 24)), Color(UiKit.PAPER, 0.95))
+				_canvas.draw_string(font, o + Vector2(6, 22), w.id, HORIZONTAL_ALIGNMENT_CENTER, CELL - 12, 15, UiKit.INK)
+				_canvas.draw_rect(Rect2(o + Vector2(4, CELL - 28), Vector2(CELL - 8, 24)), Color(UiKit.APRICOT, 0.95))
+				_canvas.draw_string(font, o + Vector2(6, CELL - 10), g.shown_meaning(p), HORIZONTAL_ALIGNMENT_CENTER, CELL - 12, 13, UiKit.INK)
 	_canvas.draw_circle(Vector2(50, g.start_row * CELL + CELL / 2), 30, UiKit.PINK)
 	_canvas.draw_string(font, Vector2(14, g.start_row * CELL + CELL / 2 + 50), t("ui.mini.kite.kite"), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, UiKit.INK)
 	var sx := 100 + g.cols * CELL + 50

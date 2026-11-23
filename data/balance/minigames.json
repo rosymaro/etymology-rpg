@@ -19,15 +19,16 @@
     "min_len": 3,
     "max_len": 9,
     "duration": 150,
-    "fade_every": 10
+    "fade_every": 10,
+    "etym_hint_after": 60
   },
   "kite": {
-    "rows": 5,
-    "cols": 6,
+    "rows": 7,
+    "cols": 7,
     "words": 5,
     "duration": 120,
-    "decoys": 3,
-    "min_path": 10
+    "decoys": 0,
+    "min_path": 30
   },
   "fishing": {
     "duration": 150,
@@ -71,7 +72,26 @@
     "climb_time": 4.0,
     "unit_w": 0.16,
     "gate_w": 0.14,
-    "unit_speed": 0.9
+    "unit_speed": 0.9,
+    "climber_words": [
+      "thief",
+      "burglar",
+      "robber",
+      "criminal",
+      "bandit",
+      "intruder",
+      "outlaw",
+      "villain",
+      "crook",
+      "fugitive",
+      "spy",
+      "traitor",
+      "offender",
+      "culprit",
+      "gangster",
+      "raider",
+      "assassin"
+    ]
   },
   "ore": {
     "duration": 60,
@@ -88,7 +108,8 @@
     "roam_speed": 0.12,
     "arrow_speed": 1.6,
     "hit_r": 0.06,
-    "down_time": 6.0
+    "down_time": 6.0,
+    "max_roots": 3
   },
   "pool_size": 16,
   "_pool_doc": "한 판에 쓰는 단어 수(보상 후보). 그 마을 단어 중 아직 못 얻은 것부터",
@@ -96,7 +117,7 @@
   "_search_doc": "fade_every = 몇 초마다 정답에 쓰이지 않는 글자를 하나씩 지우는지",
   "_kite_doc": "words = 정답 단어 수(뜻을 보여 줌), decoys = 함정 단어 수. 정답을 모두 지나고 함정을 지나지 않아야 성공. min_path = 정답 바람길이 지나는 최소 칸 수",
   "_wheel_doc": "tries = 바퀴마다 수문을 열어 볼 수 있는 횟수. 다 틀리면 답을 보여 주고 그 바퀴는 놓친다",
-  "_guard_doc": "좌표는 0~1 비율. gate_every = 손님이 오는 간격(초), walk_time = 성문까지 걸리는 시간, climb_every/climb_time = 담 넘는 단어, unit_w = 내 유닛이 막는 폭, unit_speed = 1초에 움직이는 거리",
+  "_guard_doc": "좌표는 0~1 비율. gate_every = 손님이 오는 간격(초), walk_time = 성문까지 걸리는 시간, climb_every/climb_time = 담 넘는 단어, unit_w = 내 유닛이 막는 폭, unit_speed = 1초에 움직이는 거리. climber_words = 담 넘는 단어(도둑·범죄자 단어)",
   "_fishing_doc": "싸움 칸 높이를 1로 본다. bar_* = 잡이 막대 크기(easy = 미끼와 뜻이 맞는 물고기), fish_* = 물고기 빠르기(1초에 움직이는 비율), lift/gravity = 누를 때 오르는 힘/뗄 때 내려가는 힘, fill/drain = 손맛 게이지가 1초에 차는/주는 양",
-  "_pattern_doc": "좌표는 0~1 비율. decoys = 함정 어원 수, roam_speed = 어원이 돌아다니는 빠르기, arrow_speed = 화살 빠르기, hit_r = 맞는 거리, down_time = 쓰러져 있는 시간(지나면 다시 달아남)"
+  "_pattern_doc": "좌표는 0~1 비율. decoys = 함정 어원 수, roam_speed = 어원이 돌아다니는 빠르기, arrow_speed = 화살 빠르기, hit_r = 맞는 거리, down_time = 쓰러져 있는 시간(지나면 다시 달아남), max_roots = 한 단어에 놓을 수 있는 어원 수(어원 수를 숨기려고 실제보다 많이 둔다)"
 }

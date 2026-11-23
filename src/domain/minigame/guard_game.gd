@@ -3,13 +3,13 @@ extends Minigame
 ## 8 성벽 요새 '보초 서기'(검문 + 막아서기): 성문 바깥에서 성문을 바라본다. 내 유닛이 성벽 앞에서 좌우(x)로 움직인다.
 ## - 손님 단어가 뜻 팻말을 들고 성문으로 걸어온다. 팻말이 그 단어의 뜻이면 비켜서 통과시키고, 다른 뜻이면 막아선다.
 ##   바르게 판정하면 그 단어 1개, 틀리면 실수.
-## - 담 넘는 단어는 뜻과 상관없이 막아야 한다. 놓치면 실수.
+## - 담 넘는 것은 도둑·범죄자 단어(cfg.climber_words)다. 뜻과 상관없이 막아야 한다. 놓치면 실수.
 ## 좌표는 0~1 비율: x는 왼쪽 → 오른쪽, y는 멀리(0, 아래쪽 들판) → 성벽(1). 막는 선 y = 1에 닿을 때 판정한다.
 
 var gate_x := 0.5
 var unit_x := 0.5
 var target_x := 0.5
-var walkers: Array[Dictionary] = []  ## {kind: "gate"|"climb", w, shown, true, x, y, done}
+var walkers: Array[Dictionary] = []  ## {kind: "gate"|"climb", w, name(담 넘는 단어), shown, true, x, y, done}
 var misses := 0
 var events: Array[Dictionary] = []  ## 화면이 읽고 비우는 판정 기록 {kind, ok, w}
 var _spawn_gate := 0.0
@@ -50,7 +50,9 @@ func spawn_climber() -> void:
 	var x := rng.randf_range(0.05, 0.95)
 	if absf(x - gate_x) < float(cfg["gate_w"]):
 		x = fposmod(x + 0.4, 0.9) + 0.05
-	walkers.append({"kind": "climb", "w": rng.randi_range(0, words.size() - 1), "x": x, "y": 0.0, "done": false})
+	var names: Array = cfg.get("climber_words", ["thief"])
+	walkers.append({"kind": "climb", "w": rng.randi_range(0, words.size() - 1), "name": String(names[rng.randi_range(0, names.size() - 1)]),
+		"x": x, "y": 0.0, "done": false})
 
 
 func _tick(dt: float) -> void:
@@ -85,14 +87,14 @@ func _arrive(w: Dictionary) -> void:
 		var ok_c := blocked
 		if not ok_c:
 			_miss()
-		events.append({"kind": "climb", "ok": ok_c, "w": w["w"]})
+		events.append({"kind": "climb", "ok": ok_c, "w": w["w"], "name": w["name"], "x": w["x"]})
 		return
 	var ok := blocked != bool(w["true"])  # 맞는 짝은 통과(막지 않음), 틀린 짝은 막음
 	if ok:
 		earn(words[w["w"]].id)
 	else:
 		_miss()
-	events.append({"kind": "gate", "ok": ok, "w": w["w"], "true": w["true"], "blocked": blocked})
+	events.append({"kind": "gate", "ok": ok, "w": w["w"], "true": w["true"], "blocked": blocked, "shown": w["shown"], "x": w["x"]})
 
 
 func _miss() -> void:

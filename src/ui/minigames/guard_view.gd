@@ -8,8 +8,9 @@ const WALL_H := 190.0
 const LINE_GAP := 40.0  ## 성벽 아래에서 막는 선까지
 
 var _canvas: Control
-var _msg: Label
 var _flash := 0.0
+var _pops: Array[Dictionary] = []  ## 보초 위 말풍선 {text, ok, x, y, t, max}
+var _marks: Array[Dictionary] = []  ## 판정 자리의 큰 ○/✕ {ok, x, t}
 
 
 func build() -> void:
@@ -23,9 +24,6 @@ func build() -> void:
 	_canvas.draw.connect(_draw_field)
 	_canvas.gui_input.connect(_input)
 	body.add_child(_canvas)
-	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.ACCENT.darkened(0.2)), 1000)
-	body.add_child(_msg)
-	UiKit.pin(_msg, 0, 1, 24, -44)
 
 
 func _input(ev: InputEvent) -> void:
@@ -46,19 +44,38 @@ func _walk_y(t_: float) -> float:
 
 func tick(delta: float) -> void:
 	var g := game as GuardGame
+	var ly := _line_y()
 	for e in g.events:
 		var w := g.words[e["w"]]
+		var x: float = clampf(g.unit_x * _canvas.size.x, 170, _canvas.size.x - 170)
+		var text := ""
 		if e["kind"] == "climb":
-			_msg.text = t("ui.mini.guard.climb_ok" if e["ok"] else "ui.mini.guard.climb_miss").format({"word": w.id})
+			text = t("ui.mini.guard.climb_ok" if e["ok"] else "ui.mini.guard.climb_miss").format({"word": e["name"]})
+			if not e["ok"]:
+				x = clampf(float(e["x"]) * _canvas.size.x, 170, _canvas.size.x - 170)
 		elif e["ok"]:
-			_msg.text = t("ui.mini.guard.ok").format({"word": w.id, "meaning": w.meaning})
-		else:
-			_msg.text = t("ui.mini.guard.wrong").format({"word": w.id, "meaning": w.meaning})
+			text = t("ui.mini.guard.ok").format({"word": w.id, "meaning": w.meaning})
+		elif e["true"]:  # 맞는 짝을 막았다
+			text = t("ui.mini.guard.wrong_blocked").format({"word": w.id, "meaning": w.meaning})
+		else:  # 틀린 짝을 통과시켰다
+			text = t("ui.mini.guard.wrong_passed").format({"word": w.id, "shown": e["shown"], "meaning": w.meaning})
+		# 보초(내 유닛) 위에 말풍선으로 띄운다. 틀린 것은 더 오래 보여 준다
+		text = text.replace("\\n", "\n")
+		_pops.append({"text": text, "ok": e["ok"], "x": x, "y": ly - 64, "t": 1.4 if e["ok"] else 3.0, "max": 1.4 if e["ok"] else 3.0})
+		_marks.append({"ok": e["ok"], "x": float(e["x"]) * _canvas.size.x, "t": 0.9})
 		if not e["ok"]:
-			_flash = 0.4
+			_flash = 0.5
 			GameData.vibrate()
 	g.events.clear()
 	_flash = maxf(0.0, _flash - delta)
+	for p_ in _pops:
+		p_["t"] -= delta
+	_pops = _pops.filter(func(p_: Dictionary) -> bool: return p_["t"] > 0.0)
+	if _pops.size() > 2:
+		_pops = _pops.slice(_pops.size() - 2)
+	for m in _marks:
+		m["t"] -= delta
+	_marks = _marks.filter(func(m: Dictionary) -> bool: return m["t"] > 0.0)
 	_canvas.queue_redraw()
 
 
@@ -98,10 +115,13 @@ func _draw_field() -> void:
 			var y: float = _walk_y(minf(1.0, w["y"]))
 			var p := Vector2(x, y)
 			_canvas.draw_line(Vector2(x + 50, WALL_TOP + 30), Vector2(x + 50, _line_y() + 10), Color("8a6a40"), 4)
-			var r := Rect2(p - Vector2(80, 26), Vector2(160, 44))
+			var r := Rect2(p - Vector2(80, 26), Vector2(160, 48))
 			if not Art.draw(_canvas, "mini", "guard_climber", p, Vector2(180, 70)):
 				_canvas.draw_style_box(UiKit.box(Color("f4a6a6"), 14, 3), r)
-			_canvas.draw_string(font, r.position + Vector2(4, 30), "⚠ " + word.id, HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 8, 22, UiKit.INK)
+			var cw := GameData.repo.get_word(w["name"]) if GameData.repo else null
+			_canvas.draw_string(font, r.position + Vector2(4, 22), "⚠ " + String(w["name"]), HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 8, 20, UiKit.INK)
+			if cw:
+				_canvas.draw_string(font, r.position + Vector2(4, 40), cw.meaning, HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 8, 14, UiKit.INK.lightened(0.15))
 	# 막는 선과 내 유닛
 	var ly := _line_y()
 	_canvas.draw_dashed_line(Vector2(0, ly), Vector2(W, ly), Color(1, 1, 1, 0.7), 3, 12)
@@ -114,3 +134,23 @@ func _draw_field() -> void:
 	_canvas.draw_string(font, shield.position + Vector2(0, 38), t("ui.mini.guard.me"), HORIZONTAL_ALIGNMENT_CENTER, uw, 20, UiKit.INK)
 	_canvas.draw_string(font, Vector2(W - 260, _canvas.size.y - 6),
 		t("ui.mini.guard.miss").format({"miss": g.misses, "max": int(g.cfg["max_miss"])}), HORIZONTAL_ALIGNMENT_RIGHT, 250, 20, UiKit.INK)
+	# 판정 자리의 큰 ○ / ✕
+	for m in _marks:
+		var a: float = clampf(m["t"] / 0.9, 0.0, 1.0)
+		var c := Vector2(m["x"], ly)
+		if m["ok"]:
+			_canvas.draw_arc(c, 34, 0, TAU, 32, Color(UiKit.GOOD, a), 8)
+		else:
+			_canvas.draw_line(c + Vector2(-30, -30), c + Vector2(30, 30), Color(UiKit.BAD, a), 9)
+			_canvas.draw_line(c + Vector2(30, -30), c + Vector2(-30, 30), Color(UiKit.BAD, a), 9)
+	# 보초 위 말풍선
+	var k := 0
+	for p_ in _pops:
+		var a2: float = clampf(p_["t"] / 0.4, 0.0, 1.0)
+		var bw := 330.0
+		var box := Rect2(Vector2(p_["x"] - bw / 2, p_["y"] - 52 - k * 60), Vector2(bw, 52))
+		var bg := UiKit.GOOD.lightened(0.55) if p_["ok"] else UiKit.BAD.lightened(0.5)
+		_canvas.draw_style_box(UiKit.box(Color(bg, a2), 16, 3), box)
+		_canvas.draw_string(font, box.position + Vector2(10, 22), String(p_["text"]).get_slice("\n", 0), HORIZONTAL_ALIGNMENT_CENTER, bw - 20, 18, Color(UiKit.INK, a2))
+		_canvas.draw_string(font, box.position + Vector2(10, 44), String(p_["text"]).get_slice("\n", 1), HORIZONTAL_ALIGNMENT_CENTER, bw - 20, 16, Color(UiKit.INK, a2))
+		k += 1

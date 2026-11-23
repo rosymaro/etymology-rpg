@@ -11,6 +11,7 @@ var _drag_from := Vector2i(-1, -1)
 var _drag_to := Vector2i(-1, -1)
 var _fade: Dictionary = {}  ## 지워지는 중인 칸 -> 남은 투명도(1 → 0)
 var _review := false
+var _etym_on := false
 const FADE_SEC := 1.2
 
 
@@ -38,6 +39,8 @@ func refresh() -> void:
 		var w := word(g._original(id))
 		var done := id in g.found
 		var text := ("✓ %s  %s" % [w.id, w.meaning]) if done else ("· %s (%d)" % [w.meaning, id.length()])
+		if not done and _etym_on and not w.etym.is_empty():  # 1분이 지나면 어원도 힌트로(사용자 의견)
+			text += "  " + t("ui.mini.search.etym").format({"etym": _etym(w)})
 		var col := UiKit.GOOD.darkened(0.3) if done else UiKit.INK
 		if _review and not done:
 			text = t("ui.mini.search.answer").format({"word": w.id, "meaning": w.meaning})
@@ -48,6 +51,9 @@ func refresh() -> void:
 
 func tick(delta: float) -> void:
 	var g := game as WordSearchGame
+	if not _etym_on and float(g.cfg["duration"]) - g.time_left >= float(g.cfg.get("etym_hint_after", 60)):
+		_etym_on = true
+		refresh()
 	for p in g.removed:
 		if not _fade.has(p):
 			_fade[p] = 1.0
@@ -120,3 +126,10 @@ func _draw_grid() -> void:
 
 func _center(p: Vector2i) -> Vector2:
 	return Vector2(p.y * CELL + CELL / 2, p.x * CELL + CELL / 2)
+
+
+static func _etym(w: WordData) -> String:
+	var parts: Array[String] = []
+	for e in w.etym:
+		parts.append("%s(%s)" % [e.get("root", ""), e.get("meaning", "")])
+	return " + ".join(parts)

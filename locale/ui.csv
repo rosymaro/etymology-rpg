@@ -145,20 +145,18 @@ ui.mini.ore.target,광맥: {attr} 무늬만 깨요  ·  연속 {combo} ({per}개
 ui.mini.rule.order,주문서의 뜻에 맞는 단어 카드를 시간 안에 눌러요. 3번 틀리면 끝나요.
 ui.mini.rule.trap,엎어 둔 덫을 두 개씩 열어요. 영어 단어와 그 뜻이 짝이면 덫에 걸려요.
 ui.mini.rule.search,글자 격자에서 가로·세로·대각선으로 숨은 단어를 찾아요. 10초마다 필요 없는 글자가 하나씩 사라져요.
-ui.mini.rule.kite,"타일을 눌러 돌려요. 오른쪽 뜻 5개에 맞는 단어를 모두 지나고, 함정 단어는 피해서 연에서 하늘까지 이어요."
+ui.mini.rule.kite,타일을 눌러 돌려요. 단어 칸의 뜻이 맞으면 그 방향이 바른 길이에요. 단어 5개를 모두 지나 하늘까지 이어요.
 ui.mini.rule.fishing,뜻이 맞는 물고기를 눌러 채요. 누르고 있으면 막대가 올라가요. 물고기를 막대 안에 두세요.
 ui.mini.rule.copy,섞인 글자를 바른 순서로 눌러 철자를 맞춰요.
 ui.mini.rule.wheel,두 고리를 돌려 수문 세 곳에서 단어와 뜻을 맞춘 뒤 수문을 열어요. 바퀴마다 두 번까지예요.
-ui.mini.rule.guard,"뜻이 맞는 손님은 비켜 주고, 틀린 손님과 담 넘는 단어는 막아요. 3번 틀리면 끝나요."
+ui.mini.rule.guard,"뜻이 맞는 손님은 비켜 주고, 틀린 손님과 담 넘는 도둑은 막아요. 3번 틀리면 끝나요."
 ui.mini.rule.ore,화면을 그어 광맥 무늬와 같은 광석만 깨요. 다른 광석을 깨면 연속이 끊겨요.
 ui.mini.rule.pattern,"어원을 눌러 화살로 맞히고, 쓰러지면 끌어서 그 어원의 단어 아래에 놓아요. 새싹 5개를 모두 틔우면 완성!"
 ui.mini.trap.closed,덫
 ui.mini.next,다음
 ui.mini.search.answer,✗ {word}  {meaning} (판에 분홍색으로 표시)
-ui.mini.kite.goal,이 뜻의 단어를 모두 지나요 (함정 3개는 피하기)
-ui.mini.kite.trap,함정 단어를 지났어요! 다른 길로 돌려 봐요.
-ui.mini.kite.missing,아직 지나지 않은 정답 단어가 있어요.
-ui.mini.guard.wrong,틀렸어요. {word}의 뜻은 「{meaning}」이에요.
+ui.mini.kite.goal,단어 5개를 모두 지나 하늘까지 이어요. 단어 칸은 돌릴 때마다 뜻이 바뀌어요. 단어와 뜻이 맞는 방향이 바른 길이에요.
+ui.mini.kite.missing,아직 지나지 않은 단어가 있어요.
 ui.mini.wheel.open,수문 열기 (남은 {n}번)
 ui.mini.wheel.next,다음 바퀴
 ui.mini.wheel.right,맞았어요! 물레방아가 한 바퀴 돌아요.
@@ -172,10 +170,14 @@ ui.mini.fishing.caught,낚았어요! {word} = 「{meaning}」
 ui.mini.fishing.lost,놓쳤어요. {word}의 뜻은 「{meaning}」이에요.
 ui.mini.guard.gate,성문
 ui.mini.guard.me,나
-ui.mini.guard.ok,잘했어요. {word} = 「{meaning}」
-ui.mini.guard.climb_ok,담 넘는 {word}를 막았어요!
-ui.mini.guard.climb_miss,{word}가 담을 넘었어요!
+ui.mini.guard.ok,✓ 맞았어요\n{word} = {meaning}
+ui.mini.guard.climb_ok,✓ 도둑을 잡았어요\n{word}
+ui.mini.guard.climb_miss,✗ 도둑이 담을 넘었어요\n{word}
 ui.mini.guard.miss,실수 {miss}/{max}
 ui.mini.pattern.sprout,새싹이 올랐어요! ({n}/{max})
 ui.mini.pattern.review,시간이 다 됐어요. 분홍 칸이 정답 어원이에요.
 ui.mini.pattern.left,새싹 {n}/{max}
+ui.mini.kite.meaning,길은 이어졌지만 뜻이 맞지 않는 단어가 있어요.
+ui.mini.search.etym,어원: {etym}
+ui.mini.guard.wrong_blocked,✗ 맞는 짝이었어요. 통과시켜야 해요\n{word} = {meaning}
+ui.mini.guard.wrong_passed,✗ 틀린 짝이었어요. 막아야 해요\n{word} ≠ {shown}

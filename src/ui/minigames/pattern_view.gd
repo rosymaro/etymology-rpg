@@ -1,7 +1,8 @@
 class_name PatternView
 extends MinigameScreen
 ## 10 문양 잇기(갈라진 말뿌리 되찾기): 돌아다니는 어원을 화살로 맞혀 쓰러뜨리고, 끌어서 단어 아래 뿌리 자리에 놓는다.
-## 단어의 어원이 모두 바르게 자리 잡으면 새싹이 오른다. 시간이 다 되면 새싹이 안 오른 단어의 정답 어원을 보여 준다.
+## 뿌리 선은 어원을 놓을 때 생긴다(어원 수를 미리 알 수 없다). 끌고 있는 어원이 단어 위에 오면 그 단어가 빛난다.
+## 단어의 어원이 정확히 모두 자리 잡으면 새싹이 오른다. 시간이 다 되면 새싹이 안 오른 단어의 정답 어원을 보여 준다.
 
 const CARD := Vector2(210, 66)
 const ROOT := Vector2(164, 50)
@@ -11,6 +12,7 @@ var _canvas: Control
 var _msg: Label
 var _drag := -1
 var _drag_pos := Vector2.ZERO
+var _hover := -1  ## 끌고 있는 어원이 올라간 단어
 var _review := false
 var _seen_sprouts := 0
 
@@ -46,10 +48,11 @@ func _card_rect(k: int) -> Rect2:
 	return Rect2(c - CARD / 2, CARD)
 
 
-## 단어 칸 k의 뿌리 끝 s번 자리(화면 좌표)
-func _slot_pos(k: int, s: int) -> Vector2:
+## 단어 칸 k의 뿌리 끝 s번 자리(화면 좌표). n = 지금 뿌리 수(-1이면 놓인 수)
+func _slot_pos(k: int, s: int, n: int = -1) -> Vector2:
 	var g := game as RootLinkGame
-	var n := g.slots(k)
+	if n < 0:
+		n = g.placed_at(k).size()
 	var r := _card_rect(k)
 	var spread := 0.0 if n == 1 else (s - (n - 1) / 2.0) * (ROOT.x + 8.0)
 	return Vector2(r.get_center().x + spread, r.end.y + ROOT_DROP)
@@ -98,6 +101,7 @@ func _input(ev: InputEvent) -> void:
 		elif _drag >= 0:
 			var i := _drag
 			_drag = -1
+			_hover = -1
 			var k := _word_under(ev.position)
 			var drop := _norm(ev.position)
 			drop.y = minf(drop.y, RootLinkGame.ROAM_BOTTOM)
@@ -106,6 +110,7 @@ func _input(ev: InputEvent) -> void:
 			changed()
 	elif ev is InputEventMouseMotion and _drag >= 0:
 		_drag_pos = ev.position
+		_hover = _word_under(ev.position)
 
 
 func tick(_d: float) -> void:
@@ -148,11 +153,15 @@ func _draw_board() -> void:
 		var w := g.words[g.targets[k]]
 		var r := _card_rect(k)
 		var root_col := Color("8a6a40")
-		for s in g.slots(k):
-			var e := _slot_pos(k, s)
-			var a := Vector2(r.get_center().x, r.end.y)
+		var a := Vector2(r.get_center().x, r.end.y)
+		var n := g.slots(k) if _review and not g.sprouted[k] else g.placed_at(k).size()
+		for s in n:  # 뿌리 선은 놓인 어원에만(정답 보기에서는 정답 수만큼)
+			var e := _slot_pos(k, s, n)
 			_canvas.draw_polyline([a, a.lerp(e, 0.5) + Vector2(0, 8), e - Vector2(0, ROOT.y / 2)], root_col, 4)
-			_canvas.draw_arc(e, 22, 0, TAU, 20, Color(root_col, 0.35), 2)
+		if k == _hover and _drag >= 0:  # 끌고 있는 어원이 여기 놓일 자리 미리 보기
+			var full: bool = g.placed_at(k).size() >= g.cap() and g.roots[_drag]["at"] != k
+			var e2 := _slot_pos(k, 0, 1) if g.placed_at(k).is_empty() else _drag_pos
+			_canvas.draw_dashed_line(a, e2, Color(UiKit.BAD if full else UiKit.ACCENT, 0.8), 3, 8)
 		if g.sprouted[k]:
 			var top := Vector2(r.get_center().x, r.position.y)
 			if not Art.draw(_canvas, "mini", "sprout", top - Vector2(0, 26), Vector2(60, 60)):
@@ -160,12 +169,15 @@ func _draw_board() -> void:
 				_canvas.draw_circle(top + Vector2(-12, -34), 11, UiKit.GOOD)
 				_canvas.draw_circle(top + Vector2(12, -38), 11, UiKit.GOOD)
 		var bg := UiKit.GOOD.lightened(0.45) if g.sprouted[k] else (UiKit.PINK.lightened(0.3) if _review else UiKit.SKY)
-		_canvas.draw_style_box(UiKit.box(bg, 20), r)
+		if k == _hover and _drag >= 0:  # 놓을 단어가 골라졌음을 보여 준다
+			_canvas.draw_style_box(UiKit.box(Color(UiKit.ACCENT, 0.35), 26, 0), r.grow(10))
+			bg = UiKit.ACCENT.lightened(0.55)
+		_canvas.draw_style_box(UiKit.box(bg, 20, 5 if k == _hover and _drag >= 0 else 3), r)
 		_canvas.draw_string(font, r.position + Vector2(4, 30), w.id, HORIZONTAL_ALIGNMENT_CENTER, CARD.x - 8, 26, UiKit.INK)
 		_canvas.draw_string(font, r.position + Vector2(4, 56), w.meaning, HORIZONTAL_ALIGNMENT_CENTER, CARD.x - 8, 16, UiKit.INK.lightened(0.2))
 		if _review and not g.sprouted[k]:  # 정답 어원을 뿌리 끝에 보여 준다
 			for s in w.etym.size():
-				var e2 := _slot_pos(k, s)
+				var e2 := _slot_pos(k, s, w.etym.size())
 				_draw_root_card(e2, "✔ " + String(w.etym[s].get("root", "")), String(w.etym[s].get("meaning", "")), UiKit.PINK.lightened(0.2))
 	# 어원
 	for i in g.roots.size():
