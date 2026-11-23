@@ -1,13 +1,16 @@
 class_name FishingView
 extends MinigameScreen
-## 5 낚시: 위에 뜻 미끼, 물속에는 영어 단어 물고기가 바늘 둘레로 모인다. 물고기를 눌러 채면 싸움이 시작된다.
-## 싸움 중에는 화면 아무 곳이나 누르고 있으면 잡이 막대가 오르고, 떼면 내려간다.
+## 5 낚시: 물을 위에서 본다. 누르고 있으면 찌를 던지고, 물고기가 입질하면 원이 줄어든다. 원이 작아지면 손을 뗀다.
+## 싸움에서는 물고기 둘레 6개 원 중 점이 날아가는 원을, 점이 닿을 때 누른다.
 
-const TRACK_H := 420.0
+const FIGHT_R := 170.0
+const NOTE_R := 46.0
 
 var _canvas: Control
 var _bait: Label
 var _msg: Label
+var _was_bite := false
+var _flash: Dictionary = {}  ## 방향 -> {ok, t}
 
 
 func build() -> void:
@@ -17,33 +20,33 @@ func build() -> void:
 	top.add_child(UiKit.label(t("ui.mini.fishing.bait"), 24))
 	_bait = UiKit.label("", 34, UiKit.ACCENT.darkened(0.3))
 	top.add_child(_bait)
-	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.INK), 1100)
-	body.add_child(_msg)
-	UiKit.pin(_msg, 0, 1, 40, -44)
 	_canvas = Control.new()
 	_canvas.anchor_right = 1.0
 	_canvas.anchor_bottom = 1.0
-	_canvas.offset_left = 40
+	_canvas.offset_left = 24
 	_canvas.offset_top = 56
-	_canvas.offset_right = -40
-	_canvas.offset_bottom = -54
+	_canvas.offset_right = -24
+	_canvas.offset_bottom = -12
 	_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
-	_canvas.draw.connect(_draw_sea)
+	_canvas.draw.connect(_draw_water)
 	_canvas.gui_input.connect(_input)
 	body.add_child(_canvas)
+	_msg = UiKit.wrap(UiKit.label("", 22, UiKit.INK), 900)
+	_msg.position = Vector2(40, 60)
+	body.add_child(_msg)
 
 
-func _hook_pos() -> Vector2:
-	return Vector2(_canvas.size.x * 0.36, _canvas.size.y * 0.55)
+func _px(p: Vector2) -> Vector2:
+	return p * _canvas.size
 
 
-func _fish_at(f: Dictionary) -> Vector2:
-	var rad := minf(_canvas.size.x * 0.3, _canvas.size.y * 0.42) * float(f["r"])
-	return _hook_pos() + Vector2(cos(f["angle"]), sin(f["angle"]) * 0.7) * rad
+func _center() -> Vector2:
+	return _canvas.size / 2.0
 
 
-func _fish_rect(f: Dictionary) -> Rect2:
-	return Rect2(_fish_at(f) - Vector2(95, 26), Vector2(190, 52))
+func _note_pos(d: int, k: float) -> Vector2:
+	var a := -PI / 2 + TAU * d / FishingGame.DIRS
+	return _center() + Vector2(cos(a), sin(a)) * FIGHT_R * k
 
 
 func _input(ev: InputEvent) -> void:
@@ -51,15 +54,24 @@ func _input(ev: InputEvent) -> void:
 		return
 	var g := game as FishingGame
 	if g.state == "fight":
-		g.hold(ev.pressed)
+		if ev.pressed:
+			for d in FishingGame.DIRS:
+				if ev.position.distance_to(_note_pos(d, 1.0)) <= NOTE_R + 10:
+					g.tap(d)
+					return
 		return
-	if not ev.pressed:
-		return
-	for i in g.fish.size():
-		if _fish_rect(g.fish[i]).has_point(ev.position):
-			g.hook(i)
-			_msg.text = t("ui.mini.fishing.fight_easy" if g.match_ else "ui.mini.fishing.fight_hard")
-			return
+	if ev.pressed:
+		g.cast(ev.position / _canvas.size)
+		_msg.text = t("ui.mini.fishing.wait")
+	else:
+		match g.release():
+			"hook":
+				_msg.text = t("ui.mini.fishing.fight_easy" if g.match_ else "ui.mini.fishing.fight_hard").format({"n": g.need()})
+				GameData.vibrate(true)
+			"early":
+				_msg.text = t("ui.mini.fishing.early")
+			"cancel":
+				_msg.text = ""
 
 
 func refresh() -> void:
@@ -67,53 +79,94 @@ func refresh() -> void:
 	_bait.text = "「%s」" % g.bait().meaning if g.bait() else ""
 
 
-func tick(_d: float) -> void:
+func tick(delta: float) -> void:
 	var g := game as FishingGame
+	var bite := g.state == "bite"
+	if bite and not _was_bite:  # 입질: 진동
+		GameData.vibrate(true)
+		_msg.text = t("ui.mini.fishing.bite")
+	if _was_bite and g.state == "idle" and g.last.is_empty() and _msg.text == t("ui.mini.fishing.bite"):
+		_msg.text = t("ui.mini.fishing.ate")
+	_was_bite = bite
+	for e in g.note_events:
+		_flash[e["dir"]] = {"ok": e["ok"], "t": 0.35}
+		if not e["ok"]:
+			GameData.vibrate()
+	g.note_events.clear()
+	for d in _flash.keys():
+		_flash[d]["t"] -= delta
+		if _flash[d]["t"] <= 0.0:
+			_flash.erase(d)
 	if not g.last.is_empty():
 		var w := g.words[g.last["w"]]
-		var key := "ui.mini.fishing.caught" if g.last["caught"] else "ui.mini.fishing.lost"
-		_msg.text = t(key).format({"word": w.id, "meaning": w.meaning})
+		_msg.text = t("ui.mini.fishing.caught" if g.last["caught"] else "ui.mini.fishing.lost").format({"word": w.id, "meaning": w.meaning})
 		GameData.vibrate(g.last["caught"])
 		g.last = {}
 		changed()
 	_canvas.queue_redraw()
 
 
-func _draw_sea() -> void:
+func _draw_fish(c: Vector2, word_id: String, dir: Vector2, scale_: float = 1.0) -> void:
+	var font := ThemeDB.fallback_font
+	var d := dir.normalized() if dir.length() > 0.001 else Vector2.RIGHT
+	var size := Vector2(150, 54) * scale_
+	if not Art.draw(_canvas, "mini", "fish_top", c, size):
+		var pts := PackedVector2Array()
+		for i in 24:
+			var a := TAU * i / 24.0
+			var v := Vector2(cos(a) * size.x / 2, sin(a) * size.y / 2)
+			pts.append(c + v.rotated(d.angle()))
+		_canvas.draw_colored_polygon(pts, Color("fff3c4"))
+		var tail := c - d * size.x / 2
+		_canvas.draw_colored_polygon([tail, tail - d * 22 * scale_ + d.orthogonal() * 16 * scale_, tail - d * 22 * scale_ - d.orthogonal() * 16 * scale_], Color("ffd59e"))
+	_canvas.draw_string(font, c + Vector2(-size.x / 2, 7 * scale_), word_id, HORIZONTAL_ALIGNMENT_CENTER, size.x, int(20 * scale_), UiKit.INK)
+
+
+func _draw_water() -> void:
 	var g := game as FishingGame
 	var font := ThemeDB.fallback_font
 	var S := _canvas.size
-	_canvas.draw_rect(Rect2(Vector2.ZERO, S), Color("bfe3f0"))
-	_canvas.draw_rect(Rect2(0, 0, S.x, 30), Color("e6f4fa"))
-	var hp := _hook_pos()
-	_canvas.draw_line(Vector2(hp.x, 0), hp, UiKit.INK, 2)
-	if not Art.draw(_canvas, "mini", "fish_bait", hp, Vector2(60, 60)):
-		_canvas.draw_arc(hp + Vector2(0, -8), 10, 0, PI, 12, UiKit.INK, 3)
-		_canvas.draw_circle(hp + Vector2(0, -16), 9, Color("f7a07a"))
-	if g.state == "wait":
-		for f in g.fish:
-			var r := _fish_rect(f)
-			if not Art.draw(_canvas, "mini", "fish_word", r.get_center(), r.size + Vector2(40, 20)):
-				_canvas.draw_style_box(UiKit.box(Color("fff3c4"), 26, 3), r)
-				var tail := r.position + Vector2(r.size.x, r.size.y / 2)
-				_canvas.draw_colored_polygon([tail, tail + Vector2(20, -14), tail + Vector2(20, 14)], Color("ffd59e"))
-			_canvas.draw_string(font, r.position + Vector2(6, 34), g.words[f["w"]].id, HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 12, 22, UiKit.INK)
+	_canvas.draw_style_box(UiKit.box(Color("8fcbe3"), 24, 3), Rect2(Vector2.ZERO, S))
+	for i in 7:  # 잔물결
+		var y := S.y * (0.12 + i * 0.13)
+		_canvas.draw_arc(Vector2(S.x * (0.15 + fmod(i * 0.37, 0.7)), y), 30, PI * 1.1, PI * 1.9, 10, Color(1, 1, 1, 0.35), 2)
+	if g.state == "fight":
+		_draw_fight(g, font)
 		return
-	# 싸움: 오른쪽에 세로 칸(막대, 물고기)과 손맛 게이지
-	var word := g.words[g.hooked]
-	_canvas.draw_string(font, Vector2(hp.x - 200, hp.y + 70), word.id, HORIZONTAL_ALIGNMENT_CENTER, 400, 40, UiKit.INK)
-	_canvas.draw_string(font, Vector2(hp.x - 200, hp.y + 110), t("ui.mini.fishing.hold"), HORIZONTAL_ALIGNMENT_CENTER, 400, 22, UiKit.INK.lightened(0.2))
-	var th := minf(TRACK_H, S.y - 20)
-	var tr_ := Rect2(S.x * 0.72, (S.y - th) / 2, 70, th)
-	_canvas.draw_style_box(UiKit.box(Color("3d6b80"), 12, 3), tr_)
-	var bar := Rect2(tr_.position.x + 6, tr_.end.y - (g.bar_pos + g.bar_size()) * th, 58, g.bar_size() * th)
-	_canvas.draw_rect(bar, Color(0.55, 0.9, 0.45, 0.85) if g.inside() else Color(0.55, 0.9, 0.45, 0.5))
-	var fp := Vector2(tr_.get_center().x, tr_.end.y - g.fish_pos * th)
-	if not Art.draw(_canvas, "mini", "fish_word", fp, Vector2(56, 36)):
-		_canvas.draw_circle(fp, 14, Color("ffb070"))
-	var gauge := Rect2(tr_.end.x + 18, tr_.position.y, 22, th)
-	_canvas.draw_rect(gauge, Color(1, 1, 1, 0.6))
-	var fill := th * clampf(g.progress, 0.0, 1.0)
-	_canvas.draw_rect(Rect2(gauge.position.x, gauge.end.y - fill, 22, fill), UiKit.ACCENT)
-	_canvas.draw_string(font, Vector2(S.x - 300, S.y - 8), t("ui.mini.guard.miss").format({"miss": g.misses, "max": int(g.cfg["max_miss"])}),
+	for i in g.fish.size():
+		var f: Dictionary = g.fish[i]
+		var to: Vector2 = f["vel"]
+		if i == g.biter and g.state in ["cast", "bite"]:
+			to = g.bobber - (f["pos"] as Vector2)
+		_draw_fish(_px(f["pos"]), g.words[f["w"]].id, to)
+	if g.state in ["cast", "bite"]:
+		var b := _px(g.bobber)
+		_canvas.draw_circle(b, 12, Color("f07070"))
+		_canvas.draw_circle(b + Vector2(0, -4), 6, Color.WHITE)
+		if g.state == "bite":
+			var ok := g.ring <= float(g.cfg["hook_ring"])
+			_canvas.draw_arc(b, 20 + 120 * g.ring, 0, TAU, 48, UiKit.GOOD if ok else Color.WHITE, 5)
+			_canvas.draw_arc(b, 20 + 120 * float(g.cfg["hook_ring"]), 0, TAU, 48, Color(UiKit.GOOD, 0.5), 2)
+	_canvas.draw_string(font, Vector2(S.x - 300, S.y - 12), t("ui.mini.guard.miss").format({"miss": g.misses, "max": int(g.cfg["max_miss"])}),
 		HORIZONTAL_ALIGNMENT_RIGHT, 290, 20, UiKit.INK)
+
+
+func _draw_fight(g: FishingGame, font: Font) -> void:
+	var c := _center()
+	_canvas.draw_circle(c, FIGHT_R + 60, Color(0.2, 0.35, 0.5, 0.25))
+	for d in FishingGame.DIRS:
+		var p := _note_pos(d, 1.0)
+		var col := Color.WHITE
+		if _flash.has(d):
+			col = UiKit.GOOD if _flash[d]["ok"] else UiKit.BAD
+		elif d == g.note_dir:
+			col = UiKit.ACCENT.lightened(0.4)
+		_canvas.draw_circle(p, NOTE_R, Color(col, 0.85))
+		_canvas.draw_arc(p, NOTE_R, 0, TAU, 32, UiKit.INK, 3)
+	if g.note_dir >= 0:
+		var k := minf(g.note_t, 1.2)
+		var hit := g.note_t >= float(g.cfg["hit_from"])
+		_canvas.draw_circle(_note_pos(g.note_dir, k), 16, UiKit.ACCENT.darkened(0.1) if hit else UiKit.INK)
+	_draw_fish(c, g.words[g.hooked].id, Vector2.RIGHT.rotated(sin(Time.get_ticks_msec() / 150.0) * 0.4), 1.3)
+	_canvas.draw_string(font, Vector2(c.x - 200, c.y + FIGHT_R + 90), t("ui.mini.fishing.hits").format({"n": g.hits, "need": g.need(), "left": g.notes_left}),
+		HORIZONTAL_ALIGNMENT_CENTER, 400, 22, UiKit.INK)

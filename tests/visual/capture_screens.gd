@@ -98,10 +98,19 @@ func _run() -> void:
 			await get_tree().create_timer(0.5).timeout
 			await _shot("%d_mini_search_review" % n)
 		if g["id"] == "trap":
-			var mv := main.current() as MemoryView
-			mv._flip(0)
-			mv._flip(1)
-			await _shot("%d_mini_trap_open" % n)
+			var tv := main.current() as TrapView
+			var tg := tv.game as TrapGame
+			await get_tree().create_timer(1.5).timeout
+			await _shot("%d_mini_trap_watch" % n)
+			tg.place_trap(tg.tray.find(0), tg.pos(0, 0.0))
+			tg.place_trap(0, Vector2(0.3, 0.4))
+			tv.changed()
+			await get_tree().create_timer(1.0).timeout
+			await _shot("%d_mini_trap_place" % n)
+			tg.hide()
+			tv.changed()
+			await get_tree().create_timer(0.8).timeout
+			await _shot("%d_mini_trap_hunt" % n)
 		if g["id"] == "pattern":
 			var pv := main.current() as PatternView
 			var pg := pv.game as RootLinkGame
@@ -134,9 +143,11 @@ func _run() -> void:
 			await _shot("%d_mini_guard_later" % n)
 		if g["id"] == "fishing":
 			var fg := (main.current() as MinigameScreen).game as FishingGame
-			fg.hook(0)
-			fg.hold(true)
-			await get_tree().create_timer(0.6).timeout
+			fg.cast(fg.fish[0]["pos"] + Vector2(0.05, 0.02))
+			await get_tree().create_timer(1.2).timeout
+			await _shot("%d_mini_fishing_bite" % n)
+			fg._start_fight(fg.fish[0]["w"])
+			await get_tree().create_timer(1.2).timeout
 			await _shot("%d_mini_fishing_fight" % n)
 		if g["id"] == "order":
 			await get_tree().create_timer(1.5).timeout

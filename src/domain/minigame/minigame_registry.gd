@@ -6,7 +6,7 @@ extends RefCounted
 static func _classes() -> Dictionary:
 	return {
 		"OrderGame": OrderGame,
-		"MemoryGame": MemoryGame,
+		"TrapGame": TrapGame,
 		"WordSearchGame": WordSearchGame,
 		"PipeGame": PipeGame,
 		"FishingGame": FishingGame,
