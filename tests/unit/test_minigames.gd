@@ -132,36 +132,45 @@ func test_word_search_hidden_words_are_readable() -> void:
 
 
 func test_pipe_paths_are_long_for_many_seeds() -> void:
-	for sd in range(1, 30):
+	for sd in range(1, 40):
 		var g := _make(PipeGame, "kite", 12, sd) as PipeGame
 		assert_gte(g.solution.size(), int(cfg["kite"]["min_path"]))
 
 
-func test_pipe_solution_connects_when_rotated_back() -> void:
+func test_pipe_word_tiles_show_right_meaning_only_on_path_turn() -> void:
 	var g := _make(PipeGame, "kite") as PipeGame
-	assert_false(g._reaches_end(), "처음에는 안 이어져 있다")
-	# 정답 길의 칸마다, 이어질 때까지 돌려 본다(최대 4번)
-	for i in g.solution.size():
-		var p: Vector2i = g.solution[i]
-		var prev: Vector2i = Vector2i(p.x, p.y - 1) if i == 0 else g.solution[i - 1]
-		var next: Vector2i = Vector2i(p.x, p.y + 1) if i == g.solution.size() - 1 else g.solution[i + 1]
-		var want: int = g._dir(p, prev) | g._dir(p, next)
-		for t in 4:
-			if (g.tiles[p.x][p.y] & want) == want:
-				break
-			g.rotate(p)
-	assert_true(g._reaches_end())
-	assert_gte(g.solution.size(), int(cfg["kite"]["min_path"]), "정답 길은 10칸 이상")
-	assert_eq(g.word_at_cell.size(), 8, "정답 5 + 함정 3")
-	var path: Array[Vector2i] = g.solution.duplicate()
-	assert_eq(g.judge(path), "ok", "정답 길은 정답을 모두 지나고 함정을 지나지 않는다")
+	assert_eq(g.rows, 7)
+	assert_eq(g.word_at_cell.size(), int(cfg["kite"]["words"]), "함정 없이 정답 5개만")
 	for c in g.word_at_cell:
-		if g.is_decoy(c):
-			path.append(c)
-			break
-	assert_eq(g.judge(path), "trap", "함정이 섞이면 오답")
+		assert_true(c in g.solution, "단어는 모두 정답 길 위")
+		assert_ne(g.shown_meaning(c), g.words[g.word_at_cell[c]].meaning, "처음엔 맞는 뜻이 안 보인다")
+		var seen := {}
+		for k in 4:
+			seen[g.shown_meaning(c)] = true
+			g.rotate(c)
+		assert_eq(seen.size(), 4, "돌릴 때마다 뜻이 바뀐다(정답 1 + 오답 3)")
+	# 정답 방향으로 되돌리면 맞는 뜻이 보이고 성공
+	for p in g.solution:
+		while g.turns[p] != 0:
+			g.rotate(p)
+	for c in g.word_at_cell:
+		assert_eq(g.shown_meaning(c), g.words[g.word_at_cell[c]].meaning)
+	assert_true(g._reaches_end())
+	assert_eq(g.judge(g.connected()), "ok")
+	var any: Vector2i = g.word_at_cell.keys()[0]
+	g.rotate(any)
+	g.rotate(any)
+	assert_ne(g.judge(g.solution.duplicate()), "ok", "뜻이 틀린 방향이면 성공이 아니다")
 	var partial: Array[Vector2i] = [g.solution[0]]
 	assert_eq(g.judge(partial), "missing")
+	for p in g.solution:
+		while g.turns[p] != 3:
+			g.rotate(p)
+	g.turn(g.solution[0])  # 마지막으로 돌려서 모두 정답 방향(0)이 되면 성공
+	for p in g.solution.slice(1):
+		g.turn(p)
+	assert_true(g.finished)
+	assert_eq(g.score(), int(cfg["kite"]["words"]))
 
 
 func test_anagram_right_spelling_earns() -> void:
@@ -338,6 +347,8 @@ func test_guard_unit_moves_toward_finger_and_words_keep_coming() -> void:
 			seen_climb = seen_climb or w["kind"] == "climb"
 			seen_gate = seen_gate or w["kind"] == "gate"
 	assert_true(seen_gate and seen_climb, "손님과 담 넘는 단어가 모두 온다")
+	g.spawn_climber()
+	assert_has(cfg["guard"]["climber_words"], g.walkers[-1]["name"], "담 넘는 것은 도둑·범죄자 단어")
 	for w in g.walkers:
 		if w["kind"] == "gate" and not w["true"]:
 			assert_ne(w["shown"], g.words[w["w"]].meaning)
@@ -391,10 +402,14 @@ func test_root_link_shoot_drag_and_sprout() -> void:
 	assert_false(g.sprouted[0], "틀린 어원이 섞이면 새싹이 안 오른다")
 	var extra := _root_of(g, 0)
 	_knock(g, extra)
-	assert_false(g.place(extra, 0), "뿌리 자리가 차면 더 못 놓는다")
+	assert_true(g.place(extra, 0), "어원 수보다 많이 놓을 수 있다(어원 수를 숨긴다)")
+	assert_false(g.sprouted[0], "덤으로 틀린 어원이 있으면 새싹이 안 오른다")
+	var more := _root_of(g, 1)
+	_knock(g, more)
+	assert_false(g.place(more, 0), "max_roots개를 넘으면 못 놓는다")
+	g.place(more, -1, Vector2(0.5, 0.3))
 	assert_true(g.place(bad, -1, Vector2(0.5, 0.3)), "놓은 어원을 떼어 낼 수 있다")
-	assert_true(g.place(extra, 0))
-	assert_true(g.sprouted[0], "어원이 모두 맞으면 새싹")
+	assert_true(g.sprouted[0], "어원이 정확히 모두 맞으면 새싹")
 	assert_eq(g.score(), 1)
 	for k in range(1, g.targets.size()):
 		for _n in g.slots(k):

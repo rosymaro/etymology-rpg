@@ -2,8 +2,9 @@ class_name RootLinkGame
 extends Minigame
 ## 10 갈라진 탑 '문양 잇기'(갈라진 말뿌리 되찾기): 단어 5개가 판 여기저기 뜻과 함께 놓여 있다.
 ## 그 단어들의 어원 조각과 함정 어원이 뜻을 달고 판 위를 돌아다닌다. 화살을 쏘아 맞히면 쓰러지고,
-## 쓰러진 어원을 끌어 단어에 놓으면 단어 아래 뿌리 선 끝에 자리 잡는다(어원이 둘이면 뿌리도 둘).
-## 단어의 뿌리 자리가 그 단어의 어원으로 모두 바르게 차면 새싹이 오르고 그 단어 1개. 새싹 5개면 완성.
+## 쓰러진 어원을 끌어 단어에 놓으면 그때 단어 아래로 뿌리 선이 생긴다. 미리 그어 두지 않아서 어원이 몇 개인지 모른다.
+## 한 단어에 max_roots개까지 놓을 수 있다(어원이 1개인 단어에도 2개 이상 놓을 수 있다).
+## 놓인 어원이 그 단어의 어원과 정확히 같으면(빠짐도 덤도 없이) 새싹이 오르고 그 단어 1개. 새싹 5개면 완성.
 ## 시간이 다 되도록 새싹이 안 오른 단어는 오답으로 두고 정답 어원을 보여 준다.
 ## 좌표는 0~1 비율: 단어는 아래쪽 절반, 어원은 위쪽(ROAM_BOTTOM까지)을 돌아다닌다. 활은 오른쪽 가장자리(0.96, 0.47).
 
@@ -71,9 +72,14 @@ func _add_root(e: Dictionary, owner: int) -> void:
 		"state": "roam", "down_t": 0.0, "at": -1, "slot": -1})
 
 
-## 단어 칸 k의 뿌리 자리 수 = 그 단어의 어원 수
+## 단어 칸 k의 실제 어원 수(화면에는 보이지 않는다)
 func slots(k: int) -> int:
 	return words[targets[k]].etym.size()
+
+
+## 한 단어에 놓을 수 있는 어원 수
+func cap() -> int:
+	return int(cfg.get("max_roots", 3))
 
 
 func placed_at(k: int) -> Array[int]:
@@ -110,17 +116,19 @@ func place(i: int, k: int, drop: Vector2 = Vector2(-1, -1)) -> bool:
 		return false
 	var r := roots[i]
 	var from: int = r["at"]
-	if k < 0 or k >= targets.size() or sprouted[k] or (k != from and placed_at(k).size() >= slots(k)):
+	if k < 0 or k >= targets.size() or sprouted[k] or (k != from and placed_at(k).size() >= cap()):
 		if r["state"] == "placed" and drop.x >= 0.0:  # 단어에서 떼어 판에 내려놓기
 			_unplace(r, drop)
 			if from >= 0:
 				_reslot(from)
+				_check(from)  # 틀린 어원을 떼어 내면 남은 것이 정답일 수 있다
 			return true
 		return false
 	r["state"] = "placed"
 	r["at"] = k
 	if from >= 0 and from != k:
 		_reslot(from)
+		_check(from)
 	_reslot(k)
 	_check(k)
 	return true
@@ -141,7 +149,7 @@ func _reslot(k: int) -> void:
 		s += 1
 
 
-## 뿌리 자리가 모두 그 단어의 어원으로 차면 새싹.
+## 놓인 어원이 그 단어의 어원과 정확히 같으면 새싹.
 func is_right(k: int) -> bool:
 	var p := placed_at(k)
 	if p.size() != slots(k):
@@ -153,7 +161,7 @@ func is_right(k: int) -> bool:
 
 
 func _check(k: int) -> void:
-	if not is_right(k):
+	if finished or sprouted[k] or not is_right(k):
 		return
 	sprouted[k] = true
 	earn(words[targets[k]].id)
