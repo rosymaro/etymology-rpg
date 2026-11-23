@@ -1,15 +1,65 @@
 {
   "_doc": "마을 미니게임 10개(01-rpg-base '미니게임 규칙 1차'). 이야기와 묶인 고정 데이터. 수치는 data/balance/minigames.json, 이름은 locale/names.csv name.minigame.<id>",
   "games": [
-    { "id": "order",   "stage": 1,  "class": "OrderGame",   "borrow": "주문 처리(오버쿡드 시리즈)" },
-    { "id": "trap",    "stage": 2,  "class": "TrapGame",    "borrow": "지뢰찾기" },
-    { "id": "search",  "stage": 3,  "class": "WordSearchGame", "borrow": "단어 찾기(글자 격자)" },
-    { "id": "kite",    "stage": 4,  "class": "PipeGame",    "borrow": "파이프 잇기" },
-    { "id": "fishing", "stage": 5,  "class": "Match3Game",  "borrow": "3개 맞추기" },
-    { "id": "copy",    "stage": 6,  "class": "AnagramGame", "borrow": "애너그램(글자 섞기)" },
-    { "id": "wheel",   "stage": 7,  "class": "CryptexGame", "borrow": "돌려 맞추는 원통 자물쇠(크립텍스)" },
-    { "id": "guard",   "stage": 8,  "class": "SortGame",    "borrow": "색 정렬(통 정렬)" },
-    { "id": "ore",     "stage": 9,  "class": "OreSlashGame", "borrow": "그어 베기(프루트 닌자)" },
-    { "id": "pattern", "stage": 10, "class": "FlowGame",    "borrow": "선 잇기(같은 색 점 잇기)" }
+    {
+      "id": "order",
+      "stage": 1,
+      "class": "OrderGame",
+      "borrow": "주문 처리(오버쿡드 시리즈)"
+    },
+    {
+      "id": "trap",
+      "stage": 2,
+      "class": "MemoryGame",
+      "borrow": "짝 맞추기(카드 뒤집기)"
+    },
+    {
+      "id": "search",
+      "stage": 3,
+      "class": "WordSearchGame",
+      "borrow": "단어 찾기(글자 격자)"
+    },
+    {
+      "id": "kite",
+      "stage": 4,
+      "class": "PipeGame",
+      "borrow": "파이프 잇기"
+    },
+    {
+      "id": "fishing",
+      "stage": 5,
+      "class": "Match3Game",
+      "borrow": "3개 맞추기"
+    },
+    {
+      "id": "copy",
+      "stage": 6,
+      "class": "AnagramGame",
+      "borrow": "애너그램(글자 섞기)"
+    },
+    {
+      "id": "wheel",
+      "stage": 7,
+      "class": "CryptexGame",
+      "borrow": "돌려 맞추는 원통 자물쇠(크립텍스)"
+    },
+    {
+      "id": "guard",
+      "stage": 8,
+      "class": "SortGame",
+      "borrow": "색 정렬(통 정렬)"
+    },
+    {
+      "id": "ore",
+      "stage": 9,
+      "class": "OreSlashGame",
+      "borrow": "그어 베기(프루트 닌자)"
+    },
+    {
+      "id": "pattern",
+      "stage": 10,
+      "class": "FlowGame",
+      "borrow": "선 잇기(같은 색 점 잇기)"
+    }
   ]
 }

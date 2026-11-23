@@ -87,6 +87,17 @@ func _run() -> void:
 	for g in MinigameRegistry.games():
 		main.flow.play_minigame(g["id"], "free")
 		await _shot("%d_mini_%s" % [n, g["id"]])
+		if g["id"] == "search":
+			await get_tree().create_timer(23.0).timeout
+			await _shot("%d_mini_search_faded" % n)
+			(main.current() as MinigameScreen)._quit()
+			await get_tree().create_timer(0.5).timeout
+			await _shot("%d_mini_search_review" % n)
+		if g["id"] == "trap":
+			var mv := main.current() as MemoryView
+			mv._flip(0)
+			mv._flip(1)
+			await _shot("%d_mini_trap_open" % n)
 		if g["id"] == "order":
 			await get_tree().create_timer(1.5).timeout
 			await _shot("%d_mini_order_later" % n)

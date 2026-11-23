@@ -45,7 +45,7 @@ func _random_card() -> String:
 		on[it["id"]] = true
 	for k in 30:
 		var id: String = words[rng.randi_range(0, words.size() - 1)].id
-		if not on.has(id):
+		if not on.has(id) and id != current_word():
 			return id
 	return words[rng.randi_range(0, words.size() - 1)].id
 
@@ -72,7 +72,8 @@ func pick(i: int) -> bool:
 	var ok: bool = items[i]["id"] == current_word()
 	if ok:
 		earn(items[i]["id"])
-		items.remove_at(i)
+		# 집은 자리에 새 카드를 바로 넣는다. 벨트가 늘 차 있어서 마지막 주문도 여러 장 중에서 고른다
+		items[i]["id"] = _random_card()
 		_next_order()
 	else:
 		_miss()

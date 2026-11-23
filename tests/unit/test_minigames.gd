@@ -31,8 +31,11 @@ func test_order_right_card_earns_and_wrong_counts_miss() -> void:
 	var ans := g.current_word()
 	var right := g.belt_ids().find(ans)
 	assert_gt(right, -1, "답 카드는 늘 벨트에 있다")
+	var before := g.items.size()
 	assert_true(g.pick(right))
 	assert_eq(g.earned, [ans] as Array[String])
+	assert_eq(g.items.size(), before, "집은 자리에 새 카드가 들어온다")
+	assert_ne(g.items[right]["id"], ans)
 	var wrong := -1
 	for i in g.items.size():
 		if g.items[i]["id"] != g.current_word():
@@ -65,25 +68,54 @@ func test_order_timeout_is_a_miss() -> void:
 	assert_eq(g.current, 1)
 
 
-func test_trap_numbers_and_rules() -> void:
-	var g := _make(TrapGame, "trap") as TrapGame
-	g.place_at([Vector2i(0, 0), Vector2i(0, 2)] as Array[Vector2i])
-	assert_eq(g.number(Vector2i(0, 1)), 2)
-	g.trap(Vector2i(0, 0))
+func test_trap_memory_pairs_word_with_its_meaning() -> void:
+	var g := _make(MemoryGame, "trap") as MemoryGame
+	assert_eq(g.cards.size(), int(cfg["trap"]["pairs"]) * 2)
+	# 짝이 아닌 두 장 → 틀림, 덮인다
+	var a := 0
+	var b := -1
+	for k in range(1, g.cards.size()):
+		if g.cards[k]["w"] != g.cards[a]["w"]:
+			b = k
+			break
+	assert_eq(g.flip(a), "open")
+	assert_eq(g.flip(b), "miss")
+	g.close_mismatch()
+	assert_false(g.cards[a]["open"])
+	# 짝인 두 장 → 걸림
+	var mate := -1
+	for k in g.cards.size():
+		if k != a and g.cards[k]["w"] == g.cards[a]["w"]:
+			mate = k
+	g.flip(a)
+	assert_eq(g.flip(mate), "match")
 	assert_eq(g.score(), 1)
-	assert_false(g.finished)
-	g.trap(Vector2i(5, 5))
-	assert_true(g.finished, "빈 칸에 덫을 놓으면 끝")
+	assert_ne(g.cards[a]["side"], g.cards[mate]["side"], "한 장은 단어, 한 장은 뜻")
 
 
-func test_trap_first_reveal_is_safe_and_reveal_word_loses() -> void:
-	var g := _make(TrapGame, "trap") as TrapGame
-	g.reveal(Vector2i(3, 3))
-	assert_false(g.finished)
-	assert_true(g.revealed.has(Vector2i(3, 3)))
-	var w: Vector2i = g.hidden.keys()[0]
-	g.reveal(w)
-	assert_true(g.lost)
+func test_trap_memory_finishes_when_all_pairs_found() -> void:
+	var g := _make(MemoryGame, "trap") as MemoryGame
+	var by := {}
+	for k in g.cards.size():
+		by.get_or_add(g.cards[k]["w"], []).append(k)
+	for w in by:
+		g.flip(by[w][0])
+		g.flip(by[w][1])
+	assert_true(g.finished)
+	assert_eq(g.score(), mini(g.pairs(), int(cfg["max_words"])))
+
+
+func test_search_removes_one_unused_letter_every_ten_seconds() -> void:
+	var g := _make(WordSearchGame, "search") as WordSearchGame
+	var answer := g.answer_cells()
+	g.update(9.9)
+	assert_eq(g.removed.size(), 0)
+	g.update(0.2)
+	assert_eq(g.removed.size(), 1, "10초에 하나")
+	g.update(10.0)
+	assert_eq(g.removed.size(), 2)
+	for p in g.removed:
+		assert_false(answer.has(p), "정답 글자는 지우지 않는다")
 
 
 func test_word_search_hidden_words_are_readable() -> void:
@@ -111,6 +143,16 @@ func test_pipe_solution_connects_when_rotated_back() -> void:
 				break
 			g.rotate(p)
 	assert_true(g._reaches_end())
+	assert_eq(g.word_at_cell.size(), 8, "정답 5 + 함정 3")
+	var path: Array[Vector2i] = g.solution.duplicate()
+	assert_eq(g.judge(path), "ok", "정답 길은 정답을 모두 지나고 함정을 지나지 않는다")
+	for c in g.word_at_cell:
+		if g.is_decoy(c):
+			path.append(c)
+			break
+	assert_eq(g.judge(path), "trap", "함정이 섞이면 오답")
+	var partial: Array[Vector2i] = [g.solution[0]]
+	assert_eq(g.judge(partial), "missing")
 
 
 func test_match3_swap_clears_and_fills_gauge() -> void:
