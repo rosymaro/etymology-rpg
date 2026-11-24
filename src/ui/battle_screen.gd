@@ -10,6 +10,8 @@ const STEP := 0.7
 const TURN_SHOW := 0.6
 const FLASH := 0.9
 const FLOAT_SEC := 2.6  ## 튀어나온 뜻·피해 숫자가 보이는 시간
+const GROW_SEC := 0.5  ## 등장: 옆 목록의 작은 카드에서 커지며 나오는 시간
+const FALL_SEC := 1.3  ## 쓰러짐: 앞으로 쓰러지며 깜빡이다 사라지는 시간
 
 var _ctx: BattleContext
 var _result: BattleResult
@@ -283,6 +285,7 @@ func _step(ev: Dictionary) -> void:
 		"round":
 			await _round(ev)
 		"down":
+			_fall_fx(_box(ev["side"]), ev["side"])
 			if ev["side"] == Combatant.ALLY:
 				_ally_cards[ev["idx"]].add_theme_color_override("font_color", UiKit.GRAY)
 				_ally_cards[ev["idx"]].text += "  ✕"
@@ -293,7 +296,7 @@ func _step(ev: Dictionary) -> void:
 			_log("✕ " + _banner.text, UiKit.BAD.darkened(0.2))
 			if ev["side"] == Combatant.ALLY:
 				GameData.vibrate()
-			await _wait(STEP)
+			await _wait(maxf(STEP, FALL_SEC))
 		"end":
 			_banner.text = t("ui.battle.end").format({"kills": ev["kills"], "total": ev["total"]})
 			_log("■ " + _banner.text, UiKit.ACCENT.darkened(0.3))
@@ -341,6 +344,7 @@ func _enter(ev: Dictionary) -> void:
 	if not due.is_empty():
 		_magic_due[idx] = {"a0": show_atk, "a1": ev["atk"], "h0": show_hp, "h1": ev["hp"]}
 	box.show_now(c, who, atk0, ev["def"], hp0, _ctx.formula, not _skip)
+	await _grow_fx(box, side, idx)
 	_banner.text = t("ui.battle.enter").format({"who": who})
 	await _wait(BattleCard.SPIN_SEC + 0.15)
 	if not magic.is_empty():
@@ -366,6 +370,54 @@ func _enter(ev: Dictionary) -> void:
 			box.flash("hp", hp0, show_hp, UiKit.ACCENT.darkened(0.2), FLASH, _skip)
 		await _wait(FLASH + 0.1)
 	box.set_values(show_atk, ev["def"], show_hp)
+
+
+## 등장: 옆(아군은 왼쪽, 적은 오른쪽) 목록의 작은 카드 자리에서 점점 커지며 가운데 자리로 나온다.
+## 기다리지 않고 바로 돌아온다(코인이 도는 동안 함께 움직인다). 쓰러졌던 모습도 여기서 되돌린다.
+func _grow_fx(box: BattleCard, side: int, idx: int) -> void:
+	box.rotation_degrees = 0.0
+	box.scale = Vector2.ONE
+	if _skip:
+		box.modulate = Color.WHITE
+		return
+	# 내용이 바뀐 카드는 상자(HBox)가 다음 프레임에 자리를 다시 잡는다: 그동안 숨겨 두고 기다린다
+	box.modulate.a = 0.0
+	await get_tree().process_frame
+	await get_tree().process_frame
+	box.modulate = Color.WHITE
+	if _skip:
+		return
+	var src: Control = _ally_cards[idx].get_parent().get_parent() if side == Combatant.ALLY else _enemy_cards[idx]
+	var rest := box.position
+	box.pivot_offset = box.size / 2.0
+	var from := src.get_global_rect().get_center() - box.get_global_rect().get_center()
+	var small := clampf(src.size.y / maxf(1.0, box.size.y), 0.15, 0.5)
+	box.position = rest + from
+	box.scale = Vector2(small, small)
+	box.modulate.a = 0.4
+	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(box, "position", rest, GROW_SEC)
+	tw.tween_property(box, "scale", Vector2.ONE, GROW_SEC)
+	tw.tween_property(box, "modulate:a", 1.0, GROW_SEC * 0.6)
+
+
+## 쓰러짐: 카드 밑을 축으로 상대 쪽(앞)으로 기울며 납작해지고, 깜빡깜빡하다가 흐려져 사라진다.
+func _fall_fx(box: BattleCard, side: int) -> void:
+	var lean := 16.0 if side == Combatant.ALLY else -16.0
+	if _skip:
+		box.rotation_degrees = lean
+		box.scale = Vector2(1.0, 0.55)
+		box.modulate.a = 0.0
+		return
+	box.pivot_offset = Vector2(box.size.x / 2.0, box.size.y)
+	var fall := create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	fall.tween_property(box, "rotation_degrees", lean, FALL_SEC * 0.45)
+	fall.tween_property(box, "scale", Vector2(1.0, 0.55), FALL_SEC * 0.45)  # 앞으로 눕듯 납작해진다
+	var blink := create_tween()
+	for k in 3:  # 깜빡깜빡
+		blink.tween_property(box, "modulate:a", 0.25, 0.1)
+		blink.tween_property(box, "modulate:a", 1.0, 0.1)
+	blink.tween_property(box, "modulate:a", 0.0, FALL_SEC - 0.6)  # 그리고 서서히 사라진다
 
 
 ## 스킬·보스 능력: 무엇이 발동했는지 알리고, 바뀐 능력치를 전→후로 깜빡인다.

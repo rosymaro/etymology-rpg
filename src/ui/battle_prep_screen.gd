@@ -1,7 +1,8 @@
 class_name BattlePrepScreen
 extends Screen
 ## 전투 준비(01-rpg-base): ① 마법 고르기 → 다음 → ② 어근 고르기 → 전투 시작(이전으로 돌아갈 수 있다).
-## 적 카드는 원래 자리(오른쪽 위)에 그대로 두고, 고르는 판은 아래에서 올라와 아군을 가린다. 길게 누르면 설명.
+## 적 카드는 원래 자리(오른쪽 위)에 그대로 두고, 고르는 판은 오른쪽 아래 절반에 오른쪽 정렬로 놓는다(아군은 왼쪽에 보인다).
+## 마법·어근은 누르면 고르고, 고른 것의 설명이 바로 아래에 나온다.
 
 var _words: Array[String] = []
 var _boss := false
@@ -11,6 +12,7 @@ var _roots: Dictionary = {}
 var _panel: PanelContainer
 var _body: VBoxContainer
 var _help: Label
+var _root_shown := ""  ## 어근 고르기에서 설명을 보여 줄 어근(마지막으로 누른 것)
 
 
 func open(args: Dictionary) -> void:
@@ -27,7 +29,7 @@ func open(args: Dictionary) -> void:
 	UiKit.fill_bg(self, Color("e9e2f3"))
 	_build_field_view()
 	_panel = UiKit.card()
-	_panel.anchor_left = 0.0
+	_panel.anchor_left = 0.5
 	_panel.anchor_right = 1.0
 	_panel.anchor_top = 0.42
 	_panel.anchor_bottom = 1.0
@@ -83,8 +85,8 @@ func _clear() -> void:
 
 func _step_magic() -> void:
 	_clear()
-	_body.add_child(UiKit.label(t("ui.battle.magic_pick") + "  ·  " + t("sys.hint.long_press"), 24))
-	var row := UiKit.hbox(10)
+	_body.add_child(_right(UiKit.label(t("ui.battle.magic_pick"), 24)))
+	var row := _flow()
 	_body.add_child(row)
 	var opts: Array[String] = _magics()
 	opts.append("")
@@ -94,9 +96,8 @@ func _step_magic() -> void:
 		var b := UiKit.button(t(key), func() -> void:
 			_magic = id
 			_step_magic(), UiKit.ACCENT.lightened(0.45) if _magic == m else UiKit.PAPER, 24)
-		LongPress.attach(b, func() -> void: _show_help(_magic_desc(id)))
 		row.add_child(b)
-	_help = UiKit.wrap(UiKit.label(_magic_desc(_magic), 22, UiKit.INK.lightened(0.2)))
+	_help = _right(UiKit.wrap(UiKit.label(_magic_desc(_magic), 22, UiKit.INK.lightened(0.2))))
 	_help.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_body.add_child(_help)
 	var nav := UiKit.hbox()
@@ -118,13 +119,13 @@ func _avg_level() -> int:
 
 func _step_roots() -> void:
 	_clear()
-	_body.add_child(UiKit.label(t("ui.battle.root_pick") + "  ·  " + t("sys.hint.long_press"), 24))
+	_body.add_child(_right(UiKit.label(t("ui.battle.root_pick"), 24)))
 	var grid := UiKit.vbox(6)
 	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_body.add_child(grid)
 	for u in _party:
 		var unit := u
-		var row := UiKit.hbox(8)
+		var row := _flow()
 		row.add_child(UiKit.label(UiKit.unit_name(u), 22))
 		var cand := GameData.rules.equippable_roots(GameData.state, u)
 		if cand.is_empty():
@@ -133,12 +134,18 @@ func _step_roots() -> void:
 			var root := r
 			var b := UiKit.button(r, func() -> void:
 				_roots[unit] = root
+				_root_shown = root
 				_step_roots(), UiKit.ACCENT.lightened(0.45) if _roots.get(u, "") == r else UiKit.PAPER, 22)
 			b.custom_minimum_size = Vector2(90, 54)
-			LongPress.attach(b, func() -> void: _show_help(_root_desc(root)))
 			row.add_child(b)
 		grid.add_child(row)
-	_help = UiKit.wrap(UiKit.label("", 22, UiKit.INK.lightened(0.2)))
+	if _root_shown == "":
+		for u in _party:  # 처음엔 어근을 가진 첫 유닛의 고른 어근 설명
+			if _roots.get(u, "") != "":
+				_root_shown = _roots[u]
+				break
+	var desc := _root_desc(_root_shown) if _root_shown != "" else ""
+	_help = _right(UiKit.wrap(UiKit.label(desc, 22, UiKit.INK.lightened(0.2))))
 	_body.add_child(_help)
 	var nav := UiKit.hbox()
 	nav.alignment = BoxContainer.ALIGNMENT_END
@@ -151,9 +158,19 @@ func _root_desc(root: String) -> String:
 	return GameText.root_desc(root)
 
 
-func _show_help(text: String) -> void:
-	if _help:
-		_help.text = text
+## 오른쪽 정렬 글
+func _right(l: Label) -> Label:
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	return l
+
+
+## 넘치면 다음 줄로 넘어가는 오른쪽 정렬 줄
+func _flow() -> HFlowContainer:
+	var f := HFlowContainer.new()
+	f.alignment = FlowContainer.ALIGNMENT_END
+	f.add_theme_constant_override("h_separation", 8)
+	f.add_theme_constant_override("v_separation", 6)
+	return f
 
 
 func _start() -> void:
