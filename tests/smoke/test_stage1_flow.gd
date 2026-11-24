@@ -105,6 +105,11 @@ func test_stage1_loop() -> void:
 	assert_string_contains(hist, "체력", "기록에 체력 변화가 남는다")
 	bs._end_btn.pressed.emit()
 	await wait_physics_frames(3)
+	for k in 12:  # 새 어근을 익힌 유닛이 기뻐하는 화면이 있으면 넘긴다
+		if not main.current() is RootJoyScreen:
+			break
+		_press_first_button(main.current())
+		await wait_physics_frames(3)
 	if main.current() is ResultScreen:
 		_press_first_button(main.current())
 		await wait_physics_frames(3)

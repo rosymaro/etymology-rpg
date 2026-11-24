@@ -56,7 +56,7 @@ func _run() -> void:
 	(main.current() as BattlePrepScreen)._step_roots()
 	await _shot("08_prep_roots")
 	(main.current() as BattlePrepScreen)._start()
-	await get_tree().create_timer(0.0).timeout
+	await get_tree().create_timer(0.05).timeout
 	await _shot("09_battle_enter")  # 옆 목록에서 커지며 나오는 중
 	for i in 60:
 		await get_tree().process_frame
@@ -107,6 +107,13 @@ func _run() -> void:
 		r.append(gd.rules.gain_word(s, field[60 + i].id))
 	main.show_screen(ResultScreen.new(), {"events": r, "title": "ui.result.won", "history": hist, "done": func() -> void: pass})
 	await _shot("10_result")
+	var jr: Array[String] = []
+	for rt in gd.bal.skill_roots.keys():
+		if gd.bal.root_family(String(rt)) == 1 and jr.size() < 2:
+			jr.append(String(rt))
+	main.show_screen(RootJoyScreen.new(), {"unit": 1, "roots": jr, "done": func() -> void: pass})
+	await get_tree().create_timer(0.3).timeout
+	await _shot("10_root_joy")
 	var evo: WordData = gd.repo.evolutions_up_to(1, 2)[0]
 	for m in evo.mats:
 		gd.rules.gain_word(s, m)

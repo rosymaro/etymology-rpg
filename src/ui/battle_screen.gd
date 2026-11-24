@@ -10,7 +10,7 @@ const STEP := 0.7
 const TURN_SHOW := 0.6
 const FLASH := 0.9
 const FLOAT_SEC := 2.6  ## 튀어나온 뜻·피해 숫자가 보이는 시간
-const GROW_SEC := 0.5  ## 등장: 옆 목록의 작은 카드에서 커지며 나오는 시간
+const GROW_SEC := 0.6  ## 등장: 옆 목록의 작은 카드에서 뱅그르르 돌며 커져 나오는 시간
 const FALL_SEC := 1.3  ## 쓰러짐: 앞으로 쓰러지며 깜빡이다 사라지는 시간
 
 var _ctx: BattleContext
@@ -158,8 +158,12 @@ func _play() -> void:
 				await _play_magic(m)
 				await _wait_tap()
 			deferred.clear()
-		elif ev["t"] in ["skill", "skill_copy", "boss_ability", "magic", "round"]:
+		elif ev["t"] in ["skill", "skill_copy", "boss_ability", "magic"]:
 			await _wait_tap()
+		elif ev["t"] == "round" and next != "down":
+			await _wait_tap()  # 둘 다 살아 있으면 다음 턴으로
+		elif ev["t"] == "down" and not next in ["down", "end"]:
+			await _wait_tap()  # 체력이 0이 되자마자 쓰러지고, 그다음에 '다음'을 누른다
 	_end_btn.visible = true
 	_ended = true
 	_a_box.hold_enabled = true
@@ -372,7 +376,7 @@ func _enter(ev: Dictionary) -> void:
 	box.set_values(show_atk, ev["def"], show_hp)
 
 
-## 등장: 옆(아군은 왼쪽, 적은 오른쪽) 목록의 작은 카드 자리에서 점점 커지며 가운데 자리로 나온다.
+## 등장: 옆(아군은 왼쪽, 적은 오른쪽) 목록의 작은 카드 자리에서 한 바퀴 돌며 점점 커져 가운데 자리로 나온다.
 ## 기다리지 않고 바로 돌아온다(코인이 도는 동안 함께 움직인다). 쓰러졌던 모습도 여기서 되돌린다.
 func _grow_fx(box: BattleCard, side: int, idx: int) -> void:
 	box.rotation_degrees = 0.0
@@ -399,6 +403,8 @@ func _grow_fx(box: BattleCard, side: int, idx: int) -> void:
 	tw.tween_property(box, "position", rest, GROW_SEC)
 	tw.tween_property(box, "scale", Vector2.ONE, GROW_SEC)
 	tw.tween_property(box, "modulate:a", 1.0, GROW_SEC * 0.6)
+	box.rotation_degrees = -360.0 if side == Combatant.ALLY else 360.0  # 뱅그르르 돌며 나온다
+	tw.tween_property(box, "rotation_degrees", 0.0, GROW_SEC).set_trans(Tween.TRANS_CUBIC)
 
 
 ## 쓰러짐: 카드 밑을 축으로 상대 쪽(앞)으로 기울며 납작해지고, 깜빡깜빡하다가 흐려져 사라진다.
@@ -477,9 +483,6 @@ func _round(ev: Dictionary) -> void:
 	_log(t("ui.battle.h_round").format({"n": ev["n"], "a": a, "b": b, "to_b": ev["to_b"], "to_a": ev["to_a"],
 		"bh0": bh0, "bh": ev["b_hp"], "ah0": ah0, "ah": ev["a_hp"]}) + first)
 	await _clash_fx(ev, ah0, bh0)
-	# 둘 다 살아 있으면 '다음'을 눌러야 다음 턴으로
-	if int(ev["a_hp"]) > 0 and int(ev["b_hp"]) > 0:
-		await _wait_tap()
 
 
 ## 부딪히기: 두 카드가 서로 기울며 다가가 가운데서 부딪힌다 → 충격 이펙트, 카드 흔들림, 깎인 체력 빨간 깜빡임,

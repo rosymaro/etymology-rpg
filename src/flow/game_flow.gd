@@ -338,18 +338,51 @@ func battle_finished(result: BattleResult, word_ids: Array[String], boss: bool, 
 		GameData.save()
 		go_field(TranslationServer.translate("ui.result.none"))
 	else:
-		_give_words(won, "ui.result.won" if result.won() else "ui.result.partial", history)
+		_give_words(won, "ui.result.won" if result.won() else "ui.result.partial", history, true)
 
 
-func _give_words(ids: Array[String], title_key: String, history: Array[Dictionary] = []) -> void:
+## joy: 새 어근을 익힌 유닛이 차례로 나와 기뻐한 뒤 결과를 보여 준다(전투 '결과 보기').
+func _give_words(ids: Array[String], title_key: String, history: Array[Dictionary] = [], joy := false) -> void:
 	var events: Array = []
 	for id in ids:
 		events.append(GameData.rules.gain_word(GameData.state, id))
 		EventBus.word_captured.emit(id)
 	GameData.save()
 	GameData.set_route({"s": "field"})  # 단어는 이미 받았다. 결과 화면 뒤는 필드
-	main.show_screen(ResultScreen.new(), {"events": events, "title": title_key, "history": history,
-		"done": func() -> void: _after_result()})
+	var show_result := func() -> void:
+		main.show_screen(ResultScreen.new(), {"events": events, "title": title_key, "history": history,
+			"done": func() -> void: _after_result()})
+	if joy:
+		_root_joy(root_joy_list(events), show_result)
+	else:
+		show_result.call()
+
+
+## 새로 익힌 어근을 유닛(어근 계열)별로 모은다: [[유닛 번호, [어근…]], …] 유닛 번호 순. 함께 다니는 유닛만.
+static func root_joy_list(events: Array) -> Array:
+	var by := {}
+	for ev in events:
+		for r in ev.get("roots", []):
+			var u := GameData.bal.root_family(String(r))
+			if u > 0 and u in GameData.state.joined:
+				if not by.has(u):
+					by[u] = []
+				by[u].append(String(r))
+	var units := by.keys()
+	units.sort()
+	var out: Array = []
+	for u in units:
+		out.append([u, by[u]])
+	return out
+
+
+func _root_joy(list: Array, done: Callable) -> void:
+	if list.is_empty():
+		done.call()
+		return
+	var head: Array = list.pop_front()
+	main.show_screen(RootJoyScreen.new(), {"unit": head[0], "roots": head[1],
+		"done": func() -> void: _root_joy(list, done)})
 
 
 func _after_result() -> void:
