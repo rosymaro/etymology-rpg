@@ -8,6 +8,26 @@ func before_all() -> void:
 	m = WorldMap.load_default()
 
 
+func test_stage1_is_in_the_middle_and_others_around_it() -> void:
+	var mid := m.size_px() / 2
+	assert_eq(m.stage_at(mid), 1, "한가운데는 스테이지 1")
+	var s2 := m.start(2) - m.start(1)
+	assert_true(s2.x > 0 and s2.y < 0, "스테이지 2는 오른쪽 위(2시 쪽)")
+	var s4 := m.start(4) - m.start(1)
+	assert_true(s4.x < 0 and s4.y < 0, "스테이지 4는 왼쪽 위(10시 쪽)")
+	var s5 := m.start(5) - m.start(1)
+	assert_gt(s5.y, 0.0, "스테이지 5는 아래(6시 쪽)")
+
+
+func test_each_gate_opens_only_the_next_region() -> void:
+	for k in range(1, 10):
+		var open := {k: true}
+		assert_gt(m.path_len(m.start(1), m.start(k + 1), open), -1, "문 %d → 지역 %d" % [k, k + 1])
+		for other in range(2, 11):
+			if other != k + 1:
+				assert_eq(m.path_len(m.start(1), m.start(other), open), -1, "문 %d로 지역 %d엔 못 간다" % [k, other])
+
+
 func test_all_ten_regions_on_one_big_map() -> void:
 	assert_eq(m.regions.size(), 10)
 	assert_gt(m.size_px().x * m.size_px().y, 2600.0 * 1500.0 * 20, "예전 필드보다 훨씬 크다")
@@ -24,6 +44,8 @@ func test_stage1_spots_are_reachable_but_next_stage_is_gated() -> void:
 	var open := {1: true}
 	assert_gt(m.path_len(s, m.start(2), open), -1, "스테이지 1 문이 열리면 간다")
 	assert_eq(m.path_len(s, m.start(3), open), -1, "스테이지 2 문은 아직 닫혀 있다")
+	open[2] = true
+	assert_gt(m.path_len(s, m.start(3), open), -1, "스테이지 2 문이 열리면 가운데에서 지역 3으로")
 
 
 func test_every_boss_reachable_when_all_gates_open() -> void:
@@ -51,6 +73,21 @@ func test_only_a_few_regions_have_a_maze() -> void:
 	for rg in m.regions:
 		with_maze += 1 if not (rg.get("maze", []) as Array).is_empty() else 0
 	assert_eq(with_maze, 3, "미로는 지역 세 곳(2, 6, 9)에 한 군데씩만")
+
+
+func test_region_borders_are_not_straight_lines() -> void:
+	# 지역 1의 경계 칸들이 한 줄(같은 x나 같은 y)에 몰리지 않는다
+	var xs := {}
+	var ys := {}
+	for y in range(1, m.h - 1):
+		for x in range(1, m.w - 1):
+			var a := m.stage_of(Vector2i(x, y))
+			if a == 1 and m.stage_of(Vector2i(x + 1, y)) not in [1, 0]:
+				xs[x] = true
+			if a == 1 and m.stage_of(Vector2i(x, y + 1)) not in [1, 0]:
+				ys[y] = true
+	assert_gt(xs.size(), 25, "경계가 들쭉날쭉하다(가로 자리)")
+	assert_gt(ys.size(), 20, "경계가 들쭉날쭉하다(세로 자리)")
 
 
 func test_walls_block_and_slide() -> void:

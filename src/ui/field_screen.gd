@@ -375,9 +375,10 @@ func _draw_marks(c: Control, k: float, names: bool) -> void:
 		var bp: Array = rg["spots"]["boss"]
 		c.draw_circle(Vector2(float(bp[0]), float(bp[1])) / ts * k, maxf(2.0, k * 1.4), UiKit.BAD if int(rg["stage"]) == GameFlow.STAGE else UiKit.GRAY.darkened(0.3))
 		if names:
-			var rc: Array = rg["rect"]
-			var p := Vector2(float(rc[0]) + 3, float(rc[1]) + 5) * k
-			c.draw_string(font, p + Vector2(0, 14), "%d. %s" % [int(rg["stage"]), t("name.stage.s%02d" % int(rg["stage"]))], HORIZONTAL_ALIGNMENT_LEFT, -1, 16, UiKit.INK)
+			var sp: Array = rg["start"]
+			var p := Vector2(float(sp[0]), float(sp[1])) / ts * k
+			var label := "%d. %s" % [int(rg["stage"]), t("name.stage.s%02d" % int(rg["stage"]))]
+			c.draw_string(font, p + Vector2(-60, -6), label, HORIZONTAL_ALIGNMENT_CENTER, 120, 13, UiKit.INK)
 	var blink := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 120.0)
 	c.draw_circle(_hero / ts * k, maxf(3.0, k * 1.6), Color(UiKit.ACCENT, 0.5 + 0.5 * blink))
 
