@@ -1,7 +1,7 @@
 class_name FieldScreen
 extends Screen
 ## 스테이지 1 필드(X·Y 탑다운): 왼쪽은 공방 마을, 오른쪽은 들판. 임시 도형으로 그린다(04-meta.md 6절).
-## 조작: 화면 왼쪽을 누르고 끌면 가상 조이스틱, 키보드 방향키도 된다. 가까이 가면 '살펴보기' 버튼이 뜬다.
+## 조작: 화면 어디든 누르고 끌면 가상 조이스틱, 키보드 방향키도 된다. 가까이 가면 '살펴보기' 버튼이 뜬다.
 
 const WORLD := Vector2(2600, 1500)
 const TOWN_W := 1000.0
@@ -192,7 +192,7 @@ func _move(p: Vector2, d: Vector2) -> Vector2:
 
 func _gui_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:
-		if ev.pressed and ev.position.x < size.x * 0.5:
+		if ev.pressed:  # 화면 어디를 눌러도(오른손으로도) 그 자리에 조이스틱
 			_stick_on = true
 			_stick_base = ev.position
 			_stick_vec = Vector2.ZERO
@@ -222,6 +222,8 @@ func _act() -> void:
 
 func _draw() -> void:
 	var o := -_cam
+	# 화면 위아래 여백(Main)까지 땅색으로
+	draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), Color("e6dcc6"))
 	if not Art.draw(self, "map", "s01_world", o + WORLD / 2, WORLD):
 		draw_rect(Rect2(o, Vector2(TOWN_W, WORLD.y)), Color("f3ead8"))
 		draw_rect(Rect2(o + Vector2(TOWN_W, 0), Vector2(WORLD.x - TOWN_W, WORLD.y)), Color("d8eec9"))

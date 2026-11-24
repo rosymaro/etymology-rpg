@@ -9,6 +9,8 @@ func show_text(text: String, done: Callable) -> void:
 	var dim := ColorRect.new()
 	dim.color = Color(0.2, 0.18, 0.3, 0.35)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.offset_top = -UiKit.BG_BLEED  # 화면 위아래 여백까지
+	dim.offset_bottom = UiKit.BG_BLEED
 	add_child(dim)
 	var c := CenterContainer.new()
 	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
