@@ -33,6 +33,14 @@ func _start_capture(dir: String) -> void:
 	cap.start(self, dir)
 
 
+## 다른 앱으로 넘어갈 때(앱이 멈출 때) 지금까지를 저장한다. 안드로이드가 앱을 닫아도 다시 켜면 이어 한다.
+func _notification(what: int) -> void:
+	if what in [NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_WM_CLOSE_REQUEST]:
+		if _screen and _screen.has_method("_remember"):
+			_screen.call("_remember")
+		GameData.save()
+
+
 func show_screen(screen: Screen, args: Dictionary = {}) -> void:
 	if _screen:
 		_screen.queue_free()

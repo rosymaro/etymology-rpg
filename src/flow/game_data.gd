@@ -16,6 +16,9 @@ var save_store := SaveStore.new()
 var settings := SettingsStore.new()
 var rng := RandomNumberGenerator.new()
 var feedback: Dictionary = {}
+var resume_path := "user://resume.cfg"  ## 다른 앱을 보다 돌아왔을 때 이어서 할 곳(04-meta.md)
+## 테스트·화면 캡처에서는 이어 하기를 끈다(앞 테스트가 남긴 곳으로 시작하지 않게). 이어 하기 테스트만 켠다.
+var resume_enabled := _resume_allowed()
 
 
 func _ready() -> void:
@@ -49,6 +52,34 @@ func continue_game() -> bool:
 func save() -> void:
 	if state:
 		save_store.save(state)
+
+
+static func _resume_allowed() -> bool:
+	for a in OS.get_cmdline_args():
+		if a.ends_with("gut_cmdln.gd"):
+			return false
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--capture="):
+			return false
+	return true
+
+
+## 지금 하던 곳을 적어 둔다. "story" | "dev" | "mini" | ""(타이틀). 앱이 다시 켜지면 여기로 돌아간다.
+func set_resume(mode: String) -> void:
+	if not resume_enabled:
+		return
+	var cf := ConfigFile.new()
+	cf.set_value("resume", "mode", mode)
+	cf.save(resume_path)
+
+
+func resume_mode() -> String:
+	if not resume_enabled:
+		return ""
+	var cf := ConfigFile.new()
+	if cf.load(resume_path) != OK:
+		return ""
+	return String(cf.get_value("resume", "mode", ""))
 
 
 ## 진동(04-meta.md 2절). 옵션에서 끌 수 있다.

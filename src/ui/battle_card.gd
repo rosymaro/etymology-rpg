@@ -1,15 +1,18 @@
 class_name BattleCard
 extends VBoxContainer
 ## 전투 카드: 카드 바깥(위)에 코인이 돌고, 카드 안에는 이름과 능력치. 코인이 붙는 능력치 앞에 코인 표기("+2C3  9").
-## 누르고 있으면(전투가 끝난 뒤) 코인이 더해지기 전, 체력이 닳기 전의 처음 모습을 보여 준다.
+## 적 단어 카드는 속성 색 바탕, 이름 앞에 착용 부위 아이콘, 가진 단어인지 글자색(WordCard와 같은 규칙).
+## 누르고 있으면 held(true, 누른 자리)를 알린다(화면이 그 자리에 처음 모습 창을 띄운다).
 
-signal held(on: bool)
+signal held(on: bool, at: Vector2)
 
 const SPIN_SEC := 0.7
 
 var coins: CoinRow
 var _card: PanelContainer
+var _bg: ColorRect
 var _title: Label
+var _icon: SlotIcon
 var _atk: Label
 var _def: Label
 var _hp: Label
@@ -17,7 +20,7 @@ var _now := {}  ## 지금 모습 {name, atk, def, hp, note_atk, note_hp}
 var _base := {}  ## 처음 모습
 var hold_enabled := false
 var skip := false  ## 빨리 보기: 깜빡임을 바로 끝낸다
-var _showing_base := false
+var _word_id := ""
 
 
 func _init() -> void:
@@ -25,14 +28,31 @@ func _init() -> void:
 	coins = CoinRow.new()
 	coins.custom_minimum_size = Vector2(380, 44)
 	add_child(coins)
-	_card = UiKit.card(UiKit.PAPER)
+	_card = PanelContainer.new()
+	_card.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	_card.custom_minimum_size = Vector2(380, 210)
 	_card.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_card)
+	_bg = WordCard.make_bg([UiKit.PAPER] as Array[Color])
+	_card.add_child(_bg)
+	var pad := MarginContainer.new()
+	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in ["left", "right", "top", "bottom"]:
+		pad.add_theme_constant_override("margin_" + side, 16 if side in ["left", "right"] else 10)
+	_card.add_child(pad)
 	var v := UiKit.vbox(6)
-	_card.add_child(v)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pad.add_child(v)
+	var head := UiKit.hbox(8)
+	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(head)
+	_icon = SlotIcon.new()
+	_icon.custom_minimum_size = Vector2(28, 28)
+	_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_icon.visible = false
+	head.add_child(_icon)
 	_title = UiKit.label("", 24)
-	v.add_child(_title)
+	head.add_child(_title)
 	_atk = UiKit.label("", 26)
 	_def = UiKit.label("", 26)
 	_hp = UiKit.label("", 26)
@@ -41,13 +61,32 @@ func _init() -> void:
 	_card.gui_input.connect(_on_card_input)
 
 
-## c: 전투원, flips: 이번 코인, 지금 값 a/d/h.
+## c: 전투원, 지금 값 a/d/h.
 func show_now(c: Combatant, name_text: String, a: int, d: int, h: int, formula: StatFormula, spin := false) -> void:
 	var note := formula.coin_notation(c.coin_style, c.coin_value, c.coins)
 	_now = {"name": name_text, "atk": a, "def": d, "hp": h, "note_atk": note["atk"], "note_hp": note["hp"]}
 	_base = {"name": name_text, "atk": c.base.atk, "def": c.base.def, "hp": c.base.hp, "note_atk": note["atk"], "note_hp": note["hp"]}
+	_set_look(c)
 	coins.set_flips(c.flips, spin)
 	_render()
+
+
+## 적 단어면 속성 색·부위 아이콘·보유 글자색. 아군이면 종이 바탕.
+func _set_look(c: Combatant) -> void:
+	var w: WordData = GameData.repo.get_word(c.word_id) if c.side == Combatant.ENEMY and GameData.repo else null
+	_word_id = c.word_id if w else ""
+	var mat := _bg.material as ShaderMaterial
+	var cs: Array[Color] = [UiKit.LEAF.lightened(0.5)]
+	if w:
+		cs = WordCard.colors(w)
+	mat.set_shader_parameter("n", cs.size())
+	for i in 3:
+		mat.set_shader_parameter("c%d" % i, cs[mini(i, cs.size() - 1)])
+	_icon.visible = w != null and w.slot != ""
+	if _icon.visible:
+		_icon.slot = w.slot
+		_icon.queue_redraw()
+	_title.add_theme_color_override("font_color", (WordCard.OWNED if WordCard.is_owned(w) else WordCard.FRESH) if w else UiKit.INK)
 
 
 ## 능력치만 바꾼다(표기와 코인은 그대로).
@@ -65,13 +104,12 @@ func value(key: String) -> int:
 
 
 ## 능력치 key("atk"|"def"|"hp")가 from → to로 바뀌는 것을 깜빡여 보여 준 뒤 새 값으로 둔다.
-## 화살표와 함께 col 색으로 dur초 동안 깜빡인다. fast면 기다리지 않는다.
 func flash(key: String, from: int, to: int, col: Color, dur: float = 1.0, fast := false) -> void:
 	if _now.is_empty():
 		return
 	var l: Label = {"atk": _atk, "def": _def, "hp": _hp}[key]
 	_now[key] = to
-	if fast or from == to:
+	if fast or skip or from == to:
 		_render()
 		return
 	var name_key: String = {"atk": "ui.battle.atk", "def": "ui.battle.def", "hp": "ui.battle.hp"}[key]
@@ -95,21 +133,13 @@ func set_hp(h: int) -> void:
 	_render()
 
 
-func show_base(on: bool) -> void:
-	_showing_base = on and not _base.is_empty()
-	coins.dim = _showing_base
-	_render()
-
-
 func _render() -> void:
-	var d: Dictionary = _base if _showing_base else _now
-	if d.is_empty():
+	if _now.is_empty():
 		return
-	_title.text = d["name"] + ("  " + TranslationServer.translate("ui.battle.base") if _showing_base else "")
-	_atk.text = _line("ui.battle.atk", d["note_atk"], d["atk"])
-	_def.text = _line("ui.battle.def", "", d["def"])
-	_hp.text = _line("ui.battle.hp", d["note_hp"], d["hp"])
-	_card.add_theme_stylebox_override("panel", UiKit.box(UiKit.SKY.lightened(0.4) if _showing_base else UiKit.PAPER))
+	_title.text = _now["name"]
+	_atk.text = _line("ui.battle.atk", _now["note_atk"], _now["atk"])
+	_def.text = _line("ui.battle.def", "", _now["def"])
+	_hp.text = _line("ui.battle.hp", _now["note_hp"], _now["hp"])
 
 
 static func _line(key: String, note: String, value: int) -> String:
@@ -117,11 +147,24 @@ static func _line(key: String, note: String, value: int) -> String:
 	return "%s  %s  %d" % [name, note, value] if note != "" else "%s  %d" % [name, value]
 
 
+## 처음 모습(코인 더하기 전, 체력 닳기 전)의 글. 화면이 팝업에 쓴다.
+func base_lines() -> Array[String]:
+	if _base.is_empty():
+		return []
+	return [_base["name"] + "  " + TranslationServer.translate("ui.battle.base"),
+		_line("ui.battle.atk", _base["note_atk"], _base["atk"]), _line("ui.battle.def", "", _base["def"]),
+		_line("ui.battle.hp", _base["note_hp"], _base["hp"])]
+
+
+## 카드 한가운데(화면 좌표): 맞을 때 숫자·뜻이 튀어나오는 자리
+func card_center() -> Vector2:
+	return _card.get_global_rect().get_center()
+
+
 func _on_card_input(ev: InputEvent) -> void:
 	if not hold_enabled or not (ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT):
 		return
-	show_base(ev.pressed)
-	held.emit(ev.pressed)
+	held.emit(ev.pressed, _card.get_global_transform_with_canvas() * ev.position)
 
 
 ## 지금 보이는 글(테스트용)
