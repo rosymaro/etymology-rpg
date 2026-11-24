@@ -4,6 +4,7 @@ extends RefCounted
 ## 화면은 '무엇이 눌렸다'만 알리고, 다음 화면은 여기서 정한다. 흐름이 바뀌면 이 파일만 고친다.
 
 const STAGE := 1
+const MAX_STAGE := 1  ## 만들어 둔(갈 수 있는) 마지막 스테이지. 월드맵 문은 여기까지만 열린다
 const JOIN_CHEOK_AFTER := 5  ## 알기 유닛이 합류하는 포획 수(s01_skit_cheok). 이야기 진행 값이라 여기 둔다
 
 var main: Main
@@ -101,7 +102,7 @@ func dev_game() -> void:
 	GameData.rules.grant_all(s, all)
 	for k in ["s01_ki", "s01_tut_battle", "s01_skit_cheok", "s01_tut_evolve"]:
 		_flag(k)
-	s.pos = Vector2(950, 760)
+	s.pos = WorldMap.load_default().start(1)
 	GameData.save()
 	GameData.set_resume("dev")
 	go_field(TranslationServer.translate("ui.dev.started").format({"count": s.dex_count()}))
@@ -195,6 +196,14 @@ func go_field(msg: String = "") -> void:
 
 func _flag(k: String) -> void:
 	GameData.state.flags[k] = true
+
+
+## 월드맵에서 열린 스테이지 문: 그 스테이지 보스를 이겼고, 다음 스테이지가 만들어져 있을 때(스토리에 맞는 길만).
+func open_gates() -> Dictionary:
+	var out := {}
+	for st in range(1, 10):
+		out[st] = seen("boss_s%02d" % st) and st + 1 <= MAX_STAGE
+	return out
 
 
 func seen(k: String) -> bool:
