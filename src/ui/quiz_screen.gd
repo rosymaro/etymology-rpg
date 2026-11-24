@@ -54,9 +54,9 @@ func open(args: Dictionary) -> void:
 	v.add_child(UiKit.label(t("ui.quiz.pick_meaning"), 24))
 	_opts = UiKit.vbox(10)
 	v.add_child(_opts)
+	# 4번째 보기 가운데가 엄지 자리(UiKit.THUMB_ROW)에 오게: 아래 여백 32, 줄 간격 14를 빼고 남는 만큼 띄운다
 	var gap2 := Control.new()
-	gap2.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	gap2.size_flags_stretch_ratio = 0.25
+	gap2.custom_minimum_size.y = UiKit.THUMB_ROW - UiKit.THUMB_H / 2.0 - 32.0 - 14.0
 	v.add_child(gap2)
 	if _i >= _qs.size():
 		_done.call_deferred(_right)
@@ -89,7 +89,7 @@ func _show() -> void:
 		var idx := k
 		var b := UiKit.button(q.options[k], func() -> void: _pick(idx), UiKit.PAPER, 26)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.custom_minimum_size = Vector2(0, 70)
+		b.custom_minimum_size = Vector2(0, UiKit.THUMB_H)
 		b.clip_text = true
 		_opts.add_child(b)
 

@@ -36,7 +36,8 @@ func open(args: Dictionary) -> void:
 	var b := UiKit.button(t("ui.battle.next"), func() -> void: done.call(), UiKit.LEAF, 26)
 	b.custom_minimum_size = Vector2(220, 64)
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	v.add_child(b)
+	add_child(b)
+	UiKit.thumb(b)  # 엄지 자리
 	GameData.vibrate()
 
 

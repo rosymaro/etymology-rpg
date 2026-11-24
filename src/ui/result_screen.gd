@@ -8,7 +8,7 @@ func open(args: Dictionary) -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 32)
+		margin.add_theme_constant_override("margin_" + side, 32 if side != "bottom" else int(UiKit.THUMB_ROW + UiKit.THUMB_H / 2.0 + 16))
 	add_child(margin)
 	var v := UiKit.vbox(12)
 	margin.add_child(v)
@@ -39,7 +39,9 @@ func open(args: Dictionary) -> void:
 	# 전투 기록: 무엇 때문에 체력이 깎였는지. 턴(또는 새 격돌)마다 가로줄
 	var done: Callable = args["done"]
 	var ok_btn := UiKit.button(t("ui.common.ok"), func() -> void: done.call(), UiKit.LEAF)
-	v.add_child(ok_btn)
+	ok_btn.custom_minimum_size.x = 600
+	add_child(ok_btn)
+	UiKit.thumb(ok_btn)  # 엄지 자리(글 목록은 그 위에서 스크롤)
 	var n_rows := list.get_child_count()
 	top_scroll.custom_minimum_size.y = clampf(n_rows * 58.0 + 10.0, 60.0, 560.0)
 	var history: Array = args.get("history", [])
