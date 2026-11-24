@@ -37,13 +37,17 @@ func test_battle_card_shows_now_and_base_on_hold() -> void:
 	assert_string_contains(card.text_lines()[1], "+2C3  9", "지금: 코인 011이 더해진 9")
 	assert_string_contains(card.text_lines()[3], "7", "지금 체력")
 	card.hold_enabled = true
+	var got := []
+	card.held.connect(func(on: bool, _at: Vector2) -> void: got.append(on))
 	var ev := InputEventMouseButton.new()
 	ev.button_index = MOUSE_BUTTON_LEFT
 	ev.pressed = true
 	card._on_card_input(ev)
-	assert_string_contains(card.text_lines()[1], "+2C3  5", "누르고 있으면 처음 공격 5")
-	assert_string_contains(card.text_lines()[3], "12", "처음 체력")
+	assert_eq(got, [true], "누르면 처음 모습 창을 띄우라고 알린다")
+	assert_string_contains(card.base_lines()[1], "+2C3  5", "처음 공격 5")
+	assert_string_contains(card.base_lines()[3], "12", "처음 체력")
+	assert_string_contains(card.text_lines()[1], "+2C3  9", "카드 자리는 그대로 지금 모습")
 	ev.pressed = false
 	card._on_card_input(ev)
-	assert_string_contains(card.text_lines()[1], "+2C3  9", "떼면 다시 지금 모습")
+	assert_eq(got, [true, false], "떼면 창을 닫으라고 알린다")
 	assert_eq(card.coins.flips, c.flips, "코인은 카드 바깥 줄에")

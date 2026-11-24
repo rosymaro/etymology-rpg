@@ -58,20 +58,25 @@ func _run() -> void:
 	(main.current() as BattlePrepScreen)._start()
 	for i in 60:
 		await get_tree().process_frame
-	await get_tree().create_timer(2.5).timeout
-	await _shot("09_battle")
 	var bs := main.current() as BattleScreen
+	for k in 900:  # 첫 턴이 끝나고 '다음 턴'을 기다릴 때까지
+		await get_tree().process_frame
+		if bs and bs._next_btn.visible:
+			break
+	await _shot("09_battle")
+	var hist: Array[Dictionary] = []
 	if bs:
 		bs.skip_all()
 		await get_tree().create_timer(1.0).timeout
 		await _shot("09_battle_end")
-		bs._a_box.show_base(true)
+		bs._show_popup(bs._a_box.base_lines(), bs._a_box.card_center())
 		await _shot("09_battle_hold")
-		bs._a_box.show_base(false)
+		bs._show_popup([] as Array[String], Vector2.ZERO)
+		hist = bs.entries
 	var r: Array = []
 	for i in 3:
 		r.append(gd.rules.gain_word(s, field[60 + i].id))
-	main.show_screen(ResultScreen.new(), {"events": r, "title": "ui.result.won", "done": func() -> void: pass})
+	main.show_screen(ResultScreen.new(), {"events": r, "title": "ui.result.won", "history": hist, "done": func() -> void: pass})
 	await _shot("10_result")
 	var evo: WordData = gd.repo.evolutions_up_to(1, 2)[0]
 	for m in evo.mats:

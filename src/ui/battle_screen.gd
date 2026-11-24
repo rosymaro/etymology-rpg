@@ -2,7 +2,8 @@ class_name BattleScreen
 extends Screen
 ## 전투 연출. 규칙 층(BattleEngine)이 이미 계산한 기록(log)을 차례로 보여 준다. 화면은 계산하지 않는다.
 ## 순서: 마법 알림 → 유닛 등장(코인이 돌고, 코인 전→후 능력치가 깜빡임) → 스킬·보스 능력(바뀐 능력치 깜빡임)
-## → "1턴" → 공격(깎인 체력이 빨갛게 깜빡임) → 둘 다 살아 있으면 "2턴" … 모든 일은 아래 기록 창에 한 줄씩 남는다.
+## → "1턴" → 공격(깎인 체력이 빨갛게 깜빡이고, 맞은 카드에서 단어 뜻과 피해 숫자가 튀어나온다) → '다음'을 누르면 "2턴" …
+## 일어난 일은 기록(entries)으로 모아 결과 화면에 턴마다 줄을 그어 보여 준다.
 
 const STEP := 0.7
 const TURN_SHOW := 0.6
@@ -14,19 +15,22 @@ var _words: Array[String] = []
 var _boss := false
 var _party: Array[int] = []
 var _ally_cards: Array[Label] = []
-var _enemy_cards: Array[Label] = []
+var _enemy_cards: Array[Control] = []
 var _a_box: BattleCard
 var _b_box: BattleCard
 var _turn: Label
 var _banner: Label
-var _history: VBoxContainer
-var _history_scroll: ScrollContainer
+var _next_btn: Button
+var _tapped := false
+var _popup: PanelContainer
+var _popup_text: Label
 var _end_btn: Button
 var _skip := false
 var _ended := false
 var _cur := {Combatant.ALLY: -1, Combatant.ENEMY: -1}
 var _magic_on := {}  ## 적 순번 -> {damage, down}: 시작 마법을 맞은 적(나올 때 효과를 보여 준다)
-var lines: Array[String] = []  ## 기록 창의 글(테스트용)
+var entries: Array[Dictionary] = []  ## 기록 {text, col} 또는 {sep: true}(턴 구분 줄). 결과 화면에 넘긴다
+var lines: Array[String] = []  ## 기록의 글만(테스트용)
 
 
 func open(args: Dictionary) -> void:
@@ -56,20 +60,13 @@ func open(args: Dictionary) -> void:
 	UiKit.pin(right, 1, 0, -20, 20)
 	for i in _ctx.enemies.size():
 		var e := _ctx.enemies[i]
-		var l := UiKit.label("%s Lv%d" % [e.word_id, e.level], 18)
 		var ew := GameData.repo.get_word(e.word_id)
-		if ew and not WordCard.is_owned(ew):
-			l.add_theme_color_override("font_color", WordCard.FRESH)
-		var c := UiKit.card(UiKit.PINK if not e.is_boss else UiKit.ACCENT.lightened(0.5))
-		var row := UiKit.hbox(6)
-		var face := Art.rect("boss", e.word_id, Vector2(48, 48)) if e.is_boss else Art.rect("enemy", "attr_%02d" % GameData.repo.get_word(e.word_id).primary_attr(), Vector2(48, 48))
-		if face:
-			row.add_child(face)
-		row.add_child(l)
-		c.add_child(row)
+		# 미니게임 단어 카드와 같은 모양: 속성 색, 부위 아이콘, 가진 단어인지 글자색
+		var c := WordCard.make(ew, "Lv%d" % e.level, 18)
+		c.custom_minimum_size.x = 230
 		right.add_child(c)
 		_hold_side(c, Combatant.ENEMY, i)
-		_enemy_cards.append(l)
+		_enemy_cards.append(c)
 	_turn = UiKit.label("", 40, UiKit.ACCENT.darkened(0.3))
 	_turn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_turn.custom_minimum_size = Vector2(300, 0)
@@ -87,22 +84,27 @@ func open(args: Dictionary) -> void:
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_banner)
 	UiKit.pin(_banner, 0.5, 0, 0, 345)
-	# 기록 창: 일어난 일을 한 줄씩(끝난 뒤에도 올려 볼 수 있다)
-	var hist_card := UiKit.card(Color(1, 1, 1, 0.75))
-	add_child(hist_card)
-	UiKit.pin(hist_card, 0.5, 0, 0, 385)
-	_history_scroll = ScrollContainer.new()
-	_history_scroll.custom_minimum_size = Vector2(840, 220)
-	_history_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	hist_card.add_child(_history_scroll)
-	_history = UiKit.vbox(2)
-	_history.custom_minimum_size = Vector2(820, 0)
-	_history_scroll.add_child(_history)
+	_next_btn = UiKit.button(t("ui.battle.next_turn"), func() -> void: _tapped = true, UiKit.ACCENT.lightened(0.35), 26)
+	_next_btn.custom_minimum_size = Vector2(240, 70)
+	_next_btn.visible = false
+	add_child(_next_btn)
+	UiKit.pin(_next_btn, 0.5, 0, 0, 400)
+	# 카드를 누르고 있으면 누른 자리에 처음 모습 창
+	_popup = UiKit.card(UiKit.SKY.lightened(0.35))
+	_popup.visible = false
+	_popup.z_index = 20
+	_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_popup_text = UiKit.label("", 22)
+	_popup.add_child(_popup_text)
+	add_child(_popup)
+	for box in [_a_box, _b_box]:
+		var bx: BattleCard = box
+		bx.held.connect(func(on: bool, at: Vector2) -> void: _show_popup(bx.base_lines() if on else [] as Array[String], at))
 	var skip := UiKit.button(t("ui.battle.skip"), skip_all, UiKit.PAPER, 22)
 	add_child(skip)
 	UiKit.pin(skip, 0, 1, 20, -20)
 	_end_btn = UiKit.button(t("ui.battle.to_result"), func() -> void:
-		main.flow.battle_finished(_result, _words, _boss), UiKit.LEAF)
+		main.flow.battle_finished(_result, _words, _boss, entries), UiKit.LEAF)
 	_end_btn.visible = false
 	add_child(_end_btn)
 	UiKit.pin(_end_btn, 1, 1, -20, -20)
@@ -139,10 +141,52 @@ func _wait(sec: float) -> void:
 
 func _log(text: String, col: Color = UiKit.INK) -> void:
 	lines.append(text)
-	_history.add_child(UiKit.wrap(UiKit.label(text, 18, col), 820))
-	await get_tree().process_frame
-	if is_instance_valid(_history_scroll):
-		_history_scroll.scroll_vertical = int(_history_scroll.get_v_scroll_bar().max_value)
+	entries.append({"text": text, "col": col.to_html()})
+
+
+## 기록에 턴(또는 새 격돌)이 바뀌었다는 가로줄
+func _sep() -> void:
+	if not entries.is_empty() and not entries[-1].get("sep", false):
+		entries.append({"sep": true})
+
+
+## '다음'을 누를 때까지 기다린다(빨리 보기면 기다리지 않는다).
+func _wait_tap() -> void:
+	if _skip:
+		return
+	_tapped = false
+	_next_btn.visible = true
+	while not _tapped and not _skip:
+		await get_tree().process_frame
+	_next_btn.visible = false
+
+
+## 맞은 카드에서 글자가 튀어나와 날아가며 사라진다(게임의 피해 숫자처럼).
+func _float(text: String, from: Vector2, dir: Vector2, col: Color, size: int = 30) -> void:
+	if _skip:
+		return
+	var l := UiKit.label(text, size, col)
+	l.add_theme_color_override("font_outline_color", Color.WHITE)
+	l.add_theme_constant_override("outline_size", 8)
+	l.z_index = 15
+	add_child(l)
+	l.position = from - Vector2(40, 20)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(l, "position", l.position + dir, 1.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "modulate:a", 0.0, 1.1).set_delay(0.4)
+	tw.chain().tween_callback(l.queue_free)
+
+
+func _show_popup(text_lines: Array[String], at: Vector2) -> void:
+	if text_lines.is_empty():
+		_popup.visible = false
+		return
+	_popup_text.text = "\n".join(text_lines)
+	_popup.visible = true
+	_popup.reset_size()
+	var vp := get_viewport_rect().size
+	var p := at + Vector2(16, -_popup.size.y - 16)  # 손가락에 가리지 않게 위쪽
+	_popup.position = Vector2(clampf(p.x, 8, vp.x - _popup.size.x - 8), clampf(p.y, 8, vp.y - _popup.size.y - 8))
 
 
 func _who(side: int, idx: int) -> String:
@@ -187,9 +231,11 @@ func _step(ev: Dictionary) -> void:
 		"round":
 			await _round(ev)
 		"down":
-			var cards := _ally_cards if ev["side"] == Combatant.ALLY else _enemy_cards
-			cards[ev["idx"]].add_theme_color_override("font_color", UiKit.GRAY)
-			cards[ev["idx"]].text += "  ✕"
+			if ev["side"] == Combatant.ALLY:
+				_ally_cards[ev["idx"]].add_theme_color_override("font_color", UiKit.GRAY)
+				_ally_cards[ev["idx"]].text += "  ✕"
+			else:
+				_enemy_cards[ev["idx"]].modulate = Color(1, 1, 1, 0.35)
 			var who := _who(ev["side"], ev["idx"])
 			_banner.text = t("ui.battle.down").format({"who": who})
 			_log("✕ " + _banner.text, UiKit.BAD.darkened(0.2))
@@ -207,6 +253,7 @@ func _enter(ev: Dictionary) -> void:
 	var idx: int = ev["idx"]
 	_cur[side] = idx
 	_turn.text = ""
+	_sep()
 	var c: Combatant = _side_list(side)[idx]
 	var who := _who(side, idx)
 	var box := _box(side)
@@ -271,12 +318,13 @@ func _effect(ev: Dictionary) -> void:
 			_box(side).coins.set_flips(af[pair[0] + "_flips"], false)
 			changes.append("%s %s %s→%s" % [_who(side, _cur[side]), t("ui.battle.coins_word"),
 				_coin_text(b4[pair[0] + "_flips"]), _coin_text(af[pair[0] + "_flips"])])
-	_log("✦ " + text + ("  " + ", ".join(changes) if not changes.is_empty() else ""), UiKit.ACCENT.darkened(0.3))
+	_log("✦ " + text + "  " + (", ".join(changes) if not changes.is_empty() else t("ui.battle.h_nothing")), UiKit.ACCENT.darkened(0.3))
 	await _wait(maxf(STEP, FLASH + 0.1) if not changes.is_empty() else STEP)
 
 
 ## 한 턴: 가운데 "N턴"을 띄우고, 서로 공격해 깎인 체력을 빨갛게 깜빡인다.
 func _round(ev: Dictionary) -> void:
+	_sep()
 	_turn.text = t("ui.battle.turn").format({"n": ev["n"]})
 	_turn.pivot_offset = _turn.size / 2
 	if not _skip:
@@ -295,19 +343,32 @@ func _round(ev: Dictionary) -> void:
 		"bh0": bh0, "bh": ev["b_hp"], "ah0": ah0, "ah": ev["a_hp"]}) + first)
 	_b_box.flash("hp", bh0, ev["b_hp"], UiKit.BAD, FLASH, _skip)
 	_a_box.flash("hp", ah0, ev["a_hp"], UiKit.BAD, FLASH, _skip)
+	# 맞은 카드에서: 한쪽으로는 단어 뜻이, 다른 쪽으로는 깎인 체력이 튀어나온다
+	var ew := GameData.repo.get_word(_ctx.enemies[_cur[Combatant.ENEMY]].word_id)
+	if int(ev["to_b"]) > 0:
+		if ew:
+			_float(ew.meaning, _b_box.card_center(), Vector2(150, -150), UiKit.ACCENT.darkened(0.35), 26)
+		_float("-%d" % ev["to_b"], _b_box.card_center(), Vector2(-120, -170), UiKit.BAD, 40)
+	if int(ev["to_a"]) > 0:
+		_float("-%d" % ev["to_a"], _a_box.card_center(), Vector2(-120, -170), UiKit.BAD, 40)
 	await _wait(FLASH + 0.15)
+	# 둘 다 살아 있으면 '다음'을 눌러야 다음 턴으로
+	if int(ev["a_hp"]) > 0 and int(ev["b_hp"]) > 0:
+		await _wait_tap()
 
 
 ## 전투가 끝난 뒤 옆 목록의 카드를 누르고 있으면, 가운데 카드에 그 유닛의 처음 모습을 보여 준다.
+## 전투가 끝난 뒤 옆 목록의 카드를 누르고 있으면, 누른 자리에 그 유닛의 처음 모습 창을 띄운다.
 func _hold_side(card: Control, side: int, idx: int) -> void:
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.gui_input.connect(func(ev: InputEvent) -> void:
 		if not _ended or not (ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT):
 			return
-		var box := _box(side)
 		if ev.pressed:
 			var c: Combatant = _side_list(side)[idx]
-			box.show_now(c, _who(side, idx), c.atk, c.def, maxi(0, c.hp), _ctx.formula)
-			box.show_base(true)
+			var tmp := BattleCard.new()
+			tmp.show_now(c, _who(side, idx), c.atk, c.def, maxi(0, c.hp), _ctx.formula)
+			_show_popup(tmp.base_lines(), card.get_global_transform_with_canvas() * ev.position)
+			tmp.free()
 		else:
-			box.show_base(false))
+			_show_popup([] as Array[String], Vector2.ZERO))

@@ -33,5 +33,20 @@ func open(args: Dictionary) -> void:
 			list.add_child(UiKit.label(t("ui.result.level_up").format({"name": UiKit.unit_name(u), "level": ups[u]}), 24, UiKit.ACCENT.darkened(0.2)))
 	for r in roots:
 		list.add_child(UiKit.label(t("ui.result.new_root").format({"root": r}), 24, UiKit.ACCENT.darkened(0.2)))
+	# 전투 기록: 무엇 때문에 체력이 깎였는지. 턴(또는 새 격돌)마다 가로줄
+	var history: Array = args.get("history", [])
+	if not history.is_empty():
+		list.add_child(UiKit.label(t("ui.result.history"), 26))
+		var box := UiKit.card(Color(1, 1, 1, 0.8))
+		var hv := UiKit.vbox(4)
+		box.add_child(hv)
+		list.add_child(box)
+		for e in history:
+			if e.get("sep", false):
+				var line := HSeparator.new()
+				line.add_theme_constant_override("separation", 10)
+				hv.add_child(line)
+			else:
+				hv.add_child(UiKit.wrap(UiKit.label(String(e["text"]), 19, Color(String(e.get("col", "4b3f72")))), 1100))
 	var done: Callable = args["done"]
 	v.add_child(UiKit.button(t("ui.common.ok"), func() -> void: done.call(), UiKit.LEAF))

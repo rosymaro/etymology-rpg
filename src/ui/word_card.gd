@@ -22,6 +22,23 @@ static func make(w: WordData, extra: String = "", size: int = 22, on_press: Call
 	return c
 
 
+## 속성 색 바탕(대각선 띠, 둥근 모서리). 부모 크기를 따라가게 붙여 쓴다.
+static func make_bg(cs: Array[Color]) -> ColorRect:
+	var bg := ColorRect.new()
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var mat := ShaderMaterial.new()
+	mat.shader = SHADER
+	mat.set_shader_parameter("n", cs.size())
+	for i in 3:
+		mat.set_shader_parameter("c%d" % i, cs[mini(i, cs.size() - 1)])
+	mat.set_shader_parameter("border_color", UiKit.INK)
+	bg.material = mat
+	bg.resized.connect(func() -> void:
+		mat.set_shader_parameter("size", bg.size)
+		mat.set_shader_parameter("radius", minf(18.0, bg.size.y / 2.0)))
+	return bg
+
+
 static func is_owned(w: WordData) -> bool:
 	return GameData.state != null and GameData.state.has_word(w.id)
 

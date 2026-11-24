@@ -13,12 +13,24 @@ func _init(m: Main) -> void:
 	main = m
 
 
+## 앱을 켤 때: 하던 곳이 적혀 있으면(다른 앱을 보다 와서 앱이 다시 켜졌을 때) 거기서 이어 한다.
 func start() -> void:
+	match GameData.resume_mode():
+		"story", "dev":
+			var dev := GameData.resume_mode() == "dev"
+			GameData.use_dev_save(dev)
+			if GameData.continue_game():
+				go_field()
+				return
+		"mini":
+			go_minigames()
+			return
 	main.show_screen(TitleScreen.new())
 
 
 func go_title() -> void:
-	start()
+	GameData.set_resume("")
+	main.show_screen(TitleScreen.new())
 
 
 func go_options(back: Callable) -> void:
@@ -45,6 +57,7 @@ func dev_game() -> void:
 		_flag(k)
 	s.pos = Vector2(950, 760)
 	GameData.save()
+	GameData.set_resume("dev")
 	go_field(TranslationServer.translate("ui.dev.started").format({"count": s.dex_count()}))
 
 
@@ -58,6 +71,7 @@ static func _views() -> Dictionary:
 
 
 func go_minigames() -> void:
+	GameData.set_resume("mini")
 	main.show_screen(MinigameHubScreen.new())
 
 
@@ -162,6 +176,7 @@ func minigame_finished(_id: String, earned: Array[String]) -> void:
 
 func name_entered(hero_name: String) -> void:
 	GameData.new_game(hero_name)
+	GameData.set_resume("story")
 	main.play_scene("s01_intro", func() -> void:
 		main.play_scene("s01_ki", func() -> void:
 			_flag("s01_ki")
@@ -172,6 +187,7 @@ func name_entered(hero_name: String) -> void:
 func continue_game() -> void:
 	GameData.use_dev_save(false)
 	if GameData.continue_game():
+		GameData.set_resume("story")
 		go_field()
 	else:
 		new_game()
@@ -250,7 +266,7 @@ func start_battle(party: Array[int], roots: Dictionary, magic_id: String, word_i
 		"party": party})
 
 
-func battle_finished(result: BattleResult, word_ids: Array[String], boss: bool) -> void:
+func battle_finished(result: BattleResult, word_ids: Array[String], boss: bool, history: Array[Dictionary] = []) -> void:
 	var won := RewardRule.words_won(result, word_ids, GameData.coin_source)
 	if boss:
 		if result.won():
@@ -263,16 +279,16 @@ func battle_finished(result: BattleResult, word_ids: Array[String], boss: bool) 
 		GameData.save()
 		go_field(TranslationServer.translate("ui.result.none"))
 	else:
-		_give_words(won, "ui.result.won" if result.won() else "ui.result.partial")
+		_give_words(won, "ui.result.won" if result.won() else "ui.result.partial", history)
 
 
-func _give_words(ids: Array[String], title_key: String) -> void:
+func _give_words(ids: Array[String], title_key: String, history: Array[Dictionary] = []) -> void:
 	var events: Array = []
 	for id in ids:
 		events.append(GameData.rules.gain_word(GameData.state, id))
 		EventBus.word_captured.emit(id)
 	GameData.save()
-	main.show_screen(ResultScreen.new(), {"events": events, "title": title_key,
+	main.show_screen(ResultScreen.new(), {"events": events, "title": title_key, "history": history,
 		"done": func() -> void: _after_result()})
 
 
