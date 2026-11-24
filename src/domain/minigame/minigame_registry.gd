@@ -4,18 +4,7 @@ extends RefCounted
 
 
 static func _classes() -> Dictionary:
-	return {
-		"OrderGame": OrderGame,
-		"TrapGame": TrapGame,
-		"WordSearchGame": WordSearchGame,
-		"PipeGame": PipeGame,
-		"FishingGame": FishingGame,
-		"MoatGame": MoatGame,
-		"AnagramGame": AnagramGame,
-		"GuardGame": GuardGame,
-		"OreSlashGame": OreSlashGame,
-		"RootLinkGame": RootLinkGame,
-	}
+	return {"FactoryGame": FactoryGame}
 
 
 static func games() -> Array:
@@ -39,5 +28,6 @@ static func for_stage(stage: int) -> Dictionary:
 static func make(id: String, pool: Array[WordData], balance: Dictionary, rng: RandomNumberGenerator) -> Minigame:
 	var def := game_def(id)
 	var g: Minigame = _classes()[def["class"]].new()
-	g.setup(pool, balance[id], int(balance["max_words"]), rng)
+	var cfg: Dictionary = FactoryGame.config(balance, id) if def["class"] == "FactoryGame" else balance[id]
+	g.setup(pool, cfg, int(balance["max_words"]), rng)
 	return g

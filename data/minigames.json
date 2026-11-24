@@ -1,68 +1,75 @@
 {
-  "_doc": "마을 미니게임 10개(01-rpg-base '미니게임 규칙 1차'). 이야기와 묶인 고정 데이터. 수치는 data/balance/minigames.json, 이름은 locale/names.csv name.minigame.<id>",
+  "_doc": "마을 미니게임 10개: 말 공방(05-minigames). 모두 FactoryGame 하나에 기능을 켜고 끈다. 수치·기능은 data/balance/minigames.json factory + fNN, 이름은 locale/names.csv name.minigame.<id>",
   "games": [
     {
-      "id": "order",
+      "id": "f01",
       "stage": 1,
-      "class": "OrderGame",
-      "borrow": "주문 처리(오버쿡드 시리즈) + 깨진 조각 맞추기"
+      "class": "FactoryGame",
+      "borrow": "어원 조합: 벨트의 어원 조각을 용광로에 넣고 두드리기",
+      "pool": "factory"
     },
     {
-      "id": "trap",
+      "id": "f02",
       "stage": 2,
-      "class": "TrapGame",
-      "borrow": "지켜보고 덫 놓기(움직임 외워 길목에 덫 놓기)"
+      "class": "FactoryGame",
+      "borrow": "에너그램: 섞인 글자로 어원 만들어 벨트에 올리기",
+      "pool": "factory"
     },
     {
-      "id": "search",
+      "id": "f03",
       "stage": 3,
-      "class": "WordSearchGame",
-      "borrow": "단어 찾기(글자 격자)"
+      "class": "FactoryGame",
+      "borrow": "단어 뜻: 쌓인 단어를 뜻 진열대에 놓기",
+      "pool": "factory"
     },
     {
-      "id": "kite",
+      "id": "f04",
       "stage": 4,
-      "class": "PipeGame",
-      "borrow": "파이프 잇기"
+      "class": "FactoryGame",
+      "borrow": "어원 조합 + 단어찾기: 용광로가 어원을 흡수하면 단어찾기",
+      "pool": "factory"
     },
     {
-      "id": "fishing",
+      "id": "f05",
       "stage": 5,
-      "class": "FishingGame",
-      "borrow": "찌 낚시 + 리듬 게임(위에서 본 물, 6방향 원 누르기)"
+      "class": "FactoryGame",
+      "borrow": "에너그램 + 어원 조합(SKIP, 쓰레기통)",
+      "pool": "factory"
     },
     {
-      "id": "copy",
+      "id": "f06",
       "stage": 6,
-      "class": "AnagramGame",
-      "borrow": "애너그램(글자 섞기) + 얼음 깨기"
+      "class": "FactoryGame",
+      "borrow": "에너그램 + 어원 조합 + 단어 뜻",
+      "pool": "factory"
     },
     {
-      "id": "wheel",
+      "id": "f07",
       "stage": 7,
-      "class": "MoatGame",
-      "borrow": "타워 디펜스(물길을 나눠 물레방아 활 돌리기)"
+      "class": "FactoryGame",
+      "borrow": "넷 모두: 에너그램 → 흡수 → 단어찾기 → 진열",
+      "pool": "factory"
     },
     {
-      "id": "guard",
+      "id": "f08",
       "stage": 8,
-      "class": "GuardGame",
-      "borrow": "막아서기 검문(뜻 판정 + 담 넘기 막기)"
+      "class": "FactoryGame",
+      "borrow": "넷 모두, 칠판 14개(용광로 7개씩)",
+      "pool": "factory"
     },
     {
-      "id": "ore",
+      "id": "f09",
       "stage": 9,
-      "class": "OreSlashGame",
-      "borrow": "그어 베기(프루트 닌자) + 어원 가리기",
-      "pool": "root_pair"
+      "class": "FactoryGame",
+      "borrow": "넷 모두, 칠판 20개(용광로 10개씩)",
+      "pool": "factory"
     },
     {
-      "id": "pattern",
+      "id": "f10",
       "stage": 10,
-      "class": "RootLinkGame",
-      "borrow": "새총·활 쏘아 맞히기 + 끌어 놓기(뿌리 되찾기)",
-      "min_etym": 1
+      "class": "FactoryGame",
+      "borrow": "넷 모두, 칠판 20개, 단어찾기 거꾸로도",
+      "pool": "factory"
     }
-  ],
-  "_min_etym_doc": "min_etym = 어원 조각이 이만큼 있는 단어만 쓴다(문양 잇기는 1: 어원 없는 단어는 뺀다)"
+  ]
 }

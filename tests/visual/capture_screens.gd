@@ -138,97 +138,46 @@ func _run() -> void:
 	var n := 18
 	for g in MinigameRegistry.games():
 		main.flow.play_minigame(g["id"], "free")
+		var fv := main.current() as FactoryView
+		if fv._intro:  # 10번 안내
+			await _shot("%d_mini_%s_intro" % [n, g["id"]])
+			fv._intro.queue_free()
+			fv._intro = null
+		var fg := fv.g
+		# 조금 돌려서 벨트를 채운다
+		for k in 200:
+			fg.update(0.05)
+		if fg.has(FactoryGame.ANAGRAM) and not fg.puzzle.is_empty():
+			fv._answer = [0] as Array[int]
+		if fg.has(FactoryGame.COMBINE) and fg.absorb_n() == 0 and not fg.belt.is_empty():
+			for it in fg.belt:
+				if fg.section(it) == FactoryGame.COMBINE:
+					fg.put(it["uid"])
+					break
+		if fg.has(FactoryGame.SHELF) and fg.stack.is_empty() and fg.board.size() > 1:
+			fg._to_stack(0)
+			fg._to_stack(1)
 		await _shot("%d_mini_%s" % [n, g["id"]])
-		if g["id"] == "search":
-			await get_tree().create_timer(23.0).timeout
-			await _shot("%d_mini_search_faded" % n)
-			var sv := main.current() as SearchView
-			sv._etym_on = true
-			sv.refresh()
-			await _shot("%d_mini_search_etym" % n)
-			(main.current() as MinigameScreen)._quit()
+		for k in range(fg.areas().size()):
+			if k == fv._area:
+				continue
+			fv._go(k)
 			await get_tree().create_timer(0.5).timeout
-			await _shot("%d_mini_search_review" % n)
-		if g["id"] == "trap":
-			var tv := main.current() as TrapView
-			var tg := tv.game as TrapGame
-			await get_tree().create_timer(1.5).timeout
-			await _shot("%d_mini_trap_watch" % n)
-			tg.place_trap(tg.tray.find(0), tg.pos(0, 0.0))
-			tg.place_trap(0, Vector2(0.3, 0.4))
-			tv.changed()
-			await get_tree().create_timer(1.0).timeout
-			await _shot("%d_mini_trap_place" % n)
-			tg.hide()
-			tv.changed()
-			await get_tree().create_timer(0.8).timeout
-			await _shot("%d_mini_trap_hunt" % n)
-		if g["id"] == "pattern":
-			var pv := main.current() as PatternView
-			var pg := pv.game as RootLinkGame
-			for k in 2:
-				for ro in pg.roots:
-					if ro["owner"] == pg.targets[k]:
-						ro["state"] = "down"
-						pg.place(pg.roots.find(ro), k)
-			for ro in pg.roots:
-				if ro["state"] == "roam":
-					ro["state"] = "down"
-					ro["down_t"] = 99.0
-					break
-			pg.shoot(Vector2(0.3, 0.2))
-			for i in pg.roots.size():
-				if pg.roots[i]["state"] == "down":
-					pv._drag = i
-					pv._hover = 2
-					pv._drag_pos = pv._card_rect(2).get_center() + Vector2(40, 10)
-			await get_tree().create_timer(0.3).timeout
-			await _shot("%d_mini_pattern_play" % n)
-			pv._quit()
+			await _shot("%d_mini_%s_%s" % [n, g["id"], fg.areas()[k]])
+		if fg.absorb_n() > 0:
+			for i in fg.absorb_shown().y:
+				fg.board[i]["state"] = FactoryGame.SEARCH
+				fg.batch.append(i)
+			fg.hot = true
+			fv._go(fg.areas().find(FactoryGame.COMBINE))
 			await get_tree().create_timer(0.5).timeout
-			await _shot("%d_mini_pattern_review" % n)
-		if g["id"] == "guard":
-			var gg := (main.current() as MinigameScreen).game as GuardGame
-			gg.spawn_climber()
-			await get_tree().create_timer(3.0).timeout
-			gg.events.append({"kind": "gate", "ok": false, "w": 0, "true": false, "blocked": false, "shown": gg.words[1].meaning, "x": 0.5})
-			await _shot("%d_mini_guard_later" % n)
-		if g["id"] == "fishing":
-			var fg := (main.current() as MinigameScreen).game as FishingGame
-			fg.cast(fg.fish[0]["pos"] + Vector2(0.05, 0.02))
-			await get_tree().create_timer(1.2).timeout
-			await _shot("%d_mini_fishing_bite" % n)
-			fg._start_fight(fg.fish[0]["w"])
-			await get_tree().create_timer(1.2).timeout
-			await _shot("%d_mini_fishing_fight" % n)
-		if g["id"] == "order":
-			var og := (main.current() as MinigameScreen).game as OrderGame
-			var ow: int = og.shelf[0]
-			for it in og.items:
-				if it["w"] == ow and it["piece"] == 0:
-					it["d"] = 0.3
-					og.pick(it["uid"])
-					og.action = {"kind": "furnace"}
-					og.act()
-					break
-			og.go_pick(og.items[0]["uid"])
-			await get_tree().create_timer(1.5).timeout
-			await _shot("%d_mini_order_later" % n)
-		if g["id"] == "wheel":
-			await get_tree().create_timer(9.0).timeout
-			await _shot("%d_mini_wheel_later" % n)
-		if g["id"] == "copy":
-			var cv := main.current() as CopyView
-			var cg := cv.game as AnagramGame
-			cg.hit(0)
-			cg.hit(1)
-			cg.hit(1)
-			cg.put(1, 0)
-			cv.changed()
-			await _shot("%d_mini_copy_ice" % n)
-		if g["id"] == "ore":
-			await get_tree().create_timer(2.0).timeout
-			await _shot("%d_mini_ore_later" % n)
+			await _shot("%d_mini_%s_hot" % [n, g["id"]])
+			fv._open_search()
+			var first: String = fg.search.ids()[0]
+			var cells := fg.search.cells_of(first)
+			fv._search_sel = {"a": cells[0], "b": cells[-1]}
+			fv._on_search_input(_release_at())
+			await _shot("%d_mini_%s_search" % [n, g["id"]])
 		n += 1
 	main.flow.go_title()
 	await _shot("30_title_modes")
@@ -238,6 +187,14 @@ func _run() -> void:
 
 
 ## 단어 카드 견본: 속성 1·2·3개, 부위 다섯 가지, 가진 단어/처음 단어.
+## 단어찾기 칸 고르기를 끝내는 입력(손을 뗌)
+func _release_at() -> InputEventMouseButton:
+	var e := InputEventMouseButton.new()
+	e.button_index = MOUSE_BUTTON_LEFT
+	e.pressed = false
+	return e
+
+
 func _card_gallery(gd: Node) -> void:
 	var layer := ColorRect.new()
 	layer.color = UiKit.PAPER

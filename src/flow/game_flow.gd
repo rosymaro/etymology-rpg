@@ -109,11 +109,9 @@ func dev_game() -> void:
 
 # ----- 미니게임 -----
 
-static func _views() -> Dictionary:
-	return {
-		"order": OrderView, "trap": TrapView, "search": SearchView, "kite": KiteView, "fishing": FishingView,
-		"copy": CopyView, "wheel": MoatView, "guard": GuardView, "ore": OreView, "pattern": PatternView,
-	}
+## 미니게임 화면: 말 공방 10개 모두 한 화면(FactoryView)이다.
+static func _view(_id: String) -> GDScript:
+	return FactoryView
 
 
 func go_minigames() -> void:
@@ -126,84 +124,33 @@ func go_minigames() -> void:
 func play_minigame(id: String, mode: String) -> void:
 	GameData.set_route({"s": "minigame", "id": id, "mode": mode})
 	var def := MinigameRegistry.game_def(id)
-	var pool := _minigame_pool(int(def["stage"]), mode == "story", int(def.get("min_etym", 0)))
-	if def.get("pool", "") == "root_pair":
-		pool = _root_pair_pool(int(def["stage"]))
+	if def.is_empty():  # 없어진 옛 미니게임(이어 하기 기록 등)
+		go_minigames() if mode == "free" else go_field()
+		return
+	var pool := _factory_pool(int(def["stage"]), mode == "story")
 	var game := MinigameRegistry.make(id, pool, GameData.bal.minigames, GameData.rng)
-	main.show_screen(_views()[id].new(), {"id": id, "mode": mode, "game": game})
+	main.show_screen(_view(id).new(), {"id": id, "mode": mode, "game": game})
 
 
-## 광석 캐기: 그 스테이지 단어(마을 먼저, 필드까지)에서 가장 많이 쓰인 어근 2개를 고르고,
-## 그 어근이 든 단어(최대 8개)와 들지 않은 단어로 판을 채운다.
-func _root_pair_pool(stage: int) -> Array[WordData]:
-	var all: Array[WordData] = GameData.repo.first_tier(stage, "town") + GameData.repo.first_tier(stage, "field")
-	var count := {}
-	for w in all:
-		for e in w.etym:
-			var k := OreSlashGame.key(e)
-			if k != "" and OreSlashGame.is_stem(k):
-				count[k] = int(count.get(k, 0)) + 1
-	var ks: Array = count.keys()
-	ks.sort_custom(func(a: String, b: String) -> bool: return count[a] > count[b])
-	var pick: Array = ks.slice(0, 2)
-	var hit: Array[WordData] = []
-	var miss: Array[WordData] = []
-	for w in all:
-		var has := false
-		for e in w.etym:
-			has = has or OreSlashGame.key(e) in pick
-		if has:
-			hit.append(w)
-		elif not w.etym.is_empty():
-			miss.append(w)
-	hit.shuffle()
-	hit.sort_custom(func(a: WordData, b: WordData) -> bool: return a.obtain == "town" and b.obtain != "town")
-	miss.shuffle()
-	var need := int(GameData.bal.minigames.get("pool_size", 16))
-	var out: Array[WordData] = hit.slice(0, 8)
-	for w in miss:
-		if out.size() >= need:
-			break
-		out.append(w)
-	return out
-
-
-## 01-rpg-base: 미니게임 단어는 그 마을에 배정된 단어 중 아직 못 얻은 것에서 고른다. 모자라면 얻은 것도 섞는다.
-## min_etym > 0이면 어원 조각이 그만큼 있는 단어를 앞에 둔다(문양 잇기). 마을 단어로 모자라면 그 스테이지 필드 단어에서 채운다.
-func _minigame_pool(stage: int, story: bool, min_etym: int = 0) -> Array[WordData]:
-	var town := GameData.repo.first_tier(stage, "town")
+## 말 공방 단어(05-minigames): 그 스테이지 1차 단어(마을 먼저, 필드까지) 중 어원 형태가 있는 것.
+## 이야기 모드는 아직 못 얻은 단어를 앞에 둔다(앞에서부터 칠판이 된다). 나머지는 함정 어원 재료.
+## [의견] 어원이 둘 이상인 단어를 먼저 쓴다(say = say처럼 어원과 단어가 같으면 배울 것이 적다). 어원 하나뿐인 단어도 모자라면 쓴다(사용자 의견).
+func _factory_pool(stage: int, story: bool) -> Array[WordData]:
 	var fresh: Array[WordData] = []
 	var old: Array[WordData] = []
-	if min_etym > 0:
-		var rich: Array[WordData] = []
-		for w in town + GameData.repo.first_tier(stage, "field"):
-			if w.etym.size() >= min_etym:
-				rich.append(w)
-		rich.shuffle()
-		rich.sort_custom(func(a: WordData, b: WordData) -> bool: return a.obtain == "town" and b.obtain != "town")
-		var out: Array[WordData] = []
-		for w in rich:
-			if out.size() >= int(GameData.bal.minigames.get("pool_size", 16)):
-				break
-			out.append(w)
-		return out
-	for w in town:
+	for w in GameData.repo.first_tier(stage, "town") + GameData.repo.first_tier(stage, "field"):
+		if w.forms().is_empty():
+			continue
 		if story and GameData.state and GameData.state.has_word(w.id):
 			old.append(w)
 		else:
 			fresh.append(w)
 	fresh.shuffle()
 	old.shuffle()
-	var need := int(GameData.bal.minigames.get("pool_size", 16))
-	while fresh.size() < need and not old.is_empty():
-		fresh.append(old.pop_back())
-	if fresh.size() < need:
-		for w in GameData.repo.first_tier(stage):
-			if fresh.size() >= need:
-				break
-			if not w in fresh:
-				fresh.append(w)
-	return fresh
+	# 어원이 둘 이상인 단어를 먼저(칠판에서 어원 조합이 보이게). 하나뿐인 단어는 모자랄 때 쓴다
+	var rich := func(w: WordData) -> bool: return w.forms().size() >= 2
+	return fresh.filter(rich) + old.filter(rich) + fresh.filter(func(w: WordData) -> bool: return not rich.call(w)) \
+		+ old.filter(func(w: WordData) -> bool: return not rich.call(w))
 
 
 ## 마을 미니게임이 끝남: 얻은 단어마다 뜻 4지선다, 맞힌 단어만 갖는다(01-rpg-base '단어 시험').

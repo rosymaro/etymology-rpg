@@ -59,40 +59,25 @@ func test_hub_lists_ten_and_each_game_opens_and_ends() -> void:
 		assert_gt(scr.game.words.size(), 0)
 		scr._quit()
 		await wait_seconds(0.8)
-		if main.current() is SearchView:
-			assert_true((main.current() as SearchView)._review, "못 찾은 답을 판에 보여 준다")
-			(main.current() as MinigameScreen)._proceed()
-			await wait_physics_frames(2)
-		if main.current() is PatternView:
-			assert_true((main.current() as PatternView)._review, "끝나고 정답 어원을 보여 준다")
-			(main.current() as MinigameScreen)._proceed()
-			await wait_physics_frames(2)
 		assert_true(main.current() is MinigameResultScreen, "보상 없는 결과 화면: " + g["id"])
 
 
-func test_order_view_play_and_story_reward_goes_through_quiz() -> void:
+func test_factory_play_and_story_reward_goes_through_quiz() -> void:
 	main.flow.dev_game()
 	await wait_physics_frames(2)
 	GameData.state.dex.clear()
 	GameData.state.roots_cache.clear()
 	main.flow.town_minigame()
 	await wait_physics_frames(3)
-	var scr := main.current() as OrderView
+	var scr := main.current() as FactoryView
 	assert_not_null(scr)
-	var g := scr.game as OrderGame
-	var w: int = g.shelf[0]
-	var first := g.words[w].id
-	for p in g.pieces(w):
-		for it in g.items:
-			if it["w"] == w and it["piece"] == p:
-				it["d"] = 0.3
-				g.pick(it["uid"])
-				break
-		g.action = {"kind": "furnace"}
-		g.act()
-	g.action = {"kind": "hammer"}
-	g.act()
-	g.place(0)
+	var g := scr.g
+	assert_eq(g.board.size(), 10, "스테이지 1 단어로 칠판 10개")
+	var first: String = g.board[0]["id"]
+	for f in g.board[0]["forms"]:
+		var it := g._put_on_belt(f, 0.8, false)
+		g.put(it["uid"])
+	assert_eq(g.hammer(), 0)
 	scr.changed()
 	scr._quit()
 	await wait_seconds(0.9)
