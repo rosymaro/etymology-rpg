@@ -11,7 +11,7 @@
     "min_gap": 0.075,
     "entry_t": 0.0,
     "exit_t": 0.5,
-    "furnace_t": 0.75,
+    "furnace_t": 0.9,
     "traps": 0,
     "trap_ratio": 0.35,
     "furnace_max": 4,

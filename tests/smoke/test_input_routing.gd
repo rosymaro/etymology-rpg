@@ -86,7 +86,9 @@ func test_factory_tap_belt_root_goes_into_furnace() -> void:
 	var g := v.g
 	for k in 200:
 		g.update(0.05)
+	await wait_physics_frames(2)  # 화면이 제 폭(영역 너비)을 잡은 뒤
 	var it: Dictionary = g.belt[0]
+	it["t"] = 0.25  # 벨트 왼쪽 변(GUT 실행 창이 덮는 가운데를 피한다)
 	var at := _screen(v, v.belt_pos(it["t"]))
 	_push_drag(at, at)
 	await wait_physics_frames(2)

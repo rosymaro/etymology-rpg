@@ -10,6 +10,7 @@ const STEP := 0.7
 const TURN_SHOW := 0.6
 const FLASH := 0.9
 const FLOAT_SEC := 2.6  ## 튀어나온 뜻·피해 숫자가 보이는 시간
+const MID_Y := 330.0  ## 세로 화면: 가운데 두 카드의 위쪽(양쪽 목록 아래)
 const GROW_SEC := 0.6  ## 등장: 옆 목록의 작은 카드에서 뱅그르르 돌며 커져 나오는 시간
 const FALL_SEC := 1.3  ## 쓰러짐: 앞으로 쓰러지며 깜빡이다 사라지는 시간
 
@@ -82,24 +83,25 @@ func open(args: Dictionary) -> void:
 	_turn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_turn.custom_minimum_size = Vector2(300, 0)
 	add_child(_turn)
-	UiKit.pin(_turn, 0.5, 0, 0, 14)
-	var mid := UiKit.hbox(60)
+	UiKit.pin(_turn, 0.5, 0, 0, MID_Y - 64)
+	var mid := UiKit.hbox(28)  # 세로 화면: 양쪽 목록 아래에 두 카드
 	add_child(mid)
-	UiKit.pin(mid, 0.5, 0, 0, 70)
+	UiKit.pin(mid, 0.5, 0, 0, MID_Y)
 	_a_box = BattleCard.new()
 	mid.add_child(_a_box)
 	_b_box = BattleCard.new()
 	mid.add_child(_b_box)
 	_banner = UiKit.label("", 26, UiKit.ACCENT.darkened(0.25))
-	_banner.custom_minimum_size = Vector2(900, 0)
+	_banner.custom_minimum_size = Vector2(680, 0)
+	_banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_banner)
-	UiKit.pin(_banner, 0.5, 0, 0, 345)
+	UiKit.pin(_banner, 0.5, 0, 0, MID_Y + 270)
 	_next_btn = UiKit.button(t("ui.battle.next_turn"), func() -> void: _tapped = true, UiKit.ACCENT.lightened(0.35), 26)
 	_next_btn.custom_minimum_size = Vector2(240, 70)
 	_next_btn.visible = false
 	add_child(_next_btn)
-	UiKit.pin(_next_btn, 0.5, 0, 0, 400)
+	UiKit.pin(_next_btn, 0.5, 0, 0, MID_Y + 370)
 	# 카드를 누르고 있으면 누른 자리에 처음 모습 창
 	_popup = UiKit.card(UiKit.SKY.lightened(0.35))
 	_popup.visible = false

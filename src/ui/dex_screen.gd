@@ -12,11 +12,11 @@ func open(_args: Dictionary) -> void:
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 24)
 	add_child(margin)
-	var root := UiKit.hbox(16)
+	var root := UiKit.vbox(12)  # 세로 화면: 목록 위, 풀이 아래
 	margin.add_child(root)
 	var left := UiKit.vbox(10)
-	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_stretch_ratio = 1.3
+	left.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.size_flags_stretch_ratio = 1.4
 	root.add_child(left)
 	var head := UiKit.hbox()
 	var s := GameData.state
@@ -48,9 +48,9 @@ func open(_args: Dictionary) -> void:
 			var word: WordData = w
 			flow.add_child(WordCard.make(word, "", 20, func() -> void: _show(word)))
 	var right := UiKit.card()
-	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(right)
-	_detail = UiKit.wrap(UiKit.label(t("ui.dex.pick"), 24), 420)
+	_detail = UiKit.wrap(UiKit.label(t("ui.dex.pick"), 24))
 	_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right.add_child(UiKit.scroll(_detail))
 

@@ -29,7 +29,7 @@ func open(args: Dictionary) -> void:
 	UiKit.fill_bg(self, Color("e9e2f3"))
 	_build_field_view()
 	_panel = UiKit.card()
-	_panel.anchor_left = 0.5
+	_panel.anchor_left = 0.0  # 세로 화면: 아래쪽 판을 가로로 꽉, 내용은 오른쪽 정렬
 	_panel.anchor_right = 1.0
 	_panel.anchor_top = 0.42
 	_panel.anchor_bottom = 1.0

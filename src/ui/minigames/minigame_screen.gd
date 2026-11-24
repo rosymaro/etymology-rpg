@@ -23,20 +23,20 @@ func open(args: Dictionary) -> void:
 	var top := UiKit.hbox(12)
 	top.position = Vector2(16, 10)
 	add_child(top)
-	_head = UiKit.label("", 26)
+	_head = UiKit.label("", 22)
 	top.add_child(_head)
 	var quit := UiKit.button(t("ui.mini.quit"), _quit, UiKit.PINK, 20)
 	quit.custom_minimum_size = Vector2(110, 48)
 	add_child(quit)
 	UiKit.pin(quit, 1, 0, -16, 10)
-	_sub = UiKit.wrap(UiKit.label(t("ui.mini.rule." + game_id), 20, UiKit.INK.lightened(0.25)), 1000)
-	_sub.position = Vector2(16, 52)
-	_sub.custom_minimum_size = Vector2(1000, 0)
+	_sub = UiKit.wrap(UiKit.label(t("ui.mini.rule." + game_id), 20, UiKit.INK.lightened(0.25)))
+	_sub.position = Vector2(16, 62)
+	_sub.custom_minimum_size = Vector2(688, 0)  # 세로 화면 폭(720 - 양옆 16)
 	add_child(_sub)
 	body = Control.new()
 	body.anchor_right = 1.0
 	body.anchor_bottom = 1.0
-	body.offset_top = 90
+	body.offset_top = 150
 	body.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(body)
 	build()

@@ -36,7 +36,7 @@ func open(args: Dictionary) -> void:
 	margin.add_child(v)
 	var head := UiKit.hbox()
 	v.add_child(head)
-	var title := UiKit.label(t("ui.quiz.title_" + _mode), 30)
+	var title := UiKit.wrap(UiKit.label(t("ui.quiz.title_" + _mode), 28))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
 	_prog = UiKit.label("", 26)

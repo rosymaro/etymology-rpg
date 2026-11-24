@@ -26,7 +26,7 @@ func open(args: Dictionary) -> void:
 		var l := UiKit.label(GameText.root_desc(String(r)), 22)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		l.custom_minimum_size.x = 900
+		l.custom_minimum_size.x = 640
 		l.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		v.add_child(l)
 	var hint := UiKit.label(t("ui.joy.hint"), 20, UiKit.INK.lightened(0.25))

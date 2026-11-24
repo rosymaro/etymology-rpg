@@ -54,7 +54,7 @@ func open(args: Dictionary) -> void:
 
 func _build_hud() -> void:
 	var bar := UiKit.hbox(10)
-	bar.position = Vector2(16, 12)
+	bar.position = Vector2(16, 84)  # 세로 화면: 메뉴 버튼 줄 아래
 	add_child(bar)
 	_top = UiKit.label("", 22)
 	var tc := UiKit.card()
@@ -77,10 +77,11 @@ func _build_hud() -> void:
 	add_child(_act_btn)
 	UiKit.pin(_act_btn, 1, 1, -24, -24)
 	_toast = UiKit.label("", 26)
-	_toast.custom_minimum_size = Vector2(600, 0)
+	_toast.custom_minimum_size = Vector2(640, 0)
+	_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_toast)
-	UiKit.pin(_toast, 0.5, 0, 0, 100)
+	UiKit.pin(_toast, 0.5, 0, 0, 160)
 	_update_top()
 
 
