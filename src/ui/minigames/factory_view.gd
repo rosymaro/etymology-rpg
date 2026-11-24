@@ -7,10 +7,12 @@ extends MinigameScreen
 ## 쌓인 단어는 끌어서 진열대 칸에 놓는다. 달아오른 용광로를 누르면 단어찾기가 열린다.
 
 const PILL := Vector2(104, 40)
-const CARD := Vector2(160, 44)
-const BOARD_H := 172.0
-const BELT_TOP := 226.0
-const BELT_BOTTOM := 486.0
+const CARD := Vector2(150, 44)
+## 세로 화면: 위에서부터 칠판 → 벨트 → (용광로 | 에너그램 책상 | 진열대)
+const BOARD_H := 300.0
+const BELT_TOP := 340.0
+const BELT_BOTTOM := 640.0
+const BOARD_TOP_S := 26.0  ## 단어찾기: 남은 시간 막대 아래 칠판 위치
 const CHALK := Color("2f4a3a")
 const CHALK_INK := Color("f4f1e6")
 const BELT_COL := Color("8b7d6b")
@@ -19,7 +21,7 @@ var g: FactoryGame
 var _canvas: Control
 var _cam := 0.0  ## 보이는 영역의 왼쪽 x(세계 좌표)
 var _area := 0  ## 보이는 영역 순번
-var _aw := 1248.0
+var _aw := 688.0
 var _msg: Label
 var _miss: Label
 var _nav_l: Button
@@ -51,16 +53,17 @@ func build() -> void:
 	body.add_child(_canvas)
 	_msg = UiKit.label("", 22, UiKit.INK)
 	_msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_msg.custom_minimum_size = Vector2(900, 0)
+	_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_msg.custom_minimum_size = Vector2(680, 0)
 	body.add_child(_msg)
-	UiKit.pin(_msg, 0.5, 1, 0, -14)
+	UiKit.pin(_msg, 0.5, 1, 0, -84)
 	_miss = UiKit.label("", 22, UiKit.BAD.darkened(0.2))
 	add_child(_miss)
 	UiKit.pin(_miss, 1, 0, -150, 18)
 	_nav_l = UiKit.button("◀", func() -> void: _go(_area - 1), UiKit.SKY, 22)
 	_nav_r = UiKit.button("▶", func() -> void: _go(_area + 1), UiKit.SKY, 22)
 	for b in [_nav_l, _nav_r]:
-		(b as Button).custom_minimum_size = Vector2(150, 56)
+		(b as Button).custom_minimum_size = Vector2(200, 60)
 		body.add_child(b)
 	UiKit.pin(_nav_l, 0, 1, 20, -8)
 	UiKit.pin(_nav_r, 1, 1, -20, -8)
@@ -81,10 +84,10 @@ func _belt_x() -> Vector3:
 	if g.has(FactoryGame.ANAGRAM):
 		var a := _area_x(FactoryGame.ANAGRAM)
 		var xm := a + _aw
-		var x1 := (_area_x(FactoryGame.COMBINE) + _aw * 0.6) if g.has(FactoryGame.COMBINE) else xm + _aw * 0.4
-		return Vector3(a + _aw * 0.52, xm, x1)
+		var x1 := (_area_x(FactoryGame.COMBINE) + _aw * 0.85) if g.has(FactoryGame.COMBINE) else xm + _aw * 0.4
+		return Vector3(a + _aw * 0.12, xm, x1)
 	var c := _area_x(FactoryGame.COMBINE)
-	return Vector3(c + 80, c + _aw * 0.35, c + _aw * 0.64)
+	return Vector3(c + 60, c + _aw * 0.5, c + _aw - 60)
 
 
 func belt_pos(t: float) -> Vector2:
@@ -115,52 +118,52 @@ func belt_pos(t: float) -> Vector2:
 
 
 func _furnace_rect() -> Rect2:
-	var bx := _belt_x()
-	return Rect2(bx.z + 60, 250, 210, 170)
+	var c := _area_x(FactoryGame.COMBINE)
+	return Rect2(c + _aw / 2 - 115, BELT_BOTTOM + 60, 230, 160)
 
 
 func _hammer_rect() -> Rect2:
 	var f := _furnace_rect()
-	return Rect2(f.position.x, f.end.y + 12, f.size.x, 56)
+	return Rect2(f.position.x, f.end.y + 14, f.size.x, 62)
 
 
 func _takeout_rect() -> Rect2:
 	var f := _furnace_rect()
-	return Rect2(f.position.x, f.end.y + 78, f.size.x, 44)
+	return Rect2(f.position.x, f.end.y + 88, f.size.x, 50)
 
 
 func _trash_rect() -> Rect2:
 	var a := _area_x(FactoryGame.ANAGRAM)
-	return Rect2(_desk_x(), 410, 150, 60)
+	return Rect2(_desk_x(), BELT_BOTTOM + 266, 150, 60)
 
 
 func _desk_x() -> float:
-	return _area_x(FactoryGame.ANAGRAM) + 40
+	return _area_x(FactoryGame.ANAGRAM) + 30
 
 
 func _tile_rect(k: int, row: int) -> Rect2:
-	return Rect2(_desk_x() + k * 62, 236 + row * 80, 56, 64)
+	return Rect2(_desk_x() + k * 62, BELT_BOTTOM + 96 + row * 80, 56, 64)
 
 
 func _skip_rect() -> Rect2:
-	return Rect2(_desk_x() + 165, 410, 150, 60)
+	return Rect2(_desk_x() + 165, BELT_BOTTOM + 266, 150, 60)
 
 
 func _clear_rect() -> Rect2:
-	return Rect2(_desk_x() + 330, 410, 150, 60)
+	return Rect2(_desk_x() + 330, BELT_BOTTOM + 266, 150, 60)
 
 
 func _card_rect(n: int) -> Rect2:
 	var s := _area_x(FactoryGame.SHELF)
-	var cols := 7
-	return Rect2(s + 30 + (n % cols) * (CARD.x + 12), BOARD_H + 26 + (n / cols) * (CARD.y + 10), CARD.x, CARD.y)
+	var cols := 4
+	return Rect2(s + 24 + (n % cols) * (CARD.x + 10), BOARD_H + 30 + (n / cols) * (CARD.y + 10), CARD.x, CARD.y)
 
 
 func _slot_rect(k: int) -> Rect2:
 	var s := _area_x(FactoryGame.SHELF)
 	var n := g.slots.size()
-	var w := (_aw - 60 - (n - 1) * 12) / n
-	return Rect2(s + 30 + k * (w + 12), 420, w, 130)
+	var w := (_aw - 48 - (n - 1) * 10) / n
+	return Rect2(s + 24 + k * (w + 10), 700, w, 190)
 
 
 func _item_at(p: Vector2) -> Dictionary:
@@ -350,7 +353,7 @@ func _show_intro(text: String) -> void:
 	_intro.z_index = 30
 	var v := UiKit.vbox(16)
 	_intro.add_child(v)
-	var l := UiKit.wrap(UiKit.label(text, 28), 720)
+	var l := UiKit.wrap(UiKit.label(text, 26), 580)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(l)
 	var ok := UiKit.button(t("ui.common.ok"), func() -> void:
@@ -370,7 +373,7 @@ func tick(delta: float) -> void:
 		_flash[k] = float(_flash[k]) - delta
 		if _flash[k] <= 0.0:
 			_flash.erase(k)
-	_aw = maxf(800.0, _canvas.size.x)
+	_aw = maxf(600.0, _canvas.size.x)
 	_cam = lerpf(_cam, _area * _aw, minf(1.0, delta * 10.0)) if _snapped else _area * _aw
 	_snapped = true
 	if absf(_cam - _area * _aw) < 1.0:
@@ -426,24 +429,34 @@ func _draw_world() -> void:
 	_canvas.draw_set_transform(Vector2.ZERO)
 
 
-## 칠판: 단어가 많으면 2~3단, 확보한 단어는 흐리게 ✓
-func _draw_board(r: Rect2, font: Font) -> void:
-	_canvas.draw_rect(r, CHALK)
-	_canvas.draw_rect(r, Color("8a6d3b"), false, 6.0)
-	var n := g.board.size()
-	var cols := 2 if n <= 10 else 3
+## 칠판: 단어가 많으면 2단, 확보한(찾은) 단어는 흐리게 ✓. ci = 그릴 곳, ids = 적을 칠판 순번(비면 모두)
+func _draw_board(r: Rect2, font: Font, ci: CanvasItem = null, ids: Array[int] = [], note := "") -> void:
+	if ci == null:
+		ci = _canvas
+	ids = ids.duplicate()  # 기본값 배열을 고치지 않게
+	if ids.is_empty():
+		for i in g.board.size():
+			ids.append(i)
+	ci.draw_rect(r, CHALK)
+	ci.draw_rect(r, Color("8a6d3b"), false, 6.0)
+	var top := 12.0
+	if note != "":
+		ci.draw_string(font, r.position + Vector2(14, 30), note, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 28, 18, Color("ffd59e"))
+		top = 40.0
+	var n := ids.size()
+	var cols := 1 if n <= 10 else 2
 	var rows := int(ceil(n / float(cols)))
-	var row_h := minf(32.0, (r.size.y - 16) / rows)
-	var fs := int(clampf(row_h * 0.66, 12, 20))
+	var row_h := minf(30.0, (r.size.y - top - 4) / rows)
+	var fs := int(clampf(row_h * 0.62, 12, 19) if cols == 1 else clampf(row_h * 0.55, 12, 16))
 	var cw := (r.size.x - 24) / cols
-	for i in n:
-		var c := i / rows
-		var row := i % rows
-		var p := r.position + Vector2(14 + c * cw, 12 + row * row_h + row_h * 0.72)
-		var st: String = g.board[i]["state"]
-		var col := CHALK_INK.darkened(0.45) if st == FactoryGame.DONE else CHALK_INK
-		var mark := "✓ " if st == FactoryGame.DONE else ""
-		_canvas.draw_string(font, p, mark + g.board_line(i), HORIZONTAL_ALIGNMENT_LEFT, cw - 10, fs, col)
+	for k in n:
+		var i := ids[k]
+		var c := k / rows
+		var row := k % rows
+		var p := r.position + Vector2(14 + c * cw, top + row * row_h + row_h * 0.72)
+		var done: bool = g.board[i]["state"] == FactoryGame.DONE or (g.search != null and String(g.board[i]["id"]).to_lower() in g.search.found)
+		var col := CHALK_INK.darkened(0.45) if done else CHALK_INK
+		ci.draw_string(font, p, ("✓ " if done else "") + g.board_line(i), HORIZONTAL_ALIGNMENT_LEFT, cw - 10, fs, col)
 
 
 func _draw_belt(font: Font) -> void:
@@ -474,6 +487,8 @@ func _pill(c: Vector2, text: String, font: Font, col: Color) -> void:
 
 func _draw_furnace(font: Font) -> void:
 	var f := _furnace_rect()
+	# 벨트에서 용광로로 내려가는 홈통
+	_canvas.draw_line(belt_pos(float(g.cfg.get("furnace_t", 0.9))) + Vector2(0, 20), f.position + Vector2(f.size.x / 2, 0), BELT_COL.darkened(0.2), 14.0)
 	var heat := 1.0 if g.hot else (0.5 if _flash.has("furnace") else 0.0)
 	var col := Color("6b5b55").lerp(Color("e0452c"), heat)
 	if g.hot:
@@ -501,9 +516,9 @@ func _draw_furnace(font: Font) -> void:
 
 func _draw_anagram(font: Font) -> void:
 	var a := _area_x(FactoryGame.ANAGRAM)
-	_canvas.draw_string(font, Vector2(_desk_x(), BOARD_H + 40), t("ui.factory.anagram_title"), HORIZONTAL_ALIGNMENT_LEFT, -1, 22, UiKit.INK)
+	_canvas.draw_string(font, Vector2(_desk_x(), BELT_BOTTOM + 78), t("ui.factory.anagram_title"), HORIZONTAL_ALIGNMENT_LEFT, -1, 22, UiKit.INK)
 	if g.puzzle.is_empty():
-		_canvas.draw_string(font, Vector2(_desk_x(), 300), t("ui.factory.anagram_none"), HORIZONTAL_ALIGNMENT_LEFT, 500, 20, UiKit.INK)
+		_canvas.draw_string(font, Vector2(_desk_x(), BELT_BOTTOM + 130), t("ui.factory.anagram_none"), HORIZONTAL_ALIGNMENT_LEFT, 500, 20, UiKit.INK)
 	else:
 		var letters: Array = g.puzzle["letters"]
 		for k in letters.size():
@@ -534,7 +549,7 @@ func _draw_anagram(font: Font) -> void:
 		_canvas.draw_rect(tr, UiKit.INK, false, 2.0)
 		_canvas.draw_string(font, tr.position + Vector2(0, 38), t("ui.factory.trash"), HORIZONTAL_ALIGNMENT_CENTER, tr.size.x, 20, Color.WHITE)
 	if not g.outbox.is_empty():
-		_canvas.draw_string(font, Vector2(a + _aw * 0.52, BELT_BOTTOM + 60), t("ui.factory.waiting").format({"n": g.outbox.size()}), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, UiKit.INK)
+		_canvas.draw_string(font, Vector2(a + _aw * 0.12, BELT_TOP - 30), t("ui.factory.waiting").format({"n": g.outbox.size()}), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, UiKit.INK)
 
 
 func _draw_shelf(font: Font) -> void:
@@ -553,7 +568,7 @@ func _draw_shelf(font: Font) -> void:
 		_canvas.draw_rect(r, UiKit.INK, false, 2.0)
 		var i: int = g.slots[k]
 		if i >= 0:
-			_canvas.draw_multiline_string(font, r.position + Vector2(8, 34), String(g.board[i]["meaning"]), HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 16, 20, 4, UiKit.INK)
+			_canvas.draw_multiline_string(font, r.position + Vector2(6, 30), String(g.board[i]["meaning"]), HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 12, 18, 7, UiKit.INK)
 
 
 # ----- 단어찾기 -----
@@ -591,8 +606,9 @@ func _open_search() -> void:
 
 func _grid_geom() -> Dictionary:
 	var n := g.search.size
-	var cell := minf(44.0, (_search_canvas.size.y - 40) / n)
-	return {"o": Vector2(10, 30), "cell": cell, "n": n}
+	var oy := BOARD_TOP_S + BOARD_H + 16
+	var cell := minf(50.0, minf((_search_canvas.size.x - 20) / n, (_search_canvas.size.y - oy - 10) / n))
+	return {"o": Vector2((_search_canvas.size.x - cell * n) / 2.0, oy), "cell": cell, "n": n}
 
 
 func _cell_at(p: Vector2) -> Vector2i:
@@ -659,17 +675,6 @@ func _draw_search() -> void:
 			_search_canvas.draw_rect(rect, bg)
 			_search_canvas.draw_rect(rect, UiKit.GRAY, false, 1.0)
 			_search_canvas.draw_string(font, rect.position + Vector2(0, cell * 0.72), String(g.search.grid[r][c]).to_upper(), HORIZONTAL_ALIGNMENT_CENTER, cell, int(cell * 0.6), UiKit.INK)
-	# 오른쪽: 칠판 글씨(찾을 단어)
-	var bx := o.x + n * cell + 24
-	var br := Rect2(bx, o.y, _search_canvas.size.x - bx - 10, n * cell)
-	_search_canvas.draw_rect(br, CHALK)
-	var y := br.position.y + 34
-	if bool(g.cfg.get("search_reverse", false)):
-		_search_canvas.draw_string(font, Vector2(br.position.x + 12, y), t("ui.factory.reverse_note"), HORIZONTAL_ALIGNMENT_LEFT, br.size.x - 20, 18, Color("ffd59e"))
-		y += 30
-	var lh := minf(34.0, (br.size.y - 50) / maxf(1, g.search_words.size()))
-	for i in g.search_words:
-		var done := String(g.board[i]["id"]).to_lower() in g.search.found
-		_search_canvas.draw_string(font, Vector2(br.position.x + 12, y), ("✓ " if done else "") + g.board_line(i), HORIZONTAL_ALIGNMENT_LEFT,
-			br.size.x - 20, int(clampf(lh * 0.6, 13, 20)), CHALK_INK.darkened(0.45) if done else CHALK_INK)
-		y += lh
+	# 칠판(위)은 다른 영역 칠판과 같은 크기, 글자판은 그 아래
+	var note := t("ui.factory.reverse_note") if bool(g.cfg.get("search_reverse", false)) else ""
+	_draw_board(Rect2(10, BOARD_TOP_S, _search_canvas.size.x - 20, BOARD_H), font, _search_canvas, g.search_words.duplicate(), note)

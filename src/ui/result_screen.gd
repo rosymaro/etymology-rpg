@@ -47,6 +47,6 @@ func open(args: Dictionary) -> void:
 				line.add_theme_constant_override("separation", 10)
 				hv.add_child(line)
 			else:
-				hv.add_child(UiKit.wrap(UiKit.label(String(e["text"]), 19, Color(String(e.get("col", "4b3f72")))), 1100))
+				hv.add_child(UiKit.wrap(UiKit.label(String(e["text"]), 19, Color(String(e.get("col", "4b3f72"))))))
 	var done: Callable = args["done"]
 	v.add_child(UiKit.button(t("ui.common.ok"), func() -> void: done.call(), UiKit.LEAF))

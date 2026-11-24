@@ -42,14 +42,16 @@ func _refresh() -> void:
 			{"attr": t("name.attr.%02d" % attr["attr"]), "count": attr["count"]})
 		col.add_child(UiKit.wrap(UiKit.label(t("ui.party.unit").format({"name": UiKit.unit_name(u), "level": lv,
 			"exp": s.unit_exp[u - 1], "atk": a.base.atk, "def": a.base.def, "hp": a.base.hp,
-			"coins": a.coins, "attr": attr_text}), 22), 1100))
-		var slots := UiKit.hbox(8)
+			"coins": a.coins, "attr": attr_text}), 22)))
+		var slots := HFlowContainer.new()  # 세로 화면: 넘치면 다음 줄
+		slots.add_theme_constant_override("h_separation", 8)
+		slots.add_theme_constant_override("v_separation", 8)
 		for sl in Equipment.SLOTS:
 			var slot: String = sl
 			var cur := s.eq(u).get_in(sl)
 			var b := UiKit.button("%s\n%s" % [t("name.slot." + sl), cur if cur != "" else "-"],
 				func() -> void: _choose(unit, slot), UiKit.SKY, 18)
-			b.custom_minimum_size = Vector2(170, 70)
+			b.custom_minimum_size = Vector2(196, 70)
 			slots.add_child(b)
 		col.add_child(slots)
 		_detail.add_child(card)

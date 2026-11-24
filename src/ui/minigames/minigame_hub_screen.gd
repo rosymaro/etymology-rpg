@@ -20,7 +20,7 @@ func open(_args: Dictionary) -> void:
 	v.add_child(head)
 	v.add_child(UiKit.wrap(UiKit.label(t("ui.mini.hub_note"), 20, UiKit.INK.lightened(0.25))))
 	var grid := GridContainer.new()
-	grid.columns = 2
+	grid.columns = 1  # 세로 화면
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
 	v.add_child(UiKit.scroll(grid))
@@ -28,6 +28,6 @@ func open(_args: Dictionary) -> void:
 		var id: String = g["id"]
 		var b := UiKit.button("%d. %s · %s\n%s" % [int(g["stage"]), t("name.stage.s%02d" % int(g["stage"])),
 			t("name.minigame." + id), g["borrow"]], func() -> void: main.flow.play_minigame(id, "free"), UiKit.PAPER, 20)
-		b.custom_minimum_size = Vector2(590, 84)
+		b.custom_minimum_size = Vector2(660, 84)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		grid.add_child(b)

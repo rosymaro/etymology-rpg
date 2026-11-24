@@ -18,8 +18,7 @@ func open(_args: Dictionary) -> void:
 	v.add_child(sub)
 	GameData.use_dev_save(false)
 	var has_save := GameData.save_store.exists()
-	var story := UiKit.hbox(12)
-	story.alignment = BoxContainer.ALIGNMENT_CENTER
+	var story := UiKit.vbox(12)  # 세로 화면: 위아래로
 	if has_save:
 		story.add_child(UiKit.button(t("ui.title.story_continue"), func() -> void: main.flow.continue_game(), UiKit.LEAF))
 	story.add_child(UiKit.button(t("ui.title.story_new"), func() -> void:
@@ -29,7 +28,7 @@ func open(_args: Dictionary) -> void:
 			main.flow.new_game(), UiKit.LEAF if not has_save else UiKit.APRICOT))
 	v.add_child(story)
 	v.add_child(UiKit.button(t("ui.title.dev"), func() -> void: main.flow.dev_game(), UiKit.PINK))
-	var note := UiKit.wrap(UiKit.label(t("ui.title.dev_note"), 18, UiKit.INK.lightened(0.3)), 560)
+	var note := UiKit.wrap(UiKit.label(t("ui.title.dev_note"), 18, UiKit.INK.lightened(0.3)), 520)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(note)
 	v.add_child(UiKit.button(t("ui.title.minigames"), func() -> void: main.flow.go_minigames(), UiKit.APRICOT))

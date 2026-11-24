@@ -27,11 +27,11 @@ var _word_id := ""
 func _init() -> void:
 	add_theme_constant_override("separation", 6)
 	coins = CoinRow.new()
-	coins.custom_minimum_size = Vector2(380, 44)
+	coins.custom_minimum_size = Vector2(326, 44)
 	add_child(coins)
 	_card = PanelContainer.new()
 	_card.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	_card.custom_minimum_size = Vector2(380, 210)
+	_card.custom_minimum_size = Vector2(326, 200)
 	_card.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_card)
 	_bg = WordCard.make_bg([UiKit.PAPER] as Array[Color])
@@ -54,9 +54,9 @@ func _init() -> void:
 	head.add_child(_icon)
 	_title = UiKit.label("", 24)
 	head.add_child(_title)
-	_atk = UiKit.label("", 26)
-	_def = UiKit.label("", 26)
-	_hp = UiKit.label("", 26)
+	_atk = UiKit.label("", 24)
+	_def = UiKit.label("", 24)
+	_hp = UiKit.label("", 24)
 	for l in [_atk, _def, _hp]:
 		v.add_child(l)
 	_card.gui_input.connect(_on_card_input)

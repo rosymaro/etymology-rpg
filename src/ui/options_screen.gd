@@ -12,7 +12,7 @@ func open(args: Dictionary) -> void:
 	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(c)
 	var card := UiKit.card()
-	card.custom_minimum_size = Vector2(720, 0)
+	card.custom_minimum_size = Vector2(660, 0)
 	c.add_child(card)
 	var v := UiKit.vbox(18)
 	card.add_child(v)
