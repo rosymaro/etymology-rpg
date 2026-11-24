@@ -201,3 +201,7 @@ ui.factory.found,찾았어요! {word} = {meaning}
 ui.factory.reverse_note,거꾸로(← ↑)도 숨어 있어요!
 ui.factory.reverse_intro,"이번 단어찾기는 방향 제한이 없어요!
 오른쪽 → 왼쪽, 아래 → 위처럼 거꾸로 숨은 단어도 있어요."
+ui.field.gate_closed,길이 막혀 있어요. 이야기를 더 진행하면 열려요.
+ui.field.far_boss,아직 갈 수 없는 곳
+ui.field.world_map,전체 지도 (누르면 닫혀요)
+ui.field.close_map,닫기
