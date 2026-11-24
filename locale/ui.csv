@@ -220,3 +220,5 @@ ui.mini.copy.ice,얼음을 두드려 깨요
 ui.mini.copy.drag,깬 글자를 끌어 칸에 놓아요
 ui.mini.ore.ok,✓ {word} = {meaning}
 ui.mini.ore.bad,✗ {word}에는 광맥 어원이 없어요
+ui.joy.title,{name} — 새 어근을 익혔어요!
+ui.joy.hint,전투 준비에서 장착할 수 있어요
