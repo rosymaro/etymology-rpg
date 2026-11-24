@@ -6,7 +6,7 @@ extends VBoxContainer
 
 signal held(on: bool, at: Vector2)
 
-const SPIN_SEC := 0.7
+const SPIN_SEC := 1.0  ## 코인이 도는 시간(그 뒤 앞뒤가 정해진다)
 
 var coins: CoinRow
 var _card: PanelContainer

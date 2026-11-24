@@ -38,6 +38,7 @@ var _magic_due := {}  ## 적 순번 -> {a0, a1, h0, h1}: 카드에 아직 반영
 var _magic_btn: Button
 var entries: Array[Dictionary] = []  ## 기록 {text, col} 또는 {sep: true}(턴 구분 줄). 결과 화면에 넘긴다
 var lines: Array[String] = []  ## 기록의 글만(테스트용)
+var _turn_n := 0  ## 전투 처음부터 센 턴 수
 var steps_done := 0  ## '다음'을 누른 수(이어 하기에 적는다)
 var _resume_to := 0  ## 이어 하기: 이만큼은 연출 없이 건너뛴다
 
@@ -146,12 +147,21 @@ func _play() -> void:
 			_pending_magic[log[k]["target"]] = log[k]
 			deferred_at.append(k)
 	var deferred: Array = _pending_magic.values()
-	for k in log.size():
+	var k := -1
+	while k + 1 < log.size():
+		k += 1
 		var ev: Dictionary = log[k]
 		if k in deferred_at:
 			continue
+		if ev["t"] == "enter":  # 잇달아 나오는 유닛(처음엔 아군·적 둘 다)은 함께 나오고 코인도 함께 돈다
+			var group: Array[Dictionary] = [ev]
+			while k + 1 < log.size() and log[k + 1]["t"] == "enter":
+				k += 1
+				group.append(log[k])
+			await _enter_group(group)
 		var next: String = log[k + 1]["t"] if k + 1 < log.size() else ""
-		await _step(ev)
+		if ev["t"] != "enter":
+			await _step(ev)
 		if ev["t"] == "enter" and next != "enter":
 			await _wait_tap()  # 코인을 다 보고 나서
 			for m in deferred:
@@ -279,7 +289,7 @@ func _step(ev: Dictionary) -> void:
 			else:
 				await _play_magic(ev)
 		"enter":
-			await _enter(ev)
+			await _enter_group([ev] as Array[Dictionary])
 		"skill", "skill_copy", "boss_ability":
 			await _effect(ev)
 		"clash":
@@ -327,53 +337,86 @@ func _play_magic(ev: Dictionary) -> void:
 	await _wait(STEP)
 
 
-## 유닛이 나온다: 코인 전 값으로 카드를 펴고 → (마법을 맞았으면 그 효과) → 코인이 돈 뒤 코인 전→후 값이 깜빡인다.
-func _enter(ev: Dictionary) -> void:
-	var side: int = ev["side"]
-	var idx: int = ev["idx"]
-	_cur[side] = idx
+## 유닛이 나온다(잇달아 나오는 유닛은 함께): 코인 전 값으로 카드를 펴고 옆 목록에서 돌며 커져 나온다 →
+## 함께 코인을 약 1초 돌려 앞뒤를 정한다 → (마법을 맞았으면 그 효과) → 코인 전→후 값이 함께 깜빡인다.
+func _enter_group(evs: Array[Dictionary]) -> void:
 	_turn.text = ""
 	_sep()
-	var c: Combatant = _side_list(side)[idx]
-	var who := _who(side, idx)
-	var box := _box(side)
-	var magic: Dictionary = _magic_on.get(idx, {}) if side == Combatant.ENEMY else {}
-	var due: Dictionary = _pending_magic.get(idx, {}) if side == Combatant.ENEMY else {}
-	var down := int(magic.get("down", 0)) + int(due.get("atk_down", 0))
-	var atk0: int = int(ev["pre_atk"]) + down
-	var hp0: int = int(ev["pre_hp"])
-	# 마법을 아직 알리기 전이면, 카드에는 마법 전 값(코인까지)만 보여 주고 마법 효과는 알릴 때 깜빡인다
-	var show_atk: int = int(ev["atk"]) + int(due.get("atk_down", 0))
-	var show_hp: int = int(ev["hp"]) + (int(ev["magic_hit"]) if not due.is_empty() else 0)
-	if not due.is_empty():
-		_magic_due[idx] = {"a0": show_atk, "a1": ev["atk"], "h0": show_hp, "h1": ev["hp"]}
-	box.show_now(c, who, atk0, ev["def"], hp0, _ctx.formula, not _skip)
-	await _grow_fx(box, side, idx)
-	_banner.text = t("ui.battle.enter").format({"who": who})
+	var ps: Array[Dictionary] = []
+	var names: Array[String] = []
+	for ev in evs:
+		var side: int = ev["side"]
+		var idx: int = ev["idx"]
+		_cur[side] = idx
+		var c: Combatant = _side_list(side)[idx]
+		var who := _who(side, idx)
+		var box := _box(side)
+		var magic: Dictionary = _magic_on.get(idx, {}) if side == Combatant.ENEMY else {}
+		var due: Dictionary = _pending_magic.get(idx, {}) if side == Combatant.ENEMY else {}
+		var down := int(magic.get("down", 0)) + int(due.get("atk_down", 0))
+		var atk0: int = int(ev["pre_atk"]) + down
+		var hp0: int = int(ev["pre_hp"])
+		# 마법을 아직 알리기 전이면, 카드에는 마법 전 값(코인까지)만 보여 주고 마법 효과는 알릴 때 깜빡인다
+		var show_atk: int = int(ev["atk"]) + int(due.get("atk_down", 0))
+		var show_hp: int = int(ev["hp"]) + (int(ev["magic_hit"]) if not due.is_empty() else 0)
+		if not due.is_empty():
+			_magic_due[idx] = {"a0": show_atk, "a1": ev["atk"], "h0": show_hp, "h1": ev["hp"]}
+		box.show_now(c, who, atk0, ev["def"], hp0, _ctx.formula, false)
+		box.coins.pending = not _skip  # 나오는 동안은 아직 던지지 않은 코인
+		_grow_fx(box, side, idx)  # 함께 나온다(기다리지 않는다)
+		names.append(who)
+		ps.append({"ev": ev, "box": box, "who": who, "magic": magic, "atk0": atk0, "hp0": hp0,
+			"show_atk": show_atk, "show_hp": show_hp})
+	_banner.text = t("ui.battle.enter").format({"who": " · ".join(names)})
+	await _wait(GROW_SEC + 0.1)
+	# 코인: 다 같이 약 1초 돌다가 앞뒤가 정해진다
+	for p in ps:
+		var box: BattleCard = p["box"]
+		box.coins.pending = false
+		box.coins.set_flips(box.coins.flips, not _skip)
 	await _wait(BattleCard.SPIN_SEC + 0.15)
-	if not magic.is_empty():
-		_banner.text = t("ui.battle.magic_hit").format({"who": who})
-		_log("  " + t("ui.battle.h_magic_hit").format({"who": who, "h0": hp0, "h1": hp0 - int(ev["magic_hit"]),
+	# 마법을 맞고 나온 적이면 그 효과
+	var hit := false
+	for p in ps:
+		var magic: Dictionary = p["magic"]
+		if magic.is_empty():
+			continue
+		hit = true
+		var ev: Dictionary = p["ev"]
+		var box: BattleCard = p["box"]
+		var atk0: int = p["atk0"]
+		var hp0: int = p["hp0"]
+		_banner.text = t("ui.battle.magic_hit").format({"who": p["who"]})
+		_log("  " + t("ui.battle.h_magic_hit").format({"who": p["who"], "h0": hp0, "h1": hp0 - int(ev["magic_hit"]),
 			"a0": atk0, "a1": atk0 - int(magic["down"])}), UiKit.BAD.darkened(0.2))
 		box.flash("atk", atk0, atk0 - int(magic["down"]), UiKit.BAD, FLASH, _skip)
-		await box.flash("hp", hp0, hp0 - int(ev["magic_hit"]), UiKit.BAD, FLASH, _skip)
-		atk0 -= int(magic["down"])
-		hp0 -= int(ev["magic_hit"])
-	var parts: Array[String] = []
-	if int(ev["gain_atk"]) != 0:
-		parts.append(t("ui.battle.atk") + " %d→%d" % [atk0, show_atk])
-	if int(ev["gain_hp"]) != 0:
-		parts.append(t("ui.battle.hp") + " %d→%d" % [hp0, show_hp])
-	_log(t("ui.battle.h_enter").format({"who": who, "coins": _coin_text(ev["flips"]),
-		"change": ", ".join(parts) if not parts.is_empty() else t("ui.battle.h_no_change")}))
-	if not parts.is_empty():
-		_banner.text = t("ui.battle.coin_change").format({"who": who})
+		box.flash("hp", hp0, hp0 - int(ev["magic_hit"]), UiKit.BAD, FLASH, _skip)
+		p["atk0"] = atk0 - int(magic["down"])
+		p["hp0"] = hp0 - int(ev["magic_hit"])
+	if hit:
+		await _wait(FLASH + 0.05)
+	# 코인 전→후 값이 함께 깜빡인다
+	var changed: Array[String] = []
+	for p in ps:
+		var ev: Dictionary = p["ev"]
+		var box: BattleCard = p["box"]
+		var parts: Array[String] = []
 		if int(ev["gain_atk"]) != 0:
-			box.flash("atk", atk0, show_atk, UiKit.ACCENT.darkened(0.2), FLASH, _skip)
+			parts.append(t("ui.battle.atk") + " %d→%d" % [p["atk0"], p["show_atk"]])
+			box.flash("atk", p["atk0"], p["show_atk"], UiKit.ACCENT.darkened(0.2), FLASH, _skip)
 		if int(ev["gain_hp"]) != 0:
-			box.flash("hp", hp0, show_hp, UiKit.ACCENT.darkened(0.2), FLASH, _skip)
+			parts.append(t("ui.battle.hp") + " %d→%d" % [p["hp0"], p["show_hp"]])
+			box.flash("hp", p["hp0"], p["show_hp"], UiKit.ACCENT.darkened(0.2), FLASH, _skip)
+		_log(t("ui.battle.h_enter").format({"who": p["who"], "coins": _coin_text(ev["flips"]),
+			"change": ", ".join(parts) if not parts.is_empty() else t("ui.battle.h_no_change")}))
+		if not parts.is_empty():
+			changed.append(p["who"])
+	if not changed.is_empty():
+		_banner.text = t("ui.battle.coin_change").format({"who": " · ".join(changed)})
 		await _wait(FLASH + 0.1)
-	box.set_values(show_atk, ev["def"], show_hp)
+	for p in ps:
+		var ev: Dictionary = p["ev"]
+		(p["box"] as BattleCard).set_values(p["show_atk"], ev["def"], p["show_hp"])
 
 
 ## 등장: 옆(아군은 왼쪽, 적은 오른쪽) 목록의 작은 카드 자리에서 한 바퀴 돌며 점점 커져 가운데 자리로 나온다.
@@ -466,7 +509,8 @@ func _effect(ev: Dictionary) -> void:
 ## 한 턴: 가운데 "N턴"을 띄우고, 서로 공격해 깎인 체력을 빨갛게 깜빡인다.
 func _round(ev: Dictionary) -> void:
 	_sep()
-	_turn.text = t("ui.battle.turn").format({"n": ev["n"]})
+	_turn_n += 1  # 적이 바뀌어도 전투 처음부터 이어서 센다
+	_turn.text = t("ui.battle.turn").format({"n": _turn_n})
 	_turn.pivot_offset = _turn.size / 2
 	if not _skip:
 		_turn.scale = Vector2(1.4, 1.4)
@@ -480,7 +524,7 @@ func _round(ev: Dictionary) -> void:
 	var first := ""
 	if int(ev.get("first", -1)) >= 0:
 		first = "  " + t("ui.battle.first").format({"who": a if ev["first"] == Combatant.ALLY else b})
-	_log(t("ui.battle.h_round").format({"n": ev["n"], "a": a, "b": b, "to_b": ev["to_b"], "to_a": ev["to_a"],
+	_log(t("ui.battle.h_round").format({"n": _turn_n, "a": a, "b": b, "to_b": ev["to_b"], "to_a": ev["to_a"],
 		"bh0": bh0, "bh": ev["b_hp"], "ah0": ah0, "ah": ev["a_hp"]}) + first)
 	await _clash_fx(ev, ah0, bh0)
 

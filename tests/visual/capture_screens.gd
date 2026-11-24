@@ -58,6 +58,8 @@ func _run() -> void:
 	(main.current() as BattlePrepScreen)._start()
 	await get_tree().create_timer(0.05).timeout
 	await _shot("09_battle_enter")  # 옆 목록에서 커지며 나오는 중
+	await get_tree().create_timer(0.55).timeout
+	await _shot("09_battle_coins")  # 둘이 함께 코인을 돌린다
 	for i in 60:
 		await get_tree().process_frame
 	var bs := main.current() as BattleScreen
