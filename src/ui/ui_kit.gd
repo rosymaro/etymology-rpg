@@ -12,6 +12,7 @@ const ACCENT := Color("f29e4c")  ## 주황: 효과·강조에만
 const GRAY := Color("c9c4cf")
 const GOOD := Color("6fbf73")
 const BAD := Color("e07a7a")
+const BG_BLEED := 800.0  ## 바탕색을 화면 밖 여백까지 넓히는 길이
 
 
 static func box(bg: Color, radius: int = 18, border: int = 3) -> StyleBoxFlat:
@@ -87,6 +88,8 @@ static func fill_bg(parent: Control, color: Color = SKY) -> ColorRect:
 	var r := ColorRect.new()
 	r.color = color
 	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	r.offset_top = -BG_BLEED  # 화면 위아래 여백(Main)까지 칠한다
+	r.offset_bottom = BG_BLEED
 	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(r)
 	return r

@@ -30,6 +30,8 @@ func _build(scene: Dictionary) -> void:
 	dim.color = Color(0.2, 0.18, 0.3, 0.25)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dim.offset_top = -UiKit.BG_BLEED  # 화면 위아래 여백까지
+	dim.offset_bottom = UiKit.BG_BLEED
 	add_child(dim)
 	_title = UiKit.label(TranslationServer.translate(scene.get("title", "")), 24)
 	_title.position = Vector2(32, 24)

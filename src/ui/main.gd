@@ -8,8 +8,17 @@ var flow: GameFlow
 var simulate_kill := false  ## 테스트: 안드로이드가 앱을 갑자기 닫은 것처럼(이어 하기를 지우지 않는다)
 
 
+## 화면 위아래 여백(세로 화면). 상태 표시줄·제스처 막대·둥근 모서리를 피하고, 아주 긴 폰에서는 가운데로 모은다.
+const PAD_TOP := 44.0
+const PAD_BOTTOM := 44.0
+const MAX_H := 1440.0  ## 이보다 길면 남는 만큼 위아래에 나눠 비운다
+
+
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	RenderingServer.set_default_clear_color(UiKit.PAPER)  # 여백에 바탕이 없는 화면(필드)도 비어 보이지 않게
+	_fit_frame()
+	get_viewport().size_changed.connect(_fit_frame)
 	_overlay = Control.new()
 	_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -22,6 +31,23 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--capture="):
 			_start_capture(a.trim_prefix("--capture="))
+
+
+## 안전 영역(노치·상태 표시줄·제스처 막대)을 뺀 곳에 여백을 더 두고 그 안에 화면을 놓는다.
+## 화면의 바탕색(UiKit.fill_bg)은 여백까지 칠하므로 띠가 보이지 않는다.
+func _fit_frame() -> void:
+	var vh := get_viewport_rect().size.y
+	var top := PAD_TOP
+	var bottom := PAD_BOTTOM
+	var win := DisplayServer.window_get_size()
+	var safe := DisplayServer.get_display_safe_area()
+	if win.y > 0 and safe.size.y > 0 and safe.size.y < win.y:
+		var k := vh / float(win.y)  # 화면 픽셀 → 게임 좌표
+		top += maxf(0.0, safe.position.y) * k
+		bottom += maxf(0.0, win.y - safe.end.y) * k
+	var extra := maxf(0.0, vh - top - bottom - MAX_H)
+	offset_top = top + extra / 2.0
+	offset_bottom = -(bottom + extra / 2.0)
 
 
 ## 개발용 화면 캡처(tests/visual). APK에는 tests가 없어 이 인자를 줘도 아무 일도 없다.
