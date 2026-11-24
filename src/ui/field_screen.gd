@@ -280,8 +280,9 @@ func _draw() -> void:
 ## 보이는 타일만 그린다. 막는 타일은 모양을 조금씩 넣는다(산 ▲, 물결, 나무, 절벽 줄, 성벽 벽돌, 다리 널, 문 창살).
 func _draw_tiles(o: Vector2) -> void:
 	var ts := float(map.tile)
-	var c0 := map.cell(_cam)
-	var c1 := map.cell(_cam + size)
+	# 화면 위아래 여백(Main)까지 타일로 채운다(그 자리에 바탕색 띠가 보이지 않게)
+	var c0 := map.cell(_cam - Vector2(0, UiKit.BG_BLEED))
+	var c1 := map.cell(_cam + size + Vector2(0, UiKit.BG_BLEED))
 	for y in range(maxi(0, c0.y - 1), mini(map.h, c1.y + 2)):
 		var row := map.rows[y]
 		for x in range(maxi(0, c0.x - 1), mini(map.w, c1.x + 2)):

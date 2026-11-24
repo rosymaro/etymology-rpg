@@ -41,6 +41,10 @@ func open(args: Dictionary) -> void:
 	head.add_child(title)
 	_prog = UiKit.label("", 26)
 	head.add_child(_prog)
+	var gap := Control.new()  # 세로 화면: 단어와 보기는 엄지가 닿는 아래쪽에
+	gap.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	gap.size_flags_stretch_ratio = 0.6
+	v.add_child(gap)
 	_word_lbl = UiKit.label("", 54)
 	_word_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(_word_lbl)
@@ -49,8 +53,11 @@ func open(args: Dictionary) -> void:
 	v.add_child(_info_lbl)
 	v.add_child(UiKit.label(t("ui.quiz.pick_meaning"), 24))
 	_opts = UiKit.vbox(10)
-	_opts.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(_opts)
+	var gap2 := Control.new()
+	gap2.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	gap2.size_flags_stretch_ratio = 0.25
+	v.add_child(gap2)
 	if _i >= _qs.size():
 		_done.call_deferred(_right)
 	elif _mode == "evolve" and _i == 0:
