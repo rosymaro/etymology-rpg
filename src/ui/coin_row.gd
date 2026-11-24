@@ -6,6 +6,10 @@ const R := 18.0
 
 var flips: Array[bool] = []
 var dim := false
+var pending := false:  ## 아직 던지지 않은 코인(회색, ?)
+	set(v):
+		pending = v
+		queue_redraw()
 var _spin := 0.0
 
 
@@ -42,6 +46,8 @@ func _draw() -> void:
 			sx = absf(cos(ph))
 			heads = cos(ph * 0.5) > 0.0
 		var col := Color("f2c14e") if heads else Color("c9c9d6")
+		if pending:
+			col = Color("e4e1ea")
 		if dim:
 			col = col.lerp(UiKit.GRAY, 0.6)
 		var pts := PackedVector2Array()
@@ -52,4 +58,4 @@ func _draw() -> void:
 		pts.append(pts[0])
 		draw_polyline(pts, UiKit.INK, 2)
 		if _spin <= 0.0:
-			draw_string(font, c + Vector2(-R, 6), "H" if heads else "T", HORIZONTAL_ALIGNMENT_CENTER, R * 2, 16, UiKit.INK)
+			draw_string(font, c + Vector2(-R, 6), "?" if pending else ("H" if heads else "T"), HORIZONTAL_ALIGNMENT_CENTER, R * 2, 16, UiKit.INK)
