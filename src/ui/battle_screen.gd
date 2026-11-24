@@ -36,6 +36,8 @@ var _magic_due := {}  ## 적 순번 -> {a0, a1, h0, h1}: 카드에 아직 반영
 var _magic_btn: Button
 var entries: Array[Dictionary] = []  ## 기록 {text, col} 또는 {sep: true}(턴 구분 줄). 결과 화면에 넘긴다
 var lines: Array[String] = []  ## 기록의 글만(테스트용)
+var steps_done := 0  ## '다음'을 누른 수(이어 하기에 적는다)
+var _resume_to := 0  ## 이어 하기: 이만큼은 연출 없이 건너뛴다
 
 
 func open(args: Dictionary) -> void:
@@ -44,6 +46,7 @@ func open(args: Dictionary) -> void:
 	_words = args["words"]
 	_boss = args["boss"]
 	_party = args["party"]
+	_resume_to = int(args.get("resume_step", 0))
 	UiKit.fill_bg(self, Color("e9e2f3"))
 	var left := UiKit.vbox(8)
 	left.position = Vector2(20, 20)
@@ -127,6 +130,10 @@ func open(args: Dictionary) -> void:
 
 
 func _play() -> void:
+	if _resume_to > 0:  # 이어 하기: 보던 단계까지 연출 없이 지나간다
+		_skip = true
+		_a_box.skip = true
+		_b_box.skip = true
 	var log := _ctx.log
 	# 첫 격돌 전에 건 마법은 코인을 다 던진 뒤에 알린다(기록 순번으로 가린다)
 	var deferred_at: Array[int] = []
@@ -189,6 +196,15 @@ func _sep() -> void:
 
 ## '다음'을 누를 때까지 기다린다(빨리 보기면 기다리지 않는다).
 func _wait_tap() -> void:
+	if _resume_to > 0 and steps_done < _resume_to:
+		steps_done += 1  # 전에 이미 누른 '다음'
+		if steps_done >= _resume_to:
+			# 보던 단계에 닿았다: 다음 단계부터 다시 연출해서 보여 준다
+			_resume_to = 0
+			_skip = false
+			_a_box.skip = false
+			_b_box.skip = false
+		return
 	if _skip:
 		return
 	_tapped = false
@@ -196,6 +212,8 @@ func _wait_tap() -> void:
 	while not _tapped and not _skip:
 		await get_tree().process_frame
 	_next_btn.visible = false
+	steps_done += 1
+	GameData.patch_route("battle", {"step": steps_done})
 
 
 ## 맞은 카드에서 글자가 튀어나와 날아가며 사라진다(게임의 피해 숫자처럼).
@@ -406,6 +424,37 @@ func _round(ev: Dictionary) -> void:
 		first = "  " + t("ui.battle.first").format({"who": a if ev["first"] == Combatant.ALLY else b})
 	_log(t("ui.battle.h_round").format({"n": ev["n"], "a": a, "b": b, "to_b": ev["to_b"], "to_a": ev["to_a"],
 		"bh0": bh0, "bh": ev["b_hp"], "ah0": ah0, "ah": ev["a_hp"]}) + first)
+	await _clash_fx(ev, ah0, bh0)
+	# 둘 다 살아 있으면 '다음'을 눌러야 다음 턴으로
+	if int(ev["a_hp"]) > 0 and int(ev["b_hp"]) > 0:
+		await _wait_tap()
+
+
+## 부딪히기: 두 카드가 서로 기울며 다가가 가운데서 부딪힌다 → 충격 이펙트, 카드 흔들림, 깎인 체력 빨간 깜빡임,
+## 맞은 카드에서 단어 뜻과 피해 숫자가 튀어나온다 → 카드는 제자리로 돌아온다.
+func _clash_fx(ev: Dictionary, ah0: int, bh0: int) -> void:
+	var a0 := _a_box.position
+	var b0 := _b_box.position
+	if not _skip:
+		_a_box.pivot_offset = _a_box.size / 2.0
+		_b_box.pivot_offset = _b_box.size / 2.0
+		var gap := (_b_box.global_position.x - (_a_box.global_position.x + _a_box.size.x)) / 2.0
+		var go := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		go.tween_property(_a_box, "position", a0 + Vector2(gap + 10, 0), 0.25)
+		go.tween_property(_a_box, "rotation_degrees", 9.0, 0.25)
+		go.tween_property(_b_box, "position", b0 - Vector2(gap + 10, 0), 0.25)
+		go.tween_property(_b_box, "rotation_degrees", -9.0, 0.25)
+		await go.finished
+		# 부딪힌 자리(두 카드 사이)에 충격 이펙트
+		var fx := ImpactFx.new()
+		add_child(fx)
+		fx.global_position = (_a_box.card_center() + _b_box.card_center()) / 2.0
+		GameData.vibrate()
+		var shake := create_tween()
+		for k in 4:  # 부딪혀서 흔들린다
+			var d := Vector2(8 if k % 2 == 0 else -8, 3 if k % 2 == 0 else -3)
+			shake.tween_property(_a_box, "position", a0 + Vector2(gap + 10, 0) - d, 0.05)
+			shake.parallel().tween_property(_b_box, "position", b0 - Vector2(gap + 10, 0) + d, 0.05)
 	_b_box.flash("hp", bh0, ev["b_hp"], UiKit.BAD, FLASH, _skip)
 	_a_box.flash("hp", ah0, ev["a_hp"], UiKit.BAD, FLASH, _skip)
 	# 맞은 카드에서: 한쪽으로는 단어 뜻이, 다른 쪽으로는 깎인 체력이 튀어나온다
@@ -413,17 +462,24 @@ func _round(ev: Dictionary) -> void:
 	if int(ev["to_b"]) > 0:
 		if ew:
 			_float(ew.meaning, _b_box.card_center(), Vector2(150, -150), UiKit.ACCENT.darkened(0.35), 26)
-		_float("-%d" % ev["to_b"], _b_box.card_center(), Vector2(-120, -170), UiKit.BAD, 40)
+		_float("-%d" % ev["to_b"], _b_box.card_center(), Vector2(60, 190), UiKit.BAD, 40)
 	if int(ev["to_a"]) > 0:
 		_float("-%d" % ev["to_a"], _a_box.card_center(), Vector2(-120, -170), UiKit.BAD, 40)
 	await _wait(FLASH + 0.15)
-	# 둘 다 살아 있으면 '다음'을 눌러야 다음 턴으로
-	if int(ev["a_hp"]) > 0 and int(ev["b_hp"]) > 0:
-		await _wait_tap()
+	if not _skip:
+		var back := create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		back.tween_property(_a_box, "position", a0, 0.3)
+		back.tween_property(_a_box, "rotation_degrees", 0.0, 0.3)
+		back.tween_property(_b_box, "position", b0, 0.3)
+		back.tween_property(_b_box, "rotation_degrees", 0.0, 0.3)
+		await back.finished
+	else:
+		_a_box.position = a0
+		_b_box.position = b0
+		_a_box.rotation_degrees = 0.0
+		_b_box.rotation_degrees = 0.0
 
 
-## 전투가 끝난 뒤 옆 목록의 카드를 누르고 있으면, 가운데 카드에 그 유닛의 처음 모습을 보여 준다.
-## 전투가 끝난 뒤 옆 목록의 카드를 누르고 있으면, 누른 자리에 그 유닛의 처음 모습 창을 띄운다.
 ## 옆 목록의 카드를 누르고 있으면, 누른 자리에 그 유닛의 정보 창을 띄운다(전투 중에도).
 func _hold_side(card: Control, side: int, idx: int) -> void:
 	card.mouse_filter = Control.MOUSE_FILTER_STOP

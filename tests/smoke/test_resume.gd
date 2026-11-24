@@ -81,3 +81,69 @@ func test_clean_exit_starts_from_title() -> void:
 	await wait_physics_frames(2)
 	var m2 := await _boot()
 	assert_true(m2.current() is TitleScreen, "앱을 끝냈다가 다시 켜면 처음부터")
+
+
+
+func _kill(m: Main) -> void:
+	m.simulate_kill = true
+	m.queue_free()
+	await wait_physics_frames(2)
+
+
+func test_quiz_resumes_at_the_same_question() -> void:
+	var m := await _boot()
+	m.flow.dev_game()
+	await wait_physics_frames(2)
+	var ids: Array[String] = []
+	for w in GameData.repo.first_tier(1, "field").slice(0, 3):
+		ids.append(w.id)
+	m.flow.encounter(ids)
+	await wait_physics_frames(2)
+	var q := m.current() as QuizScreen
+	q._pick(q._qs[0].answer)
+	await wait_seconds(1.5)
+	assert_eq(q._i, 1)
+	await _kill(m)
+	var m2 := await _boot()
+	var q2 := m2.current() as QuizScreen
+	assert_not_null(q2, "퀴즈 화면으로 이어 한다")
+	assert_eq(q2._i, 1, "풀던 두 번째 문제부터")
+	assert_eq(q2._right, [true] as Array[bool], "앞에서 맞힌 것은 그대로")
+	await _kill(m2)
+
+
+func test_battle_resumes_at_the_same_step_with_same_result() -> void:
+	var m := await _boot()
+	m.flow.dev_game()
+	await wait_physics_frames(2)
+	var ids: Array[String] = []
+	for w in GameData.repo.first_tier(1, "field").slice(0, 2):
+		ids.append(w.id)
+	m.flow.go_battle_prep(ids, false)
+	await wait_physics_frames(2)
+	(m.current() as BattlePrepScreen)._start()
+	await wait_physics_frames(2)
+	var bs := m.current() as BattleScreen
+	var log_size := bs._ctx.log.size()
+	var first_flips: Array = bs._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "enter")[0]["flips"]
+	for k in 2:  # '다음'을 두 번 누른다
+		for f in 600:
+			await get_tree().process_frame
+			if bs._next_btn.visible:
+				break
+		bs._tapped = true
+		await wait_physics_frames(2)
+	assert_eq(bs.steps_done, 2)
+	await _kill(m)
+	var m2 := await _boot()
+	var bs2 := m2.current() as BattleScreen
+	assert_not_null(bs2, "전투 화면으로 이어 한다")
+	assert_eq(bs2._ctx.log.size(), log_size, "같은 씨앗이라 같은 전투")
+	var flips2: Array = bs2._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "enter")[0]["flips"]
+	assert_eq(flips2, first_flips, "코인도 같다")
+	for f in 600:
+		await get_tree().process_frame
+		if bs2._next_btn.visible:
+			break
+	assert_eq(bs2.steps_done, 2, "본 단계까지는 건너뛰고 그다음 단계에서 기다린다")
+	await _kill(m2)

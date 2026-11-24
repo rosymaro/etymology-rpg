@@ -79,6 +79,15 @@ func set_route(route: Dictionary) -> void:
 	_write_resume(resume_mode(), route)
 
 
+## 지금 화면의 진행(퀴즈 몇 번째, 전투 몇 단계)만 고쳐 적는다. 화면 종류 s가 다르면 그대로 둔다.
+func patch_route(s: String, d: Dictionary) -> void:
+	var r := resume_route()
+	if not resume_enabled or r.get("s", "") != s:
+		return
+	r.merge(d, true)
+	_write_resume(resume_mode(), r)
+
+
 func _write_resume(mode: String, route: Dictionary) -> void:
 	var cf := ConfigFile.new()
 	cf.set_value("resume", "mode", mode)

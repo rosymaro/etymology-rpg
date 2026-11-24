@@ -22,6 +22,10 @@ func open(args: Dictionary) -> void:
 	_target = args.get("target", "")
 	var ids: Array[String] = args["words"]
 	_qs = QuizBuilder.new(GameData.repo, GameData.rng).build(ids)
+	# 이어 하기: 풀던 문제부터(앞에서 맞고 틀린 것은 그대로)
+	_i = mini(int(args.get("resume_i", 0)), _qs.size())
+	for x in args.get("resume_right", []):
+		_right.append(bool(x))
 	UiKit.fill_bg(self, UiKit.SKY if _mode == "encounter" else UiKit.PAPER)
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -47,7 +51,9 @@ func open(args: Dictionary) -> void:
 	_opts = UiKit.vbox(10)
 	_opts.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(_opts)
-	if _mode == "evolve":
+	if _i >= _qs.size():
+		_done.call_deferred(_right)
+	elif _mode == "evolve" and _i == 0:
 		_intro_evolve()
 	else:
 		_show()
@@ -97,6 +103,7 @@ func _pick(k: int) -> void:
 	var w := GameData.repo.get_word(q.word_id)
 	var ex: Dictionary = w.example
 	_info_lbl.text = t("ui.quiz.right" if ok else "ui.quiz.wrong") + "  " + w.meaning + ("\n" + str(ex.get("en", "")) if ex.has("en") else "")
+	GameData.patch_route("evolve_quiz" if _mode == "evolve" else "quiz", {"i": _i + 1, "right": _right})
 	await get_tree().create_timer(1.1 if ok else 1.8).timeout
 	_i += 1
 	if _i < _qs.size():

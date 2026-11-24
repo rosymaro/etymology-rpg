@@ -72,6 +72,18 @@ func _run() -> void:
 		bs._magic_btn.button_down.emit()
 		await _shot("09_battle_magic")
 		bs._magic_btn.button_up.emit()
+		for tap in 6:  # 턴이 나올 때까지 '다음'을 누르고, 부딪히는 순간을 찍는다
+			bs._tapped = true
+			await get_tree().process_frame
+			await get_tree().process_frame
+			if bs._turn.text != "":
+				await get_tree().create_timer(0.95).timeout
+				await _shot("09_battle_clash")
+				break
+			for f in 600:
+				await get_tree().process_frame
+				if bs._next_btn.visible:
+					break
 	var hist: Array[Dictionary] = []
 	if bs:
 		bs.skip_all()
