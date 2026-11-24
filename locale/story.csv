@@ -20,7 +20,7 @@ story.s01.seung.title,마을 고치기
 story.s01.seung.001_pun,"인포메이션 센터… 인포는 뭐고, 메이션은 또 뭐야?"
 story.s01.seung.002_etym,"in-은 ""안에"", form은 ""모양"". 머릿속에 모양을 잡아 주는 것. 알림이야!"
 story.s01.seung.003,아하! 그럼 여기 가면 뭘 알려 주는 거구나!
-story.s01.seung.004,"(미니게임 안내) 벨트에 깨진 단어 조각이 돈다. 같은 색, 맞물리는 조각을 모아 용광로에 넣고 두드려. 다 된 단어는 맞는 뜻의 진열장에 올려라."
+story.s01.seung.004,(미니게임 안내) 여기가 말 공방이다. 칠판에 적힌 대로 벨트의 어원을 용광로에 넣고 두드려. 순서는 상관없다. 칠판에 없는 함정 어원도 도니까 조심. 세 번 태우면 끝이야.
 story.s01.seung.005,단어를 얻으면 뜻을 맞혀야 우리 거야. 틀리면 도망가!
 story.s01.tut_battle.title,첫 만남
 story.s01.tut_battle.001,저기 봐! 어원을 잊어서 길을 잃은 단어들이야.
@@ -68,11 +68,11 @@ story.s02.ki.001,"저기요, 소님. 잠깐만 멈춰 주시겠어요? …안 �
 story.s02.ki.002,왜 안 잡아요?
 story.s02.ki.003_pun,잡는다는 게 뭐였더라. capture… 캡처… 사진 찍는 거였나?
 story.s02.ki.004_etym,"cap은 ""잡다""! 사진도 순간을 잡는 거긴 하지만… 지금은 소를 잡아야죠!"
-story.s02.seung.title,덫 놓기
+story.s02.seung.title,발자국 글자
 story.s02.seung.001,잡았다! 이거 뭐야? 모자? 내 거!
 story.s02.seung.002,얘는 덥석. 뭐든 잡는 게 특기야. 놓는 게 약점이고.
-story.s02.seung.003,(미니게임 안내) 숨어서 놈들이 어디로 다니는지 잘 봐라. 그 길목에 뜻이 맞는 덫을 놓으면 걸린다.
-story.s02.seung.004,빈칸을 건드리면 단어들이 놀라서 다 도망간다.
+story.s02.seung.003,(미니게임 안내) 발자국 글자가 뒤죽박죽이지? 바로 늘어놓으면 어원이 된다. 칠판의 어원을 만들어 벨트에 올려라.
+story.s02.seung.004,한 단어의 어원이 모두 벨트 너머로 넘어가면 잡은 거다. 글자를 틀리게 놓으면 놈들이 놀라 달아난다.
 story.s02.tut_attr.title,카드의 무늬
 story.s02.tut_attr.001,어? 카드 귀퉁이에 무늬가 있어. 이게 속성이야.
 story.s02.tut_attr.002,"공방 마을엔 파동밖에 없었는데, 여기엔 권위, 번영, 생명도 있네."
@@ -120,7 +120,7 @@ story.s03.seung.001,책에서 글자가 사라지고 있어요. 어원을 잊은
 story.s03.seung.002_pun,걱정 마요. 저 척척이가 다 압니다. collection은… 콜라 모음!
 story.s03.seung.003_etym,"col-은 ""함께"", lect는 ""모으다"". 함께 모은 것!"
 story.s03.seung.004,(작게) …저도 봤어요. 콜라 아니에요.
-story.s03.seung.005,"(미니게임 안내) 글자판에서 숨은 단어를 찾아 주세요. 가로, 세로, 대각선 모두요. 뜻이 힌트예요."
+story.s03.seung.005,(미니게임 안내) 지워진 책을 뜻에 맞는 서가 칸에 꽂아 주세요. 칠판 아래 쌓인 단어를 끌어서요. 잘못 꽂으면 또 지워져요.
 story.s03.town_library.title,자유의 도서관
 story.s03.town_library.001,여기는 리브러리! 자유의 공간이다!
 story.s03.town_library.002,쉿! 다들 liberty랑 헷갈리고 있어요.
@@ -165,7 +165,7 @@ story.s04.ki.004,저 녀석은 출구를 알아도 맨날 반대로 뛰어가.
 story.s04.seung.title,바람 읽기
 story.s04.seung.001,"반가워. 아니, 안 반가워. 아니, 반가워!"
 story.s04.seung.002_etym,"얘는 빙글. 뭐든 한 바퀴 돌려 말해. vers가 ""돌리다""라서 그래."
-story.s04.seung.003,"(미니게임 안내) 바람길 조각을 돌려 연에서 하늘 끝까지 이어 봐. 적힌 뜻의 단어는 모두 지나고, 함정 단어는 피해야 해."
+story.s04.seung.003,(미니게임 안내) 바람이 어원을 용광로로 불어 넣어 줄 게다. 단어 다섯 몫이 들어가면 빨갛게 달아오르지. 그때 누르면 글자판이 펼쳐지니 칠판의 단어를 찾아라. 바람은 오래 기다려 주지 않는다!
 story.s04.town_event.title,이벤트
 story.s04.town_event.001,이벤트다! 경품 주는 거지?
 story.s04.town_event.002_etym,event는 ex-(밖으로) + venire(오다). 밖으로 나와 일어난 일이에요. 경품은 덤이고요.
@@ -201,9 +201,9 @@ story.s05.ki.001_pun,이 짐을 export 해야 하는데… 엑스포? 박람회?
 story.s05.ki.002_etym,"ex-는 ""밖으로"", port는 ""나르다"". 밖으로 나르기, 수출!"
 story.s05.ki.003,여기가 내 고향이야. 이 항구를 지키는 게 내 꿈이지.
 story.s05.ki.004,같이 가자! 나 힘세. 무거운 건 다 나한테 줘.
-story.s05.seung.title,낚시
+story.s05.seung.title,항구 공방
 story.s05.seung.001,"안녕! 나 조잘. 들은 말은 다 적어 둬. 방금 네가 한 ""안녕""도."
-story.s05.seung.002,(미니게임 안내) 찌가 흔들리면 기다렸다 당겨. 뜻이 맞는 놈이면 싸움이 금방 끝나지.
+story.s05.seung.002,"(미니게임 안내) 글자를 맞춰 어원을 벨트에 올리고, 저쪽 용광로에서 두드려. 쓸데없는 건 SKIP, 잘못 실은 건 바다에… 아니, 쓰레기통에 던져!"
 story.s05.town_offer.title,다 드려요
 story.s05.town_offer.001,짐꾼 할인! 아무거나 다 드려요. 이게 offer라던데?
 story.s05.town_offer.002,"형, 그건 그냥 다 주는 거잖아."
@@ -248,7 +248,7 @@ story.s06.ki.004,"진짜다! …아, ""다""로 끝났다."
 story.s06.seung.title,원래의 법전
 story.s06.seung.001,내가 앞장선다! 나를 따르라! …어디로 가지?
 story.s06.seung.002_etym,"duc는 ""이끌다"". 이끌려면 길부터 알아야지."
-story.s06.seung.003,(미니게임 안내) 법전 글자가 얼어붙었어요. 두드려 얼음을 깨고, 글자를 끌어 바른 철자로 늘어놓아 주세요. 뜻과 어원이 힌트예요.
+story.s06.seung.003,"(미니게임 안내) 법전 공방이에요. 만든 단어는 법전의 뜻 칸에 꽂아야 효력이 생겨요. 글자 → 용광로 → 뜻 칸, 세 군데를 오가야 해요.", 글자를 끌어 바른 철자로 늘어놓아 주세요. 뜻과 어원이 힌트예요.
 story.s06.town_legal.title,다리의 법
 story.s06.town_legal.001_pun,"들었어? 새 법이래. legal은 leg, 다리로 하는 일만 된대."
 story.s06.town_legal.002,그래서 다들 발로 서류를 쓰고 있어요.
@@ -286,7 +286,7 @@ story.s07.ki.001,"어서 가세요! …아니, 어서 오세요."
 story.s07.ki.002,"드디어 다들 나처럼 말해! 좋다. 아니, 별로야."
 story.s07.ki.003_etym,"vers는 ""돌리다"". reverse는 뒤로 돌리기, 지금 이 호수가 그래."
 story.s07.seung.title,물길 바로잡기
-story.s07.seung.001,(미니게임 안내) 수문을 열면 물레방아가 돌고 활이 나가요. 몰려오는 쪽 물길을 열어 호수 마을을 지켜 주세요!
+story.s07.seung.001,"(미니게임 안내) 물레방아가 바로 돌면 공방이 전부 움직여요. 글자를 맞추고, 용광로가 다섯 몫을 삼키면 글자판에서 찾고, 찾은 단어는 뜻 칸에!"
 story.s07.town_universe.title,거꾸로 도는 우주
 story.s07.town_universe.001,"이 호수에선 다 거꾸로라서, 우주(universe)도 거꾸로 돌아."
 story.s07.town_universe.002_etym,universe는 unus(하나) + vertere(돌리다). 하나로 함께 도는 모든 것이라는 뜻이야.
@@ -316,11 +316,11 @@ story.s07.gyeol.002,…빨리 가자. 다들 피곤하잖아.
 story.s08.ki.title,닫힌 성문
 story.s08.ki.001,누구도 들어올 수 없다. 이 문은 그분의 명이 있을 때만 열린다.
 story.s08.ki.002_etym,"sta는 ""서다"". stable은 서 있을 수 있는 것, 그래서 튼튼하다는 뜻!"
-story.s08.seung.title,보초 서기
+story.s08.seung.title,성문 공방
 story.s08.seung.001,……(꿈쩍도 안 한다)
 story.s08.seung.002,안 움직이면 내가 던져 줄까? 휙!
 story.s08.seung.003,…안 돼.
-story.s08.seung.004,"(미니게임 안내) 뜻이 맞는 손님은 비켜 주고, 틀린 손님과 담 넘는 놈은 막아서세요!"
+story.s08.seung.004,(미니게임 안내) 성문 공방엔 주문이 밀려 있어요. 칠판 단어가 열넷! 용광로는 일곱 몫씩 삼켜요.
 story.s08.town_stable.title,마구간
 story.s08.town_stable.001,stable이 튼튼하다는 뜻이라고? 마구간 아니었어?
 story.s08.town_stable.002_etym,"둘 다 맞아요! 마구간 stable도 stare, ""서다""에서 왔어요. 말이 서 있는 곳이니까요."
@@ -353,9 +353,9 @@ story.s09.ki.001,아까 커다란 녀석이 광산 안으로 뛰어 들어갔어
 story.s09.ki.002,…영차.
 story.s09.ki.003_pun,우린 일을 끝내는 법을 잊었어. finish… 피니시… 핀란드 사람?
 story.s09.ki.004_etym,"fin은 ""끝"". finish는 끝내기, final은 마지막!"
-story.s09.seung.title,광석 캐기
+story.s09.seung.title,광산 공방
 story.s09.seung.001,부순다! 다 부순다! …이건 부수면 안 되는 거야?
-story.s09.seung.002,(미니게임 안내) 오늘의 광맥 어원은 저 두 개야. 튀어 오르는 광석 중 그 어원이 든 단어만 그어 깨. 엉뚱한 걸 깨면 광산이 흔들린다.
+story.s09.seung.002,(미니게임 안내) 광산 공방은 칠판이 스무 줄이야. 용광로도 열 몫씩 삼키지. 엉뚱한 어원을 넣으면 광산이 흔들린다.
 story.s09.skit_missing.title,빈자리
 story.s09.skit_missing.001,짐 들 사람이 없으니 내가 들겠다! …무거워.
 story.s09.skit_missing.002,부숴서 작게 만들면 가벼워!
@@ -389,9 +389,9 @@ story.s10.ki.001,어… 그… 이거. 이거 뭐야?
 story.s10.ki.002,defect. 처음 우리 마을에서 본 단어야.
 story.s10.ki.003_etym,"de-는 ""떨어져"", fac은 ""만들다"". 기억나? 우리가 처음 찾아 준 어원!"
 story.s10.ki.004,…결함! 금 간 거! 나 이 말 알아!
-story.s10.seung.title,문양 잇기
-story.s10.seung.001,(미니게임 안내) 달아나는 말뿌리를 화살로 맞혀서, 제 단어 밑에 다시 심어 줘. 새싹이 돋으면 말이 풀려나.
-story.s10.seung.002,이으면… 갇혀 있던 말이 풀려나!
+story.s10.seung.title,거꾸로 탑
+story.s10.seung.001,"(미니게임 안내) 이 탑에선 글자가 거꾸로도 숨어. 오른쪽에서 왼쪽으로, 아래에서 위로도 읽어 봐.", 제 단어 밑에 다시 심어 줘. 새싹이 돋으면 말이 풀려나.
+story.s10.seung.002,칠판 단어를 모두 되찾으면… 갇혀 있던 말이 풀려나!
 story.s10.town_communication.title,첫마디
 story.s10.town_communication.001,어… 그… 커… 커뮤니…
 story.s10.town_communication.002_etym,communication! com-(함께) + munis(나눔). 함께 나누는 말이에요.
@@ -433,3 +433,4 @@ story.s10.epilogue.001,돌아왔구나! 그런데 아직 못 찾은 단어가 �
 story.s10.epilogue.002,"응! 2차, 3차, 4차까지 진화시킬 단어도 잔뜩이야."
 story.s10.epilogue.003,이번엔 내가 짐 다 들게. 진짜로.
 story.s10.epilogue.004,가자.
+story.s07.seung.002,필요 없는 어원을 용광로에 넣으면 물이 튀어요. 조심하세요!
