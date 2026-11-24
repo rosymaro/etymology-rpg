@@ -89,7 +89,7 @@ func _end() -> void:
 		var next := UiKit.button(t("ui.mini.next"), _proceed, UiKit.LEAF, 26)
 		next.custom_minimum_size = Vector2(220, 72)
 		add_child(next)
-		UiKit.pin(next, 1, 1, -24, -24)
+		UiKit.thumb(next, 1.0)  # 엄지 자리
 		return
 	await get_tree().create_timer(0.6).timeout
 	_proceed()

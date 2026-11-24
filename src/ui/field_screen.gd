@@ -87,7 +87,7 @@ func _build_hud() -> void:
 	_act_btn.custom_minimum_size = Vector2(260, 80)
 	_act_btn.visible = false
 	add_child(_act_btn)
-	UiKit.pin(_act_btn, 1, 1, -24, -24)
+	UiKit.thumb(_act_btn, 1.0)  # 엄지 자리
 	_toast = UiKit.label("", 26)
 	_toast.custom_minimum_size = Vector2(640, 0)
 	_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

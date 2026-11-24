@@ -13,6 +13,10 @@ const GRAY := Color("c9c4cf")
 const GOOD := Color("6fbf73")
 const BAD := Color("e07a7a")
 const BG_BLEED := 800.0  ## 바탕색을 화면 밖 여백까지 넓히는 길이
+## 엄지 자리: 자주 누르는 버튼(다음, 결과 보기, 확인 …)의 가운데를 화면(Main 틀) 아래에서 이만큼 위에 둔다.
+## 조우 퀴즈 4지선다의 4번째 보기와 같은 높이다.
+const THUMB_ROW := 220.0
+const THUMB_H := 70.0
 
 
 static func box(bg: Color, radius: int = 18, border: int = 3) -> StyleBoxFlat:
@@ -43,6 +47,13 @@ static func wrap(l: Label, min_w: float = 0.0) -> Label:
 		l.custom_minimum_size.x = min_w
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return l
+
+
+## 버튼을 엄지 자리(THUMB_ROW)에 둔다. ax: 0 왼쪽, 0.5 가운데, 1 오른쪽. ox: 옆으로 비킬 만큼.
+static func thumb(c: Control, ax: float = 0.5, ox: float = 0.0) -> void:
+	c.custom_minimum_size.y = THUMB_H
+	var side := 24.0 if ax <= 0.0 else (-24.0 if ax >= 1.0 else 0.0)
+	pin(c, ax, 1, side + ox, -(THUMB_ROW - THUMB_H / 2.0))
 
 
 static func button(text: String, on_press: Callable, bg: Color = APRICOT, size: int = 26) -> Button:

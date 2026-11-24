@@ -12,6 +12,7 @@ var _roots: Dictionary = {}
 var _panel: PanelContainer
 var _body: VBoxContainer
 var _help: Label
+var _nav: HBoxContainer
 var _root_shown := ""  ## 어근 고르기에서 설명을 보여 줄 어근(마지막으로 누른 것)
 
 
@@ -102,10 +103,8 @@ func _step_magic() -> void:
 		row.add_child(b)
 	_help = _right(UiKit.wrap(UiKit.label(_magic_desc(_magic), 22, UiKit.INK.lightened(0.2))))
 	_body.add_child(_help)
-	var nav := UiKit.hbox()
-	nav.alignment = BoxContainer.ALIGNMENT_END
+	var nav := _nav_row()
 	nav.add_child(UiKit.button(t("ui.battle.next"), _step_roots, UiKit.LEAF))
-	_body.add_child(nav)
 
 
 func _magic_desc(id: String) -> String:
@@ -148,11 +147,9 @@ func _step_roots() -> void:
 	var desc := _root_desc(_root_shown) if _root_shown != "" else ""
 	_help = _right(UiKit.wrap(UiKit.label(desc, 22, UiKit.INK.lightened(0.2))))
 	_body.add_child(_help)
-	var nav := UiKit.hbox()
-	nav.alignment = BoxContainer.ALIGNMENT_END
+	var nav := _nav_row()
 	nav.add_child(UiKit.button(t("ui.battle.back"), _step_magic, UiKit.PAPER))
 	nav.add_child(UiKit.button(t("ui.battle.start"), _start, UiKit.ACCENT.lightened(0.3)))
-	_body.add_child(nav)
 
 
 func _root_desc(root: String) -> String:
@@ -172,6 +169,16 @@ func _flow() -> HFlowContainer:
 	f.add_theme_constant_override("h_separation", 8)
 	f.add_theme_constant_override("v_separation", 6)
 	return f
+
+
+## 이전·다음·전투 시작 버튼 줄: 엄지 자리(UiKit.THUMB_ROW) 오른쪽
+func _nav_row() -> HBoxContainer:
+	if _nav:
+		_nav.queue_free()
+	_nav = UiKit.hbox(12)
+	add_child(_nav)
+	UiKit.thumb(_nav, 1.0)
+	return _nav
 
 
 func _start() -> void:

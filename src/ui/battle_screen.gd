@@ -98,10 +98,10 @@ func open(args: Dictionary) -> void:
 	add_child(_banner)
 	UiKit.pin(_banner, 0.5, 0, 0, MID_Y + 270)
 	_next_btn = UiKit.button(t("ui.battle.next_turn"), func() -> void: _tapped = true, UiKit.ACCENT.lightened(0.35), 26)
-	_next_btn.custom_minimum_size = Vector2(240, 70)
+	_next_btn.custom_minimum_size = Vector2(260, UiKit.THUMB_H)
 	_next_btn.visible = false
 	add_child(_next_btn)
-	UiKit.pin(_next_btn, 0.5, 0, 0, MID_Y + 370)
+	UiKit.thumb(_next_btn)  # 엄지 자리
 	# 카드를 누르고 있으면 누른 자리에 처음 모습 창
 	_popup = UiKit.card(UiKit.SKY.lightened(0.35))
 	_popup.visible = false
@@ -129,8 +129,9 @@ func open(args: Dictionary) -> void:
 	_end_btn = UiKit.button(t("ui.battle.to_result"), func() -> void:
 		main.flow.battle_finished(_result, _words, _boss, entries), UiKit.LEAF)
 	_end_btn.visible = false
+	_end_btn.custom_minimum_size.x = 260
 	add_child(_end_btn)
-	UiKit.pin(_end_btn, 1, 1, -20, -20)
+	UiKit.thumb(_end_btn)  # 엄지 자리
 	_play()
 
 
