@@ -151,74 +151,53 @@ ui.mini.free_result,이번 판에 단어 {n}개를 얻을 수 있었어요(미�
 ui.mini.again,다시 하기
 ui.mini.list,목록
 ui.mini.hub_note,보상 없이 미니게임만 해 봐요. 단어는 그 마을에 배정된 단어로 나와요.
-ui.mini.search.hints,뜻을 보고 단어를 찾아요 (처음 글자부터 끝 글자까지 끌기)
-ui.mini.kite.kite,연
-ui.mini.kite.sky,하늘
-ui.mini.ore.target,광맥 어원: {roots}  ·  이 어원이 든 단어만!
-ui.mini.rule.order,"조각을 집어 용광로에 넣고, 한 단어가 다 모이면 모루를 두드려요. 완성 단어는 맞는 뜻의 진열장에."
-ui.mini.rule.trap,"숨어서 단어들의 길을 지켜보고, 그 길목에 뜻이 맞는 덫을 놓아요. 다시 숨으면 단어가 걸려요."
-ui.mini.rule.search,글자 격자에서 가로·세로·대각선으로 숨은 단어를 찾아요. 10초마다 필요 없는 글자가 하나씩 사라져요.
-ui.mini.rule.kite,타일을 눌러 돌려요. 단어 칸의 뜻이 맞으면 그 방향이 바른 길이에요. 단어 5개를 모두 지나 하늘까지 이어요.
-ui.mini.rule.fishing,누르고 있으면 찌를 던져요. 입질하면 원이 줄어요. 원이 작아지면 손을 떼요. 싸움에서는 점이 닿는 원을 눌러요.
-ui.mini.rule.wheel,"수문을 눌러 물길을 바꿔요. 하나만 열면 그 활이 빨라져요. 100마리를 잡으면 단어를 모두, 못 잡으면 절반."
-ui.mini.rule.guard,"뜻이 맞는 손님은 비켜 주고, 틀린 손님과 담 넘는 도둑은 막아요. 3번 틀리면 끝나요."
-ui.mini.rule.ore,광맥 어원이 든 영어 단어의 광석만 그어 깨요. 다른 단어를 깨면 실수예요(3번이면 끝).
-ui.mini.rule.pattern,"어원을 눌러 화살로 맞히고, 쓰러지면 끌어서 그 어원의 단어 아래에 놓아요. 새싹 5개를 모두 틔우면 완성!"
 ui.mini.next,다음
-ui.mini.search.answer,✗ {word}  {meaning} (판에 분홍색으로 표시)
-ui.mini.kite.goal,단어 5개를 모두 지나 하늘까지 이어요. 단어 칸은 돌릴 때마다 뜻이 바뀌어요. 단어와 뜻이 맞는 방향이 바른 길이에요.
-ui.mini.kite.missing,아직 지나지 않은 단어가 있어요.
-ui.mini.fishing.bait,미끼(뜻):
-ui.mini.fishing.fight_easy,뜻이 맞는 물고기예요! 6번 중 {n}번 이상 맞히면 잡혀요.
-ui.mini.fishing.fight_hard,뜻이 다른 물고기예요. 6번 중 {n}번 이상 맞혀야 잡혀요!
-ui.mini.fishing.caught,낚았어요! {word} = 「{meaning}」
-ui.mini.fishing.lost,놓쳤어요. {word}의 뜻은 「{meaning}」이에요.
-ui.mini.guard.gate,성문
-ui.mini.guard.me,나
-ui.mini.guard.ok,✓ 맞았어요\n{word} = {meaning}
-ui.mini.guard.climb_ok,✓ 도둑을 잡았어요\n{word}
-ui.mini.guard.climb_miss,✗ 도둑이 담을 넘었어요\n{word}
-ui.mini.guard.miss,실수 {miss}/{max}
-ui.mini.pattern.sprout,새싹이 올랐어요! ({n}/{max})
-ui.mini.pattern.review,시간이 다 됐어요. 분홍 칸이 정답 어원이에요.
-ui.mini.pattern.left,새싹 {n}/{max}
-ui.mini.kite.meaning,길은 이어졌지만 뜻이 맞지 않는 단어가 있어요.
-ui.mini.search.etym,어원: {etym}
-ui.mini.guard.wrong_blocked,✗ 맞는 짝이었어요. 통과시켜야 해요\n{word} = {meaning}
-ui.mini.guard.wrong_passed,✗ 틀린 짝이었어요. 막아야 해요\n{word} ≠ {shown}
-ui.mini.fishing.wait,물고기가 다가와요…
-ui.mini.fishing.bite,입질! 원이 작아지면 손을 떼요
-ui.mini.fishing.early,너무 일찍 당겼어요. 물고기가 달아났어요.
-ui.mini.fishing.ate,미끼만 먹고 갔어요.
-ui.mini.fishing.hits,맞힘 {n} (잡으려면 {need}) · 남은 점 {left}
-ui.mini.trap.watch,숨어서 지켜봐요. 단어들의 길을 기억하세요. 덫을 끌어 놓으면 단어들이 숨어요.
-ui.mini.trap.place,단어가 지나갈 자리에 뜻이 맞는 덫을 놓아요. 놓은 덫을 누르면 다시 집어요.
-ui.mini.trap.hunt,쉿… 단어들이 다시 나왔어요.
-ui.mini.trap.hide,숨어서 기다리기
-ui.mini.trap.caught,잡은 단어 {n}/{max} · {s}초
-ui.mini.order.full,손에 든 것부터 내려놓아요.
-ui.mini.order.made,완성! {word}. 맞는 뜻의 진열장에 올려요.
-ui.mini.order.broke,깨졌어요. 한 단어의 조각만 빠짐없이 넣어야 해요.
-ui.mini.order.sold,진열 완료! {word} = {meaning}
-ui.mini.order.wrong,뜻이 달라요. {word} = {meaning}
-ui.mini.order.store,창고
-ui.mini.order.furnace,용광로
-ui.mini.order.hammer,모루: 두드리기
-ui.mini.order.shelf,진열장(주문)
-ui.mini.order.done,주문 끝
-ui.mini.moat.open,수문 열림
-ui.mini.moat.closed,수문 닫힘
-ui.mini.moat.kills,잡은 병사 {n}/{goal} · 놓친 병사 {leak}
-ui.mini.copy.hint,"뜻: {meaning}
-어원: {etym}"
-ui.mini.copy.undo,한 글자 지우기
-ui.mini.copy.skip,건너뛰기
-ui.mini.copy.wrong,철자가 달라요. 다시 해 봐요.
-ui.mini.copy.answer,정답은 {word}였어요.
-ui.mini.rule.copy,"얼음에 갇힌 글자를 두드려 깨고, 끌어서 칸에 놓아 철자를 맞춰요. 뜻과 어원이 힌트예요."
-ui.mini.copy.ice,얼음을 두드려 깨요
-ui.mini.copy.drag,깬 글자를 끌어 칸에 놓아요
-ui.mini.ore.ok,✓ {word} = {meaning}
-ui.mini.ore.bad,✗ {word}에는 광맥 어원이 없어요
 ui.joy.title,{name} — 새 어근을 익혔어요!
 ui.joy.hint,전투 준비에서 장착할 수 있어요
+ui.mini.rule.f01,벨트의 어원을 눌러 용광로에 넣고 두드려요. 칠판의 단어가 되면 확보! 함정 어원도 섞여 있어요. 3번 틀리면 끝.
+ui.mini.rule.f02,섞인 글자를 눌러 칠판의 어원을 만들어요. 한 단어의 어원이 모두 벨트 너머로 넘어가면 확보! 글자를 틀리면 1번 틀림.
+ui.mini.rule.f03,"쌓인 단어를 끌어 맞는 뜻의 진열대에 놓아요. 틀리면 1번 틀림, 3번이면 끝."
+ui.mini.rule.f04,어원이 벨트를 돌다 용광로에 저절로 들어가요. 5/5가 되면 빨갛게 달아오른 용광로를 눌러 단어찾기!
+ui.mini.rule.f05,"에너그램으로 어원을 만들어 벨트에 올리고, 어원 조합에서 용광로에 넣어 두드려요. 쓸모없는 어원은 SKIP, 잘못 올린 것은 쓰레기통."
+ui.mini.rule.f06,"에너그램 → 용광로 → 진열대. 만든 단어는 단어 뜻 영역에 쌓이고, 맞는 뜻에 놓아야 확보예요."
+ui.mini.rule.f07,에너그램 → 용광로에 넣어 흡수(5개) → 단어찾기 → 진열대. 필요 없는 어원을 넣으면 1번 틀림.
+ui.mini.rule.f08,"7번과 같아요. 칠판 단어 14개, 용광로는 7개씩 흡수해요."
+ui.mini.rule.f09,"7번과 같아요. 칠판 단어 20개, 용광로는 10개씩 흡수해요."
+ui.mini.rule.f10,9번과 같아요. 단어찾기에서 거꾸로 숨은 단어도 있어요!
+ui.factory.area.anagram,에너그램
+ui.factory.area.combine,어원 조합
+ui.factory.area.shelf,단어 뜻
+ui.factory.misses,틀림 {marks}
+ui.factory.furnace,용광로
+ui.factory.hammer,두드리기
+ui.factory.takeout,꺼내기
+ui.factory.tap_hot,눌러서 단어찾기!
+ui.factory.made,완성! {word} = {meaning}
+ui.factory.made_stack,완성! {word}. 단어 뜻 영역에서 맞는 뜻에 놓아요.
+ui.factory.burnt,타 버렸어요. 칠판의 단어가 되는 어원만 넣어요.
+ui.factory.empty,용광로가 비어 있어요. 벨트의 어원을 눌러 넣어요.
+ui.factory.full,용광로가 꽉 찼어요. 두드리거나 꺼내요.
+ui.factory.not_yet,어원 조합 쪽으로 넘어온 어원만 넣을 수 있어요.
+ui.factory.absorbed,{root} 흡수! ({n}/{max})
+ui.factory.hot,용광로가 달아올랐어요! 눌러서 단어찾기를 해요.
+ui.factory.rejected,{root}는 칠판 단어에 필요 없는 어원이에요. (1번 틀림)
+ui.factory.anagram_title,섞인 글자를 눌러 어원을 만들어요
+ui.factory.anagram_none,만들 어원이 없어요.
+ui.factory.anagram_ok,{root} 완성! 벨트에 올려요.
+ui.factory.anagram_wrong,글자 순서가 달라요. 다시 해 봐요.
+ui.factory.anagram_wrong_miss,글자 순서가 달라요. (1번 틀림)
+ui.factory.clear,다시
+ui.factory.skipped,넘겼어요.
+ui.factory.trash,쓰레기통
+ui.factory.trashed,{root}를 버렸어요.
+ui.factory.trash_side,에너그램 쪽 벨트에 있는 어원만 버릴 수 있어요.
+ui.factory.waiting,벨트에 오를 어원 {n}개
+ui.factory.exited,어원이 벨트 너머로 넘어갔어요.
+ui.factory.shelved,진열 완료! {word} = {meaning}
+ui.factory.wrong_shelf,뜻이 달라요. {word} = {meaning} (1번 틀림)
+ui.factory.search_go,칠판의 단어를 글자판에서 찾아요. 처음 글자부터 끝 글자까지 끌어요.
+ui.factory.search_time,단어찾기 · 남은 시간 {s}초 · 찾은 단어 {n}/{max}
+ui.factory.found,찾았어요! {word} = {meaning}
+ui.factory.reverse_note,거꾸로(← ↑)도 숨어 있어요!
+ui.factory.reverse_intro,"이번 단어찾기는 방향 제한이 없어요!
+오른쪽 → 왼쪽, 아래 → 위처럼 거꾸로 숨은 단어도 있어요."

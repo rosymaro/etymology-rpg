@@ -43,15 +43,7 @@ func test_tap_on_dialogue_box_advances() -> void:
 	assert_eq(d._i, lines_before + 1, "상자 위를 눌러도 다음 줄로 넘어간다")
 
 
-func test_copy_drag_puts_letter_in_slot_through_real_input() -> void:
-	main.flow.play_minigame("copy", "free")
-	await wait_physics_frames(3)
-	var v := main.current() as CopyView
-	var g := v.game as AnagramGame
-	while g.ice[0] > 0:
-		g.hit(0)
-	var from := v._canvas.get_global_transform_with_canvas() * v._tray_rect(0).get_center()
-	var to := v._canvas.get_global_transform_with_canvas() * v._slot_rect(0).get_center()
+func _push_drag(from: Vector2, to: Vector2) -> void:
 	var e := InputEventMouseButton.new()
 	e.button_index = MOUSE_BUTTON_LEFT
 	e.pressed = true
@@ -68,5 +60,34 @@ func test_copy_drag_puts_letter_in_slot_through_real_input() -> void:
 	r.position = to
 	r.global_position = to
 	get_viewport().push_input(r, true)
+
+
+## 화면 좌표(세계 좌표 - 지금 보이는 영역)
+func _screen(v: FactoryView, world: Vector2) -> Vector2:
+	return v._canvas.get_global_transform_with_canvas() * (world - Vector2(v._cam, 0))
+
+
+func test_factory_shelf_drag_through_real_input() -> void:
+	main.flow.play_minigame("f03", "free")
+	await wait_physics_frames(3)
+	var v := main.current() as FactoryView
+	var g := v.g
+	var i: int = g.slots[0]
+	var n := g.stack.find(i)
+	_push_drag(_screen(v, v._card_rect(n).get_center()), _screen(v, v._slot_rect(0).get_center()))
 	await wait_physics_frames(2)
-	assert_eq(g.slots[0], 0, "끌어서 칸에 놓으면 올라간다")
+	assert_true(g.board[i]["id"] in g.earned, "끌어서 맞는 뜻 칸에 놓으면 확보")
+
+
+func test_factory_tap_belt_root_goes_into_furnace() -> void:
+	main.flow.play_minigame("f01", "free")
+	await wait_physics_frames(3)
+	var v := main.current() as FactoryView
+	var g := v.g
+	for k in 200:
+		g.update(0.05)
+	var it: Dictionary = g.belt[0]
+	var at := _screen(v, v.belt_pos(it["t"]))
+	_push_drag(at, at)
+	await wait_physics_frames(2)
+	assert_eq(g.furnace.size(), 1, "벨트의 어원을 누르면 용광로에 들어간다")
