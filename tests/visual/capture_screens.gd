@@ -56,6 +56,8 @@ func _run() -> void:
 	(main.current() as BattlePrepScreen)._step_roots()
 	await _shot("08_prep_roots")
 	(main.current() as BattlePrepScreen)._start()
+	await get_tree().create_timer(0.0).timeout
+	await _shot("09_battle_enter")  # 옆 목록에서 커지며 나오는 중
 	for i in 60:
 		await get_tree().process_frame
 	var bs := main.current() as BattleScreen
@@ -93,6 +95,13 @@ func _run() -> void:
 		await _shot("09_battle_hold")
 		bs._show_popup([] as Array[String], Vector2.ZERO)
 		hist = bs.entries
+		bs._skip = false  # 쓰러지는 연출만 다시 보기
+		bs._b_box.modulate = Color.WHITE
+		bs._b_box.rotation_degrees = 0.0
+		bs._b_box.scale = Vector2.ONE
+		bs._fall_fx(bs._b_box, Combatant.ENEMY)
+		await get_tree().create_timer(0.45).timeout
+		await _shot("09_battle_fall")
 	var r: Array = []
 	for i in 3:
 		r.append(gd.rules.gain_word(s, field[60 + i].id))
