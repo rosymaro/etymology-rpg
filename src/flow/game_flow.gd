@@ -13,19 +13,55 @@ func _init(m: Main) -> void:
 	main = m
 
 
-## 앱을 켤 때: 하던 곳이 적혀 있으면(다른 앱을 보다 와서 앱이 다시 켜졌을 때) 거기서 이어 한다.
+## 앱을 켤 때: 하던 곳이 적혀 있으면(다른 앱을 보다 와서 안드로이드가 앱을 다시 켰을 때) 그 화면에서 이어 한다.
+## 앱을 제대로 끝냈으면(Main._exit_tree) 지워져 있어 타이틀부터.
 func start() -> void:
-	match GameData.resume_mode():
+	var mode := GameData.resume_mode()
+	var r := GameData.resume_route()
+	match mode:
 		"story", "dev":
-			var dev := GameData.resume_mode() == "dev"
-			GameData.use_dev_save(dev)
+			GameData.use_dev_save(mode == "dev")
 			if GameData.continue_game():
-				go_field()
+				_restore(r)
 				return
 		"mini":
-			go_minigames()
+			if r.get("s", "") == "minigame":
+				play_minigame(String(r["id"]), "free")
+			else:
+				go_minigames()
 			return
 	main.show_screen(TitleScreen.new())
+
+
+static func _ids(a) -> Array[String]:
+	var out: Array[String] = []
+	for x in a:
+		out.append(String(x))
+	return out
+
+
+## 적어 둔 화면을 다시 연다. 퀴즈는 처음 문제부터, 전투는 전투 준비부터(진행 중인 판의 세부는 남기지 않는다).
+func _restore(r: Dictionary) -> void:
+	match String(r.get("s", "field")):
+		"dex":
+			go_dex()
+		"party":
+			go_party()
+		"forge":
+			go_forge()
+		"evolve_quiz":
+			evolve_quiz(String(r.get("id", "")))
+		"quiz":
+			encounter(_ids(r.get("words", [])))
+		"prep":
+			go_battle_prep(_ids(r.get("words", [])), bool(r.get("boss", false)))
+		"options":
+			var back: Dictionary = r.get("back", {"s": "field"})
+			go_options(func() -> void: _restore(back))
+		"minigame":
+			play_minigame(String(r.get("id", "")), String(r.get("mode", "story")))
+		_:
+			go_field()
 
 
 func go_title() -> void:
@@ -34,6 +70,7 @@ func go_title() -> void:
 
 
 func go_options(back: Callable) -> void:
+	GameData.set_route({"s": "options", "back": GameData.resume_route()})
 	main.show_screen(OptionsScreen.new(), {"back": back})
 
 
@@ -72,11 +109,13 @@ static func _views() -> Dictionary:
 
 func go_minigames() -> void:
 	GameData.set_resume("mini")
+	GameData.set_route({"s": "mini_hub"})
 	main.show_screen(MinigameHubScreen.new())
 
 
 ## mode "free": 미니게임 메뉴(보상 없음, 그 마을 단어로). "story": 마을에서(아직 못 얻은 마을 단어로, 끝나면 뜻 문제).
 func play_minigame(id: String, mode: String) -> void:
+	GameData.set_route({"s": "minigame", "id": id, "mode": mode})
 	var def := MinigameRegistry.game_def(id)
 	var pool := _minigame_pool(int(def["stage"]), mode == "story", int(def.get("min_etym", 0)))
 	if def.get("pool", "") == "root_pair":
@@ -194,6 +233,7 @@ func continue_game() -> void:
 
 
 func go_field(msg: String = "") -> void:
+	GameData.set_route({"s": "field"})
 	main.show_screen(FieldScreen.new(), {"msg": msg})
 
 
@@ -215,6 +255,7 @@ func entered_field() -> void:
 
 ## 필드 적과 부딪힘: 단어 n개 조우 퀴즈.
 func encounter(word_ids: Array[String]) -> void:
+	GameData.set_route({"s": "quiz", "words": word_ids})
 	GameData.vibrate()
 	main.show_screen(QuizScreen.new(), {"words": word_ids, "mode": "encounter",
 		"done": func(right: Array[bool]) -> void: _after_encounter(word_ids, right)})
@@ -247,6 +288,7 @@ func board_quiz(word_ids: Array[String]) -> void:
 
 
 func go_battle_prep(word_ids: Array[String], boss: bool) -> void:
+	GameData.set_route({"s": "prep", "words": word_ids, "boss": boss})
 	main.show_screen(BattlePrepScreen.new(), {"words": word_ids, "boss": boss})
 
 
@@ -288,6 +330,7 @@ func _give_words(ids: Array[String], title_key: String, history: Array[Dictionar
 		events.append(GameData.rules.gain_word(GameData.state, id))
 		EventBus.word_captured.emit(id)
 	GameData.save()
+	GameData.set_route({"s": "field"})  # 단어는 이미 받았다. 결과 화면 뒤는 필드
 	main.show_screen(ResultScreen.new(), {"events": events, "title": title_key, "history": history,
 		"done": func() -> void: _after_result()})
 
@@ -309,6 +352,7 @@ func _after_result() -> void:
 # ----- 마을 -----
 
 func go_forge() -> void:
+	GameData.set_route({"s": "forge"})
 	if not seen("s01_tut_evolve"):
 		_flag("s01_tut_evolve")
 		main.play_scene("s01_tut_evolve", func() -> void: main.show_screen(EvolveScreen.new()))
@@ -317,6 +361,7 @@ func go_forge() -> void:
 
 
 func evolve_quiz(word_id: String) -> void:
+	GameData.set_route({"s": "evolve_quiz", "id": word_id})
 	var words := GameData.evolution.quiz_words(word_id)
 	main.show_screen(QuizScreen.new(), {"words": words, "mode": "evolve", "target": word_id,
 		"done": func(right: Array[bool]) -> void: _after_evolve(word_id, words, right)})
@@ -340,10 +385,12 @@ func _after_evolve(word_id: String, words: Array[String], right: Array[bool]) ->
 
 
 func go_dex() -> void:
+	GameData.set_route({"s": "dex"})
 	main.show_screen(DexScreen.new())
 
 
 func go_party() -> void:
+	GameData.set_route({"s": "party"})
 	main.show_screen(PartyScreen.new())
 
 

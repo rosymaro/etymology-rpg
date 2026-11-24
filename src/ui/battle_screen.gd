@@ -2,12 +2,14 @@ class_name BattleScreen
 extends Screen
 ## 전투 연출. 규칙 층(BattleEngine)이 이미 계산한 기록(log)을 차례로 보여 준다. 화면은 계산하지 않는다.
 ## 순서: 마법 알림 → 유닛 등장(코인이 돌고, 코인 전→후 능력치가 깜빡임) → 스킬·보스 능력(바뀐 능력치 깜빡임)
-## → "1턴" → 공격(깎인 체력이 빨갛게 깜빡이고, 맞은 카드에서 단어 뜻과 피해 숫자가 튀어나온다) → '다음'을 누르면 "2턴" …
+## → "1턴" → 공격(깎인 체력이 빨갛게 깜빡이고, 맞은 카드에서 단어 뜻과 피해 숫자가 튀어나온다) → … 단계마다 '다음'을 눌러야 넘어간다.
+## 전투를 시작할 때 거는 마법은 코인을 다 던진 뒤에 보여 준다(코인 → 다음 → 마법 → 다음 → 스킬 → 다음 → 1턴 …).
 ## 일어난 일은 기록(entries)으로 모아 결과 화면에 턴마다 줄을 그어 보여 준다.
 
 const STEP := 0.7
 const TURN_SHOW := 0.6
 const FLASH := 0.9
+const FLOAT_SEC := 2.6  ## 튀어나온 뜻·피해 숫자가 보이는 시간
 
 var _ctx: BattleContext
 var _result: BattleResult
@@ -28,7 +30,10 @@ var _end_btn: Button
 var _skip := false
 var _ended := false
 var _cur := {Combatant.ALLY: -1, Combatant.ENEMY: -1}
-var _magic_on := {}  ## 적 순번 -> {damage, down}: 시작 마법을 맞은 적(나올 때 효과를 보여 준다)
+var _magic_on := {}  ## 적 순번 -> {damage, down}: 이미 알린 시작 마법을 맞은 적(나올 때 효과를 보여 준다)
+var _pending_magic := {}  ## 적 순번 -> 마법 기록: 아직 알리지 않은 시작 마법(코인 뒤에 보여 준다)
+var _magic_due := {}  ## 적 순번 -> {a0, a1, h0, h1}: 카드에 아직 반영하지 않은 마법 효과
+var _magic_btn: Button
 var entries: Array[Dictionary] = []  ## 기록 {text, col} 또는 {sep: true}(턴 구분 줄). 결과 화면에 넘긴다
 var lines: Array[String] = []  ## 기록의 글만(테스트용)
 
@@ -94,12 +99,22 @@ func open(args: Dictionary) -> void:
 	_popup.visible = false
 	_popup.z_index = 20
 	_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_popup_text = UiKit.label("", 22)
+	_popup_text = UiKit.wrap(UiKit.label("", 20), 460)
 	_popup.add_child(_popup_text)
 	add_child(_popup)
 	for box in [_a_box, _b_box]:
 		var bx: BattleCard = box
-		bx.held.connect(func(on: bool, at: Vector2) -> void: _show_popup(bx.base_lines() if on else [] as Array[String], at))
+		bx.held.connect(func(on: bool, at: Vector2) -> void:
+			_show_popup(_info(bx.combatant, bx.base_lines()) if on and bx.combatant else [] as Array[String], at))
+	# 내가 쓴 마법: 왼쪽 아래 카드. 누르고 있으면 마법 내용 팝업
+	_magic_btn = UiKit.button("✦ " + GameText.magic_name(_ctx.magic_id), func() -> void: pass, UiKit.APRICOT.lightened(0.2), 20)
+	_magic_btn.custom_minimum_size = Vector2(220, 54)
+	add_child(_magic_btn)
+	UiKit.pin(_magic_btn, 0, 1, 20, -96)
+	_magic_btn.button_down.connect(func() -> void:
+		_show_popup([GameText.magic_name(_ctx.magic_id), GameText.magic_desc(_ctx.magic_id, _ctx.power)] as Array[String],
+			_magic_btn.get_global_rect().get_center()))
+	_magic_btn.button_up.connect(func() -> void: _show_popup([] as Array[String], Vector2.ZERO))
 	var skip := UiKit.button(t("ui.battle.skip"), skip_all, UiKit.PAPER, 22)
 	add_child(skip)
 	UiKit.pin(skip, 0, 1, 20, -20)
@@ -112,8 +127,30 @@ func open(args: Dictionary) -> void:
 
 
 func _play() -> void:
-	for ev in _ctx.log:
+	var log := _ctx.log
+	# 첫 격돌 전에 건 마법은 코인을 다 던진 뒤에 알린다(기록 순번으로 가린다)
+	var deferred_at: Array[int] = []
+	for k in log.size():
+		if log[k]["t"] == "clash":
+			break
+		if log[k]["t"] == "magic":
+			_pending_magic[log[k]["target"]] = log[k]
+			deferred_at.append(k)
+	var deferred: Array = _pending_magic.values()
+	for k in log.size():
+		var ev: Dictionary = log[k]
+		if k in deferred_at:
+			continue
+		var next: String = log[k + 1]["t"] if k + 1 < log.size() else ""
 		await _step(ev)
+		if ev["t"] == "enter" and next != "enter":
+			await _wait_tap()  # 코인을 다 보고 나서
+			for m in deferred:
+				await _play_magic(m)
+				await _wait_tap()
+			deferred.clear()
+		elif ev["t"] in ["skill", "skill_copy", "boss_ability", "magic", "round"]:
+			await _wait_tap()
 	_end_btn.visible = true
 	_ended = true
 	_a_box.hold_enabled = true
@@ -172,8 +209,8 @@ func _float(text: String, from: Vector2, dir: Vector2, col: Color, size: int = 3
 	add_child(l)
 	l.position = from - Vector2(40, 20)
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(l, "position", l.position + dir, 1.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.tween_property(l, "modulate:a", 0.0, 1.1).set_delay(0.4)
+	tw.tween_property(l, "position", l.position + dir, FLOAT_SEC).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "modulate:a", 0.0, FLOAT_SEC * 0.4).set_delay(FLOAT_SEC * 0.6)  # 오래 보이다가 끝에만 흐려진다
 	tw.chain().tween_callback(l.queue_free)
 
 
@@ -213,13 +250,10 @@ func _coin_text(flips: Array) -> String:
 func _step(ev: Dictionary) -> void:
 	match ev["t"]:
 		"magic":
-			var target: String = _ctx.enemies[ev["target"]].word_id
-			var text := t("ui.battle.magic_cast").format({"magic": t("sys.magic.%s.name" % ev["id"]), "target": target,
-				"damage": ev["damage"], "down": ev.get("atk_down", 0)})
-			_banner.text = text
-			_log("✦ " + text, UiKit.ACCENT.darkened(0.3))
-			_magic_on[ev["target"]] = {"damage": ev["damage"], "down": ev.get("atk_down", 0)}
-			await _wait(STEP * 1.5)
+			if ev.has("before"):  # 스킬로 전투 중에 다시 건 마법: 바뀐 능력치를 깜빡인다
+				await _effect(ev)
+			else:
+				await _play_magic(ev)
 		"enter":
 			await _enter(ev)
 		"skill", "skill_copy", "boss_ability":
@@ -247,6 +281,27 @@ func _step(ev: Dictionary) -> void:
 			_log("■ " + _banner.text, UiKit.ACCENT.darkened(0.3))
 
 
+## 시작 마법을 알린다. 맞은 적이 이미 카드에 있으면 그 자리에서 효과를 깜빡인다(아니면 나올 때).
+func _play_magic(ev: Dictionary) -> void:
+	var idx: int = ev["target"]
+	var target: String = _ctx.enemies[idx].word_id
+	var text := t("ui.battle.magic_cast").format({"magic": GameText.magic_name(ev["id"]), "target": target,
+		"damage": ev["damage"], "down": ev.get("atk_down", 0)})
+	_banner.text = text
+	_log("✦ " + text, UiKit.ACCENT.darkened(0.3))
+	_pending_magic.erase(idx)
+	if _magic_due.has(idx):
+		var d: Dictionary = _magic_due[idx]
+		_magic_due.erase(idx)
+		_log("  " + t("ui.battle.h_magic_hit").format({"who": target, "h0": d["h0"], "h1": d["h1"], "a0": d["a0"], "a1": d["a1"]}), UiKit.BAD.darkened(0.2))
+		_b_box.flash("atk", d["a0"], d["a1"], UiKit.BAD, FLASH, _skip)
+		_float("-%d" % (int(d["h0"]) - int(d["h1"])), _b_box.card_center(), Vector2(-120, -170), UiKit.BAD, 40)
+		await _b_box.flash("hp", d["h0"], d["h1"], UiKit.BAD, FLASH, _skip)
+	elif not ev.get("live", false):
+		_magic_on[idx] = {"damage": ev["damage"], "down": ev.get("atk_down", 0)}
+	await _wait(STEP)
+
+
 ## 유닛이 나온다: 코인 전 값으로 카드를 펴고 → (마법을 맞았으면 그 효과) → 코인이 돈 뒤 코인 전→후 값이 깜빡인다.
 func _enter(ev: Dictionary) -> void:
 	var side: int = ev["side"]
@@ -258,8 +313,15 @@ func _enter(ev: Dictionary) -> void:
 	var who := _who(side, idx)
 	var box := _box(side)
 	var magic: Dictionary = _magic_on.get(idx, {}) if side == Combatant.ENEMY else {}
-	var atk0: int = int(ev["pre_atk"]) + int(magic.get("down", 0))
+	var due: Dictionary = _pending_magic.get(idx, {}) if side == Combatant.ENEMY else {}
+	var down := int(magic.get("down", 0)) + int(due.get("atk_down", 0))
+	var atk0: int = int(ev["pre_atk"]) + down
 	var hp0: int = int(ev["pre_hp"])
+	# 마법을 아직 알리기 전이면, 카드에는 마법 전 값(코인까지)만 보여 주고 마법 효과는 알릴 때 깜빡인다
+	var show_atk: int = int(ev["atk"]) + int(due.get("atk_down", 0))
+	var show_hp: int = int(ev["hp"]) + (int(ev["magic_hit"]) if not due.is_empty() else 0)
+	if not due.is_empty():
+		_magic_due[idx] = {"a0": show_atk, "a1": ev["atk"], "h0": show_hp, "h1": ev["hp"]}
 	box.show_now(c, who, atk0, ev["def"], hp0, _ctx.formula, not _skip)
 	_banner.text = t("ui.battle.enter").format({"who": who})
 	await _wait(BattleCard.SPIN_SEC + 0.15)
@@ -273,19 +335,19 @@ func _enter(ev: Dictionary) -> void:
 		hp0 -= int(ev["magic_hit"])
 	var parts: Array[String] = []
 	if int(ev["gain_atk"]) != 0:
-		parts.append(t("ui.battle.atk") + " %d→%d" % [atk0, ev["atk"]])
+		parts.append(t("ui.battle.atk") + " %d→%d" % [atk0, show_atk])
 	if int(ev["gain_hp"]) != 0:
-		parts.append(t("ui.battle.hp") + " %d→%d" % [hp0, ev["hp"]])
+		parts.append(t("ui.battle.hp") + " %d→%d" % [hp0, show_hp])
 	_log(t("ui.battle.h_enter").format({"who": who, "coins": _coin_text(ev["flips"]),
 		"change": ", ".join(parts) if not parts.is_empty() else t("ui.battle.h_no_change")}))
 	if not parts.is_empty():
 		_banner.text = t("ui.battle.coin_change").format({"who": who})
 		if int(ev["gain_atk"]) != 0:
-			box.flash("atk", atk0, ev["atk"], UiKit.ACCENT.darkened(0.2), FLASH, _skip)
+			box.flash("atk", atk0, show_atk, UiKit.ACCENT.darkened(0.2), FLASH, _skip)
 		if int(ev["gain_hp"]) != 0:
-			box.flash("hp", hp0, ev["hp"], UiKit.ACCENT.darkened(0.2), FLASH, _skip)
+			box.flash("hp", hp0, show_hp, UiKit.ACCENT.darkened(0.2), FLASH, _skip)
 		await _wait(FLASH + 0.1)
-	box.set_values(ev["atk"], ev["def"], ev["hp"])
+	box.set_values(show_atk, ev["def"], show_hp)
 
 
 ## 스킬·보스 능력: 무엇이 발동했는지 알리고, 바뀐 능력치를 전→후로 깜빡인다.
@@ -299,6 +361,9 @@ func _effect(ev: Dictionary) -> void:
 		"boss_ability":
 			text = t("ui.battle.boss_ability").format({"count": ev.get("count", 0)})
 			GameData.vibrate()
+		"magic":
+			text = t("ui.battle.magic_cast").format({"magic": GameText.magic_name(ev["id"]), "target": _ctx.enemies[ev["target"]].word_id,
+				"damage": ev["damage"], "down": ev.get("atk_down", 0)})
 	_banner.text = text
 	var changes: Array[String] = []
 	var b4: Dictionary = ev.get("before", {})
@@ -359,16 +424,35 @@ func _round(ev: Dictionary) -> void:
 
 ## 전투가 끝난 뒤 옆 목록의 카드를 누르고 있으면, 가운데 카드에 그 유닛의 처음 모습을 보여 준다.
 ## 전투가 끝난 뒤 옆 목록의 카드를 누르고 있으면, 누른 자리에 그 유닛의 처음 모습 창을 띄운다.
+## 옆 목록의 카드를 누르고 있으면, 누른 자리에 그 유닛의 정보 창을 띄운다(전투 중에도).
 func _hold_side(card: Control, side: int, idx: int) -> void:
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.gui_input.connect(func(ev: InputEvent) -> void:
-		if not _ended or not (ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT):
+		if not (ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT):
 			return
 		if ev.pressed:
 			var c: Combatant = _side_list(side)[idx]
 			var tmp := BattleCard.new()
 			tmp.show_now(c, _who(side, idx), c.atk, c.def, maxi(0, c.hp), _ctx.formula)
-			_show_popup(tmp.base_lines(), card.get_global_transform_with_canvas() * ev.position)
+			_show_popup(_info(c, tmp.base_lines()), card.get_global_transform_with_canvas() * ev.position)
 			tmp.free()
 		else:
 			_show_popup([] as Array[String], Vector2.ZERO))
+
+
+## 정보 창의 글: 처음 능력치 + (적) 뜻·속성·어원·스킬 / (아군) 착용한 스킬과 설명.
+func _info(c: Combatant, base: Array[String]) -> Array[String]:
+	var out: Array[String] = base.duplicate()
+	if c.side == Combatant.ENEMY:
+		var w := GameData.repo.get_word(c.word_id)
+		if w:
+			out.append(t("ui.battle.info_meaning").format({"v": w.meaning}))
+			out.append(t("ui.battle.info_attr").format({"v": GameText.attrs_text(w)}))
+			out.append(t("ui.battle.info_etym").format({"v": GameText.etym_text(w)}))
+	var skill := GameText.root_desc(c.skill_root) if c.skill_root != "" else t("ui.battle.info_no_skill")
+	out.append(t("ui.battle.info_skill").format({"v": skill}))
+	if c.boss_ability:
+		var key := "sys.boss.%s.desc" % c.word_id
+		var desc := t(key)
+		out.append(t("ui.battle.info_boss_v").format({"v": desc.format(c.boss_ability.params) if desc != key else t("ui.battle.info_boss")}))
+	return out

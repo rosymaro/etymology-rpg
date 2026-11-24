@@ -106,14 +106,7 @@ func _step_magic() -> void:
 
 
 func _magic_desc(id: String) -> String:
-	if id == "":
-		return t("sys.magic.none.desc")
-	var def := GameData.bal.magic_def(id)
-	var vals := {}
-	var p := GameData.bal.magic_power(_avg_level())
-	for k in def.get("params", {}):
-		vals[k] = Formula.int_value(def["params"][k], {"P": p})
-	return t("sys.magic.%s.desc" % id).format(vals)
+	return GameText.magic_desc(id, GameData.bal.magic_power(_avg_level()))
 
 
 func _avg_level() -> int:
@@ -155,10 +148,7 @@ func _step_roots() -> void:
 
 
 func _root_desc(root: String) -> String:
-	var def := GameData.bal.skill_def(root)
-	var cond: String = {"쉬움": "easy", "보통": "normal", "어려움": "hard"}[GameData.bal.root_tier(root)]
-	return "%s: %s %s" % [root, t("sys.root.%s.desc" % root).format(def.get("params", {})),
-		t("sys.root.cond").format({"cond": t("sys.root.cond." + cond)})]
+	return GameText.root_desc(root)
 
 
 func _show_help(text: String) -> void:

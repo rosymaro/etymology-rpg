@@ -65,13 +65,20 @@ ui.battle.atk,공격
 ui.battle.def,방어
 ui.battle.hp,체력
 ui.battle.base,(처음 모습)
-ui.battle.hold_hint,카드를 누르고 있으면 누른 자리에 처음 모습이 떠요
+ui.battle.hold_hint,카드나 마법을 누르고 있으면 누른 자리에 설명이 떠요
 ui.battle.magic_cast,"마법 {magic} 발동! {target}에게 피해 {damage}, 공격 −{down}"
 ui.battle.skill,{who}의 {root} 스킬 발동!
 ui.battle.skill_copy,{root} 스킬을 따라 했다!
 ui.battle.boss_ability,보스 능력 '결함'! 아군 코인 {count}개가 뒷면이 됐다
 ui.battle.end,적 {total}개 중 {kills}개를 쓰러뜨렸다
-ui.battle.next_turn,다음 턴 ▶
+ui.battle.info_meaning,뜻: {v}
+ui.battle.info_attr,속성: {v}
+ui.battle.info_etym,어원: {v}
+ui.battle.info_skill,스킬: {v}
+ui.battle.info_no_skill,없음
+ui.battle.info_boss,보스 능력이 있다(전투 기록 참고)
+ui.battle.info_boss_v,보스 능력: {v}
+ui.battle.next_turn,다음 ▶
 ui.battle.h_nothing,(아무 변화가 없다)
 ui.result.history,전투 기록
 ui.battle.turn,{n}턴

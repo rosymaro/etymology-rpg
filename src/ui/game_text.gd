@@ -1,0 +1,46 @@
+class_name GameText
+extends RefCounted
+## 여러 화면이 함께 쓰는 설명 글(스킬, 마법, 단어 카드 팝업). 문장은 locale/*.csv 키로.
+
+
+static func tr_(key: String) -> String:
+	return TranslationServer.translate(key)
+
+
+## 어근 스킬: "spect: 이번 격돌 공격 +2. 코인 조건: 보통(앞면 절반 이상)"
+static func root_desc(root: String) -> String:
+	if root == "":
+		return ""
+	var def := GameData.bal.skill_def(root)
+	var cond: String = {"쉬움": "easy", "보통": "normal", "어려움": "hard"}.get(GameData.bal.root_tier(root), "normal")
+	return "%s: %s %s" % [root, tr_("sys.root.%s.desc" % root).format(def.get("params", {})),
+		tr_("sys.root.cond").format({"cond": tr_("sys.root.cond." + cond)})]
+
+
+## 전투 마법: 위력 P를 넣은 설명.
+static func magic_desc(id: String, power: int) -> String:
+	if id == "":
+		return tr_("sys.magic.none.desc")
+	var def := GameData.bal.magic_def(id)
+	var vals := {}
+	for k in def.get("params", {}):
+		vals[k] = Formula.int_value(def["params"][k], {"P": power})
+	return tr_("sys.magic.%s.desc" % id).format(vals)
+
+
+static func magic_name(id: String) -> String:
+	return tr_("sys.magic.%s.name" % (id if id != "" else "none"))
+
+
+static func attrs_text(w: WordData) -> String:
+	var names: Array[String] = []
+	for a in w.attrs:
+		names.append(tr_("name.attr.%02d" % int(a)))
+	return ", ".join(names)
+
+
+static func etym_text(w: WordData) -> String:
+	var parts: Array[String] = []
+	for e in w.etym:
+		parts.append("%s(%s)" % [e.get("root", ""), e.get("meaning", "")])
+	return " + ".join(parts) if not parts.is_empty() else "-"

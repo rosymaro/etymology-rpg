@@ -64,6 +64,14 @@ func _run() -> void:
 		if bs and bs._next_btn.visible:
 			break
 	await _shot("09_battle")
+	if bs and bs._b_box.combatant:
+		bs._show_popup(bs._info(bs._b_box.combatant, bs._b_box.base_lines()), bs._b_box.card_center())
+		await _shot("09_battle_enemy_info")
+		bs._show_popup(bs._info(bs._a_box.combatant, bs._a_box.base_lines()), bs._a_box.card_center())
+		await _shot("09_battle_ally_info")
+		bs._magic_btn.button_down.emit()
+		await _shot("09_battle_magic")
+		bs._magic_btn.button_up.emit()
 	var hist: Array[Dictionary] = []
 	if bs:
 		bs.skip_all()
