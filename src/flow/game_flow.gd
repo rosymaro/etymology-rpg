@@ -50,9 +50,18 @@ func _restore(r: Dictionary) -> void:
 		"forge":
 			go_forge()
 		"evolve_quiz":
-			evolve_quiz(String(r.get("id", "")))
+			evolve_quiz(String(r.get("id", "")), int(r.get("i", 0)), r.get("right", []))
 		"quiz":
-			encounter(_ids(r.get("words", [])))
+			encounter(_ids(r.get("words", [])), int(r.get("i", 0)), r.get("right", []))
+		"battle":
+			var party: Array[int] = []
+			for u in r.get("party", []):
+				party.append(int(u))
+			var roots := {}
+			for k in r.get("roots", {}):
+				roots[int(k)] = r["roots"][k]
+			start_battle(party, roots, String(r.get("magic", "")), _ids(r.get("words", [])), bool(r.get("boss", false)),
+				int(r.get("seed", -1)), int(r.get("step", 0)))
 		"prep":
 			go_battle_prep(_ids(r.get("words", [])), bool(r.get("boss", false)))
 		"options":
@@ -254,10 +263,10 @@ func entered_field() -> void:
 
 
 ## 필드 적과 부딪힘: 단어 n개 조우 퀴즈.
-func encounter(word_ids: Array[String]) -> void:
-	GameData.set_route({"s": "quiz", "words": word_ids})
+func encounter(word_ids: Array[String], resume_i: int = 0, resume_right: Array = []) -> void:
+	GameData.set_route({"s": "quiz", "words": word_ids, "i": resume_i, "right": resume_right})
 	GameData.vibrate()
-	main.show_screen(QuizScreen.new(), {"words": word_ids, "mode": "encounter",
+	main.show_screen(QuizScreen.new(), {"words": word_ids, "mode": "encounter", "resume_i": resume_i, "resume_right": resume_right,
 		"done": func(right: Array[bool]) -> void: _after_encounter(word_ids, right)})
 
 
@@ -293,7 +302,14 @@ func go_battle_prep(word_ids: Array[String], boss: bool) -> void:
 
 
 ## 전투 준비가 끝남: 마법과 어근이 정해졌다.
-func start_battle(party: Array[int], roots: Dictionary, magic_id: String, word_ids: Array[String], boss: bool) -> void:
+## seed: 전투 무작위의 씨앗. 이어 하기는 같은 씨앗으로 같은 전투를 다시 계산하고 step 단계까지 건너뛴다.
+func start_battle(party: Array[int], roots: Dictionary, magic_id: String, word_ids: Array[String], boss: bool,
+		seed: int = -1, step: int = 0) -> void:
+	if seed < 0:
+		seed = randi()
+	GameData.rng.seed = seed
+	GameData.set_route({"s": "battle", "party": party, "roots": roots, "magic": magic_id, "words": word_ids, "boss": boss,
+		"seed": seed, "step": step})
 	var s := GameData.state
 	for u in roots:
 		s.chosen_roots[u] = roots[u]
@@ -305,10 +321,11 @@ func start_battle(party: Array[int], roots: Dictionary, magic_id: String, word_i
 		GameData.setup.field_enemies(ctx, word_ids, STAGE)
 	var result := BattleEngine.new(ctx).run()
 	main.show_screen(BattleScreen.new(), {"ctx": ctx, "result": result, "words": ids, "boss": boss,
-		"party": party})
+		"party": party, "resume_step": step})
 
 
 func battle_finished(result: BattleResult, word_ids: Array[String], boss: bool, history: Array[Dictionary] = []) -> void:
+	GameData.set_route({"s": "field"})  # 전투는 끝났다. 다시 켜도 같은 전투를 또 하지 않는다
 	var won := RewardRule.words_won(result, word_ids, GameData.coin_source)
 	if boss:
 		if result.won():
@@ -360,10 +377,10 @@ func go_forge() -> void:
 	main.show_screen(EvolveScreen.new())
 
 
-func evolve_quiz(word_id: String) -> void:
-	GameData.set_route({"s": "evolve_quiz", "id": word_id})
+func evolve_quiz(word_id: String, resume_i: int = 0, resume_right: Array = []) -> void:
+	GameData.set_route({"s": "evolve_quiz", "id": word_id, "i": resume_i, "right": resume_right})
 	var words := GameData.evolution.quiz_words(word_id)
-	main.show_screen(QuizScreen.new(), {"words": words, "mode": "evolve", "target": word_id,
+	main.show_screen(QuizScreen.new(), {"words": words, "mode": "evolve", "target": word_id, "resume_i": resume_i, "resume_right": resume_right,
 		"done": func(right: Array[bool]) -> void: _after_evolve(word_id, words, right)})
 
 
