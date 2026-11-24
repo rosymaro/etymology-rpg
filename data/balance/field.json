@@ -1,0 +1,13 @@
+{
+  "_doc": "필드(월드맵) 수치(04-meta.md 7절). 주인공 속도보다 쫓는 몹이 느려야 피할 수 있다",
+  "hero_speed": 380,
+  "enemy_count": 18,
+  "spawn_near": [450, 1500],
+  "spawn_far": 2600,
+  "kinds": {
+    "wander": { "weight": 50, "speed": [0, 120], "turn": [1.0, 2.5] },
+    "chase":  { "weight": 30, "speed": 250, "sight": 520, "give_up": 900, "wander_speed": 90 },
+    "flee":   { "weight": 20, "speed": 300, "sight": 460, "wander_speed": 90, "rare": true }
+  },
+  "_rare_doc": "rare = 도망가는 몹은 빈도가 낮은(드문) 단어를 더 자주 갖고 있다(뽑기 무게를 1/빈도로)"
+}

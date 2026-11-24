@@ -21,7 +21,7 @@ func test_stage1_is_in_the_middle_and_others_around_it() -> void:
 
 func test_each_gate_opens_only_the_next_region() -> void:
 	for k in range(1, 10):
-		var open := {k: true}
+		var open := {k: true, "s01_q_root": true, "s01_q_magic": true}
 		assert_gt(m.path_len(m.start(1), m.start(k + 1), open), -1, "문 %d → 지역 %d" % [k, k + 1])
 		for other in range(2, 11):
 			if other != k + 1:
@@ -36,12 +36,23 @@ func test_all_ten_regions_on_one_big_map() -> void:
 		assert_true(m.is_town(m.start(st)), "시작 자리는 마을")
 
 
+func test_stage1_quests_open_the_way_to_the_boss() -> void:
+	var s := m.start(1)
+	var b := m.spot(1, "boss")
+	assert_eq(m.path_len(s, b), -1, "퀘스트 없이 보스에 못 간다")
+	assert_eq(m.path_len(s, b, {"s01_q_root": true}), -1, "다리만 고쳐서는 절벽 아래로 못 간다")
+	assert_gt(m.path_len(s, b, {"s01_q_root": true, "s01_q_magic": true}), -1, "다리를 고치고 절벽을 내려가면 간다")
+	assert_eq(m.quest_gate("s01_q_root")["kind"], "bridge")
+	assert_eq(m.quest_gate("s01_q_magic")["kind"], "cliff")
+
+
 func test_stage1_spots_are_reachable_but_next_stage_is_gated() -> void:
 	var s := m.start(1)
+	var q := {"s01_q_root": true, "s01_q_magic": true}
 	for id in ["forge", "tree", "board", "boss"]:
-		assert_gt(m.path_len(s, m.spot(1, id)), -1, "스테이지 1 %s까지 걸어간다" % id)
-	assert_eq(m.path_len(s, m.start(2)), -1, "문이 닫혀 있으면 스테이지 2로 못 간다")
-	var open := {1: true}
+		assert_gt(m.path_len(s, m.spot(1, id), q), -1, "스테이지 1 %s까지 걸어간다" % id)
+	assert_eq(m.path_len(s, m.start(2), q), -1, "문이 닫혀 있으면 스테이지 2로 못 간다")
+	var open := {1: true, "s01_q_root": true, "s01_q_magic": true}
 	assert_gt(m.path_len(s, m.start(2), open), -1, "스테이지 1 문이 열리면 간다")
 	assert_eq(m.path_len(s, m.start(3), open), -1, "스테이지 2 문은 아직 닫혀 있다")
 	open[2] = true
@@ -49,7 +60,7 @@ func test_stage1_spots_are_reachable_but_next_stage_is_gated() -> void:
 
 
 func test_every_boss_reachable_when_all_gates_open() -> void:
-	var open := {}
+	var open := {"s01_q_root": true, "s01_q_magic": true}
 	for st in range(1, 11):
 		open[st] = true
 	for st in range(1, 11):
@@ -60,7 +71,7 @@ func test_river_and_ridge_make_the_route_longer_than_straight_line() -> void:
 	var s := m.start(1)
 	var b := m.spot(1, "boss")
 	var straight := (absf(b.x - s.x) + absf(b.y - s.y)) / m.tile
-	assert_gt(float(m.path_len(s, b)), straight * 1.3, "강·산줄기는 정해 둔 다리·고갯길로만 건너서 돌아가야 한다")
+	assert_gt(float(m.path_len(s, b, {"s01_q_root": true, "s01_q_magic": true})), straight * 1.3, "강·산줄기는 정해 둔 다리·고갯길로만 건너서 돌아가야 한다")
 
 
 func test_map_is_golden_ratio_landscape() -> void:

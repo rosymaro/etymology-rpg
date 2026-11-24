@@ -148,6 +148,22 @@ func test_stage1_loop() -> void:
 		GameData.rules.gain_word(GameData.state, w.id)
 	main.flow.go_field()
 	await wait_physics_frames(2)
+	# 퀘스트를 마치기 전에는 보스와 싸우지 못한다
+	main.flow.boss_gate()
+	await _finish_overlays()
+	assert_true(main.current() is FieldScreen, "퀘스트 전에는 보스에 못 간다")
+	# 알림판: 처음엔 받고, 단어가 다 있으면 마친다. 다리(fac)·절벽(de-)은 길목에 닿으면 장면 뒤 열린다
+	var noop := func() -> void: pass
+	main.flow.notice_board(noop)
+	await _finish_overlays()
+	main.flow.notice_board(noop)
+	await _finish_overlays()
+	assert_true(GameData.quests.done(GameData.state, "s01_q_word"))
+	assert_eq(main.flow.quest_gate("s01_q_root", noop), "")
+	await _finish_overlays()
+	assert_eq(main.flow.quest_gate("s01_q_magic", noop), "")
+	await _finish_overlays()
+	assert_true(main.flow.open_gates().get("s01_q_magic", false), "절벽 길이 열린다")
 	main.flow.boss_gate()
 	await _finish_overlays()
 	assert_true(main.current() is BattlePrepScreen)

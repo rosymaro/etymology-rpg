@@ -55,6 +55,21 @@ func _run() -> void:
 	s.pos = wm.spot(1, "boss") + Vector2(0, 100)
 	main.flow.go_field()
 	await _shot("05_field_boss")
+	var br: Array = wm.quest_gate("s01_q_root")["spot"]
+	s.pos = Vector2(float(br[0]), float(br[1])) + Vector2(-200, 0)
+	main.flow.go_field()
+	await _shot("05_field_bridge")
+	(main.current() as FieldScreen)._open_quests()
+	await _shot("05_field_quests")
+	(main.current() as FieldScreen)._close_quests()
+	s.flags["s01_q_root"] = true
+	main.flow.go_field()
+	await _shot("05_field_bridge_fixed")
+	var cl: Array = wm.quest_gate("s01_q_magic")["spot"]
+	s.pos = Vector2(float(cl[0]), float(cl[1]))
+	main.flow.go_field()
+	await _shot("05_field_cliff")
+	s.flags.erase("s01_q_root")
 	var ids: Array[String] = [field[50].id, field[51].id]
 	main.flow.encounter(ids)
 	await _shot("06_quiz")
@@ -83,6 +98,11 @@ func _run() -> void:
 		bs._magic_btn.button_down.emit()
 		await _shot("09_battle_magic")
 		bs._magic_btn.button_up.emit()
+		for mid in ["de", "com", "in"]:  # 마법 카드: 공격(적 위) / 방어(아군 위) / 효과(가운데)
+			bs._magic_card(mid)
+			await get_tree().create_timer(0.62).timeout
+			await _shot("09_magic_" + mid)
+			await get_tree().create_timer(0.9).timeout
 		for tap in 6:  # 턴이 나올 때까지 '다음'을 누르고, 부딪히는 순간을 찍는다
 			bs._tapped = true
 			await get_tree().process_frame
