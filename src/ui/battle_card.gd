@@ -18,7 +18,8 @@ var _def: Label
 var _hp: Label
 var _now := {}  ## 지금 모습 {name, atk, def, hp, note_atk, note_hp}
 var _base := {}  ## 처음 모습
-var hold_enabled := false
+var hold_enabled := true  ## 전투 중에도 누르고 있으면 처음 모습 팝업
+var combatant: Combatant
 var skip := false  ## 빨리 보기: 깜빡임을 바로 끝낸다
 var _word_id := ""
 
@@ -64,6 +65,7 @@ func _init() -> void:
 ## c: 전투원, 지금 값 a/d/h.
 func show_now(c: Combatant, name_text: String, a: int, d: int, h: int, formula: StatFormula, spin := false) -> void:
 	var note := formula.coin_notation(c.coin_style, c.coin_value, c.coins)
+	combatant = c
 	_now = {"name": name_text, "atk": a, "def": d, "hp": h, "note_atk": note["atk"], "note_hp": note["hp"]}
 	_base = {"name": name_text, "atk": c.base.atk, "def": c.base.def, "hp": c.base.hp, "note_atk": note["atk"], "note_hp": note["hp"]}
 	_set_look(c)

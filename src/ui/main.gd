@@ -5,6 +5,7 @@ extends Control
 var _screen: Screen
 var _overlay: Control
 var flow: GameFlow
+var simulate_kill := false  ## 테스트: 안드로이드가 앱을 갑자기 닫은 것처럼(이어 하기를 지우지 않는다)
 
 
 func _ready() -> void:
@@ -39,6 +40,14 @@ func _notification(what: int) -> void:
 		if _screen and _screen.has_method("_remember"):
 			_screen.call("_remember")
 		GameData.save()
+
+
+## 앱을 제대로 끝냈을 때(뒤로 가기로 끄기, 최근 앱에서 지우기 등 안드로이드가 끝을 알려 줄 때)는 다음에 처음부터 시작한다.
+## 다른 앱을 보는 사이 안드로이드가 몰래 닫은 경우는 여기가 불리지 않아서 이어 하기가 남는다.
+func _exit_tree() -> void:
+	if not simulate_kill:
+		GameData.save()
+		GameData.set_resume("")
 
 
 func show_screen(screen: Screen, args: Dictionary = {}) -> void:

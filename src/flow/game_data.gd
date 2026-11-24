@@ -64,12 +64,25 @@ static func _resume_allowed() -> bool:
 	return true
 
 
-## 지금 하던 곳을 적어 둔다. "story" | "dev" | "mini" | ""(타이틀). 앱이 다시 켜지면 여기로 돌아간다.
+## 지금 하던 곳을 적어 둔다. mode: "story" | "dev" | "mini" | ""(타이틀). 앱이 다시 켜지면 여기로 돌아간다.
+## 빈 mode는 이어 하기를 지운다(타이틀로 돌아갔거나 앱을 제대로 끝냈을 때).
 func set_resume(mode: String) -> void:
 	if not resume_enabled:
 		return
+	_write_resume(mode, {} if mode == "" else resume_route())
+
+
+## 어느 화면이었는지: {"s": "field"|"dex"|"party"|"forge"|"options"|"quiz"|"prep"|"evolve_quiz"|"minigame"|"mini_hub", …}
+func set_route(route: Dictionary) -> void:
+	if not resume_enabled or resume_mode() == "":
+		return
+	_write_resume(resume_mode(), route)
+
+
+func _write_resume(mode: String, route: Dictionary) -> void:
 	var cf := ConfigFile.new()
 	cf.set_value("resume", "mode", mode)
+	cf.set_value("resume", "route", JSON.stringify(route))
 	cf.save(resume_path)
 
 
@@ -80,6 +93,14 @@ func resume_mode() -> String:
 	if cf.load(resume_path) != OK:
 		return ""
 	return String(cf.get_value("resume", "mode", ""))
+
+
+func resume_route() -> Dictionary:
+	var cf := ConfigFile.new()
+	if not resume_enabled or cf.load(resume_path) != OK:
+		return {}
+	var r = JSON.parse_string(String(cf.get_value("resume", "route", "{}")))
+	return r if r is Dictionary else {}
 
 
 ## 진동(04-meta.md 2절). 옵션에서 끌 수 있다.
