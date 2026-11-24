@@ -16,6 +16,44 @@ FAM = {1: 'fac struct form par nat ple', 2: 'cept tain pris hib quest', 3: 'spec
        8: 'duc rect act cur cap', 9: 'tract press ject tend pet', 10: 'vers turn plic mot',
        11: 'sta pos sid clos lig strict val fort', 12: 'rupt cis cid fin part'}
 
+def modern_forms(word, root_ids, R):
+    """어원마다 현대 영어 형태 하나(미니게임 칠판 'ab + duc = abduct'). 단어 안에서 앞에서부터 차례로 찾는다.
+    같은 자리면 단어장에 먼저 적힌 형태. 단어에 없으면 첫 현대 형태(없으면 어근 자체)."""
+    w = word.lower(); pos = 0; out = []
+    for rid in root_ids:
+        r = R.get(rid)
+        if r is None:
+            out.append(rid.strip('-').lower()); continue
+        forms = []
+        for f in list(r.get('modernEnglishForms') or []) + [r['root']]:
+            f = f.strip('-').lower()
+            if f and f.isalpha() and f not in forms: forms.append(f)
+        if not forms: forms = [rid.lower()]
+        best = None
+        for k, f in enumerate(forms):
+            i = w.find(f, pos)
+            if i >= 0 and (best is None or (i, k) < (best[0], best[1])): best = (i, k, f)
+        if best is None:
+            for k, f in enumerate(forms):
+                i = w.find(f)
+                if i >= 0 and (best is None or (i, k) < (best[0], best[1])): best = (i, k, f)
+        if best is None:
+            out.append(forms[0])
+        else:
+            out.append(best[2]); pos = max(pos, best[0] + len(best[2]))
+    return out
+
+def etym_of(word, v, s, R):
+    if v:
+        ids = [x['rootId'] for x in v['roots']]
+        fs = modern_forms(word, ids, R)
+        return [{'root': R[x['rootId']]['root'] if x['rootId'] in R else x['rootId'], 'meaning': x.get('derivedMeaning', ''), 'form': f}
+                for x, f in zip(v['roots'], fs)]
+    out = []
+    for x in (s or {}).get('roots', []):
+        y = dict(x); y.setdefault('form', str(x.get('root', '')).strip('-').lower()); out.append(y)
+    return out
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--vocab', default=os.path.join(os.path.dirname(ROOT), 'etymology-english-vocabulary'))
     a = ap.parse_args()
@@ -58,7 +96,7 @@ def main():
             'stage': int(r['스테이지']) if r['스테이지'] else 0,
             'obtain': OBTAIN.get(r['얻는 방법'], ''),
             'skill_roots': sk,
-            'etym': [{'root': R[x['rootId']]['root'] if x['rootId'] in R else x['rootId'], 'meaning': x.get('derivedMeaning', '')} for x in (v['roots'] if v else [])] if v else (s or {}).get('roots', []),
+            'etym': etym_of(r['word'], v, s, R),
             'example': (v or s or {}).get('example', {}),
             'ipa': (v or s or {}).get('ipa', ''),
         })

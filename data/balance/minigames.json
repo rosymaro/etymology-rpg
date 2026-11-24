@@ -134,5 +134,125 @@
   "_pattern_doc": "좌표는 0~1 비율. decoys = 함정 어원 수, roam_speed = 어원이 돌아다니는 빠르기, arrow_speed = 화살 빠르기, hit_r = 맞는 거리, down_time = 쓰러져 있는 시간(지나면 다시 달아남), max_roots = 한 단어에 놓을 수 있는 어원 수(어원 수를 숨기려고 실제보다 많이 둔다)",
   "_trap_doc": "좌표는 0~1 비율. period = 단어들이 길을 한 바퀴 도는 시간(사냥도 한 바퀴), catch_r = 덫에 걸리는 거리, hero_speed = 캐릭터 빠르기",
   "_copy_doc": "필사. ice_hp = 글자 얼음을 깨는 데 두드리는 횟수",
-  "_ore_doc": "광석 캐기. target_chance = 광맥 어원이 든 단어가 나올 확률, radius = 광석 크기(1280×720 기준), max_miss = 다른 단어를 깨도 되는 횟수"
+  "_ore_doc": "광석 캐기. target_chance = 광맥 어원이 든 단어가 나올 확률, radius = 광석 크기(1280×720 기준), max_miss = 다른 단어를 깨도 되는 횟수",
+  "_factory_doc": "말 공방 미니게임 1~10(05-minigames). factory = 모두 같은 값, fNN = 그 게임만 다른 값(덮어쓴다). areas: anagram(왼쪽) combine(가운데) shelf(오른쪽). absorb 0 = 두드려 하나씩, N = 단어 N개 몫을 흡수한 뒤 단어찾기. search_sec = 단어찾기 단어 하나당 초",
+  "factory": {
+    "board": 10,
+    "max_miss": 3,
+    "max_len": 12,
+    "belt_cap": 12,
+    "belt_speed": 0.05,
+    "min_gap": 0.075,
+    "entry_t": 0.0,
+    "exit_t": 0.5,
+    "furnace_t": 0.75,
+    "traps": 0,
+    "trap_ratio": 0.35,
+    "furnace_max": 4,
+    "shelf_slots": 5,
+    "absorb": 0,
+    "auto_absorb": false,
+    "search_sec": 15,
+    "search_reverse": false,
+    "grid_min": 8,
+    "grid_max": 13,
+    "anagram_traps": false,
+    "anagram_miss": false,
+    "skip": false,
+    "trash": false
+  },
+  "f01": {
+    "areas": [
+      "combine"
+    ],
+    "traps": 4
+  },
+  "f02": {
+    "areas": [
+      "anagram"
+    ],
+    "anagram_miss": true
+  },
+  "f03": {
+    "areas": [
+      "shelf"
+    ]
+  },
+  "f04": {
+    "areas": [
+      "combine"
+    ],
+    "absorb": 5,
+    "auto_absorb": true
+  },
+  "f05": {
+    "areas": [
+      "anagram",
+      "combine"
+    ],
+    "anagram_traps": true,
+    "skip": true,
+    "trash": true
+  },
+  "f06": {
+    "areas": [
+      "anagram",
+      "combine",
+      "shelf"
+    ],
+    "anagram_traps": true,
+    "skip": true,
+    "trash": true
+  },
+  "f07": {
+    "areas": [
+      "anagram",
+      "combine",
+      "shelf"
+    ],
+    "anagram_traps": true,
+    "skip": true,
+    "trash": true,
+    "absorb": 5
+  },
+  "f08": {
+    "areas": [
+      "anagram",
+      "combine",
+      "shelf"
+    ],
+    "anagram_traps": true,
+    "skip": true,
+    "trash": true,
+    "absorb": 7,
+    "board": 14,
+    "belt_cap": 16
+  },
+  "f09": {
+    "areas": [
+      "anagram",
+      "combine",
+      "shelf"
+    ],
+    "anagram_traps": true,
+    "skip": true,
+    "trash": true,
+    "absorb": 10,
+    "board": 20,
+    "belt_cap": 18
+  },
+  "f10": {
+    "areas": [
+      "anagram",
+      "combine",
+      "shelf"
+    ],
+    "anagram_traps": true,
+    "skip": true,
+    "trash": true,
+    "absorb": 10,
+    "board": 20,
+    "belt_cap": 18,
+    "search_reverse": true
+  }
 }

@@ -15,7 +15,7 @@ var mats: Array[String] = []
 var stage: int  ## 1차·보스 단어의 스테이지. 2~4차는 0(재료로 정해진다)
 var obtain: String  ## field town boss (1차·보스만)
 var skill_roots: Array[String] = []
-var etym: Array = []  ## [{root, meaning}]
+var etym: Array = []  ## [{root, meaning, form}] form = 현대 영어 형태(ab, duc)
 var example: Dictionary = {}
 var ipa: String
 
@@ -42,6 +42,18 @@ static func from_dict(d: Dictionary) -> WordData:
 	w.example = d.get("example", {})
 	w.ipa = d.get("ipa", "")
 	return w
+
+
+## 어원의 현대 영어 형태들(미니게임 칠판 'ab + duc = abduct'). 형태가 없으면 어근에서 '-'를 뗀 것.
+func forms() -> Array[String]:
+	var out: Array[String] = []
+	for e in etym:
+		var f := str(e.get("form", "")).to_lower()
+		if f == "":
+			f = str(e.get("root", "")).replace("-", "").to_lower()
+		if f != "":
+			out.append(f)
+	return out
 
 
 func primary_attr() -> int:
