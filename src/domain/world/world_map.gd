@@ -12,6 +12,7 @@ var h := 0
 var rows: PackedStringArray = []
 var regions: Array = []  ## {stage, rect[x,y,w,h](타일), town[x,y,w,h](타일), spots{id: [px,py]}, start[px,py]}
 var walk := ".,pb"
+var zones: PackedStringArray = []  ## 칸마다 지역(스테이지 % 10, 바다 -). 지역 경계는 곧은 선이 아니다
 var _gate := {}  ## Vector2i -> 스테이지(그 스테이지 보스를 이겨야 열리는 문)
 
 static var _cache: WorldMap
@@ -31,6 +32,8 @@ static func from_dict(d: Dictionary) -> WorldMap:
 	for r in d["rows"]:
 		m.rows.append(String(r))
 	m.regions = d.get("regions", [])
+	for z in d.get("zones", []):
+		m.zones.append(String(z))
 	m.walk = String(d.get("walk", ".,pb"))
 	for gt in d.get("gates", []):
 		for t in gt["tiles"]:
@@ -106,14 +109,19 @@ func region(stage: int) -> Dictionary:
 	return {}
 
 
-## 그 자리가 속한 스테이지(지역 밖이면 0).
+## 그 자리가 속한 스테이지(바다·지도 밖이면 0).
 func stage_at(p: Vector2) -> int:
-	var c := cell(p)
-	for r in regions:
-		var rc: Array = r["rect"]
-		if c.x >= int(rc[0]) and c.y >= int(rc[1]) and c.x < int(rc[0]) + int(rc[2]) and c.y < int(rc[1]) + int(rc[3]):
-			return int(r["stage"])
-	return 0
+	return stage_of(cell(p))
+
+
+func stage_of(c: Vector2i) -> int:
+	if c.x < 0 or c.y < 0 or c.x >= w or c.y >= h or zones.is_empty():
+		return 0
+	var k := zones[c.y][c.x]
+	if k == "-":
+		return 0
+	var n := int(k)
+	return 10 if n == 0 else n
 
 
 func is_town(p: Vector2) -> bool:
@@ -133,12 +141,11 @@ func spot(stage: int, id: String) -> Vector2:
 
 ## 그 스테이지 들판(마을 아님)에서 near로부터 거리 lo~hi 안의 서 있을 수 있는 자리(못 찾으면 Vector2.INF).
 func random_field_spot(stage: int, rng: RandomNumberGenerator, near: Vector2, lo: float, hi: float, r: float) -> Vector2:
-	var rc: Array = region(stage).get("rect", [0, 0, w, h])
 	for k in 60:
 		var a := rng.randf() * TAU
 		var p := near + Vector2.from_angle(a) * rng.randf_range(lo, hi)
 		var c := cell(p)
-		if c.x < int(rc[0]) or c.y < int(rc[1]) or c.x >= int(rc[0]) + int(rc[2]) or c.y >= int(rc[1]) + int(rc[3]):
+		if stage_of(c) != stage:
 			continue
 		var snapped := (Vector2(c) + Vector2(0.5, 0.5)) * tile
 		if ch(c) != "," and fits(snapped, r):

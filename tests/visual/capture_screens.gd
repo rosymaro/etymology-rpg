@@ -52,7 +52,7 @@ func _run() -> void:
 	s.pos = wm.spot(1, "forge") + Vector2(60, 110)
 	main.flow.go_field()
 	await _shot("05_town_forge")
-	s.pos = wm.spot(1, "boss") + Vector2(-150, 0)
+	s.pos = wm.spot(1, "boss") + Vector2(0, 100)
 	main.flow.go_field()
 	await _shot("05_field_boss")
 	var ids: Array[String] = [field[50].id, field[51].id]
