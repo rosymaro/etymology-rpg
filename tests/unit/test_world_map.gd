@@ -34,11 +34,23 @@ func test_every_boss_reachable_when_all_gates_open() -> void:
 		assert_gt(m.path_len(m.start(1), m.spot(st, "boss"), open), -1, "보스 %d" % st)
 
 
-func test_maze_makes_the_route_much_longer_than_straight_line() -> void:
+func test_river_and_ridge_make_the_route_longer_than_straight_line() -> void:
 	var s := m.start(1)
 	var b := m.spot(1, "boss")
 	var straight := (absf(b.x - s.x) + absf(b.y - s.y)) / m.tile
-	assert_gt(float(m.path_len(s, b)), straight * 1.5, "미로·지형 때문에 돌아가야 한다")
+	assert_gt(float(m.path_len(s, b)), straight * 1.3, "강·산줄기는 정해 둔 다리·고갯길로만 건너서 돌아가야 한다")
+
+
+func test_map_is_golden_ratio_landscape() -> void:
+	var r := float(m.w) / float(m.h)
+	assert_almost_eq(r, 1.618, 0.03, "가로가 긴 황금비")
+
+
+func test_only_a_few_regions_have_a_maze() -> void:
+	var with_maze := 0
+	for rg in m.regions:
+		with_maze += 1 if not (rg.get("maze", []) as Array).is_empty() else 0
+	assert_eq(with_maze, 3, "미로는 지역 세 곳(2, 6, 9)에 한 군데씩만")
 
 
 func test_walls_block_and_slide() -> void:

@@ -13,8 +13,11 @@ func open(args: Dictionary) -> void:
 	var v := UiKit.vbox(12)
 	margin.add_child(v)
 	v.add_child(UiKit.label(t(args["title"]), 34))
+	# 세로 화면: 얻은 단어 → 확인 버튼을 위쪽에 모으고, 전투 기록은 그 아래에 따로 스크롤
 	var list := UiKit.vbox(8)
-	v.add_child(UiKit.scroll(list))
+	var top_scroll := UiKit.scroll(list)
+	top_scroll.size_flags_vertical = Control.SIZE_FILL
+	v.add_child(top_scroll)
 	var ups := {}
 	var roots: Array[String] = []
 	for ev in args["events"]:
@@ -34,8 +37,16 @@ func open(args: Dictionary) -> void:
 	for r in roots:
 		list.add_child(UiKit.label(t("ui.result.new_root").format({"root": r}), 24, UiKit.ACCENT.darkened(0.2)))
 	# 전투 기록: 무엇 때문에 체력이 깎였는지. 턴(또는 새 격돌)마다 가로줄
+	var done: Callable = args["done"]
+	var ok_btn := UiKit.button(t("ui.common.ok"), func() -> void: done.call(), UiKit.LEAF)
+	v.add_child(ok_btn)
+	var n_rows := list.get_child_count()
+	top_scroll.custom_minimum_size.y = clampf(n_rows * 58.0 + 10.0, 60.0, 560.0)
 	var history: Array = args.get("history", [])
+	var hist_list := UiKit.vbox(8)
 	if not history.is_empty():
+		v.add_child(UiKit.scroll(hist_list))
+		list = hist_list
 		list.add_child(UiKit.label(t("ui.result.history"), 26))
 		var box := UiKit.card(Color(1, 1, 1, 0.8))
 		var hv := UiKit.vbox(4)
@@ -48,5 +59,4 @@ func open(args: Dictionary) -> void:
 				hv.add_child(line)
 			else:
 				hv.add_child(UiKit.wrap(UiKit.label(String(e["text"]), 19, Color(String(e.get("col", "4b3f72"))))))
-	var done: Callable = args["done"]
-	v.add_child(UiKit.button(t("ui.common.ok"), func() -> void: done.call(), UiKit.LEAF))
+

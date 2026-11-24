@@ -29,10 +29,13 @@ func open(args: Dictionary) -> void:
 	UiKit.fill_bg(self, Color("e9e2f3"))
 	_build_field_view()
 	_panel = UiKit.card()
-	_panel.anchor_left = 0.0  # 세로 화면: 아래쪽 판을 가로로 꽉, 내용은 오른쪽 정렬
+	# 세로 화면: 아군 아래에 가로로 꽉, 높이는 내용만큼(빈 칸 없이). 내용은 오른쪽 정렬
+	_panel.anchor_left = 0.0
 	_panel.anchor_right = 1.0
-	_panel.anchor_top = 0.42
-	_panel.anchor_bottom = 1.0
+	_panel.offset_left = 16
+	_panel.offset_right = -16
+	_panel.offset_top = 420
+	_panel.offset_bottom = 420
 	add_child(_panel)
 	_body = UiKit.vbox(10)
 	_panel.add_child(_body)
@@ -98,7 +101,6 @@ func _step_magic() -> void:
 			_step_magic(), UiKit.ACCENT.lightened(0.45) if _magic == m else UiKit.PAPER, 24)
 		row.add_child(b)
 	_help = _right(UiKit.wrap(UiKit.label(_magic_desc(_magic), 22, UiKit.INK.lightened(0.2))))
-	_help.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_body.add_child(_help)
 	var nav := UiKit.hbox()
 	nav.alignment = BoxContainer.ALIGNMENT_END
@@ -121,7 +123,6 @@ func _step_roots() -> void:
 	_clear()
 	_body.add_child(_right(UiKit.label(t("ui.battle.root_pick"), 24)))
 	var grid := UiKit.vbox(6)
-	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_body.add_child(grid)
 	for u in _party:
 		var unit := u

@@ -1,240 +1,294 @@
 """스테이지 1~10이 모두 들어 있는 월드맵(data/map/world.json)을 만든다. 저장소 루트에서: python3 tools/map/build_world.py
 
-- 지역 10개를 2열 × 5줄 뱀 모양(1→2 오른쪽, 2→3 아래, 3→4 왼쪽 …)으로 놓는다.
-- 지역 안은 미로다. 통로(CORR칸)를 벽(WALL칸)이 가르고, 벽은 그 지역 풍경(산, 바다, 호수, 절벽, 숲, 성벽)으로 칠한다.
-  완전 미로를 판 뒤 벽을 조금 더 허물어 갈림길을 만든다. 물 벽을 허문 곳은 다리, 산을 허문 곳은 고갯길.
-- 마을은 들어오는 자리 둘레(칸 3×2)를 비워 모래 바닥으로. 보스는 다음 지역 쪽 가장자리 칸 중 마을에서 가장 먼 칸.
-- 보스 칸에서 다음 지역으로 가는 문(=)은 그 스테이지 보스를 이기고, 다음 스테이지가 열려 있어야 지나간다(게임이 판정).
-글자: . 풀  , 마을 바닥  p 고갯길  b 다리  = 스테이지 문  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽
+젤다의 전설 꿈꾸는 섬의 들판처럼: 자연스러운 지형(호수·산·숲)이 길을 가르고, 지역을 가로지르는 강과 산줄기는
+다리·고갯길로만 건넌다. 마을·명소·보스를 구불구불한 길이 잇는다. 미로는 지역 한 군데에만(2 사냥꾼 숲, 6 왕성 정원, 9 광산 갱도).
+- 지도는 황금비(가로가 긴 직사각형): 지역 10개를 5열 × 2줄로 놓는다(위 줄 1 → 5 오른쪽, 5 → 6 아래, 아래 줄 6 → 10 왼쪽).
+- 다음 지역으로 가는 문(=)은 그 스테이지 보스를 이기고, 다음 스테이지가 열려 있어야 지나간다(게임이 판정).
+글자: . 풀  , 마을 바닥  p 길·고갯길  b 다리  = 스테이지 문  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
 """
-import json, os, random, collections
+import json, os, random, heapq, collections, math
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CW, CH = 10, 8          # 지역 하나의 미로 칸 수
-CORR, WALL = 4, 2       # 통로 폭, 벽 두께(타일)
-PITCH = CORR + WALL
-BORDER = 2
-RW = CW * PITCH - WALL + BORDER * 2   # 지역 타일 너비
-RH = CH * PITCH - WALL + BORDER * 2
-COLS, ROWS = 2, 5
+RW, RH = 52, 80          # 지역 하나(타일). 5열 × 2줄이면 260 × 160 = 1.625(황금비)
+COLS, ROWS = 5, 2
 TILE = 64
-# 스테이지 풍경(벽에 쓰는 타일과 비율)
-THEME = {1: '^TT.', 2: 'TTw^', 3: '##^T', 4: '##^^', 5: '~~w^', 6: 'HHw#', 7: 'ww~T', 8: 'HH##', 9: '^^^#', 10: '##^H'}
-BORDER_T = {1: '^', 2: 'T', 3: '#', 4: '^', 5: '~', 6: 'H', 7: 'w', 8: 'H', 9: '^', 10: '#'}
+BORDER = 2
+# 스테이지 풍경: (높은 땅, 낮은 땅, 숲 쓰기, 강, 산줄기, 미로 벽)
+THEME = {
+    1: ('^', 'w', True, True, True, None),    # 공방 마을: 언덕, 개울, 숲
+    2: ('^', 'w', True, True, False, 'T'),    # 사냥꾼 초원: 숲 미로
+    3: ('#', 'w', True, False, True, None),   # 망루 도서관: 절벽
+    4: ('#', 'w', False, True, True, None),   # 바람 협곡: 절벽 협곡과 강
+    5: ('^', '~', False, False, True, None),  # 항구 도시: 바다
+    6: ('H', 'w', True, True, False, 'H'),    # 왕성: 해자, 생울타리 미로
+    7: ('^', 'w', True, False, True, None),   # 소용돌이 호수: 큰 호수
+    8: ('H', 'w', False, True, True, None),   # 성벽 요새
+    9: ('^', 'w', False, False, True, '^'),   # 부서진 광산: 갱도 미로
+    10: ('#', 'w', False, False, True, None), # 갈라진 탑: 절벽
+}
+LAKE = {7: 0.40, 5: 0.34}  # 물이 많은 지역(낮은 땅 기준)
 
-def region_origin(i):
-    row = i // 2
-    col = (i % 2) if row % 2 == 0 else 1 - (i % 2)
-    return col * RW, row * RH, col, row
+def origin(i):
+    row = i // COLS
+    col = i % COLS if row == 0 else COLS - 1 - (i % COLS)
+    return col * RW, row * RH
 
-def next_dir(i):
-    """지역 i에서 i+1로 가는 쪽: E W S"""
-    _, _, c, r = region_origin(i); _, _, c2, r2 = region_origin(i + 1)
-    return 'E' if c2 > c else ('W' if c2 < c else 'S')
+def exit_dir(i):
+    if i == 9: return None
+    if i == 4: return 'S'
+    return 'E' if i < 4 else 'W'
 
-def cell_rect(ox, oy, cx, cy):
-    x = ox + BORDER + cx * PITCH; y = oy + BORDER + cy * PITCH
-    return x, y
+def noise(rnd, w, h, step):
+    gw, gh = w // step + 2, h // step + 2
+    grid = [[rnd.random() for _ in range(gw)] for _ in range(gh)]
+    out = [[0.0] * w for _ in range(h)]
+    for y in range(h):
+        for x in range(w):
+            gx, gy = x / step, y / step
+            x0, y0 = int(gx), int(gy); fx, fy = gx - x0, gy - y0
+            fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy)
+            a = grid[y0][x0] * (1 - fx) + grid[y0][x0 + 1] * fx
+            b = grid[y0 + 1][x0] * (1 - fx) + grid[y0 + 1][x0 + 1] * fx
+            out[y][x] = a * (1 - fy) + b * fy
+    return out
 
 def main():
     W, H = COLS * RW, ROWS * RH
     g = [['^'] * W for _ in range(H)]
     regions, gates = [], []
-    entry = (0, 0)
+    entry = (BORDER, RH // 2)  # 지역 안 좌표(지역 1은 왼쪽 가운데로 들어온다)
     for i in range(10):
         st = i + 1
-        rnd = random.Random(1000 + st)
-        ox, oy, _, _ = region_origin(i)
-        theme = THEME[st]
-        # 지역 바깥 테두리
-        for y in range(oy, oy + RH):
-            for x in range(ox, ox + RW):
-                g[y][x] = BORDER_T[st]
-        # 미로 벽으로 채운 뒤 통로를 판다
-        for y in range(oy + BORDER, oy + RH - BORDER):
-            for x in range(ox + BORDER, ox + RW - BORDER):
-                g[y][x] = 'X'
-        def open_cell(cx, cy):
-            x, y = cell_rect(ox, oy, cx, cy)
-            for yy in range(y, y + CORR):
-                for xx in range(x, x + CORR):
-                    g[yy][xx] = '.'
-        def open_between(a, b, kind='.'):
-            (ax, ay), (bx, by) = a, b
-            x, y = cell_rect(ox, oy, min(ax, bx), min(ay, by))
-            if ax != bx:
-                rng_x = range(x + CORR, x + CORR + WALL); rng_y = range(y, y + CORR)
-            else:
-                rng_x = range(x, x + CORR); rng_y = range(y + CORR, y + CORR + WALL)
-            for yy in rng_y:
-                for xx in rng_x:
-                    g[yy][xx] = kind
-        for cy in range(CH):
-            for cx in range(CW):
-                open_cell(cx, cy)
-        # 큰 지형(호수·바다·산덩이): 여러 칸을 통째로 막는다. 마을 자리와 다음 지역 쪽 가장자리 절반은 남긴다
+        rnd = random.Random(2000 + st)
+        ox, oy = origin(i)
+        hi, lo, forest, river, ridge, maze_wall = THEME[st]
+        n1 = noise(rnd, RW, RH, 11); n2 = noise(rnd, RW, RH, 5); nf = noise(rnd, RW, RH, 7)
+        lake_th = LAKE.get(st, 0.27)
+        L = [['.'] * RW for _ in range(RH)]
+        for y in range(RH):
+            for x in range(RW):
+                h = n1[y][x] * 0.7 + n2[y][x] * 0.3
+                if h < lake_th: L[y][x] = lo
+                elif h > 0.71: L[y][x] = hi
+                elif forest and nf[y][x] > 0.64: L[y][x] = 'T'
+        # 지역을 가로지르는 강(위 → 아래로 굽이친다)과 산줄기(왼 → 오른쪽). 건너는 곳은 정해 둔 다리·고갯길뿐이고,
+        # 곧은 길에서 먼 끝쪽에 둔다(그래서 돌아가야 한다). 산줄기 고갯길은 강 양쪽에 하나씩(어느 땅도 갇히지 않게).
+        barrier = set()
+        river_x = {}
+        if river:
+            x = rnd.randint(RW // 3, 2 * RW // 3)
+            for y in range(RH):
+                x = max(6, min(RW - 7, x + rnd.choice((-1, 0, 0, 1))))
+                river_x[y] = x
+                for k in range(3):
+                    L[y][x + k] = 'w'; barrier.add((x + k, y))
+        ridge_y = {}
+        if ridge:
+            cand_y = [yy for yy in range(RH // 3, 2 * RH // 3) if abs(yy - entry[1]) >= 14] or [RH // 2]
+            y = rnd.choice(cand_y)  # 마을(들어오는 자리)과 겹치지 않게
+            y0_ridge = y
+            for x in range(RW):
+                y = max(8, min(RH - 9, y + rnd.choice((-1, 0, 0, 1))))
+                th_ = rnd.randint(2, 4)
+                ridge_y[x] = (y, th_)
+                for k in range(th_):
+                    L[y + k][x] = hi; barrier.add((x, y + k))
+        if river:
+            by_ = rnd.choice([rnd.randint(6, 14), rnd.randint(RH - 15, RH - 7)])
+            for yy in range(by_ - 1, by_ + 2):
+                rx = river_x[yy]
+                for k in range(-1, 4):
+                    if (rx + k, yy) in barrier or L[yy][rx + k] == 'w':
+                        L[yy][rx + k] = 'b'
+                    barrier.discard((rx + k, yy))
+        if ridge:
+            mid = (min(river_x.values()) + max(river_x.values())) // 2 if river else RW // 2
+            sides = [(4, max(5, mid - 6)), (min(RW - 6, mid + 6), RW - 5)] if river else [(4, RW - 5)]
+            for a, b in sides:
+                px_ = rnd.choice([a, b]) if b - a > 4 else a
+                for xx in range(px_ - 1, px_ + 2):
+                    yy0, th_ = ridge_y[xx]
+                    for k in range(-1, th_ + 1):
+                        if L[yy0 + k][xx] != 'b':
+                            L[yy0 + k][xx] = 'p'
+                        barrier.discard((xx, yy0 + k))
+        # 미로 구역(한 군데)
+        maze = None
+        if maze_wall:
+            mw, mh = 5, 6  # 칸 수
+            pitch = 5      # 통로 3 + 벽 2
+            zw, zh = mw * pitch + 2, mh * pitch + 2
+            mx0 = (RW - zw) // 2; my0 = rnd.randint(RH // 2 - zh // 2 - 6, RH // 2 - zh // 2 + 6)
+            for y in range(my0, my0 + zh):
+                for x in range(mx0, mx0 + zw): L[y][x] = maze_wall
+            cells = {}
+            def cxy(cx, cy): return mx0 + 2 + cx * pitch, my0 + 2 + cy * pitch
+            for cy in range(mh):
+                for cx in range(mw):
+                    x, y = cxy(cx, cy)
+                    for yy in range(y, y + 3):
+                        for xx in range(x, x + 3): L[yy][xx] = 'p'
+            seen = {(0, 0)}; stack = [(0, 0)]
+            while stack:
+                c = stack[-1]
+                nb = [(c[0] + dx, c[1] + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                      if 0 <= c[0] + dx < mw and 0 <= c[1] + dy < mh and (c[0] + dx, c[1] + dy) not in seen]
+                if not nb: stack.pop(); continue
+                n = rnd.choice(nb); seen.add(n); stack.append(n)
+                ax, ay = cxy(*c); bx, by = cxy(*n)
+                for yy in range(min(ay, by), max(ay, by) + 3):
+                    for xx in range(min(ax, bx), max(ax, bx) + 3): L[yy][xx] = 'p'
+            # 들어가는 곳(위 가운데 줄 왼쪽 칸)과 나오는 곳(아래 오른쪽 칸)
+            ex0, ey0 = cxy(0, 0); ex1, ey1 = cxy(mw - 1, mh - 1)
+            for yy in range(my0, ey0): 
+                for xx in range(ex0, ex0 + 3): L[yy][xx] = 'p'
+            for yy in range(ey1 + 3, my0 + zh):
+                for xx in range(ex1, ex1 + 3): L[yy][xx] = 'p'
+            maze = (mx0, my0, zw, zh, (ex0 + 1, my0 - 1), (ex1 + 1, my0 + zh))
+        # 테두리
+        for y in range(RH):
+            for x in range(RW):
+                if x < BORDER or y < BORDER or x >= RW - BORDER or y >= RH - BORDER:
+                    L[y][x] = '~' if lo == '~' and (y >= RH - BORDER) else hi
+        # 마을(들어오는 자리 옆, 16 × 12)
         ex, ey = entry
-        tx0 = 0 if ex == 0 else (CW - 3 if ex == CW - 1 else ex - 1)
-        ty0 = 0 if ey == 0 else (CH - 2 if ey >= CH - 1 else ey)
-        protect = {(x, y) for x in range(tx0, tx0 + 3) for y in range(ty0, ty0 + 2)}
-        nd = next_dir(i) if i < 9 else None
-        edge = [(CW - 1, y) for y in range(CH)] if nd == 'E' else ([(0, y) for y in range(CH)] if nd == 'W' else
-               ([(x, CH - 1) for x in range(CW)] if nd == 'S' else []))
-        blob = {}  # 칸 -> 지형 글자
-        big = [c for c in theme if c in '~w^#H'] or ['^']
-        for k in range(rnd.randint(2, 4)):
-            kind = rnd.choice(big)
-            c = (rnd.randrange(CW), rnd.randrange(CH))
-            for step in range(rnd.randint(3, 6)):
-                if c not in protect and c not in blob and sum(1 for e in edge if e in blob or e == c) <= len(edge) // 2:
-                    blob[c] = kind
-                dx, dy = rnd.choice(((1, 0), (-1, 0), (0, 1), (0, -1)))
-                c = (min(CW - 1, max(0, c[0] + dx)), min(CH - 1, max(0, c[1] + dy)))
-        # 완전 미로(깊이 우선): 막힌 칸은 건너뛴다
-        seen = {entry}; stack = [entry]; links = set()
-        while stack:
-            c = stack[-1]
-            nb = [(c[0] + dx, c[1] + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
-                  if 0 <= c[0] + dx < CW and 0 <= c[1] + dy < CH and (c[0] + dx, c[1] + dy) not in seen
-                  and (c[0] + dx, c[1] + dy) not in blob]
-            if not nb:
-                stack.pop(); continue
-            n = rnd.choice(nb); seen.add(n); stack.append(n); links.add(frozenset((c, n)))
-        for cy in range(CH):  # 미로에서 닿지 않는 칸은 둘레 지형으로 막는다
-            for cx in range(CW):
-                if (cx, cy) not in seen and (cx, cy) not in blob:
-                    near = [blob[(cx + dx, cy + dy)] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) if (cx + dx, cy + dy) in blob]
-                    blob[(cx, cy)] = near[0] if near else rnd.choice(big)
-        # 갈림길과 들판: 벽 몇 개를 더 허물고, 2×2 칸 들판을 한두 군데 튼다
-        extra = []
-        def free(c):
-            return c in seen and c not in blob
-        for cy in range(CH):
-            for cx in range(CW):
-                for dx, dy in ((1, 0), (0, 1)):
-                    n = (cx + dx, cy + dy)
-                    if n[0] < CW and n[1] < CH and free((cx, cy)) and free(n) and frozenset(((cx, cy), n)) not in links and rnd.random() < 0.035:
-                        extra.append(frozenset(((cx, cy), n)))
-        meadows = []
-        for k in range(rnd.randint(1, 2)):
-            mx, my = rnd.randrange(CW - 1), rnd.randrange(CH - 1)
-            block = [(mx, my), (mx + 1, my), (mx, my + 1), (mx + 1, my + 1)]
-            if all(free(c) for c in block):
-                meadows.append(block)
-                for a, b in (((mx, my), (mx + 1, my)), ((mx, my + 1), (mx + 1, my + 1)), ((mx, my), (mx, my + 1)), ((mx + 1, my), (mx + 1, my + 1))):
-                    l = frozenset((a, b))
-                    if l not in links and l not in extra:
-                        extra.append(l)
-        # 칠하기: 큰 지형 칸(과 그 사이 벽), 나머지 벽은 덩어리마다 한 풍경
-        for (cx, cy), kind in blob.items():
-            x, y = cell_rect(ox, oy, cx, cy)
-            for yy in range(y, y + CORR):
-                for xx in range(x, x + CORR):
-                    g[yy][xx] = kind
-            for dx, dy in ((1, 0), (0, 1)):
-                if (cx + dx, cy + dy) in blob:
-                    if dx: rx, ry = range(x + CORR, x + PITCH), range(y, y + CORR)
-                    else: rx, ry = range(x, x + CORR), range(y + CORR, y + PITCH)
-                    for yy in ry:
-                        for xx in rx: g[yy][xx] = kind
-            if (cx + 1, cy) in blob and (cx, cy + 1) in blob and (cx + 1, cy + 1) in blob:
-                for yy in range(y + CORR, y + PITCH):
-                    for xx in range(x + CORR, x + PITCH): g[yy][xx] = kind
-        paint = {}
-        for y in range(oy + BORDER, oy + RH - BORDER):
-            for x in range(ox + BORDER, ox + RW - BORDER):
-                if g[y][x] == 'X':
-                    key = ((x - ox) // (PITCH * 2), (y - oy) // (PITCH * 2))
-                    if key not in paint:
-                        paint[key] = rnd.choice(theme.replace('.', '') or '^')
-                    g[y][x] = paint[key]
-        for l in links:
-            a, b = tuple(l); open_between(a, b)
-        for l in extra:
-            a, b = tuple(l)
-            x, y = cell_rect(ox, oy, min(a[0], b[0]), min(a[1], b[1]))
-            probe = g[y + CORR if a[0] == b[0] else y][x + CORR if a[0] != b[0] else x]
-            open_between(a, b, 'b' if probe in 'w~' else ('p' if probe in '^#' else '.'))
-        for block in meadows:  # 들판 가운데 기둥도 없앤다
-            (mx, my) = block[0]
-            x, y = cell_rect(ox, oy, mx, my)
-            for yy in range(y + CORR, y + PITCH):
-                for xx in range(x + CORR, x + PITCH): g[yy][xx] = '.'
-        # 큰 지형 가장자리를 들쭉날쭉하게: 맞닿은 통로 한 줄을 군데군데 물가·산기슭으로(통로는 3칸 이상 남는다)
-        for (cx, cy), kind in blob.items():
-            x, y = cell_rect(ox, oy, cx, cy)
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                n = (cx + dx, cy + dy)
-                if not (0 <= n[0] < CW and 0 <= n[1] < CH) or n in blob or n in protect:
+        tw, th = 16, 12
+        tx = BORDER if ex <= BORDER else (RW - BORDER - tw if ex >= RW - BORDER - 1 else max(BORDER, min(RW - BORDER - tw, ex - tw // 2)))
+        ty = BORDER if ey <= BORDER else max(BORDER, min(RH - BORDER - th, ey - th // 2))
+        for y in range(ty, ty + th):
+            for x in range(tx, tx + tw): L[y][x] = ','
+        for y in range(ty, ty + th):  # 마을 안은 강·산줄기가 아니다
+            for x in range(tx, tx + tw): barrier.discard((x, y))
+        # 보스 자리: 다음 지역 쪽 가장자리, 마을에서 멀리(산줄기가 있으면 그 너머)
+        d = exit_dir(i)
+        far_y = RH - 14 if ey < RH // 2 else 13
+        if ridge:
+            far_y = rnd.randint(y0_ridge + 10, RH - 13) if ey < y0_ridge else rnd.randint(13, max(13, y0_ridge - 8))
+        if i == 3:
+            far_y = rnd.randint(12, 18)  # 다음 지역(5)이 아래로 내려가는 길을 길게
+        if d == 'E': boss = (RW - BORDER - 4, far_y)
+        elif d == 'W': boss = (BORDER + 3, far_y)
+        elif d == 'S': boss = (RW - 12 if ex < RW // 2 else 11, RH - BORDER - 4)
+        else: boss = (RW - 10 if ex < RW // 2 else 9, far_y)
+        for t in range(40):  # 보스 둘레가 강·산줄기에 걸리지 않게
+            if not any((boss[0] + dx, boss[1] + dy) in barrier for dx in range(-3, 4) for dy in range(-3, 4)):
+                break
+            boss = (boss[0], boss[1] + (1 if boss[1] < RH // 2 else -1)) if d in ('E', 'W') else (boss[0] + (1 if boss[0] < RW // 2 else -1), boss[1])
+        # 명소 2~3곳(서로 멀리)
+        marks = []
+        for k in range(rnd.randint(2, 3)):
+            best = None
+            for t in range(40):
+                p = (rnd.randint(6, RW - 7), rnd.randint(6, RH - 7))
+                if any((p[0] + dx, p[1] + dy) in barrier for dx in range(-2, 3) for dy in range(-2, 3)):
                     continue
-                nx, ny = cell_rect(ox, oy, *n)
-                for k in range(CORR):
-                    if rnd.random() < 0.35:
-                        if dx == 1: tx, ty = nx, ny + k
-                        elif dx == -1: tx, ty = nx + CORR - 1, ny + k
-                        elif dy == 1: tx, ty = nx + k, ny
-                        else: tx, ty = nx + k, ny + CORR - 1
-                        g[ty][tx] = kind
-        # 마을: 들어오는 칸 둘레 3×2 칸
-        x0, y0 = cell_rect(ox, oy, tx0, ty0)
-        x1, y1 = cell_rect(ox, oy, tx0 + 2, ty0 + 1)
-        for yy in range(y0, y1 + CORR):
-            for xx in range(x0, x1 + CORR):
-                g[yy][xx] = ','
-        town = [x0, y0, x1 + CORR - x0, y1 + CORR - y0]
-        # 마을에서 칸 거리(BFS)
-        adj = collections.defaultdict(set)
-        for l in list(links) + extra:
-            a, b = tuple(l); adj[a].add(b); adj[b].add(a)
-        for cy in range(ty0, ty0 + 2):
-            for cx in range(tx0, tx0 + 3):
-                for dx, dy in ((1, 0), (0, 1)):
-                    n = (cx + dx, cy + dy)
-                    if tx0 <= n[0] < tx0 + 3 and ty0 <= n[1] < ty0 + 2:
-                        adj[(cx, cy)].add(n); adj[n].add((cx, cy))
-        dist = {entry: 0}; q = collections.deque([entry])
+                if maze and maze[0] - 2 <= p[0] <= maze[0] + maze[2] + 2 and maze[1] - 2 <= p[1] <= maze[1] + maze[3] + 2:
+                    continue
+                dmin = min([abs(p[0] - q[0]) + abs(p[1] - q[1]) for q in marks + [boss, (tx + tw // 2, ty + th // 2)]])
+                if best is None or dmin > best[0]: best = (dmin, p)
+            marks.append(best[1])
+        # 길: A*(풀 1, 숲 6, 높은 땅 40, 물 25, 미로 구역은 못 지남) + 굽이치게 무작위 값
+        wob = noise(rnd, RW, RH, 4)
+        def cost(x, y):
+            c = L[y][x]
+            if maze and maze[0] <= x < maze[0] + maze[2] and maze[1] <= y < maze[1] + maze[3]:
+                return 1.0 if c == 'p' else None
+            if x < BORDER or y < BORDER or x >= RW - BORDER or y >= RH - BORDER: return None
+            if (x, y) in barrier: return None  # 강·산줄기는 정해 둔 곳으로만
+            base = {'.': 1.0, ',': 1.0, 'p': 0.6, 'b': 0.6, 'T': 6.0, 'w': 25.0, '~': 40.0}.get(c, 40.0)
+            return base + wob[y][x] * 3.0
+        def astar(a, b):
+            pq = [(0, a)]; came = {a: None}; gs = {a: 0}
+            while pq:
+                _, c = heapq.heappop(pq)
+                if c == b: break
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    n = (c[0] + dx, c[1] + dy)
+                    if not (0 <= n[0] < RW and 0 <= n[1] < RH): continue
+                    k = cost(*n)
+                    if k is None: continue
+                    ng = gs[c] + k
+                    if n not in gs or ng < gs[n]:
+                        gs[n] = ng; came[n] = c
+                        heapq.heappush(pq, (ng + abs(n[0] - b[0]) + abs(n[1] - b[1]), n))
+            path = []; c = b
+            while c is not None and c in came:
+                path.append(c); c = came[c]
+            return path[::-1]
+        def carve(path):
+            for x, y in path:
+                for dx, dy in ((0, 0), (1, 0), (0, 1)):
+                    xx, yy = x + dx, y + dy
+                    if BORDER <= xx < RW - BORDER and BORDER <= yy < RH - BORDER and L[yy][xx] != ',' and (xx, yy) not in barrier:
+                        if maze and maze[0] <= xx < maze[0] + maze[2] and maze[1] <= yy < maze[1] + maze[3]:
+                            continue
+                        L[yy][xx] = 'b' if L[yy][xx] in 'w~' else 'p'
+        town_c = (tx + tw // 2, ty + th // 2)
+        stops = [town_c] + marks
+        if maze: stops += [maze[4], maze[5]]
+        stops.append(boss)
+        for a, b in zip(stops, stops[1:]):
+            if maze and a == maze[4] and b == maze[5]:
+                continue  # 미로 안은 걸어서 푼다
+            carve(astar(a, b))
+        # 마을 들어오는 길(입구에서 마을까지)
+        carve(astar((min(max(ex, BORDER), RW - BORDER - 1), min(max(ey, BORDER), RH - BORDER - 1)), town_c))
+        for x, y in [boss]:
+            for yy in range(y - 2, y + 3):
+                for xx in range(x - 2, x + 3):
+                    if BORDER <= xx < RW - BORDER and BORDER <= yy < RH - BORDER: L[yy][xx] = 'p'
+        # 걸어서 닿는지(문 없이)
+        walk = set('.,pb')
+        seen = {town_c}; q = collections.deque([town_c])
         while q:
             c = q.popleft()
-            for n in adj[c]:
-                if n not in dist:
-                    dist[n] = dist[c] + 1; q.append(n)
-        d = nd
-        if d == 'E': cand = [(CW - 1, y) for y in range(CH)]
-        elif d == 'W': cand = [(0, y) for y in range(CH)]
-        elif d == 'S': cand = [(x, CH - 1) for x in range(CW)]
-        else: cand = list(dist)
-        cand = [c for c in cand if c in dist]
-        assert cand, ('다음 지역 쪽 가장자리에 닿는 칸이 없다', st)
-        boss = max(cand, key=lambda c: dist[c])
-        bx, by = cell_rect(ox, oy, *boss)
-        def px(tx, ty):
-            return [tx * TILE, ty * TILE]
-        spots = {'boss': px(bx + CORR / 2, by + CORR / 2)}
-        if st == 1:  # 스테이지 1 마을(공방 마을): 대장간, 말뿌리 나무, 주문 제작소
-            spots['forge'] = px(x0 + 2, y0 + 2)
-            spots['tree'] = px(x0 + 2 + PITCH * 2, y0 + 2)
-            spots['board'] = px(x0 + 2, y0 + 2 + PITCH)
-        regions.append({'stage': st, 'rect': [ox, oy, RW, RH], 'town': town, 'spots': spots,
-                        'start': px(x0 + PITCH + 2, y0 + PITCH // 2 + 2), 'boss_cell': list(boss), 'steps': dist.get(boss, 0)})
-        # 다음 지역으로 가는 문
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                n = (c[0] + dx, c[1] + dy)
+                if 0 <= n[0] < RW and 0 <= n[1] < RH and n not in seen and L[n[1]][n[0]] in walk:
+                    seen.add(n); q.append(n)
+        assert boss in seen, ('보스에 못 간다', st)
+        steps = 0
+        # 지역을 지도에 옮긴다
+        for y in range(RH):
+            for x in range(RW): g[oy + y][ox + x] = L[y][x]
+        def px(x, y): return [(ox + x + 0.5) * TILE, (oy + y + 0.5) * TILE]
+        spots = {'boss': px(*boss)}
+        if st == 1:
+            spots['forge'] = px(tx + 3, ty + 3)
+            spots['tree'] = px(tx + tw - 4, ty + 3)
+            spots['board'] = px(tx + 3, ty + th - 3)
+        regions.append({'stage': st, 'rect': [ox, oy, RW, RH], 'town': [ox + tx, oy + ty, tw, th], 'spots': spots,
+                        'start': px(tx + tw // 2, ty + th // 2), 'marks': [px(*m) for m in marks],
+                        'maze': [ox + maze[0], oy + maze[1], maze[2], maze[3]] if maze else []})
+        # 다음 지역으로 가는 문(테두리 둘을 뚫는다)
         if d:
+            bx, by = boss
             tiles = []
-            if d in 'EW':
-                xs = range(bx + CORR, bx + CORR + BORDER * 2) if d == 'E' else range(bx - BORDER * 2, bx)
-                for yy in range(by, by + CORR):
-                    for xx in xs: tiles.append([xx, yy])
-                entry = (0, boss[1]) if d == 'E' else (CW - 1, boss[1])
+            if d == 'E':
+                for yy in range(by - 1, by + 3):
+                    for xx in range(RW - BORDER, RW + BORDER): tiles.append([ox + xx, oy + yy])
+                for xx in range(bx, RW - BORDER):
+                    for yy in range(by - 1, by + 3): g[oy + yy][ox + xx] = 'p'
+                entry = (BORDER, by)
+            elif d == 'W':
+                for yy in range(by - 1, by + 3):
+                    for xx in range(-BORDER, BORDER): tiles.append([ox + xx, oy + yy])
+                for xx in range(BORDER, bx + 1):
+                    for yy in range(by - 1, by + 3): g[oy + yy][ox + xx] = 'p'
+                entry = (RW - BORDER - 1, by)
             else:
-                for yy in range(by + CORR, by + CORR + BORDER * 2):
-                    for xx in range(bx, bx + CORR): tiles.append([xx, yy])
-                entry = (boss[0], 0)
+                for xx in range(bx - 1, bx + 3):
+                    for yy in range(RH - BORDER, RH + BORDER): tiles.append([ox + xx, oy + yy])
+                for yy in range(by, RH - BORDER):
+                    for xx in range(bx - 1, bx + 3): g[oy + yy][ox + xx] = 'p'
+                entry = (bx, BORDER)
             gates.append({'stage': st, 'tiles': tiles})
-    for gt in gates:  # 다음 지역 테두리를 그린 뒤에 문을 뚫는다
+    for gt in gates:  # 다음 지역을 그린 뒤에 문을 뚫는다
         for xx, yy in gt['tiles']: g[yy][xx] = '='
-    out = {'_doc': __doc__.strip().split('\n')[0] + ' tools/map/build_world.py가 만든다(손으로 고치지 않는다).',
+    out = {'_doc': 'tools/map/build_world.py가 만든다(손으로 고치지 않는다). 글자 뜻은 그 스크립트 머리말.',
            'tile': TILE, 'w': W, 'h': H, 'rows': [''.join(r) for r in g], 'regions': regions, 'gates': gates,
            'walk': '.,pb', 'gate': '='}
     json.dump(out, open(os.path.join(ROOT, 'data/map/world.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-    print('world', W, 'x', H, 'tiles; steps to boss:', [r['steps'] for r in regions])
+    print('world', W, 'x', H, 'ratio %.3f' % (W / H))
 
 if __name__ == '__main__':
     main()
