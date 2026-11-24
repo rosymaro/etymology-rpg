@@ -10,6 +10,8 @@ var rules: ProgressRules
 var evolution: EvolutionRule
 var coin_source: CoinSource
 var setup: BattleSetup
+var quests: QuestBook
+var field: Dictionary = {}  ## data/balance/field.json
 var state: GameState
 var save_prefix := "user://"  ## 테스트는 다른 앞머리를 써서 진짜 저장을 건드리지 않는다
 var save_store := SaveStore.new()
@@ -31,6 +33,8 @@ func _ready() -> void:
 	evolution = EvolutionRule.new(repo)
 	coin_source = CoinSource.new(rng)
 	setup = BattleSetup.new(repo, bal, rules, coin_source)
+	quests = QuestBook.load_default()
+	field = JsonFile.read("res://data/balance/field.json")
 	TranslationServer.set_locale("ko")
 
 

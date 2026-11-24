@@ -2,7 +2,8 @@ class_name WorldMap
 extends RefCounted
 ## 스테이지 1~10이 모두 있는 월드맵(data/map/world.json, tools/map/build_world.py가 만든다). 화면 없이 테스트한다.
 ## 타일 글자: . 풀  , 마을 바닥  p 고갯길  b 다리  = 스테이지 문  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽
-## 스테이지 문(=)은 열린 스테이지(open_gates[stage] = true)만 지나간다. 나머지 막는 타일은 언제나 막는다.
+## 스테이지 문(=)은 열린 스테이지(open_gates[stage] = true)만 지나간다.
+## 퀘스트 길목(q)은 그 퀘스트(open_gates["s01_q_root"] = true …)를 마쳐야 지나간다. 나머지 막는 타일은 언제나 막는다.
 
 const PATH := "res://data/map/world.json"
 
@@ -13,7 +14,8 @@ var rows: PackedStringArray = []
 var regions: Array = []  ## {stage, rect[x,y,w,h](타일), town[x,y,w,h](타일), spots{id: [px,py]}, start[px,py]}
 var walk := ".,pb"
 var zones: PackedStringArray = []  ## 칸마다 지역(스테이지 % 10, 바다 -). 지역 경계는 곧은 선이 아니다
-var _gate := {}  ## Vector2i -> 스테이지(그 스테이지 보스를 이겨야 열리는 문)
+var _gate := {}  ## Vector2i -> 스테이지(int, 그 보스를 이겨야 열리는 문) 또는 퀘스트 id(String)
+var quest_gates: Array = []  ## {id, kind(bridge|cliff), tiles, spot}
 
 static var _cache: WorldMap
 
@@ -38,6 +40,10 @@ static func from_dict(d: Dictionary) -> WorldMap:
 	for gt in d.get("gates", []):
 		for t in gt["tiles"]:
 			m._gate[Vector2i(int(t[0]), int(t[1]))] = int(gt["stage"])
+	m.quest_gates = d.get("quest_gates", [])
+	for qg in m.quest_gates:
+		for t in qg["tiles"]:
+			m._gate[Vector2i(int(t[0]), int(t[1]))] = String(qg["id"])
 	return m
 
 
@@ -58,16 +64,44 @@ func ch(c: Vector2i) -> String:
 ## 그 칸을 지나갈 수 있는가. open_gates: 스테이지 -> true(그 스테이지에서 다음으로 가는 문이 열림)
 func walkable(c: Vector2i, open_gates: Dictionary = {}) -> bool:
 	var k := ch(c)
-	if k == "=":
+	if k == "=" or k == "q":
 		return bool(open_gates.get(_gate.get(c, 0), false))
 	return walk.contains(k)
 
 
-## 닫힌 문 칸이면 그 스테이지, 아니면 0.
+## 닫힌 스테이지 문 칸이면 그 스테이지, 아니면 0.
 func closed_gate(c: Vector2i, open_gates: Dictionary = {}) -> int:
 	if ch(c) == "=" and not bool(open_gates.get(_gate.get(c, 0), false)):
 		return int(_gate.get(c, 0))
 	return 0
+
+
+## 닫힌 퀘스트 길목 칸이면 그 퀘스트 id, 아니면 "".
+func closed_quest(c: Vector2i, open_gates: Dictionary = {}) -> String:
+	if ch(c) == "q" and not bool(open_gates.get(_gate.get(c, ""), false)):
+		return String(_gate.get(c, ""))
+	return ""
+
+
+## 원이 닿는 닫힌 퀘스트 길목(없으면 "").
+func touching_quest(p: Vector2, r: float, open_gates: Dictionary = {}) -> String:
+	for v in _probe(r + 8.0):
+		var q := closed_quest(cell(p + v), open_gates)
+		if q != "":
+			return q
+	return ""
+
+
+## 문·길목 칸의 스테이지(int) 또는 퀘스트 id(String). 아니면 0.
+func gate_id(c: Vector2i) -> Variant:
+	return _gate.get(c, 0)
+
+
+func quest_gate(id: String) -> Dictionary:
+	for qg in quest_gates:
+		if qg["id"] == id:
+			return qg
+	return {}
 
 
 ## 반지름 r 원이 서 있을 수 있는가(둘레 8점과 가운데를 본다).

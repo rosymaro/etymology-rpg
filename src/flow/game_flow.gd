@@ -199,11 +199,52 @@ func _flag(k: String) -> void:
 
 
 ## 월드맵에서 열린 스테이지 문: 그 스테이지 보스를 이겼고, 다음 스테이지가 만들어져 있을 때(스토리에 맞는 길만).
+## 퀘스트 길목(다리·절벽)은 그 퀘스트를 마치면 열린다(04-meta.md 8절).
 func open_gates() -> Dictionary:
-	var out := {}
+	var out := GameData.quests.open_gates(GameData.state)
 	for st in range(1, 10):
 		out[st] = seen("boss_s%02d" % st) and st + 1 <= MAX_STAGE
 	return out
+
+
+# ----- 퀘스트(04-meta.md 8절) -----
+
+## 닫힌 퀘스트 길목에 닿음. 할 수 있으면 장면을 보고 길이 열린다("" 돌려줌, 끝나면 done), 아니면 귀띔 글.
+func quest_gate(gate: String, done: Callable) -> String:
+	var q := GameData.quests.by_gate(gate)
+	if q.is_empty():
+		return ""
+	var roots := GameData.rules.owned_roots(GameData.state)
+	if not GameData.quests.finish(GameData.state, q["id"], roots):
+		return TranslationServer.translate("ui.quest.%s.hint" % q["id"])
+	GameData.vibrate(true)
+	GameData.save()
+	main.play_scene(String(q["scene"]), func() -> void:
+		done.call()
+		main.notice(TranslationServer.translate("ui.quest.done").format({"title": TranslationServer.translate("ui.quest.%s.title" % q["id"])})))
+	return ""
+
+
+## 마을 알림판: 처음엔 퀘스트를 받고(장면), 단어를 다 모아 오면 마친다.
+func notice_board(done: Callable) -> void:
+	var s := GameData.state
+	var q := GameData.quests.get_quest("s01_q_word")
+	if GameData.quests.done(s, q["id"]):
+		main.notice(TranslationServer.translate("ui.quest.board_done"), done)
+		return
+	if not seen(q["id"] + "_got"):
+		_flag(q["id"] + "_got")
+		GameData.save()
+		main.play_scene(String(q["scene"]), done)
+		return
+	if GameData.quests.finish(s, q["id"], []):
+		GameData.vibrate(true)
+		GameData.save()
+		main.notice(TranslationServer.translate("ui.quest.board_fill") + "\n" + TranslationServer.translate("ui.quest.done").format(
+			{"title": TranslationServer.translate("ui.quest.s01_q_word.title")}), done)
+		return
+	var pr := GameData.quests.progress(s, q, [])
+	main.notice(TranslationServer.translate("ui.quest.s01_q_word.hint").format(pr), done)
 
 
 func seen(k: String) -> bool:
@@ -409,6 +450,11 @@ func boss_gate() -> void:
 		return
 	if not g["open"]:
 		main.notice(TranslationServer.translate("ui.boss.gate").format(g))
+		return
+	var left := GameData.quests.boss_blockers(GameData.state, STAGE)
+	if not left.is_empty():
+		main.notice(TranslationServer.translate("ui.quest.boss_wait").format(
+			{"title": TranslationServer.translate("ui.quest.%s.title" % left[0]["id"])}))
 		return
 	GameData.vibrate(true)
 	main.play_scene("s01_jeon", func() -> void: go_battle_prep([] as Array[String], true))

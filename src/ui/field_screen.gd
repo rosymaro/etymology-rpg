@@ -4,22 +4,21 @@ extends Screen
 ## 지역마다 미로처럼 산·바다·호수·절벽·숲·성벽이 길을 가른다. 다음 지역으로 가는 문은 스토리가 열어 줘야 지나간다.
 ## 조작: 화면 어디든 누르고 끌면 가상 조이스틱, 키보드 방향키도 된다. 가까이 가면 '살펴보기' 버튼이 뜬다.
 ## 왼쪽 위 미니맵을 누르면 전체 지도가 펼쳐진다.
+## 몹은 배회·쫓기·도망 세 가지(FieldMob, data/balance/field.json). 퀘스트 길목(무너진 다리·절벽)은 퀘스트를 마쳐야 지나간다.
 
-const SPEED := 380.0
 const HERO_R := 26.0
 const ENEMY_R := 30.0
-const ENEMY_COUNT := 10
-const ENEMY_NEAR := Vector2(500, 1500)  ## 적이 생기는 거리(주인공에서)
-const ENEMY_FAR := 2600.0  ## 이보다 멀어지면 주인공 가까이에 다시 생긴다
+const MOB_COL := {"wander": Color("c7b8e0"), "chase": Color("f0a08c"), "flee": Color("9fd8c8")}
 const TOUCH_R := 110.0
 const MINI_SCALE := 0.9  ## 미니맵: 타일 하나당 픽셀
-const TILE_COL := {".": Color("d8eec9"), ",": Color("f3ead8"), "p": Color("d9c59a"), "b": Color("b98c5a"), "=": Color("e9876a"),
+const TILE_COL := {".": Color("d8eec9"), ",": Color("f3ead8"), "p": Color("d9c59a"), "b": Color("b98c5a"), "=": Color("e9876a"), "q": Color("8c6a4a"),
 	"^": Color("9a8f86"), "~": Color("6fa8dc"), "w": Color("8cc6e8"), "#": Color("6f6257"), "T": Color("6fae74"), "H": Color("a7a7b4")}
 
 var map: WorldMap
+var _f: Dictionary  ## data/balance/field.json
 var _hero := Vector2.ZERO
 var _cam := Vector2.ZERO
-var _enemies: Array[Dictionary] = []  ## {pos, vel, words, t}
+var _enemies: Array[FieldMob] = []
 var _spots: Array[Dictionary] = []
 var _near: Dictionary = {}
 var _stick_on := false
@@ -35,6 +34,8 @@ var _gates := {}
 var _mini: TextureRect
 var _full: Control
 var _gate_t := 0.0
+var _goal: Label
+var _quests: Control
 
 static var _map_tex: ImageTexture
 
@@ -42,6 +43,7 @@ static var _map_tex: ImageTexture
 func open(args: Dictionary) -> void:
 	_rng.randomize()
 	map = WorldMap.load_default()
+	_f = GameData.field
 	_gates = main.flow.open_gates()
 	var s := GameData.state
 	_hero = s.pos
@@ -51,11 +53,12 @@ func open(args: Dictionary) -> void:
 		{"id": "forge", "pos": map.spot(1, "forge"), "key": "ui.field.forge", "color": UiKit.APRICOT},
 		{"id": "tree", "pos": map.spot(1, "tree"), "key": "ui.field.tree", "color": UiKit.LEAF},
 		{"id": "board", "pos": map.spot(1, "board"), "key": "ui.field.order", "color": UiKit.PINK},
+		{"id": "notice", "pos": map.spot(1, "notice"), "key": "ui.field.notice", "color": UiKit.SKY},
 		{"id": "boss", "pos": map.spot(1, "boss"), "key": "ui.field.boss", "color": UiKit.GRAY},
 	]
-	for i in ENEMY_COUNT:
+	for i in int(_f["enemy_count"]):
 		var e := _new_enemy()
-		if not e.is_empty():
+		if e:
 			_enemies.append(e)
 	_build_hud()
 	_build_minimap()
@@ -75,6 +78,7 @@ func _build_hud() -> void:
 	var right := UiKit.hbox(8)
 	add_child(right)
 	UiKit.pin(right, 1, 0, -16, 12)
+	right.add_child(UiKit.button(t("ui.menu.quest"), _open_quests, UiKit.APRICOT, 22))
 	right.add_child(UiKit.button(t("ui.menu.dex"), func() -> void: _go(main.flow.go_dex), UiKit.LEAF, 22))
 	right.add_child(UiKit.button(t("ui.menu.party"), func() -> void: _go(main.flow.go_party), UiKit.SKY, 22))
 	right.add_child(UiKit.button(t("ui.menu.save"), func() -> void:
@@ -83,6 +87,15 @@ func _build_hud() -> void:
 		_show_toast(t("ui.menu.saved")), UiKit.PINK, 22))
 	right.add_child(UiKit.button(t("ui.menu.option"), func() -> void:
 		_go(func() -> void: main.flow.go_options(main.flow.go_field)), UiKit.PAPER, 22))
+	_goal = UiKit.label("", 20, UiKit.INK)
+	var gc := UiKit.card()
+	gc.add_child(_goal)
+	add_child(gc)
+	gc.position = Vector2(16, 150 + map.h * MINI_SCALE + 10)
+	var home := UiKit.button(t("ui.field.home"), _go_home, UiKit.PAPER, 24)
+	home.custom_minimum_size = Vector2(150, 70)
+	add_child(home)
+	UiKit.thumb(home, 0.0)  # 엄지 자리 왼쪽
 	_act_btn = UiKit.button("", _act, UiKit.ACCENT.lightened(0.4), 28)
 	_act_btn.custom_minimum_size = Vector2(260, 80)
 	_act_btn.visible = false
@@ -102,6 +115,8 @@ func _update_top() -> void:
 	_top.text = t("ui.field.top").format({"stage": t("name.stage.s01"), "have": g["have"],
 		"total": GameData.repo.first_tier(GameFlow.STAGE).size(), "need": g["need"],
 		"title": t("ui.dev.badge") if GameData.state.dev_mode else t("name.title.none")})
+	var q := GameData.quests.next_quest(GameData.state, GameFlow.STAGE)
+	_goal.text = t("ui.field.goal").format({"title": t("ui.quest.%s.title" % q["id"])}) if not q.is_empty() else t("ui.quest.all_done")
 
 
 func _go(f: Callable) -> void:
@@ -121,15 +136,21 @@ func _show_toast(text: String) -> void:
 
 # ----- 적 -----
 
-func _new_enemy() -> Dictionary:
-	var p := map.random_field_spot(GameFlow.STAGE, _rng, _hero, ENEMY_NEAR.x, ENEMY_NEAR.y, ENEMY_R)
+func _new_enemy() -> FieldMob:
+	var near: Array = _f["spawn_near"]
+	var p := map.random_field_spot(GameFlow.STAGE, _rng, _hero, float(near[0]), float(near[1]), ENEMY_R)
 	if p == Vector2.INF:
-		return {}
-	return {"pos": p, "vel": Vector2.ZERO, "t": 0.0, "words": _pick_words()}
+		return null
+	var m := FieldMob.new()
+	m.pos = p
+	m.kind = FieldMob.pick_kind(_f["kinds"], _rng)
+	m.words = _pick_words(bool(_f["kinds"][m.kind].get("rare", false)))
+	return m
 
 
 ## 조우 단어: 그 스테이지 필드 1차, 빈도가 높을수록 자주(01-rpg-base '희귀도'). 다시 잡을 단어가 있으면 섞는다.
-func _pick_words() -> Array[String]:
+## rare(도망가는 몹)면 거꾸로 드문 단어일수록 자주.
+func _pick_words(rare := false) -> Array[String]:
 	var pool := GameData.repo.first_tier(GameFlow.STAGE, "field")
 	var n := GameData.rules.team_size(GameData.state)
 	var out: Array[String] = []
@@ -137,14 +158,15 @@ func _pick_words() -> Array[String]:
 	if not targets.is_empty() and _rng.randf() < 0.5:
 		out.append(str(targets[_rng.randi_range(0, targets.size() - 1)]))
 	var total := 0
+	var wt := func(w: WordData) -> int: return maxi(1, 100 / maxi(1, w.freq)) if rare else w.freq
 	for w in pool:
-		total += w.freq
+		total += wt.call(w)
 	var guard := 0
 	while out.size() < n and guard < 100:
 		guard += 1
 		var r := _rng.randi_range(1, total)
 		for w in pool:
-			r -= w.freq
+			r -= wt.call(w)
 			if r <= 0:
 				if not w.id in out:
 					out.append(w.id)
@@ -155,39 +177,48 @@ func _pick_words() -> Array[String]:
 # ----- 움직임 -----
 
 func _process(delta: float) -> void:
-	if _busy or _full:
+	if _busy or _full or _quests:
 		return
 	var dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if _stick_on:
 		dir = _stick_vec
 	var was_town := map.is_town(_hero)
 	var before := _hero
-	_hero = map.move(_hero, dir * SPEED * delta, HERO_R, _gates)
+	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * delta, HERO_R, _gates)
 	if was_town and not map.is_town(_hero) and map.stage_at(_hero) == GameFlow.STAGE:
 		main.flow.entered_field()
 	# 닫힌 스테이지 문에 막히면 알려 준다
 	_gate_t -= delta
-	if dir.length() > 0.1 and _hero.distance_to(before) < 1.0 and _gate_t <= 0.0 and map.touching_gate(_hero, HERO_R, _gates) > 0:
-		_gate_t = 3.0
-		_show_toast(t("ui.field.gate_closed"))
+	if dir.length() > 0.1 and _hero.distance_to(before) < 1.0 and _gate_t <= 0.0:
+		var qg := map.touching_quest(_hero, HERO_R, _gates)
+		if qg != "":  # 퀘스트 길목(무너진 다리·절벽): 할 수 있으면 장면 뒤 길이 열린다
+			_gate_t = 3.0
+			_busy = true
+			_stick_on = false
+			_remember()
+			var hint: String = main.flow.quest_gate(qg, _quest_done)
+			if hint != "":
+				_busy = false
+				_show_toast(hint)
+			return
+		if map.touching_gate(_hero, HERO_R, _gates) > 0:
+			_gate_t = 3.0
+			_show_toast(t("ui.field.gate_closed"))
 	for i in _enemies.size():
-		var e: Dictionary = _enemies[i]
-		if (e["pos"] as Vector2).distance_to(_hero) > ENEMY_FAR:  # 멀어진 적은 가까이에 다시
+		var e := _enemies[i]
+		if e.pos.distance_to(_hero) > float(_f["spawn_far"]):  # 멀어진 적은 가까이에 다시
 			var ne := _new_enemy()
-			if not ne.is_empty():
+			if ne:
 				_enemies[i] = ne
 			continue
-		e["t"] -= delta
-		if e["t"] <= 0.0:
-			e["t"] = _rng.randf_range(1.0, 2.5)
-			e["vel"] = Vector2.from_angle(_rng.randf() * TAU) * _rng.randf_range(0, 120)
-		var np: Vector2 = map.move(e["pos"], e["vel"] * delta, ENEMY_R)
+		var v := e.steer(_hero, delta, _f["kinds"], _rng)
+		var np: Vector2 = map.move(e.pos, v * delta, ENEMY_R)
 		if not map.is_town(np) and map.stage_at(np) == GameFlow.STAGE:
-			e["pos"] = np
-		if (e["pos"] as Vector2).distance_to(_hero) < HERO_R + ENEMY_R:
+			e.pos = np
+		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R:
 			_busy = true
 			_remember()
-			main.flow.encounter(e["words"])
+			main.flow.encounter(e.words)
 			return
 	_near = {}
 	for sp in _spots:
@@ -230,8 +261,79 @@ func _act() -> void:
 			main.notice(t("ui.field.tree_msg"))
 		"board":
 			main.flow.town_minigame()
+		"notice":
+			_busy = true
+			_stick_on = false
+			main.flow.notice_board(_quest_done)
 		"boss":
 			main.flow.boss_gate()
+
+
+## 퀘스트를 마치면(장면이 끝나면) 길목을 다시 읽는다.
+func _quest_done() -> void:
+	_gates = main.flow.open_gates()
+	_busy = false
+	_update_top()
+	_map_tex = null  # 미니맵도 다시(길목 색)
+	_mini.texture = map_texture(map, _gates)
+
+
+func _go_home() -> void:
+	_hero = map.start(GameFlow.STAGE)
+	_stick_on = false
+	_remember()
+	_show_toast(t("ui.field.home_done"))
+
+
+## 퀘스트 목록(오른쪽 위 '퀘스트'). 아무 곳이나 누르면 닫힌다.
+func _open_quests() -> void:
+	if _quests:
+		return
+	_stick_on = false
+	_quests = Control.new()
+	_quests.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_quests.mouse_filter = Control.MOUSE_FILTER_STOP
+	_quests.z_index = 20
+	add_child(_quests)
+	var dim := ColorRect.new()
+	dim.color = Color(0.15, 0.13, 0.22, 0.6)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.offset_top = -UiKit.BG_BLEED
+	dim.offset_bottom = UiKit.BG_BLEED
+	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_quests.add_child(dim)
+	var card := UiKit.card()
+	card.custom_minimum_size = Vector2(640, 0)
+	card.position = Vector2(40, 220)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_quests.add_child(card)
+	var v := UiKit.vbox(16)
+	card.add_child(v)
+	v.add_child(UiKit.label(t("ui.quest.list_title"), 30, UiKit.ACCENT.darkened(0.3)))
+	var roots := GameData.rules.owned_roots(GameData.state)
+	for q in GameData.quests.of_stage(GameFlow.STAGE):
+		var done := GameData.quests.done(GameData.state, q["id"])
+		var pr := GameData.quests.progress(GameData.state, q, roots)
+		var head := "%s %s  (%s)" % ["✔" if done else "●", t("ui.quest.%s.title" % q["id"]),
+			t("ui.quest.state_done") if done else (t("ui.quest.state_ready") if pr["ready"] and q["kind"] != "words" else "%s %d/%d" % [t("ui.quest.state_todo"), pr["have"], pr["need"]])]
+		v.add_child(UiKit.label(head, 24, UiKit.LEAF.darkened(0.3) if done else UiKit.INK))
+		var d := UiKit.label(t("ui.quest.%s.desc" % q["id"]), 20, UiKit.INK.lightened(0.25))
+		d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		d.custom_minimum_size.x = 600
+		v.add_child(d)
+	var close := UiKit.button(t("ui.quest.close"), _close_quests, UiKit.PAPER, 24)
+	close.custom_minimum_size = Vector2(220, 70)
+	_quests.add_child(close)
+	UiKit.thumb(close)
+	_quests.gui_input.connect(func(ev: InputEvent) -> void:
+		if ev is InputEventMouseButton and ev.pressed:
+			_close_quests())
+
+
+func _close_quests() -> void:
+	if _quests:
+		_quests.queue_free()
+		_quests = null
 
 
 # ----- 그리기 -----
@@ -252,14 +354,22 @@ func _draw() -> void:
 			draw_circle(p, 54, col)
 			draw_arc(p, 54, 0, TAU, 40, UiKit.INK, 4)
 		draw_string(font, p + Vector2(-80, 86), t(sp["key"]), HORIZONTAL_ALIGNMENT_CENTER, 160, 22, UiKit.INK)
-	for e in _enemies:
-		var p: Vector2 = o + e["pos"]
-		if Art.draw(self, "enemy", "field_wanderer", p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
+	for qg in map.quest_gates:  # 닫힌 퀘스트 길목에 표지판(어디서 무엇을 해야 하는지)
+		if _gates.get(qg["id"], false):
 			continue
-		draw_circle(p, ENEMY_R, Color("c7b8e0"))
-		draw_arc(p, ENEMY_R, 0, TAU, 32, UiKit.INK, 3)
-		draw_circle(p + Vector2(-9, -4), 3, UiKit.INK)
-		draw_circle(p + Vector2(9, -4), 3, UiKit.INK)
+		var sp: Array = qg["spot"]
+		var p := o + Vector2(float(sp[0]), float(sp[1])) + Vector2(0, -40)
+		if not Rect2(Vector2(-200, -100), size + Vector2(400, 200)).has_point(p):
+			continue
+		draw_line(p, p + Vector2(0, 50), Color("7a5a3a"), 6)
+		var title := t("ui.quest.%s.title" % qg["id"])
+		var tw := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x + 24
+		draw_rect(Rect2(p - Vector2(tw / 2, 34), Vector2(tw, 34)), Color("fff4dc"))
+		draw_rect(Rect2(p - Vector2(tw / 2, 34), Vector2(tw, 34)), Color("7a5a3a"), false, 3)
+		draw_string(font, p + Vector2(-tw / 2, -10), title, HORIZONTAL_ALIGNMENT_CENTER, tw, 20, UiKit.INK)
+		draw_string(font, p + Vector2(-10, -40), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 30 + 4 * sin(Time.get_ticks_msec() / 200.0), UiKit.BAD)
+	for e in _enemies:
+		_draw_mob(e, o + e.pos)
 	# 주인공과 칭호 리본(04-meta.md 5절)
 	var h := o + _hero
 	if not Art.draw(self, "hero", "look0", h + Vector2(0, -12), Vector2(HERO_R * 3.2, HERO_R * 3.6)):
@@ -275,6 +385,36 @@ func _draw() -> void:
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))
+
+
+## 몹 모양: 배회(보라, 동그란 눈), 쫓기(주황, 뿔과 성난 눈썹, 쫓을 때 !), 도망(민트, 긴 귀와 땀방울, 도망칠 때 땀).
+func _draw_mob(e: FieldMob, p: Vector2) -> void:
+	var font := ThemeDB.fallback_font
+	var bob := sin(Time.get_ticks_msec() / 160.0 + p.x * 0.01) * 3.0
+	p += Vector2(0, bob)
+	if not Art.draw(self, "enemy", "field_" + e.kind, p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
+		var col: Color = MOB_COL.get(e.kind, MOB_COL["wander"])
+		match e.kind:
+			"chase":
+				for sg in [-1.0, 1.0]:
+					draw_colored_polygon(PackedVector2Array([p + Vector2(sg * 10, -24), p + Vector2(sg * 24, -42), p + Vector2(sg * 24, -18)]), col.darkened(0.25))
+			"flee":
+				for sg in [-1.0, 1.0]:
+					draw_set_transform(p + Vector2(sg * 13, -30), sg * 0.25, Vector2(0.45, 1.0))
+					draw_circle(Vector2.ZERO, 14, col.darkened(0.15))
+					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		draw_circle(p, ENEMY_R, col)
+		draw_arc(p, ENEMY_R, 0, TAU, 32, UiKit.INK, 3)
+		draw_circle(p + Vector2(-9, -4), 3, UiKit.INK)
+		draw_circle(p + Vector2(9, -4), 3, UiKit.INK)
+		if e.kind == "chase":
+			draw_line(p + Vector2(-15, -14), p + Vector2(-4, -9), UiKit.INK, 3)
+			draw_line(p + Vector2(15, -14), p + Vector2(4, -9), UiKit.INK, 3)
+	if e.alert:
+		if e.kind == "chase":
+			draw_string(font, p + Vector2(-10, -46), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 34, UiKit.BAD)
+		elif e.kind == "flee":
+			draw_circle(p + Vector2(ENEMY_R - 2, -ENEMY_R + 4), 6, Color("8cc6e8"))
 
 
 ## 보이는 타일만 그린다. 막는 타일은 모양을 조금씩 넣는다(산 ▲, 물결, 나무, 절벽 줄, 성벽 벽돌, 다리 널, 문 창살).
@@ -315,6 +455,22 @@ func _draw_tiles(o: Vector2) -> void:
 				"b":
 					for k2 in 4:
 						draw_line(r.position + Vector2(6 + k2 * 15, 4), r.position + Vector2(6 + k2 * 15, ts - 4), Color("8b6640"), 3)
+				"q":  # 퀘스트 길목: 무너진 다리(물 위) / 절벽 끝. 열리면 다리·길로 보인다
+					var qid := map.closed_quest(Vector2i(x, y), _gates)
+					var kind: String = map.quest_gate(String(map.gate_id(Vector2i(x, y)))).get("kind", "")
+					if kind == "bridge":
+						draw_rect(r, TILE_COL["~"])
+						for k2 in 4:
+							if qid == "" or (hsh + k2) % 3 != 0:  # 무너지면 널이 듬성듬성
+								draw_rect(Rect2(r.position + Vector2(4 + k2 * 15, 4), Vector2(10, ts - 8)), TILE_COL["b"] if qid == "" else Color("7a5a3a"))
+					else:
+						draw_rect(r, TILE_COL["p"] if qid == "" else TILE_COL["#"])
+						if qid != "":
+							for k2 in 3:
+								draw_line(r.position + Vector2(4, 12 + k2 * 18), r.end - Vector2(4, ts - 18 - k2 * 18), Color("4a3f36"), 3)
+						else:  # 내려가는 계단
+							for k2 in 4:
+								draw_line(r.position + Vector2(6, 10 + k2 * 14), r.position + Vector2(ts - 6, 10 + k2 * 14), Color("b8a27a"), 3)
 				"=":
 					var open: bool = map.walkable(Vector2i(x, y), _gates)
 					if not open:
@@ -338,20 +494,24 @@ func _draw_tiles(o: Vector2) -> void:
 
 # ----- 미니맵·전체 지도 -----
 
-static func map_texture(m: WorldMap) -> ImageTexture:
+static func map_texture(m: WorldMap, gates: Dictionary = {}) -> ImageTexture:
 	if _map_tex == null:
 		var img := Image.create(m.w, m.h, false, Image.FORMAT_RGB8)
 		for y in m.h:
 			var row := m.rows[y]
 			for x in m.w:
-				img.set_pixel(x, y, TILE_COL.get(row[x], Color.MAGENTA))
+				var k := row[x]
+				if k == "q":  # 열린 길목은 길 색, 닫힌 길목은 빨갛게(어디서 막혔는지 보이게)
+					k = "p" if m.walkable(Vector2i(x, y), gates) else "="
+				img.set_pixel(x, y, TILE_COL.get(k, Color.MAGENTA))
 		_map_tex = ImageTexture.create_from_image(img)
 	return _map_tex
 
 
 func _build_minimap() -> void:
 	_mini = TextureRect.new()
-	_mini.texture = map_texture(map)
+	_map_tex = null
+	_mini.texture = map_texture(map, _gates)
 	_mini.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_mini.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_mini.custom_minimum_size = Vector2(map.w, map.h) * MINI_SCALE
@@ -401,7 +561,7 @@ func _open_full() -> void:
 	_full.add_child(dim)
 	var k := minf((size.x - 40) / map.w, (size.y - 140) / map.h)
 	var tex := TextureRect.new()
-	tex.texture = map_texture(map)
+	tex.texture = map_texture(map, _gates)
 	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	tex.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	tex.size = Vector2(map.w, map.h) * k

@@ -550,14 +550,14 @@
   {
    "id": "s01_q_magic",
    "title": "story.s01.q_magic.title",
-   "place_note": "마을 끝 절벽",
+   "place_note": "언덕 앞 절벽",
    "cast": [
     "hero",
     "ttukttak",
     "blacksmith"
    ],
    "staging_note": "절벽 위. 아래로 내려가는 길이 없다. de- 마법을 쓰면 주인공 일행이 천천히 내려앉는 연출.",
-   "game_note": "마법 de- 필드 효과(절벽 아래로 내려가기)",
+   "game_note": "필드 마법 de-(절벽 아래로 내려가기). 퀘스트 길목 s01_q_magic(04-meta.md 8절). 내려가면 보스 언덕으로 가는 길이 열린다",
    "borrow": [],
    "lines": [
     {
@@ -632,14 +632,14 @@
   {
    "id": "s01_q_root",
    "title": "story.s01.q_root.title",
-   "place_note": "대장간 뒤뜰",
+   "place_note": "마을 동쪽 강, 무너진 다리",
    "cast": [
     "hero",
     "ttukttak",
     "blacksmith"
    ],
-   "staging_note": "고장 난 풀무가 바람을 뿜지 못한다. fac 어원을 갖고 있어서 뚝딱이 고칠 수 있다.",
-   "game_note": "어근 fac 필드 능력(망가진 장치 고치기)",
+   "staging_note": "강을 건너는 나무다리가 무너져 널이 듬성듬성하다. fac 어근을 가진 유닛이 있으면 뚝딱이 고친다. 고치면 필드의 다리 타일이 이어진다.",
+   "game_note": "어근 fac 필드 능력(망가진 다리 고치기). 퀘스트 길목 s01_q_root(04-meta.md 8절)",
    "borrow": [
     {
      "game": "테일즈 오브 시리즈",
@@ -667,7 +667,7 @@
    "conti": [
     {
      "shot": "mid",
-     "bg": "forge",
+     "bg": "bridge",
      "actors": [
       {
        "id": "ttukttak",
@@ -683,14 +683,14 @@
       }
      ],
      "fx": {
-      "bellows": ""
+      "broken_bridge": ""
      },
      "say": 2,
-     "note": "fac 어원을 가진 뚝딱이 풀무 앞으로 걸어간다."
+     "note": "무너진 다리 앞. fac 어근을 가진 뚝딱이 망치를 들고 나선다."
     },
     {
      "shot": "close",
-     "bg": "forge",
+     "bg": "bridge",
      "actors": [
       {
        "id": "ttukttak",
@@ -700,10 +700,11 @@
       }
      ],
      "fx": {
-      "wind": "reverse"
+      "hammer": "",
+      "bridge": "fixed"
      },
      "say": 3,
-     "note": "풀무에서 바람이 거꾸로 뿜어져 뚝딱 깃털이 날린다(스킷 개그)."
+     "note": "뚝딱뚝딱, 다리가 이어진다. 그런데 난간이 거꾸로 붙었다(스킷 개그)."
     }
    ]
   },
@@ -717,7 +718,7 @@
     "villager_a"
    ],
    "staging_note": "게시판에 빈칸 세 개. 해당 단어를 잡아 오면 빈칸이 채워지고 글자가 색을 되찾는다.",
-   "game_note": "필드 단어 information, inform, format 잡기",
+   "game_note": "필드 단어 information, inform, format 잡기. 마을 알림판에서 받고, 셋을 모아 오면 마친다(04-meta.md 8절)",
    "borrow": [
     {
      "game": "오오카미",

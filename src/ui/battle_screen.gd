@@ -4,6 +4,8 @@ extends Screen
 ## 순서: 마법 알림 → 유닛 등장(코인이 돌고, 코인 전→후 능력치가 깜빡임) → 스킬·보스 능력(바뀐 능력치 깜빡임)
 ## → "1턴" → 공격(깎인 체력이 빨갛게 깜빡이고, 맞은 카드에서 단어 뜻과 피해 숫자가 튀어나온다) → … 단계마다 '다음'을 눌러야 넘어간다.
 ## 전투를 시작할 때 거는 마법은 코인을 다 던진 뒤에 보여 준다(코인 → 다음 → 마법 → 다음 → 스킬 → 다음 → 1턴 …).
+## 마법을 쓰면 왼쪽 아래 마법 버튼에서 마법 카드가 돌며 커져 나와, 공격 마법은 적 카드 위, 방어 마법은 아군 카드 위,
+## 효과·순서 마법은 두 카드 가운데에 놓이고 그 마법의 이펙트(MagicFx, data/magic_fx.json)가 터진다.
 ## 일어난 일은 기록(entries)으로 모아 결과 화면에 턴마다 줄을 그어 보여 준다.
 
 const STEP := 0.7
@@ -13,6 +15,7 @@ const FLOAT_SEC := 2.6  ## 튀어나온 뜻·피해 숫자가 보이는 시간
 const MID_Y := 330.0  ## 세로 화면: 가운데 두 카드의 위쪽(양쪽 목록 아래)
 const GROW_SEC := 0.6  ## 등장: 옆 목록의 작은 카드에서 뱅그르르 돌며 커져 나오는 시간
 const FALL_SEC := 1.3  ## 쓰러짐: 앞으로 쓰러지며 깜빡이다 사라지는 시간
+const MAGIC_FLY := 0.55  ## 마법 카드가 마법 버튼에서 날아와 놓이는 시간
 
 var _ctx: BattleContext
 var _result: BattleResult
@@ -42,6 +45,7 @@ var lines: Array[String] = []  ## 기록의 글만(테스트용)
 var _turn_n := 0  ## 전투 처음부터 센 턴 수
 var steps_done := 0  ## '다음'을 누른 수(이어 하기에 적는다)
 var _resume_to := 0  ## 이어 하기: 이만큼은 연출 없이 건너뛴다
+var last_magic_card: Control  ## 마지막으로 놓인 마법 카드(테스트용)
 
 
 func open(args: Dictionary) -> void:
@@ -327,6 +331,7 @@ func _play_magic(ev: Dictionary) -> void:
 		"damage": ev["damage"], "down": ev.get("atk_down", 0)})
 	_banner.text = text
 	_log("✦ " + text, UiKit.ACCENT.darkened(0.3))
+	await _magic_card(String(ev["id"]))
 	_pending_magic.erase(idx)
 	if _magic_due.has(idx):
 		var d: Dictionary = _magic_due[idx]
@@ -453,6 +458,67 @@ func _grow_fx(box: BattleCard, side: int, idx: int) -> void:
 	tw.tween_property(box, "rotation_degrees", 0.0, GROW_SEC).set_trans(Tween.TRANS_CUBIC)
 
 
+## 마법 카드: 왼쪽 아래 마법 버튼 자리에서 돌며 커져 나와(유닛 카드 등장과 같은 모양) 종류에 맞는 자리에 놓이고,
+## 그 마법의 이펙트가 대상 카드 위(가운데 마법은 두 카드 사이)에서 터진 뒤 카드가 흐려져 사라진다.
+func _magic_card(id: String) -> void:
+	var kind := String(GameData.bal.magic_def(id).get("kind", "effect"))
+	var d := MagicFx.def_of(id)
+	var col := Color(String(d["color"]))
+	var card := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = col.lightened(0.55)
+	sb.border_color = col.darkened(0.3)
+	sb.set_border_width_all(4)
+	sb.set_corner_radius_all(16)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	card.add_theme_stylebox_override("panel", sb)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.z_index = 15
+	var l := UiKit.label("✦ " + GameText.magic_name(id), 26, UiKit.INK)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card.add_child(l)
+	add_child(card)
+	card.set_meta("kind", kind)
+	last_magic_card = card
+	await get_tree().process_frame  # 크기가 잡힌 뒤
+	if not is_instance_valid(card):
+		return
+	var a_rect := _a_box.get_global_rect()
+	var b_rect := _b_box.get_global_rect()
+	var at := MagicFx.anchor(kind, a_rect, b_rect)
+	var fx_at: Vector2 = b_rect.get_center() if kind == "attack" else (a_rect.get_center() if kind == "defense" else (a_rect.get_center() + b_rect.get_center()) / 2.0)
+	card.pivot_offset = card.size / 2.0
+	var rest := at - card.size / 2.0
+	card.set_meta("rest", rest + card.size / 2.0)
+	if _skip:
+		card.global_position = rest
+		card.queue_free()
+		return
+	card.global_position = _magic_btn.get_global_rect().get_center() - card.size / 2.0
+	card.scale = Vector2(0.3, 0.3)
+	card.rotation_degrees = -360.0
+	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(card, "global_position", rest, MAGIC_FLY)
+	tw.tween_property(card, "scale", Vector2.ONE, MAGIC_FLY)
+	tw.tween_property(card, "rotation_degrees", 0.0, MAGIC_FLY).set_trans(Tween.TRANS_CUBIC)
+	await _wait(MAGIC_FLY)
+	var fx := MagicFx.new()
+	fx.id = id
+	fx.style = String(d["style"])
+	fx.col = col
+	add_child(fx)
+	fx.global_position = fx_at
+	GameData.vibrate()
+	await _wait(MagicFx.LIFE * 0.8)
+	if is_instance_valid(card):
+		var out := create_tween()
+		out.tween_property(card, "modulate:a", 0.0, 0.35)
+		out.tween_callback(card.queue_free)
+
+
 ## 쓰러짐: 카드 밑을 축으로 상대 쪽(앞)으로 기울며 납작해지고, 깜빡깜빡하다가 흐려져 사라진다.
 func _fall_fx(box: BattleCard, side: int) -> void:
 	var lean := 16.0 if side == Combatant.ALLY else -16.0
@@ -487,6 +553,8 @@ func _effect(ev: Dictionary) -> void:
 			text = t("ui.battle.magic_cast").format({"magic": GameText.magic_name(ev["id"]), "target": _ctx.enemies[ev["target"]].word_id,
 				"damage": ev["damage"], "down": ev.get("atk_down", 0)})
 	_banner.text = text
+	if ev["t"] == "magic":
+		await _magic_card(String(ev["id"]))
 	var changes: Array[String] = []
 	var b4: Dictionary = ev.get("before", {})
 	var af: Dictionary = ev.get("after", {})

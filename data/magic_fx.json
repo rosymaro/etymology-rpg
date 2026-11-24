@@ -1,0 +1,19 @@
+{
+  "_doc": "전투 마법 연출(01-rpg-base '마법 연출'). 화면만 쓴다(수치 아님). style = MagicFx가 그리는 모양, color = 카드·이펙트 색. 놓이는 자리는 battle_magic.json의 kind로 정한다: attack → 적 카드 위, defense → 아군 카드 위, effect·order → 두 카드 가운데",
+  "fx": {
+    "de":     { "style": "drop",     "color": "e9876a", "_why": "아래로: 위에서 화살이 내리꽂힌다" },
+    "un":     { "style": "cross",    "color": "d0546b", "_why": "아님: X자로 그어 지운다" },
+    "in_neg": { "style": "fade",     "color": "8a7fb5", "_why": "없음: 고리가 오그라들며 소리를 지운다" },
+    "ob":     { "style": "push",     "color": "e0874a", "_why": "맞서: 반원 충격파가 되밀어낸다" },
+    "com":    { "style": "ring",     "color": "6fb0d8", "_why": "함께: 둥근 방패가 모두를 감싼다" },
+    "re":     { "style": "spin",     "color": "7cc48a", "_why": "다시: 도는 화살표와 초록 빛" },
+    "ad":     { "style": "converge", "color": "f5c542", "_why": "~쪽으로: 빛 알갱이가 모여 막이 된다" },
+    "sub":    { "style": "rise",     "color": "5f9fd6", "_why": "아래: 밑에서 받쳐 올리는 물결" },
+    "prae":   { "style": "flash",    "color": "fbe07a", "_why": "미리: 앞으로 번쩍이는 빛줄기" },
+    "inter":  { "style": "wall",     "color": "a7a7b4", "_why": "사이: 두 카드 사이에 벽이 선다" },
+    "in":     { "style": "sparkle",  "color": "f5c542", "_why": "안으로: 금빛 반짝이가 코인으로 빨려 든다" },
+    "dis":    { "style": "shatter",  "color": "b58ad6", "_why": "떨어져: 조각이 사방으로 흩어진다" },
+    "ex":     { "style": "swap",     "color": "e9a0b8", "_why": "밖으로: 양쪽으로 갈라지는 화살표" },
+    "pro":    { "style": "forward",  "color": "8cd0b0", "_why": "앞으로: 앞으로 달리는 겹화살표" }
+  }
+}

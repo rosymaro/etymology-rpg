@@ -7,7 +7,8 @@
 - 스테이지 k 보스를 이기면 가운데 지역에서 지역 k+1로 가는 문(=)이 열린다(게임이 판정). 둘레 지역끼리는 막혀 있다.
 - 지역 안은 젤다의 전설 꿈꾸는 섬의 들판처럼: 호수·언덕·숲이 길을 가르고, 강은 다리 하나로만 건넌다.
   미로는 세 지역에만(2 사냥꾼 숲, 6 왕성 정원, 9 광산 갱도). 보스는 들어온 곳에서 걸어서 가장 먼 쪽.
-글자: . 풀  , 마을 바닥  p 길·고갯길  b 다리  = 스테이지 문  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
+- 스테이지 1 퀘스트 길목(q): 강의 다리는 끊어져 있어 fac 퀘스트로 고치고, 보스 둘레 절벽은 de- 퀘스트로 내려간다.
+글자: . 풀  , 마을 바닥  p 길·고갯길  b 다리  = 스테이지 문  q 퀘스트 길목  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
 """
 import json, os, random, heapq, collections, math
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -112,6 +113,7 @@ def main():
         return 0 <= x < W and 0 <= y < H and zone[y][x] == st and not wall[y][x] and not sea[y][x]
     # 문: 가운데(1) ↔ 지역 k+1. 가운데 지역 안쪽에서 두 지역의 벽만 지나 지역 k+1 안쪽에 닿는 가장 짧은 곳(씨앗 쪽)을 뚫는다
     gates = []
+    quest_gates = []  ## 퀘스트로 여는 길목 {id(그 퀘스트 장면), kind, tiles, spot}
     entries = {1: (cx, cy)}
     gate_src = {}
     for k in range(1, 10):
@@ -174,6 +176,7 @@ def main():
                 if inside(st, x, y): g[y][x] = ','
         town_c = (tx + tw // 2, ty + th // 2)
         barrier = set()
+        bridge = []
         # 강: 지역을 가로지르고 다리 하나
         if river:
             horiz = (bx1 - bx0) < (by1 - by0)
@@ -198,7 +201,7 @@ def main():
                     for dy in range(-2, 4):
                         xx, yy = (bx + dx, by + dy)
                         if (xx, yy) in barrier and (abs(dx if horiz else dy) <= 1):
-                            g[yy][xx] = 'b'; barrier.discard((xx, yy))
+                            g[yy][xx] = 'b'; barrier.discard((xx, yy)); bridge.append((xx, yy))
         # 미로 구역(세 지역만): 지역 씨앗 쪽(바깥쪽)에
         maze = None
         if maze_wall:
@@ -302,11 +305,30 @@ def main():
             for xx in range(boss[0] - 2, boss[0] + 3):
                 if inside(st, xx, yy) and (xx, yy) not in barrier: g[yy][xx] = 'p'
         def px(x, y): return [(x + 0.5) * TILE, (y + 0.5) * TILE]
+        # 퀘스트 길목(스테이지 1): 끊어진 다리(fac로 고친다), 보스 둘레 절벽(de-로 내려간다)
+        if st == 1:
+            if bridge:
+                for (x, y) in bridge: g[y][x] = 'q'
+                bxs = [c[0] for c in bridge]; bys = [c[1] for c in bridge]
+                quest_gates.append({'id': 's01_q_root', 'kind': 'bridge', 'tiles': [list(c) for c in bridge],
+                                    'spot': px(sum(bxs) // len(bxs), sum(bys) // len(bys))})
+            ring, drop = [], []
+            for y in range(boss[1] - 10, boss[1] + 11):
+                for x in range(boss[0] - 10, boss[0] + 11):
+                    d2 = math.hypot(x - boss[0], y - boss[1])
+                    if 7.0 <= d2 < 9.0 and inside(st, x, y) and g[y][x] in '.pbT':
+                        (drop if g[y][x] in 'pb' else ring).append((x, y))
+            for (x, y) in ring: g[y][x] = '#'
+            for (x, y) in drop: g[y][x] = 'q'
+            dx_ = [c[0] for c in drop] or [boss[0]]; dy_ = [c[1] for c in drop] or [boss[1]]
+            quest_gates.append({'id': 's01_q_magic', 'kind': 'cliff', 'tiles': [list(c) for c in drop],
+                                'spot': px(sum(dx_) // len(dx_), sum(dy_) // len(dy_))})
         spots = {'boss': px(*boss)}
         if st == 1:
             spots['forge'] = px(tx + 3, ty + 3)
             spots['tree'] = px(tx + tw - 4, ty + 3)
             spots['board'] = px(tx + 3, ty + th - 3)
+            spots['notice'] = px(tx + tw - 4, ty + th - 3)
         regions.append({'stage': st, 'rect': [bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1], 'town': [tx, ty, tw, th],
                         'spots': spots, 'start': px(*town_c), 'marks': [px(*m) for m in marks],
                         'maze': [maze[0], maze[1], maze[2], maze[3]] if maze else [], 'hour': HOURS.get(st, 0)})
@@ -325,7 +347,22 @@ def main():
         return seen
     for rg in regions:
         s = tuple(int(v // TILE) for v in rg['start']); b = tuple(int(v // TILE) for v in rg['spots']['boss'])
-        assert b in reach(s, walk), ('보스에 못 간다', rg['stage'])
+        assert b in reach(s, walk | {'q'}), ('보스에 못 간다', rg['stage'])
+        if rg['stage'] == 1:
+            assert b not in reach(s, walk), '퀘스트 길목을 지나지 않고 보스에 간다'
+    # 스테이지 1 다리만 고치면 아직 절벽 아래(보스)로 못 간다
+    if quest_gates:
+        s1 = tuple(int(v // TILE) for v in regions[0]['start']); b1 = tuple(int(v // TILE) for v in regions[0]['spots']['boss'])
+        bridge_set = {tuple(t) for t in quest_gates[0]['tiles']}
+        seen_b = {s1}; q2 = collections.deque([s1])
+        while q2:
+            c = q2.popleft()
+            for dx, dy in N4:
+                n = (c[0] + dx, c[1] + dy)
+                if n not in seen_b and (g[n[1]][n[0]] in walk or n in bridge_set):
+                    seen_b.add(n); q2.append(n)
+        assert b1 not in seen_b, '다리만 고쳐도 보스에 간다(절벽 길목이 새다)'
+
     closed = reach(tuple(int(v // TILE) for v in regions[0]['start']), walk)
     for rg in regions[1:]:
         assert tuple(int(v // TILE) for v in rg['start']) not in closed, ('문 없이 다른 지역으로 간다', rg['stage'])
@@ -338,7 +375,7 @@ def main():
                 c = q.popleft()
                 for dx, dy in N4:
                     n = (c[0] + dx, c[1] + dy)
-                    if 0 <= n[0] < W and 0 <= n[1] < H and n not in seen and (g[n[1]][n[0]] in walk or n in rows_open):
+                    if 0 <= n[0] < W and 0 <= n[1] < H and n not in seen and (g[n[1]][n[0]] in walk or g[n[1]][n[0]] == 'q' or n in rows_open):
                         seen.add(n); q.append(n)
             return seen
         got = reach2(tuple(int(v // TILE) for v in regions[0]['start']))
@@ -347,7 +384,7 @@ def main():
         assert tuple(int(v // TILE) for v in regions[st_k]['start']) in got, ('문을 열어도 못 간다', st_k)
     zones = [''.join(str(zone[y][x] % 10) if not sea[y][x] else '-' for x in range(W)) for y in range(H)]
     out = {'_doc': 'tools/map/build_world.py가 만든다(손으로 고치지 않는다). 글자 뜻은 그 스크립트 머리말. zones = 칸마다 지역(스테이지 % 10, 바다 -).',
-           'tile': TILE, 'w': W, 'h': H, 'rows': [''.join(r) for r in g], 'zones': zones, 'regions': regions, 'gates': gates,
+           'tile': TILE, 'w': W, 'h': H, 'rows': [''.join(r) for r in g], 'zones': zones, 'regions': regions, 'gates': gates, 'quest_gates': quest_gates,
            'walk': '.,pb', 'gate': '='}
     json.dump(out, open(os.path.join(ROOT, 'data/map/world.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('world', W, 'x', H)
