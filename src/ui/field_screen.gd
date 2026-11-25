@@ -420,6 +420,9 @@ func _process(delta: float) -> void:
 	_puzzle_step(dir, before, delta)
 	_cave_step()
 	if _life:
+		var st := GameData.settings
+		_life.on_critters = st.map_critters
+		_life.on_particles = st.map_particles
 		_life.update(delta, _hero, _cam, size, Time.get_ticks_msec() / 1000.0)
 	_follow_pals(dir, delta)
 	var left: int = main.flow.rest_left()
@@ -1215,6 +1218,10 @@ func _draw() -> void:
 	draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), CAVE_WALL if map.is_cave else Color("7fb8e0"))
 	var tnow := Time.get_ticks_msec() / 1000.0
 	if _painter:
+		var st := GameData.settings  # 옵션에서 지도 효과를 하나씩 끈다(04-meta.md 2절)
+		_painter.fx_grass = st.map_grass
+		_painter.fx_sway = st.map_sway
+		_painter.fx_water = st.map_water
 		_painter.draw(self, o, _cam, size, tnow, _gates, UiKit.BG_BLEED)
 		_life.draw_critters(self, o, tnow)
 	else:
@@ -1320,6 +1327,8 @@ func _draw() -> void:
 			_show_toast(t("ui.cave.dark"))
 	if _life:  # 바람에 날리는 것(꽃잎·눈·불씨 …)은 맨 위
 		_life.draw_particles(self, tnow)
+	if GameData.settings.show_fps:  # 프레임 확인용(옵션)
+		draw_string(font, Vector2(12, size.y - 12), "FPS %d" % Engine.get_frames_per_second(), HORIZONTAL_ALIGNMENT_LEFT, -1, 24, UiKit.INK)
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))

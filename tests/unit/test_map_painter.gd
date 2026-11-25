@@ -41,3 +41,40 @@ func test_lava_region_water_is_lava_and_minimap_uses_biome_colors() -> void:
 	var c := m.start(4)
 	var cell := m.cell(c)
 	assert_ne(p.mini_color(cell.x, cell.y, {}), Color.MAGENTA)
+
+
+func test_effects_can_be_turned_off_one_by_one() -> void:
+	# 사용자 의견: 폰에서 프레임이 떨어지면 옵션에서 지도 효과를 하나씩 끈다
+	var m := WorldMap.load_default()
+	var p := MapPainter.new()
+	p._setup(m)
+	p.fx_sway = false
+	assert_eq(p.sway(100, 50, 3.0, 1.0), 0.0, "흔들림을 끄면 가만히 있다")
+	var life := MapLife.new(p)
+	life.on_critters = false
+	life.on_particles = false
+	var hero := m.start(1)
+	life.update(0.1, hero, hero - Vector2(360, 640), Vector2(720, 1280), 1.0)
+	assert_eq(life.critters.size(), 0, "동물을 끄면 안 나온다")
+	assert_eq(life.parts.size(), 0, "날리는 것을 끄면 안 나온다")
+	life.on_particles = true
+	life.update(0.1, hero, hero - Vector2(360, 640), Vector2(720, 1280), 1.1)
+	assert_gt(life.parts.size(), 0, "다시 켜면 나온다")
+
+
+func test_map_effect_settings_are_saved() -> void:
+	var path := "user://test_settings_map_fx.cfg"
+	var s := SettingsStore.new(path)
+	for k in SettingsStore.MAP_KEYS:
+		assert_eq(bool(s.get(k)), k != "show_fps", "처음에는 효과는 켜져 있고 FPS는 꺼져 있다: " + k)
+	s.map_grass = false
+	s.map_water = false
+	s.show_fps = true
+	s.save_settings()
+	var s2 := SettingsStore.new(path)
+	s2.load_settings()
+	assert_false(s2.map_grass)
+	assert_false(s2.map_water)
+	assert_true(s2.map_sway)
+	assert_true(s2.show_fps)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

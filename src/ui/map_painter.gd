@@ -18,6 +18,10 @@ var _deep: PackedByteArray  ## 물 깊이(물가에서 떨어진 칸 수)
 var _wind_speed := 0.9
 var _wind_wave := 0.0025
 var _sway := Vector2(2, 7)
+## 효과 스위치(옵션에서 하나씩 끈다, 04-meta.md 2절). 그리는 쪽이 매번 설정에서 넣는다
+var fx_grass := true  ## 풀·꽃·바닥 장식
+var fx_sway := true  ## 바람 흔들림
+var fx_water := true  ## 물결·거품·끓는 용암
 
 static var _cache := {}
 
@@ -162,6 +166,8 @@ func wind(px: float, py: float, t: float) -> float:
 
 
 func sway(px: float, py: float, t: float, phase: float) -> float:
+	if not fx_sway:
+		return 0.0
 	var w := wind(px, py, t)
 	return sin(t * 2.6 + phase) * lerpf(_sway.x, _sway.y, w) + w * _sway.y * 0.6
 
@@ -345,7 +351,8 @@ func _beach(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float) -
 			for i in range(band.size() - 1, -1, -1):
 				poly.append(band[i])
 			ci.draw_colored_polygon(poly, col)
-			ci.draw_polyline(foam, Color(1, 1, 1, 0.55 if not b.get("lava", false) else 0.25), 3)
+			if fx_water:
+				ci.draw_polyline(foam, Color(1, 1, 1, 0.55 if not b.get("lava", false) else 0.25), 3)
 
 
 ## 바닥 장식: 지역마다(풀, 꽃, 사막 물결, 눈, 용암 금, 양치식물, 수정 반짝임).
@@ -353,6 +360,8 @@ func _deco(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, hs
 	var ts := r.size.x
 	var gc: Color = b["grass_c"]
 	var deco := String(b.get("deco", ""))
+	if not fx_grass:
+		return
 	if gc.a > 0.0:  # 바람에 나부끼는 풀잎
 		var n := 3 if deco == "tallgrass" or deco == "ferns" else 2
 		var hgt := 16.0 if deco == "tallgrass" else 10.0
@@ -422,6 +431,8 @@ func _water(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, h
 	if b.get("lava", false):
 		col = col.lerp(Color("ffc27a"), 0.25 + 0.25 * sin(t * 1.6 + x * 0.4 + y * 0.3))
 		ci.draw_rect(r, col)
+		if not fx_water:
+			return
 		if hsh % 3 == 0:  # 식은 껍질이 떠다닌다
 			var cp := r.position + Vector2(fposmod(hsh % 40 + t * 6.0, ts), 20 + (hsh / 7) % 30)
 			ci.draw_circle(cp, 9, Color("b06a4a"))
@@ -430,6 +441,8 @@ func _water(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, h
 			ci.draw_arc(r.position + Vector2(16 + hsh % 30, 16 + (hsh / 31) % 30), 2 + ph * 7, 0, TAU, 12, Color(1, 0.95, 0.7, 1.0 - ph), 2)
 		return
 	ci.draw_rect(r, col)
+	if not fx_water:
+		return
 	# 찰랑이는 물결(두 줄, 옆으로 흐른다)
 	for k in 2:
 		var hh := _h(x + k * 31, y * 2 + k)
