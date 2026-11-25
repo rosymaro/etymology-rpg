@@ -158,6 +158,16 @@ func magic_offer(state: GameState, roots: Array, rng: RandomNumberGenerator) -> 
 	return out
 
 
+## 전투에서 지면 병원에서 쉰다: now부터 sec초 동안 마을 밖으로 못 나간다(04-meta 9절).
+func start_rest(state: GameState, now: int, sec: int) -> void:
+	state.rest_until = now + sec
+
+
+## 쉬는 시간이 몇 초 남았나(0이면 다 쉬었다).
+func rest_left(state: GameState, now: int) -> int:
+	return maxi(0, state.rest_until - now)
+
+
 func team_size(state: GameState) -> int:
 	return mini(int(p["team_max"]), state.joined.size())
 

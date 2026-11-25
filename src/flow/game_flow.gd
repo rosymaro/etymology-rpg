@@ -341,15 +341,20 @@ func start_battle(party: Array[int], roots: Dictionary, offer: Array[String], wo
 func battle_finished(result: BattleResult, word_ids: Array[String], boss: bool, history: Array[Dictionary] = []) -> void:
 	GameData.set_route({"s": "field"})  # 전투는 끝났다. 다시 켜도 같은 전투를 또 하지 않는다
 	var won := RewardRule.words_won(result, word_ids, GameData.coin_source)
+	if not result.won():  # 졌다: 받을 단어는 받고, 결과를 본 뒤 병원에서 깨어난다(04-meta 9절)
+		_to_hospital()
 	if boss:
 		if result.won():
 			_boss_won()
 			return
-		go_field(TranslationServer.translate("ui.boss.lost"))
 		GameData.save()
+		_after_result()
 		return
 	if won.is_empty():
 		GameData.save()
+		if _lost:
+			_after_result()
+			return
 		go_field(TranslationServer.translate("ui.result.none"))
 	else:
 		_give_words(won, "ui.result.won" if result.won() else "ui.result.partial", history, true)
@@ -399,18 +404,43 @@ func _root_joy(list: Array, done: Callable) -> void:
 		"done": func() -> void: _root_joy(list, done)})
 
 
+var _lost := false  ## 방금 전투에서 졌다: 결과 뒤 병원에서 깨어난다
+
+
+## 진 자리: 병원 문 앞으로 옮기고, 쉬기를 시작한다(진짜 시계).
+func _to_hospital() -> void:
+	_lost = true
+	var s := GameData.state
+	s.pos = WorldMap.load_default().spot(STAGE, "hospital")
+	s.place = "town"
+	GameData.rules.start_rest(s, int(Time.get_unix_time_from_system()), int(GameData.field["rest_sec"]))
+	GameData.save()
+
+
+func rest_left() -> int:
+	return GameData.rules.rest_left(GameData.state, int(Time.get_unix_time_from_system()))
+
+
 func _after_result() -> void:
+	var lost := _lost
+	_lost = false
+	go_field()
+	if lost:
+		main.play_scene("s01_hospital", _maybe_cheok)
+	else:
+		_maybe_cheok()
+
+
+## 단어를 5개 모으면 척척이 합류한다(s01_skit_cheok, 끝에 알림판 퀘스트가 열린다).
+func _maybe_cheok() -> void:
 	var s := GameData.state
 	if not seen("s01_skit_cheok") and s.dex_count() >= JOIN_CHEOK_AFTER:
 		_flag("s01_skit_cheok")
 		if not 4 in s.joined:
 			s.joined.append(4)
 		GameData.save()
-		go_field()
 		main.play_scene("s01_skit_cheok", func() -> void:
 			main.notice(TranslationServer.translate("ui.join").format({"name": UiKit.unit_name(4)})))
-		return
-	go_field()
 
 
 # ----- 마을 -----

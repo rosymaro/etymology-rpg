@@ -893,6 +893,79 @@
    ]
   },
   {
+   "id": "s01_hospital",
+   "title": "story.s01.hospital.title",
+   "place_note": "마을 병원",
+   "cast": [
+    "hero",
+    "ttukttak",
+    "nurse"
+   ],
+   "staging_note": "하얀 침대에서 눈을 뜬다. 창밖으로 마을 광장. 간호사가 시계를 가리키며 3분은 쉬어야 한다고 말한다.",
+   "game_note": "전투에서 지면 나오는 장면(04-meta 9절). 3분 동안 마을 밖으로 못 나가고, 마을 시설은 쓸 수 있다",
+   "borrow": [],
+   "lines": [
+    {
+     "speaker": "nurse",
+     "text": "story.s01.hospital.001"
+    },
+    {
+     "speaker": "nurse",
+     "text": "story.s01.hospital.002"
+    },
+    {
+     "speaker": "ttukttak",
+     "text": "story.s01.hospital.003"
+    }
+   ],
+   "conti": [
+    {
+     "shot": "mid",
+     "bg": "hospital",
+     "actors": [
+      {
+       "id": "hero",
+       "x": 35,
+       "y": 70,
+       "pose": "dizzy"
+      },
+      {
+       "id": "nurse",
+       "x": 65,
+       "y": 44,
+       "pose": ""
+      }
+     ],
+     "fx": {},
+     "say": 1,
+     "note": "침대에서 깨어난 주인공. 간호사가 다가온다."
+    },
+    {
+     "shot": "mid",
+     "bg": "hospital",
+     "actors": [
+      {
+       "id": "ttukttak",
+       "x": 45,
+       "y": 74,
+       "pose": ""
+      },
+      {
+       "id": "nurse",
+       "x": 65,
+       "y": 44,
+       "pose": ""
+      }
+     ],
+     "fx": {
+      "clock": "3:00"
+     },
+     "say": 2,
+     "note": "간호사가 벽시계를 가리킨다. 뚝딱이 침대 옆에서 손을 든다."
+    }
+   ]
+  },
+  {
    "id": "s01_jeon",
    "title": "story.s01.jeon.title",
    "place_note": "마을 입구",

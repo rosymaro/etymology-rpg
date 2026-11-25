@@ -104,3 +104,28 @@ func test_kinds_are_mixed() -> void:
 	for i in 200:
 		seen[FieldMob.pick_kind(kinds, rng)] = true
 	assert_eq(seen.size(), 3)
+
+
+func test_rest_after_losing_lasts_three_minutes_of_real_time() -> void:
+	var s := GameState.new()
+	var sec := int(JsonFile.read("res://data/balance/field.json")["rest_sec"])
+	assert_eq(sec, 180)
+	GameData.rules.start_rest(s, 1000, sec)
+	assert_eq(GameData.rules.rest_left(s, 1000), 180)
+	assert_eq(GameData.rules.rest_left(s, 1100), 80, "앱을 꺼 두어도 진짜 시계로 흐른다")
+	assert_eq(GameData.rules.rest_left(s, 2000), 0)
+	var back := GameState.from_dict(s.to_dict())
+	assert_eq(back.rest_until, 1180, "저장된다")
+
+
+func test_big_town_has_facilities_and_a_hospital() -> void:
+	var m := WorldMap.load_default()
+	var town: Array = m.region(1)["town"]
+	assert_eq([int(town[2]), int(town[3])], [30, 20], "마을은 30 × 20")
+	var s := m.start(1)
+	for id in ["forge", "board", "hospital", "tree", "notice"]:
+		var p := m.spot(1, id)
+		assert_true(m.is_town(p), "%s는 마을 안" % id)
+		assert_gt(m.path_len(s, p), -1, "%s까지 걸어간다" % id)
+	var ids: Array = m.region(1)["buildings"].map(func(b: Dictionary) -> String: return b["id"])
+	assert_true("hospital" in ids)

@@ -181,3 +181,39 @@ func test_stage1_loop() -> void:
 	await _finish_overlays()
 	assert_true(main.current() is FieldScreen)
 	assert_true(GameData.save_store.exists(), "자동 저장")
+
+
+func test_losing_wakes_up_in_hospital_and_rests_in_town() -> void:
+	GameData.new_game("테스트")
+	GameData.state.flags["s01_tut_battle"] = true
+	var lost := BattleResult.new()
+	lost.enemy_count = 2
+	main.flow.battle_finished(lost, [] as Array[String], false)
+	await wait_physics_frames(2)
+	var scene_seen := false
+	for c in main._overlay.get_children():
+		if c is DialogueOverlay:
+			scene_seen = true
+	assert_true(scene_seen, "병원에서 깨어나는 장면")
+	await _finish_overlays()
+	var f := main.current() as FieldScreen
+	assert_not_null(f)
+	assert_lt(f._hero.distance_to(f.map.spot(1, "hospital")), 5.0, "병원 문 앞")
+	assert_gt(main.flow.rest_left(), 170, "3분 쉬기")
+	# 마을 밖으로 걸어 나가려 해도 막힌다
+	var t: Array = f.map.region(1)["town"]
+	var gate := Vector2i(-1, -1)  # 아래 울타리의 열린 문(바깥이 걸을 수 있는 곳)
+	for x in range(int(t[0]), int(t[0]) + int(t[2])):
+		var c := Vector2i(x, int(t[1]) + int(t[3]) - 1)
+		if f.map.ch(c) == "s" and f.map.walkable(c + Vector2i(0, 1)) and f.map.walkable(c - Vector2i(0, 1)):
+			gate = c
+			break
+	assert_ne(gate, Vector2i(-1, -1))
+	f._hero = (Vector2(gate - Vector2i(0, 1)) + Vector2(0.5, 0.5)) * f.map.tile
+	for k in 60:
+		f._stick_on = true
+		f._stick_vec = Vector2(0, 1)
+		await wait_physics_frames(1)
+	f._stick_on = false
+	assert_true(f.map.is_town(f._hero), "쉬는 동안 마을 밖으로 못 나간다")
+	GameData.state.rest_until = 0

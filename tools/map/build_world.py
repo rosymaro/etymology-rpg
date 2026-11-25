@@ -8,7 +8,8 @@
 - 지역 안은 젤다의 전설 꿈꾸는 섬의 들판처럼: 호수·언덕·숲이 길을 가르고, 강은 다리 하나로만 건넌다.
   미로는 세 지역에만(2 사냥꾼 숲, 6 왕성 정원, 9 광산 갱도). 보스는 들어온 곳에서 걸어서 가장 먼 쪽.
 - 스테이지 1 퀘스트 길목(q): 강의 다리는 끊어져 있어 fac 퀘스트로 고치고, 보스 둘레 절벽은 de- 퀘스트로 내려간다.
-글자: . 풀  , 마을 바닥  p 길·고갯길  b 다리  = 스테이지 문  q 퀘스트 길목  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
+- 스테이지 1 마을은 30 × 20(04-meta 9절): 울타리(F)와 문, 가운데 광장과 분수(o), 돌길(s), 건물(h, 지붕은 게임이 그린다), 밭(f).
+글자: . 풀  , 마을 바닥  s 마을 돌길  F 울타리  h 건물 벽  o 분수·우물  f 밭  p 길·고갯길  b 다리  = 스테이지 문  q 퀘스트 길목  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
 """
 import json, os, random, heapq, collections, math
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -38,7 +39,69 @@ def noise(rnd, w, h, step):
 
 N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
-def main():
+
+def px(x, y):
+    return [float(x * TILE + TILE // 2), float(y * TILE + TILE // 2)]
+
+
+# 스테이지 1 마을 배치(마을 왼쪽 위 기준 칸). 건물: (id, x, y, w, h). 문은 아래 가운데, 살펴보기 자리는 문 바로 아래.
+TOWN_BUILDINGS = [('forge', 3, 2, 6, 4), ('board', 21, 2, 6, 4), ('hospital', 3, 13, 6, 4),
+                  ('house1', 10, 14, 3, 3), ('house2', 18, 14, 3, 3), ('house3', 10, 2, 3, 3), ('house4', 22, 13, 4, 3)]
+
+
+def build_town(g, tx, ty, tw, th, spots):
+    """마을을 꾸민다: 바닥을 고르고, 울타리(문은 바깥 길과 이어진 곳·네 변 가운데), 돌길, 광장 분수, 건물, 우물, 밭, 말뿌리 나무."""
+    for y in range(ty, ty + th):
+        for x in range(tx, tx + tw):
+            g[y][x] = ','
+    mx, my = tx + tw // 2, ty + th // 2
+    walk_out = set('.pb')
+    for y in range(ty, ty + th):
+        for x in range(tx, tx + tw):
+            if not (x in (tx, tx + tw - 1) or y in (ty, ty + th - 1)):
+                continue
+            ox = x - 1 if x == tx else (x + 1 if x == tx + tw - 1 else x)
+            oy = y - 1 if y == ty else (y + 1 if y == ty + th - 1 else y)
+            outside = g[oy][ox]
+            mid = abs(x - mx) <= 1 or abs(y - my) <= 1
+            road = outside in 'pb'
+            g[y][x] = 's' if (road or (mid and outside in walk_out)) else 'F'
+    for x in range(tx + 1, tx + tw - 1):  # 가로 돌길
+        g[my][x] = 's'
+    for y in range(ty + 1, ty + th - 1):  # 세로 돌길
+        g[y][mx] = 's'
+    for y in range(my - 3, my + 4):  # 광장
+        for x in range(mx - 4, mx + 5):
+            if abs(x - mx) + abs(y - my) <= 5:
+                g[y][x] = 's'
+    for (x, y) in ((mx, my), (mx - 1, my), (mx, my - 1), (mx - 1, my - 1)):
+        g[y][x] = 'o'  # 분수
+    out = []
+    for (bid, bx, by, bw, bh) in TOWN_BUILDINGS:
+        for y in range(ty + by, ty + by + bh):
+            for x in range(tx + bx, tx + bx + bw):
+                g[y][x] = 'h'
+        door = (tx + bx + bw // 2, ty + by + bh)
+        g[door[1]][door[0]] = 's'
+        for y in range(door[1], my + 1) if door[1] <= my else range(my, door[1] + 1):  # 문 앞에서 큰길까지 돌길
+            if g[y][door[0]] == ',':
+                g[y][door[0]] = 's'
+        out.append({'id': bid, 'rect': [tx + bx, ty + by, bw, bh], 'door': px(*door)})
+        if not bid.startswith('house'):
+            spots[bid] = px(door[0], door[1] + 1)
+    g[ty + 9][tx + 25] = 'o'  # 우물
+    for y in range(ty + 15, ty + 18):  # 밭
+        for x in range(tx + 26, tx + 28):
+            g[y][x] = 'f'
+    # 말뿌리 나무: 북쪽 울타리 안 언덕(2 × 2, 지나갈 수 없음)
+    for (x, y) in ((tx + 16, ty + 2), (tx + 17, ty + 2), (tx + 16, ty + 3), (tx + 17, ty + 3)):
+        g[y][x] = 'h'
+    out.append({'id': 'tree', 'rect': [tx + 16, ty + 2, 2, 2], 'door': px(tx + 16, ty + 4)})
+    spots['tree'] = px(tx + 17, ty + 5)
+    spots['notice'] = px(mx + 3, my - 3)
+    return out
+
+def main(river_seed=1000):
     rnd = random.Random(31)
     cx, cy = W // 2, H // 2
     seeds = {1: (cx, cy)}
@@ -162,8 +225,8 @@ def main():
         xs = [c[0] for c in cells]; ys = [c[1] for c in cells]
         bx0, by0, bx1, by1 = min(xs), min(ys), max(xs), max(ys)
         ex, ey = entries[st]
-        # 마을(들어오는 자리 가까이, 지역 안에 다 들어가는 14 × 10)
-        tw, th = 14, 10
+        # 마을(들어오는 자리 가까이, 지역 안에 다 들어가는 14 × 10, 스테이지 1은 30 × 20)
+        tw, th = (30, 20) if st == 1 else (14, 10)
         best = None
         for (x, y) in cells[::3]:
             if all(inside(st, x + dx, y + dy) for dx in (0, tw - 1) for dy in (0, th - 1)) and \
@@ -180,15 +243,25 @@ def main():
         # 강: 지역을 가로지르고 다리 하나
         if river:
             horiz = (bx1 - bx0) < (by1 - by0)
-            line = []
-            if horiz:
-                y = r.randint(by0 + (by1 - by0) // 3, by1 - (by1 - by0) // 3)
-                for x in range(bx0, bx1 + 1):
-                    y = max(by0, min(by1, y + r.choice((-1, 0, 0, 1)))); line.append((x, y))
-            else:
-                x = r.randint(bx0 + (bx1 - bx0) // 3, bx1 - (bx1 - bx0) // 3)
-                for y in range(by0, by1 + 1):
-                    x = max(bx0, min(bx1, x + r.choice((-1, 0, 0, 1)))); line.append((x, y))
+            def river_line(rr):
+                line = []
+                if horiz:
+                    y = rr.randint(by0 + (by1 - by0) // 3, by1 - (by1 - by0) // 3)
+                    for x in range(bx0, bx1 + 1):
+                        y = max(by0, min(by1, y + rr.choice((-1, 0, 0, 1)))); line.append((x, y))
+                else:
+                    x = rr.randint(bx0 + (bx1 - bx0) // 3, bx1 - (bx1 - bx0) // 3)
+                    for y in range(by0, by1 + 1):
+                        x = max(bx0, min(bx1, x + rr.choice((-1, 0, 0, 1)))); line.append((x, y))
+                return line
+            def hits_town(line):  # 강이 마을을 지나가면 마을이 다리가 되어 버린다
+                return any(tx - 4 <= x < tx + tw + 4 and ty - 4 <= y < ty + th + 4 for (x, y) in line)
+            line = river_line(r)
+            rr2 = random.Random(river_seed + st)  # 다시 뽑을 때는 따로(다른 지역 지도가 바뀌지 않게)
+            for _ in range(60):
+                if not hits_town(line):
+                    break
+                line = river_line(rr2)
             on = [(x, y) for (x, y) in line if inside(st, x, y) and g[y][x] != ',']
             for (x, y) in on:
                 for k in range(3):
@@ -324,18 +397,16 @@ def main():
             quest_gates.append({'id': 's01_q_magic', 'kind': 'cliff', 'tiles': [list(c) for c in drop],
                                 'spot': px(sum(dx_) // len(dx_), sum(dy_) // len(dy_))})
         spots = {'boss': px(*boss)}
+        buildings = []
         if st == 1:
-            spots['forge'] = px(tx + 3, ty + 3)
-            spots['tree'] = px(tx + tw - 4, ty + 3)
-            spots['board'] = px(tx + 3, ty + th - 3)
-            spots['notice'] = px(tx + tw - 4, ty + th - 3)
-        regions.append({'stage': st, 'rect': [bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1], 'town': [tx, ty, tw, th],
-                        'spots': spots, 'start': px(*town_c), 'marks': [px(*m) for m in marks],
+            buildings = build_town(g, tx, ty, tw, th, spots)
+        regions.append({'stage': st, 'rect': [bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1], 'town': [tx, ty, tw, th], 'buildings': buildings,
+                        'spots': spots, 'start': px(town_c[0], town_c[1] + 2) if st == 1 else px(*town_c), 'marks': [px(*m) for m in marks],
                         'maze': [maze[0], maze[1], maze[2], maze[3]] if maze else [], 'hour': HOURS.get(st, 0)})
     for gt in gates:
         for x, y in gt['tiles']: g[y][x] = '='
     # 지나갈 수 있는지 확인(문 없이 지역마다 마을 → 보스, 문을 다 열면 가운데 → 모든 지역)
-    walk = set('.,pb')
+    walk = set('.,pbs')
     def reach(a, allow):
         seen = {a}; q = collections.deque([a])
         while q:
@@ -347,6 +418,9 @@ def main():
         return seen
     for rg in regions:
         s = tuple(int(v // TILE) for v in rg['start']); b = tuple(int(v // TILE) for v in rg['spots']['boss'])
+        for sid, sp in rg['spots'].items():  # 마을 시설 살펴보기 자리에 걸어갈 수 있다
+            if sid != 'boss':
+                assert tuple(int(v // TILE) for v in sp) in reach(s, walk), ('시설에 못 간다', sid)
         assert b in reach(s, walk | {'q'}), ('보스에 못 간다', rg['stage'])
         if rg['stage'] == 1:
             assert b not in reach(s, walk), '퀘스트 길목을 지나지 않고 보스에 간다'
@@ -362,6 +436,26 @@ def main():
                 if n not in seen_b and (g[n[1]][n[0]] in walk or n in bridge_set):
                     seen_b.add(n); q2.append(n)
         assert b1 not in seen_b, '다리만 고쳐도 보스에 간다(절벽 길목이 새다)'
+        # 절벽만 열어서는 못 간다(강은 무너진 다리로만 건넌다)
+        cliff_set = {tuple(t) for t in quest_gates[1]['tiles']}
+        seen_c = {s1}; q3 = collections.deque([s1])
+        while q3:
+            c = q3.popleft()
+            for dx, dy in N4:
+                n = (c[0] + dx, c[1] + dy)
+                if n not in seen_c and (g[n[1]][n[0]] in walk or n in cliff_set):
+                    seen_c.add(n); q3.append(n)
+        assert b1 not in seen_c, '다리를 고치지 않아도 보스에 간다(강이 마을에 끊겼다)'
+        # 이동 경로는 곧은 거리보다 1.3배 넘게 길다(강·산줄기를 돌아간다)
+        allq = bridge_set | cliff_set
+        dist = {s1: 0}; q4 = collections.deque([s1])
+        while q4:
+            c = q4.popleft()
+            for dx, dy in N4:
+                n = (c[0] + dx, c[1] + dy)
+                if n not in dist and (g[n[1]][n[0]] in walk or n in allq):
+                    dist[n] = dist[c] + 1; q4.append(n)
+        assert dist.get(b1, 0) > 1.3 * (abs(b1[0] - s1[0]) + abs(b1[1] - s1[1])), '보스까지 길이 너무 곧다'
 
     closed = reach(tuple(int(v // TILE) for v in regions[0]['start']), walk)
     for rg in regions[1:]:
@@ -385,9 +479,17 @@ def main():
     zones = [''.join(str(zone[y][x] % 10) if not sea[y][x] else '-' for x in range(W)) for y in range(H)]
     out = {'_doc': 'tools/map/build_world.py가 만든다(손으로 고치지 않는다). 글자 뜻은 그 스크립트 머리말. zones = 칸마다 지역(스테이지 % 10, 바다 -).',
            'tile': TILE, 'w': W, 'h': H, 'rows': [''.join(r) for r in g], 'zones': zones, 'regions': regions, 'gates': gates, 'quest_gates': quest_gates,
-           'walk': '.,pb', 'gate': '='}
+           'walk': '.,pbs', 'gate': '='}
     json.dump(out, open(os.path.join(ROOT, 'data/map/world.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('world', W, 'x', H)
 
 if __name__ == '__main__':
-    main()
+    # 강이 마을을 지나지 않도록 강을 다시 뽑는 씨앗: 모든 확인을 통과하는 첫 씨앗을 쓴다
+    for k in range(60):
+        try:
+            main(1000 + k * 17)
+            break
+        except AssertionError as e:
+            print('다시', k, e)
+    else:
+        raise SystemExit('지도를 만들지 못했다')
