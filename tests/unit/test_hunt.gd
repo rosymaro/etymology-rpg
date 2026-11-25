@@ -103,7 +103,8 @@ func test_eater_comes_after_time_and_cannot_be_killed() -> void:
 
 func test_mobs_never_die_in_one_hit_and_grow_with_level() -> void:
 	var run := HuntRun.new({}, cfg)
-	assert_eq(run.mob_hp("flee"), 2, "도망 몹(기본 1)도 망치 한 방(1)에는 안 죽는다")
+	assert_eq(run.mob_hp("flee"), int(cfg["mob_hp"]["flee"]), "레벨 0: 기본 체력")
+	assert_gt(run.mob_hp("flee"), run.best_dmg(), "망치 한 방에는 안 죽는다")
 	assert_eq(run.mob_count(18), 18)
 	run.d["level"] = 20
 	run.d["weapons"] = {"u01": 4, "u10": 4, "u12": 4}

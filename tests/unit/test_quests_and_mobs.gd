@@ -103,7 +103,26 @@ func test_kinds_are_mixed() -> void:
 	var seen := {}
 	for i in 200:
 		seen[FieldMob.pick_kind(kinds, rng)] = true
-	assert_eq(seen.size(), 3)
+	assert_eq(seen.size(), 4, "배회·쫓기·도망·돌진")
+
+
+func test_rusher_winds_up_then_dashes_fast_in_a_straight_line() -> void:
+	var m := FieldMob.new()
+	m.kind = "rush"
+	var k: Dictionary = kinds["rush"]
+	var v := m.steer(Vector2(300, 0), 0.016, kinds, rng)
+	assert_eq(m.phase, "wind", "가까이 오면 먼저 멈춰 떤다")
+	assert_eq(v, Vector2.ZERO)
+	for i in int(float(k["windup"]) / 0.05) + 2:
+		v = m.steer(Vector2(300, 0), 0.05, kinds, rng)
+	assert_eq(m.phase, "dash")
+	assert_gt(v.x, float(kinds["chase"]["speed"]) * 2.0, "쫓는 몹보다 훨씬 빠르다")
+	assert_gt(float(k["speed"]), float(JsonFile.read("res://data/balance/field.json")["hero_speed"]), "주인공보다도 빠르다(옆으로 비켜야 한다)")
+	v = m.steer(Vector2(0, 300), 0.05, kinds, rng)
+	assert_gt(v.x, 0.0, "돌진 중에는 방향을 바꾸지 않는다")
+	for i in int(float(k["dash"]) / 0.05) + 2:
+		m.steer(Vector2(0, 300), 0.05, kinds, rng)
+	assert_eq(m.phase, "rest", "돌진 뒤에는 쉰다")
 
 
 func test_rest_after_losing_lasts_three_minutes_of_real_time() -> void:

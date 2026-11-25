@@ -2,6 +2,7 @@ class_name FieldMob
 extends RefCounted
 ## 필드 몹의 움직임(04-meta.md 7절). 노드·화면을 모른다. 수치는 data/balance/field.json의 kinds.
 ## wander: 이리저리 배회. chase: 주인공이 sight 안에 오면 쫓아온다(give_up보다 멀어지면 그만). flee: 가까이 오면 반대로 도망간다.
+## rush: 가까이 오면 잠깐 멈춰 떨다가(windup, 화면에 !!) 그때 주인공 자리로 아주 빠르게 돌진하고(dash), 잠깐 쉰다(rest).
 
 var kind := "wander"
 var pos := Vector2.ZERO
@@ -15,6 +16,9 @@ var slot := ""  ## 몸 모양을 정하는 착용 부위(첫 단어: weapon head
 var hp := 1  ## 필드 사냥 체력(07-fun 1절)
 var max_hp := 1
 var flash := 0.0  ## 맞고 깜빡이는 남은 시간
+var phase := ""  ## rush: "" | wind(떨기) | dash(돌진) | rest(쉬기)
+var phase_t := 0.0
+var _dash_dir := Vector2.ZERO
 
 
 ## 필드 사냥 무기에 맞음. 쓰러지면 true. 뿌리먹이(eater)는 체력이 1 아래로 내려가지 않는다(공격을 뚫고 온다).
@@ -73,6 +77,38 @@ func steer(hero: Vector2, delta: float, kinds: Dictionary, rng: RandomNumberGene
 			if alert and dist > 1.0:
 				vel = -d / dist * float(k["speed"])
 				return vel
+		"rush":
+			return _rush(delta, d, dist, k, kinds, rng)
+	return _wander(delta, k, kinds, rng)
+
+
+func _rush(delta: float, d: Vector2, dist: float, k: Dictionary, kinds: Dictionary, rng: RandomNumberGenerator) -> Vector2:
+	phase_t -= delta
+	match phase:
+		"wind":  # 멈춰 떨며 겨눈다
+			vel = Vector2.ZERO
+			if phase_t <= 0.0:
+				phase = "dash"
+				phase_t = float(k["dash"])
+				_dash_dir = d.normalized() if dist > 1.0 else Vector2.RIGHT
+				vel = _dash_dir * float(k["speed"])
+			return vel
+		"dash":  # 겨눈 쪽으로 곧장(도중에 방향을 바꾸지 않는다: 옆으로 비키면 피한다)
+			vel = _dash_dir * float(k["speed"])
+			if phase_t <= 0.0:
+				phase = "rest"
+				phase_t = float(k["rest"])
+			return vel
+		"rest":
+			if phase_t <= 0.0:
+				phase = ""
+			return _wander(delta, k, kinds, rng)
+	alert = dist < float(k["sight"])
+	if alert:
+		phase = "wind"
+		phase_t = float(k["windup"])
+		vel = Vector2.ZERO
+		return vel
 	return _wander(delta, k, kinds, rng)
 
 

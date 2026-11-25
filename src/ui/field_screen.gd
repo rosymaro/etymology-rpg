@@ -1438,6 +1438,8 @@ func _draw_mob(e: FieldMob, p: Vector2) -> void:
 		return
 	var bob := sin(Time.get_ticks_msec() / 160.0 + p.x * 0.01) * 3.0
 	p += Vector2(0, bob)
+	if e.kind == "rush" and e.phase == "wind":  # 돌진 전에 부르르 떤다
+		p.x += sin(Time.get_ticks_msec() / 25.0) * 4.0
 	if not Art.draw(self, "enemy", "attr_%02d" % e.attr, p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
 		_draw_attr_body(e, p)
 	if e.flash > 0.0:
@@ -1454,6 +1456,14 @@ func _draw_mob(e: FieldMob, p: Vector2) -> void:
 			draw_string(font, p + Vector2(-10, -46), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 34, UiKit.BAD)
 		elif e.kind == "flee":
 			draw_circle(p + Vector2(ENEMY_R - 2, -ENEMY_R + 4), 6, Color("8cc6e8"))
+	if e.kind == "rush":  # 돌진: 떨 때 !!, 달릴 때 뒤로 줄
+		if e.phase == "wind":
+			draw_string(font, p + Vector2(-20, -46), "!!", HORIZONTAL_ALIGNMENT_CENTER, 40, 34, UiKit.BAD)
+		elif e.phase == "dash" and e.vel.length() > 1.0:
+			var bk := -e.vel.normalized()
+			for k in 3:
+				var off := bk.orthogonal() * (k - 1) * 12.0
+				draw_line(p + bk * (ENEMY_R + 4) + off, p + bk * (ENEMY_R + 34) + off, Color(1, 1, 1, 0.8), 4)
 
 
 ## 보이는 타일만 그린다. 막는 타일은 모양을 조금씩 넣는다(산 ▲, 물결, 나무, 절벽 줄, 성벽 벽돌, 다리 널, 문 창살).
