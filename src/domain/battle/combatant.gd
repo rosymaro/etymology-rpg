@@ -32,6 +32,11 @@ var reduce := 0  ## 이번 격돌 받는 피해 감소
 var first_strike := false
 var double_first := false
 var sealed := false
+var reflect := 0.0  ## 이번 격돌 받는 피해 중 되돌리는 몫(ob-)
+var share := 0.0  ## 이번 격돌 받는 피해 중 기다리는 동료가 나눠 받는 몫(com-)
+var share_taken := 1.0  ## 동료가 맡은 몫 중 실제로 받는 비율
+var wall := 0  ## 벽(inter-): 남은 wall_rounds 턴 동안 받는 피해 감소
+var wall_rounds := 0
 var entered := false
 
 
@@ -76,3 +81,8 @@ func start_clash() -> void:
 	reduce = 0
 	first_strike = false
 	double_first = false
+	reflect = 0.0
+	share = 0.0
+	share_taken = 1.0
+	wall = 0
+	wall_rounds = 0

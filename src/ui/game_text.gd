@@ -25,7 +25,9 @@ static func magic_desc(id: String, power: int) -> String:
 	var vals := {}
 	for k in def.get("params", {}):
 		vals[k] = Formula.int_value(def["params"][k], {"P": power})
-	return tr_("sys.magic.%s.desc" % id).format(vals)
+	var phase := String(def.get("phase", ""))  # 언제 강한지(초반·후반·전체)
+	var tag := (" " + tr_("sys.magic.phase." + phase)) if phase != "" else ""
+	return tr_("sys.magic.%s.desc" % id).format(vals) + tag
 
 
 ## 필드 마법 이름(data/field_magic.json의 접두사 + 필드 효과 뜻).

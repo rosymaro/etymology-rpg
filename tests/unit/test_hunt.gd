@@ -103,14 +103,16 @@ func test_eater_comes_after_time_and_cannot_be_killed() -> void:
 
 func test_mobs_never_die_in_one_hit_and_grow_with_level() -> void:
 	var run := HuntRun.new({}, cfg)
-	assert_eq(run.mob_hp("flee"), int(cfg["mob_hp"]["flee"]), "레벨 0: 기본 체력")
+	assert_eq(run.mob_hp("flee"), maxi(2, roundi(int(cfg["mob_hp"]["flee"]) * float(cfg["mob_hp_party"][0]))), "레벨 0, 혼자: 기본 체력 × 혼자 배율")
 	assert_gt(run.mob_hp("flee"), run.best_dmg(), "망치 한 방에는 안 죽는다")
 	assert_eq(run.mob_count(18), 18)
 	run.d["level"] = 20
 	run.d["weapons"] = {"u01": 4, "u10": 4, "u12": 4}
 	for kind in ["wander", "chase", "flee"]:
 		assert_gt(run.mob_hp(kind), run.best_dmg(), "레벨 20, 다 강화해도 한 방에 안 죽는다: " + kind)
-	assert_gt(run.mob_hp("wander"), int(cfg["mob_hp"]["wander"]), "레벨이 오르면 단단해진다")
+	var lv0 := HuntRun.new({}, cfg)
+	lv0.set_units([1, 10, 12])
+	assert_gt(run.mob_hp("wander"), lv0.mob_hp("wander"), "레벨이 오르면 단단해진다")
 	assert_eq(run.mob_count(18), 38, "레벨이 오르면 몹이 많아진다")
 	run.d["level"] = 40
 	assert_eq(run.mob_count(18), int(cfg["spawn_max"]), "최대까지만")
@@ -129,3 +131,11 @@ func test_level_and_coin_caps() -> void:
 	assert_false(run.pick_coins(3), "이미 가득")
 	for k in 50:
 		assert_eq(int(run.drops("wander", [], rng)["coins"]), 0, "가득 차면 코인이 떨어지지 않는다")
+
+
+func test_more_companions_make_mobs_tougher() -> void:
+	var one := HuntRun.new({}, cfg)
+	one.set_units([1])
+	var three := HuntRun.new({}, cfg)
+	three.set_units([1, 5, 10])
+	assert_gt(three.mob_hp("chase"), one.mob_hp("chase"), "동행이 많으면 몹이 단단하다(막는 비율을 80%쯤으로)")

@@ -1,15 +1,7 @@
 {
-  "_doc": "전투 마법. 레벨 테스트하며 자주 고친다. 필드 마법(data/field_magic.json)과 따로 관리한다. P = 마법 위력(power 식). 수치는 docs/design/01-rpg-base.md '마법 수치 1차'에서 옮긴 임시값",
-  "power": {
-    "base": 2,
-    "per_avg_level_div": 6
-  },
-  "cast_order": [
-    "order",
-    "effect",
-    "defense",
-    "attack"
-  ],
+  "_doc": "전투 마법. [사용자 의견] 고르는 대상도, 전체에 거는 것도 없다. 공격 마법은 지금 싸우는 적, 방어·효과·순서 마법은 지금 싸우는 아군(pro-는 가장 뒤의 적을 꺼낸다). 턴마다 쓰니 약하게. 피해 = damage(P 식) + 상대 지금 체력의 hp_pct%(올림, 후반에도 듣게). P = 마법 위력(power 식)",
+  "power": { "base": 2, "per_avg_level_div": 6 },
+  "cast_order": ["order", "effect", "defense", "attack"],
   "enemy_first": true,
   "magics": [
     {
@@ -17,182 +9,137 @@
       "prefix": "ex-",
       "kind": "order",
       "class": "SwapToBack",
-      "params": {
-        "hp_per_passed": "ceil(P/2)"
-      },
-      "unlock": {
-        "stage": 2
-      }
+      "params": { "hp_per_passed": "ceil(P/3)" },
+      "unlock": { "stage": 2 },
+      "phase": "all"
     },
     {
       "id": "pro",
       "prefix": "pro-",
       "kind": "order",
-      "class": "MoveToFront",
-      "params": {
-        "atk_per_passed": "ceil(P/2)"
-      },
-      "unlock": {
-        "stage": 5
-      }
+      "class": "PullFromBack",
+      "params": { "damage": "ceil(P/2)", "hp_pct": 10, "atk_per_passed": 1, "chance_pct": 60 },
+      "unlock": { "stage": 5 },
+      "phase": "late"
     },
     {
       "id": "in",
       "prefix": "in-",
       "kind": "effect",
       "class": "CoinBias",
-      "params": {
-        "heads_chance": 0.75
-      },
-      "unlock": {
-        "stage": 2
-      }
+      "params": { "heads_chance": 0.65 },
+      "unlock": { "stage": 2 },
+      "phase": "late"
     },
     {
       "id": "dis",
       "prefix": "dis-",
       "kind": "effect",
-      "class": "ZeroBaseAttack",
-      "params": {},
-      "unlock": {
-        "stage": 5
-      }
+      "class": "HalveAttack",
+      "params": { "cut_pct": 15 },
+      "unlock": { "stage": 5 },
+      "phase": "all"
     },
     {
       "id": "de",
       "prefix": "de-",
       "kind": "attack",
       "class": "StrikeFirst",
-      "params": {
-        "damage": "2*P",
-        "atk_down": 1
-      },
-      "unlock": {
-        "stage": 2
-      }
+      "params": { "damage": "ceil(P/2)", "hp_pct": 10, "atk_down": 1 },
+      "unlock": { "stage": 2 },
+      "phase": "early"
     },
     {
       "id": "un",
       "prefix": "un-",
       "kind": "attack",
-      "class": "StrikeAll",
-      "params": {
-        "damage": "ceil(P/2)",
-        "cancel_first_skill": true
-      },
-      "unlock": {
-        "stage": 4
-      }
+      "class": "StrikeUndo",
+      "params": { "damage": "ceil(P/3)", "hp_pct": 10, "undo_pct": 50 },
+      "unlock": { "stage": 4 },
+      "phase": "late"
     },
     {
       "id": "in_neg",
       "prefix": "in-",
       "kind": "attack",
       "class": "StrikeSilence",
-      "params": {
-        "damage": "P"
-      },
-      "unlock": {
-        "stage": 4
-      }
+      "params": { "damage": "ceil(P/3)", "hp_pct": 10 },
+      "unlock": { "stage": 4 },
+      "phase": "late"
     },
     {
       "id": "ob",
       "prefix": "ob-",
       "kind": "attack",
       "class": "StrikeReflect",
-      "params": {
-        "damage": "P",
-        "reflect": 0.5
-      },
-      "unlock": {
-        "stage": 3
-      }
+      "params": { "damage": "ceil(P/3)", "hp_pct": 10, "reflect_pct": 15 },
+      "unlock": { "stage": 3 },
+      "phase": "all"
     },
     {
       "id": "com",
       "prefix": "com-",
       "kind": "defense",
       "class": "ShareDamage",
-      "params": {
-        "share": 0.333,
-        "taken_by_others": 0.5
-      },
+      "params": { "share_pct": 60, "taken_pct": 40 },
       "quiz": "combo",
-      "unlock": {
-        "stage": 3
-      }
+      "unlock": { "stage": 3 },
+      "phase": "all"
     },
     {
       "id": "re",
       "prefix": "re-",
       "kind": "defense",
-      "class": "HealOnWin",
-      "params": {
-        "heal": "P"
-      },
+      "class": "HealNow",
+      "params": { "heal": "P", "hp_pct": 15 },
       "quiz": "combo",
-      "unlock": {
-        "stage": 3
-      }
+      "unlock": { "stage": 3 },
+      "phase": "all"
     },
     {
       "id": "ad",
       "prefix": "ad-",
       "kind": "defense",
       "class": "Shield",
-      "params": {
-        "shield": "P"
-      },
+      "params": { "shield": "2" },
       "quiz": "combo",
-      "unlock": {
-        "stage": 3
-      }
+      "unlock": { "stage": 3 },
+      "phase": "early"
     },
     {
       "id": "sub",
       "prefix": "sub-",
       "kind": "defense",
       "class": "PoolToFirst",
-      "params": {
-        "give_ratio": 0.5
-      },
+      "params": { "give_ratio": 0.3, "boost_pct": 150 },
       "quiz": "combo",
-      "unlock": {
-        "stage": 2
-      }
+      "unlock": { "stage": 2 },
+      "phase": "all"
     },
     {
       "id": "prae",
       "prefix": "prae-",
       "kind": "defense",
-      "class": "StrikeFirstAll",
-      "params": {},
+      "class": "FirstStrikeNow",
+      "params": {  },
       "quiz": "combo",
-      "unlock": {
-        "stage": 4
-      }
+      "unlock": { "stage": 4 },
+      "phase": "all"
     },
     {
       "id": "inter",
       "prefix": "inter-",
       "kind": "defense",
       "class": "DamageWall",
-      "params": {
-        "clashes": 2,
-        "reduce": "ceil(P/2)"
-      },
+      "params": { "reduce": "ceil(P/2)", "rounds": "3" },
       "quiz": "combo",
-      "unlock": {
-        "stage": 5
-      }
+      "unlock": { "stage": 5 },
+      "phase": "early"
     }
   ],
-  "prefix_resist": {
-    "damage_ratio": 0.5,
-    "_doc": "그 접두사가 든 적 단어는 공격 마법 피해를 덜 받는다"
-  },
+  "prefix_resist": { "damage_ratio": 0.5, "_doc": "그 접두사가 든 적 단어는 공격 마법 피해를 덜 받는다" },
   "_unlock_doc": "전투 마법을 얻는 때: unlock.stage = 이 스테이지가 열리면(그 앞 보스를 이기면) 얻는다. 스테이지 1에는 전투 마법이 없다. 스테이지 2에 종류마다 하나씩(de 공격, sub 방어, in 효과, ex 순서). 필드 마법(data/field_magic.json)과 따로다",
   "offer_count": 3,
-  "_offer_doc": "한 전투에 가진 마법 중 무작위로 이만큼 나온다. 턴마다 하나씩 쓸 수 있고, 쓴 마법은 그 전투에서 다시 못 쓴다"
+  "_offer_doc": "한 전투에 가진 마법 중 무작위로 이만큼 나온다. 턴마다 하나씩 쓸 수 있고, 쓴 마법은 그 전투에서 다시 못 쓴다",
+  "_phase_doc": "[사용자 의견] 마법을 언제 강한지로 나눈다. early: 고정값이라 레벨이 낮을 때 크게 듣는다(ad- 보호막 2, inter- 벽, de-). late: 코인·스킬·보스가 커질수록 세진다(un- 코인 되돌리기, in- 코인 다시 던지기, in-(아닌) 스킬 막기, pro- 뒤의 보스 꺼내기). all: 비율·순서라 언제나 비슷하다(dis-, ob-, com-, re-, sub-, prae-, ex-). 값은 tools/balance/battle_sim.gd each로 한 개씩 쓸 때 필드 승률을 +5~+15쯤 올리게 맞춘다"
 }

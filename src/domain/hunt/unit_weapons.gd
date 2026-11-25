@@ -32,14 +32,14 @@ func tick(delta: float, weapons: Dictionary, origins: Dictionary, hero: Vector2,
 	for id in weapons:
 		var w: Dictionary = weapons[id]
 		var o: Vector2 = origins.get(id, hero)
-		if w["type"] == "orbit":
+		if w["type"] == "orbit":  # 팽이는 주인공 둘레를 바짝 돈다: 다가온 몹을 쳐서 바깥으로 밀어낸다
 			orbit_a += float(w["speed"]) * delta
 			for k in int(w["count"]):
-				var p := orbit_pos(o, w, k)
+				var p := orbit_pos(hero, w, k)
 				for e in enemies:
-					if (e as FieldMob).pos.distance_to(p) < 48.0 and _now >= float(_orbit_hit.get(e, 0.0)) and map.clear_line(o, e.pos):
+					if (e as FieldMob).pos.distance_to(p) < 48.0 and _now >= float(_orbit_hit.get(e, 0.0)) and map.clear_line(hero, e.pos):
 						_orbit_hit[e] = _now + float(w["hit_gap"])
-						hits.append({"mob": e, "dmg": int(w["dmg"]), "from": p})
+						hits.append({"mob": e, "dmg": int(w["dmg"]), "from": hero})
 			continue
 		timers[id] = float(timers.get(id, 0.5)) - delta
 		if timers[id] > 0.0:
@@ -76,13 +76,14 @@ func _fire(id: String, w: Dictionary, o: Vector2, hero: Vector2, facing: Vector2
 	var rng_px := float(w["range"])
 	var ts := targets(o, hero, rng_px, enemies, map)
 	match String(w["type"]):
-		"arrow":  # 범위에 몹이 있으면 걷는 쪽으로 쏜다(맞히려면 몹 쪽으로 걸어야 한다)
+		"arrow":  # 정해진 8방향 가운데 가장 가까운 몹 쪽으로 곧게 꿰뚫는다(조준하지 않아서 비스듬한 몹은 빗나간다)
 			if ts.is_empty():
 				return false
+			var ang := snappedf((ts[0].pos - o).angle(), PI / 4.0)
 			var n := int(w["count"])
 			for k in n:
 				var a := (k - (n - 1) / 2.0) * 0.16
-				shots.append({"id": id, "type": "straight", "pos": o, "vel": facing.rotated(a) * float(w["speed"]), "left": rng_px, "dmg": dmg, "hit": {}, "unit": unit, "pierce": true})
+				shots.append({"id": id, "type": "straight", "pos": o, "vel": Vector2.from_angle(ang + a) * float(w["speed"]), "left": rng_px, "dmg": dmg, "hit": {}, "unit": unit, "pierce": true})
 			return true
 	if ts.is_empty():
 		return false
@@ -108,9 +109,9 @@ func _fire(id: String, w: Dictionary, o: Vector2, hero: Vector2, facing: Vector2
 			for k in mini(int(w["count"]), ts.size()):
 				hits.append({"mob": ts[k], "dmg": dmg, "from": o})
 				fx.append({"type": "snipe", "a": o, "b": ts[k].pos, "t": 0.0, "max": 0.3, "unit": unit})
-		"nova", "aura", "bash":
+		"nova", "aura", "bash":  # 밀어내는 쪽은 주인공에게서 멀어지는 쪽(동행 뒤에서 밀면 주인공 쪽으로 밀리지 않게)
 			for e in ts:
-				hits.append({"mob": e, "dmg": dmg, "from": o, "push": float(w.get("push", 0.0))})
+				hits.append({"mob": e, "dmg": dmg, "from": hero, "push": float(w.get("push", 0.0))})
 			fx.append({"type": w["type"], "a": o, "r": rng_px, "t": 0.0, "max": 0.35, "unit": unit})
 		"fan":
 			var base := (ts[0].pos - o).normalized()
@@ -119,7 +120,8 @@ func _fire(id: String, w: Dictionary, o: Vector2, hero: Vector2, facing: Vector2
 				var a := (k - (n - 1) / 2.0) * float(w["spread"]) / maxf(1.0, n - 1.0)
 				shots.append({"id": id, "type": "straight", "pos": o, "vel": base.rotated(a) * float(w["speed"]), "left": rng_px, "dmg": dmg, "hit": {}, "unit": unit, "pierce": false})
 		"lob":
-			shots.append({"id": id, "type": "lob", "a": o, "pos": o, "to": ts[0].pos, "t": 0.0, "max": float(w["flight"]), "dmg": dmg, "r": float(w["radius"]), "unit": unit, "hit": {}})
+			var lead: Vector2 = ts[0].pos + ts[0].vel * float(w["flight"]) * 0.8  # 몹이 갈 자리를 어림해 던진다
+			shots.append({"id": id, "type": "lob", "a": o, "pos": o, "to": lead, "t": 0.0, "max": float(w["flight"]), "dmg": dmg, "r": float(w["radius"]), "unit": unit, "hit": {}})
 		"slam":
 			var c := ts[0].pos
 			for e in enemies:

@@ -41,7 +41,7 @@ func test_every_unit_weapon_hits() -> void:
 	for id in cfg["weapons"]:
 		var w: Dictionary = cfg["weapons"][id]
 		var near := 115.0 if w["type"] in ["bash", "aura"] else 140.0  # 주인공 바로 옆(no_fire_near)은 쏘지 않는다
-		var mob := _mob(o + Vector2(near if w["type"] != "orbit" else 110.0, 0))
+		var mob := _mob(o + Vector2(near if w["type"] != "orbit" else float(w["range"]), 0))
 		var hits := _run_weapon(String(id), map, [mob], o)
 		assert_gt(hits.size(), 0, "%s(%s)가 맞힌다" % [id, w["type"]])
 

@@ -19,4 +19,16 @@ python3 tools/balance/sim10.py --stages 3-5 --trials 500
 ```
 
 - `--tune`은 값을 찾아 표로만 보여 준다. JSON에 적는 것은 사람이 한다(`docs/design/tuning-log.md`에 이유와 함께).
-- 게임 코드(Godot)의 규칙 층이 생기면, 이 엔진 대신 그 규칙을 그대로 쓰는 시뮬레이터로 바꾼다. 그때까지 이 엔진은 수치의 대략적인 기준이다.
+- 게임 코드(Godot)의 규칙을 그대로 쓰는 시뮬레이터가 생겼다(아래). 위 파이썬 엔진은 1차 기준으로 남긴다.
+
+## Godot 시뮬레이터(게임 규칙 그대로)
+
+```
+godot --headless -s tools/balance/hunt_sim.gd -- 240 6          # 필드 사냥: 동행 조합마다 막은 몹·뚫린 몹(목표 뚫림 20%)
+godot --headless -s tools/balance/hunt_sim.gd -- 180 4 single   # 유닛 하나씩(무기 세기 비교), solo = 뚝딱 혼자
+godot --headless -s tools/balance/battle_sim.gd -- 300 2-10     # 전투 승률: 마법 없음 / 아무거나 / 생각(때를 골라 씀), 필드·보스
+godot --headless -s tools/balance/battle_sim.gd -- 150 3-9 each # 마법 하나씩만 쓸 때 승률이 얼마나 오르나
+godot --headless -s tools/balance/battle_sim.gd -- 150 2-10 tune # 목표(필드 75%, 보스 65%)에 맞는 적 기준 레벨·보스 level_delta 찾기(10분쯤)
+```
+
+결과와 가정은 [sim-10stage.md](../../docs/design/sim-10stage.md) 7절.

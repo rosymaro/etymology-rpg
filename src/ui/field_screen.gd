@@ -59,7 +59,9 @@ var _spawn_t := 0.0
 var _full_t := 0.0
 # 돌 밀기 퍼즐(07-fun 3·4절)
 var _puz: Array[PushPuzzle] = []
-var _push_t := 0.0
+var _push_t := 0.0  ## 마지막으로 돌에 붙어 민 뒤 지난 시간(떨어지면 다시 느리게)
+var _push_dur := 0.0  ## 다음 한 칸에 걸리는 시간(이어 밀수록 짧아진다)
+var _slides := {}  ## 미끄러지는 돌 "퍼즐id|x,y(도착 칸)" -> {pz, to: Vector2i, a: Vector2, b: Vector2, t, dur, sink}
 var _lock: Control  ## 조각 자물쇠 창
 var _lock_pick: Array[String] = []
 var _lock_fail := 0
@@ -823,22 +825,36 @@ func _puzzle_step(dir: Vector2, before: Vector2, delta: float) -> void:
 	for pz in _puz:
 		if Rect2i(pz.origin, pz.size).has_point(hc) and not pz.rocks.is_empty():
 			_tutorial("puzzle", pz)
-	if dir.length() > 0.3 and _hero.distance_to(before) < 0.5:
+	_slide_rocks(delta)
+	if dir.length() > 0.3:  # 돌에 붙어 밀면 바로 밀린다. 이어 밀면 조금씩 빨라진다(그래도 느리게)
 		var d := Vector2i(signi(roundi(dir.x)), 0) if absf(dir.x) >= absf(dir.y) else Vector2i(0, signi(roundi(dir.y)))
-		var front := map.cell(_hero + Vector2(d) * (HERO_R + 12))
+		var front := map.cell(_hero + Vector2(d) * (HERO_R + 32))
 		for pz in _puz:
-			if pz.rocks.has(front):
+			if pz.rocks.has(front) and not _slides.has(_slide_key(pz, front)):
+				var rp := (Vector2(front) + Vector2(0.5, 0.5)) * map.tile
+				if _hero.distance_to(rp) > HERO_R + map.tile * 0.44 + 10.0 and _hero.distance_to(before) > 0.5:
+					continue  # 아직 닿지 않았다
 				pushed = true
-				_push_t += delta
-				if _push_t >= 0.3:
-					_push_t = 0.0
-					if pz.push(front, d, "com" in GameData.state.magics):
-						_sync_blocks()
-						GameData.vibrate()
-					elif pz.rocks[front] == "H" and not "com" in GameData.state.magics:
-						_show_toast(t("ui.puz.heavy"))
-	if not pushed:
+				var rp_cfg: Dictionary = _f["rock_push"]
+				if _push_t > 0.25 or _push_dur <= 0.0:
+					_push_dur = float(rp_cfg["first"])
+				var heavy: String = pz.rocks[front]
+				var had_filled := pz.filled.size()
+				if pz.push(front, d, "com" in GameData.state.magics):
+					var to := _rock_landing(pz, front, d, had_filled)
+					var cells := maxi(1, absi(to.x - front.x) + absi(to.y - front.y))
+					var dur := _push_dur + float(rp_cfg["ice_cell"]) * (cells - 1)
+					_slides[_slide_key(pz, to)] = {"pz": pz, "to": to, "a": rp, "b": (Vector2(to) + Vector2(0.5, 0.5)) * map.tile,
+						"t": 0.0, "dur": dur, "sink": pz.filled.size() > had_filled, "kind": heavy}
+					_push_dur = maxf(float(rp_cfg["min"]), _push_dur * float(rp_cfg["faster"]))
+					_sync_blocks()
+					GameData.vibrate()
+				elif heavy == "H" and not "com" in GameData.state.magics:
+					_show_toast(t("ui.puz.heavy"))
+	if pushed or not _slides.is_empty():
 		_push_t = 0.0
+	else:
+		_push_t += delta
 	for it in map.items:  # 동굴의 퀘스트 물건
 		if Vector2i(int(it["cell"][0]), int(it["cell"][1])) == hc and not it["id"] in GameData.state.items:
 			GameData.state.items.append(it["id"])
@@ -854,7 +870,46 @@ func _puzzle_step(dir: Vector2, before: Vector2, delta: float) -> void:
 		var r := Rect2i(pz.origin - Vector2i(3, 3), pz.size + Vector2i(6, 6))
 		if not r.has_point(hc) and not GameData.state.flags.get("chest_" + pz.id, false) and (pz.rocks.hash() != pz._start_rocks.hash() or not pz.filled.is_empty()):
 			pz.reset()  # 구역을 벗어나면 처음으로(막혀서 못 푸는 일이 없게)
+			for k in _slides.keys():
+				if _slides[k]["pz"] == pz:
+					_slides.erase(k)
 			_sync_blocks()
+
+
+func _slide_key(pz: PushPuzzle, c: Vector2i) -> String:
+	return "%s|%d,%d" % [pz.id, c.x, c.y]
+
+
+## 밀린 돌이 멈춘 칸: 물·구멍에 빠졌으면 그 칸, 아니면 돌이 새로 놓인 칸(얼음이면 미끄러진 끝).
+func _rock_landing(pz: PushPuzzle, from: Vector2i, d: Vector2i, had_filled: int) -> Vector2i:
+	var c := from + d
+	if pz.filled.size() > had_filled:
+		while not pz.filled.has(c) and pz.contains(c + d):
+			c += d
+		return c
+	while not pz.rocks.has(c) and pz.contains(c + d):
+		c += d
+	return c
+
+
+## 미끄러지는 돌: 그리는 자리를 옮기고, 주인공은 그 돌을 뚫고 지나가지 못한다(돌 뒤를 따라간다).
+func _slide_rocks(delta: float) -> void:
+	for k in _slides.keys():
+		var sl: Dictionary = _slides[k]
+		sl["t"] = float(sl["t"]) + delta
+		if float(sl["t"]) >= float(sl["dur"]):
+			_slides.erase(k)
+			continue
+		var rp := _slide_pos(sl)
+		var gap := HERO_R + map.tile * 0.44
+		if _hero.distance_to(rp) < gap:
+			_hero = rp + (_hero - rp).normalized() * gap
+
+
+func _slide_pos(sl: Dictionary) -> Vector2:
+	var k := clampf(float(sl["t"]) / float(sl["dur"]), 0.0, 1.0)
+	k = k * k * (3.0 - 2.0 * k)  # 부드럽게 출발하고 멈춘다
+	return (sl["a"] as Vector2).lerp(sl["b"], k)
 
 
 func _open_chest(pz: PushPuzzle) -> void:
@@ -980,8 +1035,16 @@ func _draw_puzzles(o: Vector2) -> void:
 				draw_circle(cp + Vector2(0, -2), 6, Color("f5c542") if pz.chest_ready() else UiKit.GRAY)
 				if pz.kind == "lock":
 					draw_arc(cp + Vector2(0, -12), 9, PI, TAU, 10, UiKit.INK, 3)
-		for c in pz.rocks:  # 돌
-			var rp := o + (Vector2(c) + Vector2(0.5, 0.5)) * ts
+		for k in _slides:  # 물·구멍으로 미끄러져 빠지는 돌(빠질 때까지 보인다)
+			var sl: Dictionary = _slides[k]
+			if sl["pz"] == pz and sl["sink"]:
+				var sp2 := o + _slide_pos(sl)
+				var fade := 1.0 - clampf(float(sl["t"]) / float(sl["dur"]), 0.0, 1.0) * 0.6
+				draw_circle(sp2, ts * 0.44 * fade, Color("9a948e"))
+				draw_arc(sp2, ts * 0.44 * fade, 0, TAU, 24, UiKit.INK, 3)
+		for c in pz.rocks:  # 돌(밀리는 중이면 미끄러지는 자리에)
+			var sk := _slide_key(pz, c)
+			var rp := o + (_slide_pos(_slides[sk]) if _slides.has(sk) else (Vector2(c) + Vector2(0.5, 0.5)) * ts)
 			var heavy: bool = pz.rocks[c] == "H"
 			draw_circle(rp, ts * 0.44, Color("6f6a66") if heavy else Color("9a948e"))
 			draw_arc(rp, ts * 0.44, 0, TAU, 24, UiKit.INK, 3)
@@ -1278,9 +1341,8 @@ func _draw_weapons(o: Vector2) -> void:
 		var w := _run.weapon(String(id))
 		if w["type"] != "orbit":
 			continue
-		var base := _pal_pos(int(w["unit"]))
 		for k in int(w["count"]):
-			var p := o + _uw.orbit_pos(base, w, k)
+			var p := o + _uw.orbit_pos(_hero, w, k)
 			draw_circle(p, 14, Color("e9a0b8"))
 			draw_arc(p, 14, _uw.orbit_a * 3.0, _uw.orbit_a * 3.0 + PI, 10, UiKit.INK, 3)
 	for id in _run.d["weapons"]:  # 대장의 깃발 둘레(언제나 흐리게)
