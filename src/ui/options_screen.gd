@@ -1,6 +1,6 @@
 class_name OptionsScreen
 extends Screen
-## 옵션(04-meta.md 2절): 진동 켜기/끄기, 효과음·배경음악 켜기/끄기 + 음량.
+## 옵션(04-meta.md 2절): 진동 켜기/끄기, 효과음·배경음악 켜기/끄기 + 음량, 지도 효과 하나씩 끄기, FPS 표시.
 
 var _back: Callable
 
@@ -8,9 +8,14 @@ var _back: Callable
 func open(args: Dictionary) -> void:
 	_back = args.get("back", Callable())
 	UiKit.fill_bg(self, UiKit.PAPER)
+	var sc := ScrollContainer.new()  # 지도 효과 스위치가 늘어 작은 폰에서는 넘친다
+	sc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(sc)
 	var c := CenterContainer.new()
-	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(c)
+	c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	c.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.add_child(c)
 	var card := UiKit.card()
 	card.custom_minimum_size = Vector2(660, 0)
 	c.add_child(card)
@@ -24,6 +29,12 @@ func open(args: Dictionary) -> void:
 	v.add_child(_toggle("ui.option.bgm", s.bgm, func(on: bool) -> void: s.bgm = on))
 	v.add_child(_slider(s.bgm_volume, func(x: float) -> void: s.bgm_volume = x))
 	v.add_child(_toggle("ui.option.touch_marker", s.touch_marker, func(on: bool) -> void: s.touch_marker = on))
+	var head := UiKit.label(t("ui.option.map_fx"), 30)  # 지도 효과: 폰이 버벅이면 하나씩 끈다
+	v.add_child(head)
+	v.add_child(UiKit.wrap(UiKit.label(t("ui.option.map_fx_hint"), 22), 600))
+	for k in SettingsStore.MAP_KEYS:
+		var key: String = k
+		v.add_child(_toggle("ui.option." + key, bool(s.get(key)), func(on: bool) -> void: s.set(key, on)))
 	v.add_child(UiKit.button(t("ui.options.tutorial_again"), func() -> void:  # 08-tutorial.md
 		TutorialBook.reset_all(GameData.state)
 		GameData.save()

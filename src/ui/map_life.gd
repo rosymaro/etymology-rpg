@@ -12,6 +12,8 @@ var _n_critters := 7
 var _n_parts := 34
 var _flee := 170.0
 var _kind := ""
+var on_critters := true  ## 옵션: 작은 동물
+var on_particles := true  ## 옵션: 날리는 것
 
 
 func _init(p: MapPainter) -> void:
@@ -30,7 +32,7 @@ func update(delta: float, hero: Vector2, cam: Vector2, view: Vector2, t: float) 
 	for c in critters.duplicate():
 		if not area.has_point(c["pos"]):
 			critters.erase(c)
-	while critters.size() < _n_critters:
+	while on_critters and critters.size() < _n_critters:
 		var c := _spawn(area, hero)
 		if c.is_empty():
 			break
@@ -40,6 +42,10 @@ func update(delta: float, hero: Vector2, cam: Vector2, view: Vector2, t: float) 
 	# 날리는 것: 지금 화면 가운데 지역의 것
 	var b := painter.biome_at(m.cell(cam + view / 2))
 	var kind := String(b.get("particle", ""))
+	if not on_critters:
+		critters.clear()
+	if not on_particles:
+		kind = ""
 	if kind != _kind:
 		_kind = kind
 		parts.clear()
