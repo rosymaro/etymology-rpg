@@ -62,6 +62,12 @@ var _lock_pick: Array[String] = []
 var _lock_fail := 0
 const BUILDING_ROOF := {"forge": Color("c0634a"), "board": Color("6f8fd0"), "hospital": Color("f2f2f2"), "tree": Color("4f8f57")}
 var _quests: Control
+var _quest_btn: Button
+var _party_btn: Button
+var _home_btn: Button
+var _goal_card: Control
+var _tut: TutorialOverlay  ## 지금 보이는 튜토리얼(08-tutorial.md)
+var _tut_level_btn: Button
 
 static var _map_tex: ImageTexture
 
@@ -112,6 +118,7 @@ func open(args: Dictionary) -> void:
 	_build_minimap()
 	if args.get("msg", "") != "":
 		_show_toast(args["msg"])
+	_tutorial.call_deferred("field")
 	set_process(true)
 
 
@@ -126,9 +133,11 @@ func _build_hud() -> void:
 	var right := UiKit.hbox(8)
 	add_child(right)
 	UiKit.pin(right, 1, 0, -16, 12)
-	right.add_child(UiKit.button(t("ui.menu.quest"), _open_quests, UiKit.APRICOT, 22))
+	_quest_btn = UiKit.button(t("ui.menu.quest"), _open_quests, UiKit.APRICOT, 22)
+	right.add_child(_quest_btn)
 	right.add_child(UiKit.button(t("ui.menu.dex"), func() -> void: _go(main.flow.go_dex), UiKit.LEAF, 22))
-	right.add_child(UiKit.button(t("ui.menu.party"), func() -> void: _go(main.flow.go_party), UiKit.SKY, 22))
+	_party_btn = UiKit.button(t("ui.menu.party"), func() -> void: _go(main.flow.go_party), UiKit.SKY, 22)
+	right.add_child(_party_btn)
 	right.add_child(UiKit.button(t("ui.menu.save"), func() -> void:
 		_remember()
 		GameData.save()
@@ -140,6 +149,7 @@ func _build_hud() -> void:
 	gc.add_child(_goal)
 	add_child(gc)
 	gc.position = Vector2(16, 150 + map.h * MINI_SCALE + 10)
+	_goal_card = gc
 	_rest = UiKit.label("", 22, UiKit.BAD.darkened(0.2))
 	var rc := UiKit.card(Color("fff4dc"))
 	rc.add_child(_rest)
@@ -159,7 +169,9 @@ func _build_hud() -> void:
 	add_child(hc)
 	UiKit.pin(hc, 1, 0, -16, 150)
 	_hunt_lbl.set_meta("card", hc)
+	hc.visible = not map.is_town(_hero)
 	var home := UiKit.button(t("ui.field.home"), _go_home, UiKit.PAPER, 24)
+	_home_btn = home
 	home.custom_minimum_size = Vector2(150, 70)
 	add_child(home)
 	UiKit.thumb(home, 0.0)  # 엄지 자리 왼쪽
@@ -169,7 +181,7 @@ func _build_hud() -> void:
 	var slots := Loadout.field(GameData.state)
 	for i in slots.size():
 		var id := slots[i]
-		var b := UiKit.button("", func() -> void: _cast(id), UiKit.SKY.lightened(0.2), 20)
+		var b := UiKit.button(GameText.field_magic_name(id).split(" ")[0] if id != "" else "", func() -> void: _cast(id), UiKit.SKY.lightened(0.2), 20)
 		b.custom_minimum_size = Vector2(150, 64)
 		b.visible = id != ""
 		b.set_meta("id", id)
@@ -288,7 +300,8 @@ func _pick_words(rare := false) -> Array[String]:
 # ----- 움직임 -----
 
 func _process(delta: float) -> void:
-	if _busy or _full or _quests or _choosing or _lock:
+	if _busy or _full or _quests or _choosing or _lock or (_tut and is_instance_valid(_tut)):
+		_follow_cam()  # 멈춰 있어도 화면은 주인공을 비춘다(튜토리얼이 가리킬 자리가 맞게)
 		return
 	var dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if _stick_on:
@@ -528,6 +541,7 @@ func _town_edge() -> void:
 	else:
 		_run.reset()
 		_wt.clear()
+		_tutorial("hunt")
 
 
 func _hunt(delta: float) -> void:
@@ -674,6 +688,7 @@ func _open_level_up() -> void:
 	dim.offset_bottom = UiKit.BG_BLEED
 	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_choosing.add_child(dim)
+	_choosing.set_meta("first", true)
 	var v := UiKit.vbox(14)
 	v.position = Vector2(60, 360)
 	v.custom_minimum_size.x = 600
@@ -691,6 +706,10 @@ func _open_level_up() -> void:
 		b.custom_minimum_size = Vector2(600, 96)
 		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		v.add_child(b)
+		if _choosing.get_meta("first", false):
+			_choosing.set_meta("first", false)
+			_tut_level_btn = b
+	_tutorial.call_deferred("level_up")
 
 
 # ----- 돌 밀기 퍼즐 -----
@@ -712,6 +731,11 @@ func _sync_blocks() -> void:
 func _puzzle_step(dir: Vector2, before: Vector2, delta: float) -> void:
 	var hc := map.cell(_hero)
 	var pushed := false
+	if map.in_cave(_hero):
+		_tutorial("cave")
+	for pz in _puz:
+		if Rect2i(pz.origin, pz.size).has_point(hc) and not pz.rocks.is_empty():
+			_tutorial("puzzle", pz)
 	if dir.length() > 0.3 and _hero.distance_to(before) < 0.5:
 		var d := Vector2i(signi(roundi(dir.x)), 0) if absf(dir.x) >= absf(dir.y) else Vector2i(0, signi(roundi(dir.y)))
 		var front := map.cell(_hero + Vector2(d) * (HERO_R + 12))
@@ -766,6 +790,7 @@ func _open_lock(pz: PushPuzzle) -> void:
 	_stick_on = false
 	_lock_pick.clear()
 	_lock = Control.new()
+	_lock.tree_entered.connect(func() -> void: _tutorial.call_deferred("lock"))
 	_lock.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_lock.mouse_filter = Control.MOUSE_FILTER_STOP
 	_lock.z_index = 25
@@ -877,6 +902,64 @@ func _draw_puzzles(o: Vector2) -> void:
 			if heavy:
 				draw_line(rp + Vector2(-18, 4), rp + Vector2(18, 4), UiKit.INK, 3)
 				draw_line(rp + Vector2(-14, 12), rp + Vector2(14, 12), UiKit.INK, 3)
+
+
+# ----- 튜토리얼(08-tutorial.md) -----
+
+## 대사·알림 창이 떠 있으면 다 닫힐 때까지 기다렸다가, 처음이면 그 튜토리얼을 보인다.
+func _tutorial(id: String, arg: Variant = null) -> void:
+	if _tut and is_instance_valid(_tut):
+		return
+	if not TutorialBook.should(GameData.state, id, GameData.tutorials_enabled):
+		return
+	while main._overlay.get_child_count() > 0:
+		await get_tree().process_frame
+		if not is_instance_valid(self):
+			return
+	var hero_rect := func() -> Rect2: return Rect2(get_global_transform_with_canvas() * (_hero - _cam) - Vector2(48, 60), Vector2(96, 110))
+	var steps: Array[Dictionary] = []
+	match id:
+		"field":
+			steps = [
+				{"target": hero_rect, "text": "tut.field.move", "mode": "any"},
+				{"target": _mini, "text": "tut.field.minimap", "mode": "any"},
+				{"target": _goal_card, "text": "tut.field.goal", "mode": "any"},
+				{"target": _home_btn, "text": "tut.field.home", "mode": "any"},
+				{"target": _party_btn, "text": "tut.field.party", "mode": "any"},
+				{"target": _quest_btn, "text": "tut.field.quest", "mode": "tap"},
+			]
+			var fb: Array = _fbtns.filter(func(b: Button) -> bool: return b.visible)
+			if not fb.is_empty():
+				steps.insert(5, {"target": fb[0], "text": "tut.field.magic", "mode": "any"})
+		"hunt":
+			steps = [
+				{"target": hero_rect, "text": "tut.hunt.auto", "mode": "any"},
+				{"target": _hunt_lbl.get_meta("card"), "text": "tut.hunt.bag", "mode": "any"},
+			]
+		"level_up":
+			if _tut_level_btn == null:
+				return
+			steps = [{"target": _tut_level_btn, "text": "tut.hunt.level_up", "mode": "tap"}]
+		"puzzle":
+			var pz: PushPuzzle = arg
+			var rk: Vector2i = pz.rocks.keys()[0]
+			var rock_rect := func() -> Rect2: return Rect2(get_global_transform_with_canvas() * (Vector2(rk) * map.tile - _cam), Vector2(map.tile, map.tile))
+			steps = [{"target": rock_rect, "text": "tut.puzzle.push", "mode": "any"}, {"target": hero_rect, "text": "tut.puzzle.reset", "mode": "any"}]
+		"cave":
+			steps = [{"target": hero_rect, "text": "tut.cave", "mode": "any"}]
+		"lock":
+			if _lock == null:
+				return
+			steps = [{"target": _lock.get_child(1), "text": "tut.lock", "mode": "any"}]
+	if steps.is_empty():
+		return
+	_stick_on = false
+	_tut = TutorialOverlay.run(self, id, steps)
+
+
+func _follow_cam() -> void:
+	_cam = (_hero - size / 2).clamp(Vector2.ZERO, (map.size_px() - size).max(Vector2.ZERO))
+	queue_redraw()
 
 
 static func _mmss(sec: int) -> String:

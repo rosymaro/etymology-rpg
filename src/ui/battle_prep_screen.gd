@@ -10,6 +10,8 @@ var _boss := false
 var _party: Array[int] = []
 var _magic := ""  ## 설명을 보여 줄 마법(마지막으로 누른 것)
 var _offer: Array[String] = []
+var _allies_box: Control
+var _enemies_box: Control
 var _roots: Dictionary = {}
 var _panel: PanelContainer
 var _body: VBoxContainer
@@ -45,6 +47,7 @@ func open(args: Dictionary) -> void:
 func _build_field_view() -> void:
 	# 아군(왼쪽 아래, 판에 가려진다)
 	var allies := UiKit.hbox(10)
+	_allies_box = allies
 	allies.position = Vector2(24, 300)
 	add_child(allies)
 	for u in _party:
@@ -53,6 +56,7 @@ func _build_field_view() -> void:
 		allies.add_child(c)
 	# 적(오른쪽 위, 출전 순서대로)
 	var enemies := UiKit.hbox(10)
+	_enemies_box = enemies
 	add_child(enemies)
 	UiKit.pin(enemies, 1, 0, -24, 24)
 	var labels: Array[String] = []
@@ -99,7 +103,21 @@ func _step_magic() -> void:
 		names.append("%s: %s" % [UiKit.unit_name(u), _roots[u] if _roots[u] != "" else "-"])
 	_body.add_child(_right(UiKit.wrap(UiKit.label(t("ui.prep.roots").format({"list": ", ".join(names)}), 20, UiKit.INK.lightened(0.25)))))
 	var nav := _nav_row()
-	nav.add_child(UiKit.button(t("ui.battle.start"), _start, UiKit.ACCENT.lightened(0.3)))
+	var start := UiKit.button(t("ui.battle.start"), _start, UiKit.ACCENT.lightened(0.3))
+	nav.add_child(start)
+	_tutorial.call_deferred(start)
+
+
+## 처음 전투 준비(08-tutorial.md): 적 → 출전 유닛 → (마법) → 장착 어근 → 전투 시작.
+func _tutorial(start: Button) -> void:
+	await get_tree().process_frame
+	var steps: Array[Dictionary] = [
+		{"target": _enemies_box, "text": "tut.prep.enemy", "mode": "any"},
+		{"target": _allies_box, "text": "tut.prep.ally", "mode": "any"},
+		{"target": _panel, "text": "tut.prep.panel" if not _offer.is_empty() else "tut.prep.roots", "mode": "any"},
+		{"target": start, "text": "tut.prep.start", "mode": "tap"},
+	]
+	TutorialOverlay.run(self, "battle_prep", steps)
 
 
 func _magic_desc(id: String) -> String:
