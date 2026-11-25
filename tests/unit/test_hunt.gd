@@ -13,7 +13,7 @@ func before_each() -> void:
 func test_starts_with_hammer_and_levels_up_from_orbs() -> void:
 	var run := HuntRun.new({}, cfg)
 	assert_eq(run.level(), 0)
-	assert_true(run.d["weapons"].has("hammer"), "처음 무기는 망치")
+	assert_true(run.d["weapons"].has("u01"), "처음 무기는 뚝딱의 망치")
 	var need := run.need()
 	assert_false(run.pick_orbs(need - 1))
 	assert_true(run.pick_orbs(1), "구슬이 차면 레벨업")
@@ -21,19 +21,36 @@ func test_starts_with_hammer_and_levels_up_from_orbs() -> void:
 	assert_eq(int(run.bag()["orbs"]), need, "구슬은 주머니에도 담긴다")
 
 
-func test_level_up_choices_offer_owned_skills() -> void:
+func test_level_up_choices_upgrade_companion_weapons() -> void:
 	var run := HuntRun.new({}, cfg)
+	run.set_units([1, 10])
 	var seen := {}
 	for k in 30:
-		for c in run.choices(["hammer", "spin"], rng):
+		for c in run.choices(rng):
 			seen[c["type"] + ":" + c["id"]] = true
-	assert_true(seen.has("new:spin"), "가진 어원 스킬이 새 무기로 나온다")
-	assert_true(seen.has("up:hammer"), "쓰는 무기 강화")
-	assert_false(seen.has("new:shout"), "안 가진 스킬은 안 나온다")
-	run.apply({"type": "up", "id": "hammer"})
-	assert_eq(run.weapon("hammer")["cd"], float(cfg["weapons"]["hammer"]["cd"][1]))
+	assert_true(seen.has("up:u01") and seen.has("up:u10"), "데리고 다니는 유닛의 무기 강화")
+	assert_false(seen.has("up:u05"), "안 데리고 다니는 유닛 무기는 안 나온다")
+	run.apply({"type": "up", "id": "u01"})
+	assert_eq(run.weapon("u01")["cd"], float(cfg["weapons"]["u01"]["cd"][1]))
 	run.apply({"type": "magnet", "id": ""})
 	assert_gt(run.magnet(), float(cfg["magnet"]))
+
+
+func test_each_unit_has_its_own_weapon() -> void:
+	var run := HuntRun.new({}, cfg)
+	var types := {}
+	for u in range(1, 13):
+		var id := run.weapon_of(u)
+		assert_ne(id, "", "유닛 %d의 무기" % u)
+		types[cfg["weapons"][id]["type"]] = true
+	assert_eq(types.size(), 12, "유닛마다 다른 공격")
+	run.set_units([5, 10, 6])
+	assert_eq(run.d["weapons"].keys(), ["u05", "u10", "u06"], "데리고 다니는 유닛의 무기만")
+	run.apply({"type": "up", "id": "u05"})
+	run.set_units([5, 1])
+	assert_eq(int(run.d["weapons"]["u05"]), 1, "남은 무기의 강화는 그대로")
+	run.reset()
+	assert_eq(run.d["weapons"], {"u05": 0, "u01": 0}, "마을을 나서면 0단계에서")
 
 
 func test_drops_sometimes_include_a_word() -> void:
@@ -89,7 +106,7 @@ func test_mobs_never_die_in_one_hit_and_grow_with_level() -> void:
 	assert_eq(run.mob_hp("flee"), 2, "도망 몹(기본 1)도 망치 한 방(1)에는 안 죽는다")
 	assert_eq(run.mob_count(18), 18)
 	run.d["level"] = 20
-	run.d["weapons"] = {"hammer": 4, "spin": 4, "shout": 4}
+	run.d["weapons"] = {"u01": 4, "u10": 4, "u12": 4}
 	for kind in ["wander", "chase", "flee"]:
 		assert_gt(run.mob_hp(kind), run.best_dmg(), "레벨 20, 다 강화해도 한 방에 안 죽는다: " + kind)
 	assert_gt(run.mob_hp("wander"), int(cfg["mob_hp"]["wander"]), "레벨이 오르면 단단해진다")

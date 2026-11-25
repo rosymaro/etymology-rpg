@@ -234,17 +234,18 @@ func test_field_hunt_hammer_kills_mob_and_bag_is_banked_in_town() -> void:
 	await wait_physics_frames(2)
 	var f := main.current() as FieldScreen
 	assert_false(f.map.is_town(f._hero))
-	# 몹 하나만 망치 사거리 안에 둔다
+	# 몹 하나만 망치 사거리 안에 둔다(레벨에 따라 새로 생기는 몹은 이 시험 동안 막는다)
+	f._spawn_t = 1e9
 	f._enemies.clear()
 	var e := FieldMob.new()
 	e.kind = "wander"
 	e.max_hp = 2
 	e.hp = 2
 	e.words = ["information"] as Array[String]
-	e.pos = f._hero + Vector2(250, 0)
+	e.pos = f._hero + Vector2(160, 0)  # 맞으면 밀려나도 망치 사거리 안
 	e.stun = 99.0
 	f._enemies.append(e)
-	for k in 240:
+	for k in 400:
 		await wait_physics_frames(1)
 		if not f._enemies.has(e):
 			break

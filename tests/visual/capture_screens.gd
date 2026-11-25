@@ -61,13 +61,17 @@ func _run() -> void:
 	var fs := main.current() as FieldScreen
 	fs._hero = wm.random_field_spot(1, RandomNumberGenerator.new(), wm.start(1), 1200, 1600, 30)
 	fs._in_town_now = false
-	fs._run.apply({"type": "new", "id": "spin"})
+	s.joined = [1, 5, 10] as Array[int]  # 동행 셋: 뚝딱(망치) · 조잘(외침) · 빙글(팽이)
+	s.loadout["units"] = [1, 5, 10]
+	fs._set_pals()
 	fs._run.pick_coins(7)
 	for e in fs._enemies:
 		e.pos = fs._hero + Vector2.from_angle(randf() * TAU) * randf_range(150, 420)
 		e.stun = 99.0  # 찍는 동안 부딪혀 퀴즈로 넘어가지 않게
 	await get_tree().create_timer(1.4).timeout
 	await _shot("04_field_hunt")
+	s.joined = [1, 4] as Array[int]
+	s.loadout.erase("units")
 	fs._spawn_eater()
 	fs._open_level_up()
 	await _shot("04_field_levelup")

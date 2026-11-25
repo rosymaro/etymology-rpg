@@ -112,6 +112,27 @@ func _build_loadout() -> void:
 			b.disabled = not _in_town()
 			row.add_child(b)
 		col.add_child(row)
+	# 필드에 데리고 다니는 유닛(07-fun 1절): 따라다니며 저마다 다른 무기로 싸운다
+	col.add_child(UiKit.wrap(UiKit.label(t("ui.party.companions").format({"n": Loadout.COMPANIONS}), 20)))
+	var urow := HFlowContainer.new()
+	urow.add_theme_constant_override("h_separation", 8)
+	urow.add_theme_constant_override("v_separation", 8)
+	var comp := Loadout.companions(s)
+	var run := GameData.hunt_run()
+	for u in s.joined:
+		var unit: int = u
+		var on := unit in comp
+		var txt := "%s%s\n%s" % [t("ui.party.with") if on else "", t("name.char." + GameData.UNIT_CHARS[unit - 1]), t("ui.hunt.weapon." + run.weapon_of(unit))]
+		var b := UiKit.button(txt, func() -> void:
+			if Loadout.toggle_companion(s, unit):
+				GameData.save()
+				_refresh()
+			else:
+				main.notice(t("ui.party.companions_full" if not unit in Loadout.companions(s) else "ui.party.companions_one")), PalArt.color(unit).lightened(0.35 if on else 0.75), 16)
+		b.custom_minimum_size = Vector2(196, 64)
+		b.disabled = not _in_town()
+		urow.add_child(b)
+	col.add_child(urow)
 	_detail.add_child(card)
 
 

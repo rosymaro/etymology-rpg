@@ -502,7 +502,7 @@ func kid_talk(done: Callable) -> void:
 
 # ----- 보물(07-fun 6절) -----
 
-## 보물 상자 내용("coin:80" | "word:id" | "exp:300" | "skill:id")을 준다. 돌려주는 값: 알림 글.
+## 보물 상자 내용("coin:80" | "word:id" | "exp:300")을 준다. 돌려주는 값: 알림 글.
 func give_treasure(reward: String) -> String:
 	var s := GameData.state
 	var kv := reward.split(":")
@@ -519,10 +519,6 @@ func give_treasure(reward: String) -> String:
 			for u in s.joined:
 				s.unit_exp[u - 1] += int(v)
 			text = TranslationServer.translate("ui.treasure.exp").format({"n": v})
-		"skill":
-			if not v in s.field_skills:
-				s.field_skills.append(v)
-			text = TranslationServer.translate("ui.treasure.skill").format({"skill": TranslationServer.translate("ui.hunt.weapon." + v)})
 	GameData.save()
 	GameData.vibrate(true)
 	return text
@@ -606,9 +602,6 @@ func _boss_won() -> void:
 	for m in ["sub", "re", "com"]:
 		if not m in s.magics:
 			s.magics.append(m)
-	var sk: String = GameData.hunt_cfg["boss_skills"].get(str(STAGE), "")  # 보스 1~4가 주는 어원 스킬(07-fun 2절)
-	if sk != "" and not sk in s.field_skills:
-		s.field_skills.append(sk)
 	s.stage = maxi(s.stage, STAGE + 1)
 	GameData.save()
 	EventBus.boss_defeated.emit(STAGE)
