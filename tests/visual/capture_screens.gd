@@ -98,6 +98,16 @@ func _run() -> void:
 		main.flow.go_field()
 		(main.current() as FieldScreen)._enemies.clear()
 		await _shot("05_puzzle_" + kind)
+	var qc: Dictionary = wm.caves.filter(func(x: Dictionary) -> bool: return x["kind"] == "quest")[0]
+	var qitem: Dictionary = wm.items[0]
+	s.pos = (Vector2(int(qitem["cell"][0]), int(qitem["cell"][1])) + Vector2(0.5, 0.5)) * wm.tile
+	main.flow.go_field()
+	(main.current() as FieldScreen)._enemies.clear()
+	await _shot("05_cave_dark")
+	s.pos = (Vector2(int(qc["mouths"][0][0]), int(qc["mouths"][0][1])) + Vector2(0.5, 0.5)) * wm.tile
+	main.flow.go_field()
+	(main.current() as FieldScreen)._enemies.clear()
+	await _shot("05_cave_mouth")
 	s.notes = ["in-", "forma"]
 	var lq: Dictionary = wm.puzzles.filter(func(x: Dictionary) -> bool: return x["kind"] == "lock")[0]
 	(main.current() as FieldScreen)._open_lock(gd.puzzles[lq["id"]])

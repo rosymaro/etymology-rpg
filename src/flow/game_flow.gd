@@ -463,6 +463,29 @@ func _maybe_cheok() -> void:
 			main.notice(TranslationServer.translate("ui.join").format({"name": UiKit.unit_name(4)})))
 
 
+## 마을 아이(퀘스트 동굴, 07-fun 5절): 처음엔 부탁, 장난감 망치를 찾아 오면 마친다.
+func kid_talk(done: Callable) -> void:
+	var st := GameData.state
+	var q := GameData.quests.get_quest("s01_q_hammer")
+	var tr := func(k: String) -> String: return TranslationServer.translate(k)
+	if q.is_empty() or not GameData.quests.visible(st, q):
+		main.notice(tr.call("ui.npc.s01_4"), done)
+		return
+	if GameData.quests.done(st, q["id"]):
+		main.notice(tr.call("ui.kid.done"), done)
+		return
+	if not seen(q["id"] + "_got"):
+		_flag(q["id"] + "_got")
+		GameData.save()
+		main.notice(tr.call("ui.kid.ask"), done)
+		return
+	if GameData.quests.finish(st, q["id"], []):
+		give_treasure(String(q.get("reward", "")))
+		main.notice(tr.call("ui.kid.thanks") + "\n" + _done_text(q["id"]), done)
+		return
+	main.notice(tr.call("ui.kid.wait"), done)
+
+
 # ----- 보물(07-fun 6절) -----
 
 ## 보물 상자 내용("coin:80" | "word:id" | "exp:300" | "skill:id")을 준다. 돌려주는 값: 알림 글.

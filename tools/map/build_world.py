@@ -10,6 +10,8 @@
 - 스테이지 1 퀘스트 길목(q): 강의 다리는 끊어져 있어 fac 퀘스트로 고치고, 보스 둘레 절벽은 de- 퀘스트로 내려간다.
 - 돌 밀기 퍼즐(07-fun 3·4절): tools/map/puzzles/s01.txt의 판을 지역 1 들판의 빈 풀밭에 박는다(풀 수 있는지 push_puzzle.py가 확인).
   O 구멍(돌로 메움)  i 얼음(돌이 미끄러짐). 돌·발판·상자·숨은 쪽지는 지도 글자가 아니라 puzzles 목록에 적는다.
+- 동굴(07-fun 5절): 지역 1의 산(^) 덩어리를 뚫는다. k 동굴 바닥(어둡다)  c 동굴 입구. 넘어가는 동굴(지름길), 보물 동굴(끝에 상자),
+  퀘스트 동굴(끝에 마을 아이의 장난감 망치). 보물 동굴은 상자 퍼즐(kind cave)로, 퀘스트 물건은 items에 적는다.
 - 스테이지 1 마을은 30 × 20(04-meta 9절): 울타리(F)와 문, 가운데 광장과 분수(o), 돌길(s), 건물(h, 지붕은 게임이 그린다), 밭(f).
 글자: . 풀  , 마을 바닥  s 마을 돌길  F 울타리  h 건물 벽  o 분수·우물  f 밭  p 길·고갯길  b 다리  = 스테이지 문  q 퀘스트 길목  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
 """
@@ -104,6 +106,7 @@ def build_town(g, tx, ty, tw, th, spots):
     spots['tree'] = px(tx + 17, ty + 5)
     spots['notice'] = px(mx + 3, my - 3)
     spots['gacha'] = px(mx - 4, my + 3)  # 말 뽑기 기계(07-fun 7절)
+    spots['kid'] = px(mx + 5, my + 1)  # 장난감 망치를 잃은 마을 아이(퀘스트 동굴, 07-fun 5절)
     return out
 
 def main(river_seed=1000):
@@ -446,8 +449,130 @@ def main(river_seed=1000):
                         'rocks': [ab(c) + [k] for c, k in rocks.items()], 'plates': [ab(c) for c in info['plates']],
                         'chest': [ab(c) for c in info['chest']], 'secret': [ab(c) for c in info['secret']],
                         'entry': ab(info['entry'][0]), 'spot': px(*ab(info['entry'][0]))})
+    # 동굴: 지역 1의 산 덩어리
+    caves, items = [], []
+    used = set()
+    def mountain_comps():
+        seen, out = set(), []
+        for y in range(H):
+            for x in range(W):
+                if g[y][x] == '^' and inside(1, x, y) and (x, y) not in seen:
+                    q, c = [(x, y)], []
+                    seen.add((x, y))
+                    while q:
+                        a = q.pop(); c.append(a)
+                        for dx, dy in N4:
+                            n = (a[0] + dx, a[1] + dy)
+                            if n not in seen and inside(1, *n) and g[n[1]][n[0]] == '^':
+                                seen.add(n); q.append(n)
+                    out.append(c)
+        out.sort(key=len, reverse=True)
+        return out
+    def bfs(start, cells):
+        dist, prev = {start: 0}, {start: None}
+        q = collections.deque([start])
+        while q:
+            a = q.popleft()
+            for dx, dy in N4:
+                n = (a[0] + dx, a[1] + dy)
+                if n in cells and n not in dist:
+                    dist[n] = dist[a] + 1; prev[n] = a; q.append(n)
+        return dist, prev
+    def path_to(prev, t):
+        out = []
+        while t is not None:
+            out.append(t); t = prev[t]
+        return out[::-1]
+    walk0 = set('.,pbsiq')
+    def walk_dist(a):
+        dist = {a: 0}; q = collections.deque([a])
+        while q:
+            c = q.popleft()
+            for dx, dy in N4:
+                n = (c[0] + dx, c[1] + dy)
+                if n not in dist and 0 <= n[0] < W and 0 <= n[1] < H and g[n[1]][n[0]] in walk0:
+                    dist[n] = dist[c] + 1; q.append(n)
+        return dist
+    comps = mountain_comps()
+    town_r = (town1[0] - 4, town1[1] - 4, town1[0] + town1[2] + 4, town1[1] + town1[3] + 4)
+    def near_town(c):
+        return town_r[0] <= c[0] <= town_r[2] and town_r[1] <= c[1] <= town_r[3]
+    def edge_grass(comp):
+        cs = set(comp)
+        out = []
+        for (x, y) in comp:
+            for dx, dy in N4:
+                n = (x + dx, y + dy)
+                if n not in cs and g[n[1]][n[0]] == '.' and inside(1, *n) and not near_town(n):
+                    out.append(((x, y), n))
+        return out
+    # 1) 넘어가는 동굴: 산을 뚫는 굴이 걸어서 돌아가는 길보다 훨씬 짧은 곳
+    best = None
+    for comp in comps[:10]:
+        eg = edge_grass(comp)
+        cs = set(comp)
+        for (m1, a) in eg[::2]:
+            dist, prev = bfs(m1, cs)
+            wd = walk_dist(a)
+            for (m2, b) in eg:
+                if m2 not in dist or dist[m2] < 5:
+                    continue
+                gain = wd.get(b, 999) - dist[m2]
+                if best is None or gain > best[0]:
+                    best = (gain, path_to(prev, m2), a, b, comp)
+    assert best and best[0] >= 20, ('넘어가는 동굴 자리가 없다', best and best[0])
+    _, tun, a, b, comp = best
+    for (x, y) in tun:
+        g[y][x] = 'k'
+    g[tun[0][1]][tun[0][0]] = 'c'; g[tun[-1][1]][tun[-1][0]] = 'c'
+    used.add(id(comp))
+    caves.append({'id': 's01_cave_pass', 'kind': 'pass', 'mouths': [list(tun[0]), list(tun[-1])]})
+    # 2) 보물 동굴, 3) 퀘스트 동굴: 입구에서 가장 먼 곳에 방을 판다
+    def dig_room(comp, cid):
+        cs = set(comp)
+        eg = edge_grass(comp)
+        assert eg, ('동굴 입구가 없다', cid)
+        m1, a = eg[len(eg) // 2]
+        dist, prev = bfs(m1, cs)
+        far = max(dist, key=dist.get)
+        if dist[far] < 4:
+            return None
+        carved = set(path_to(prev, far))
+        for c in comp:
+            if abs(c[0] - far[0]) + abs(c[1] - far[1]) <= 2 and c in dist:
+                carved.add(c)
+        for (x, y) in carved:
+            g[y][x] = 'k'
+        g[m1[1]][m1[0]] = 'c'
+        return m1, far, carved
+    rooms = []
+    for comp in comps:
+        if id(comp) in used or len(comp) < 22 or any(near_town(c) for c in comp):
+            continue
+        got = dig_room(comp, len(rooms))
+        if got:
+            used.add(id(comp)); rooms.append(got)
+        if len(rooms) == 2:
+            break
+    assert len(rooms) == 2, '보물·퀘스트 동굴 자리가 없다'
+    (m1, far, carved) = rooms[0]
+    xs = [c[0] for c in carved] + [m1[0]]; ys = [c[1] for c in carved] + [m1[1]]
+    x0, y0 = min(xs) - 1, min(ys) - 1
+    rows_b = []
+    for y in range(y0, max(ys) + 2):
+        row = ''
+        for x in range(x0, max(xs) + 2):
+            row += 'C' if (x, y) == far else ('E' if (x, y) == m1 else ('.' if (x, y) in carved else 'T'))
+        rows_b.append(row)
+    puzzles.append({'id': 's01_cave_treasure', 'kind': 'cave', 'reward': 'exp:500', 'answer': '', 'note': '',
+                    'origin': [x0, y0], 'size': [len(rows_b[0]), len(rows_b)], 'rows': rows_b, 'rocks': [], 'plates': [],
+                    'chest': [list(far)], 'secret': [], 'entry': list(m1), 'spot': px(*m1)})
+    caves.append({'id': 's01_cave_treasure', 'kind': 'treasure', 'mouths': [list(m1)]})
+    (m2, far2, carved2) = rooms[1]
+    items.append({'id': 'toy_hammer', 'cell': list(far2)})
+    caves.append({'id': 's01_cave_quest', 'kind': 'quest', 'mouths': [list(m2)]})
     # 지나갈 수 있는지 확인(문 없이 지역마다 마을 → 보스, 문을 다 열면 가운데 → 모든 지역)
-    walk = set('.,pbsi')
+    walk = set('.,pbsikc')
     def reach(a, allow):
         seen = {a}; q = collections.deque([a])
         while q:
@@ -521,10 +646,12 @@ def main(river_seed=1000):
     allq = reach(s1, walk | {'q'})
     for q in puzzles:
         assert tuple(q['entry']) in allq, ('퍼즐 입구에 못 간다', q['id'])
+    for it in items:
+        assert tuple(it['cell']) in allq, ('퀘스트 물건에 못 간다', it['id'])
     zones = [''.join(str(zone[y][x] % 10) if not sea[y][x] else '-' for x in range(W)) for y in range(H)]
     out = {'_doc': 'tools/map/build_world.py가 만든다(손으로 고치지 않는다). 글자 뜻은 그 스크립트 머리말. zones = 칸마다 지역(스테이지 % 10, 바다 -).',
            'tile': TILE, 'w': W, 'h': H, 'rows': [''.join(r) for r in g], 'zones': zones, 'regions': regions, 'gates': gates, 'quest_gates': quest_gates,
-           'puzzles': puzzles, 'walk': '.,pbsi', 'gate': '='}
+           'puzzles': puzzles, 'caves': caves, 'items': items, 'walk': '.,pbsikc', 'gate': '='}
     json.dump(out, open(os.path.join(ROOT, 'data/map/world.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('world', W, 'x', H)
 
