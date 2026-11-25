@@ -243,6 +243,7 @@ func test_field_hunt_hammer_kills_mob_and_bag_is_banked_in_town() -> void:
 		if not f._enemies.has(e):
 			break
 	assert_false(f._enemies.has(e), "망치가 저절로 날아가 몹을 쓰러뜨린다")
+	f._enemies.clear()  # 쓰러뜨린 자리에 새로 생긴 몹이 다가와 조우로 넘어가지 않게
 	assert_false(f._drops.is_empty(), "구슬이 떨어진다")
 	f._hero = (f._drops[0]["pos"] as Vector2) + Vector2(60, 0)  # 끌어당기는 거리 안으로 다가간다
 	for k in 120:  # 구슬이 빨려 와 주머니에
