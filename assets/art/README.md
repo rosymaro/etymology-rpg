@@ -1,6 +1,6 @@
 # 그림 콘티 (무엇을, 몇 장, 어떤 느낌, 어떤 크기, 어떤 이름으로)
 
-> 디자이너용 한 장짜리 HTML: [`docs/art/conti/index.html`](../../docs/art/conti/index.html) (이 문서로 `python3 tools/art/build_conti.py`가 만든다. 이 문서를 고치면 다시 만든다)
+> 디자이너용 한 장짜리 HTML: [`docs/art/conti/index.html`](../../docs/art/conti/index.html). **필요한 그림 한 장마다 개략 그림(도형 콘티)**과 파일 이름·크기·설명이 카드로 나온다. `python3 tools/art/build_conti.py`가 이 문서와 `tools/art/sketch.py`(도형 그림)로 만든다. 그림 목록을 바꾸면 `build_conti.py`의 `catalog()`도 함께 고친다
 
 게임은 `res://assets/art/<종류>/<id>.png`가 있으면 그림을, 없으면 지금처럼 도형을 그린다(`src/ui/art.gd`). 그래서 그림은 **한 장씩 넣는 대로 그 자리만** 바뀐다. 이 문서가 그림 목록의 기준이다. 그림 방향은 [art-direction.md](../../docs/design/art-direction.md), AI 프롬프트는 [PROMPTS.md](PROMPTS.md).
 
