@@ -12,6 +12,7 @@ const MOB_COL := {"wander": Color("c7b8e0"), "chase": Color("f0a08c"), "flee": C
 const TOUCH_R := 110.0
 const MINI_SCALE := 0.9  ## 미니맵: 타일 하나당 픽셀
 const TILE_COL := {".": Color("d8eec9"), ",": Color("f3ead8"), "p": Color("d9c59a"), "b": Color("b98c5a"), "=": Color("e9876a"), "q": Color("8c6a4a"),
+	"s": Color("d9d2c3"), "F": Color("c9a874"), "h": Color("b7a48c"), "o": Color("8cc6e8"), "f": Color("b9d77e"),
 	"^": Color("9a8f86"), "~": Color("6fa8dc"), "w": Color("8cc6e8"), "#": Color("6f6257"), "T": Color("6fae74"), "H": Color("a7a7b4")}
 
 var map: WorldMap
@@ -35,6 +36,11 @@ var _mini: TextureRect
 var _full: Control
 var _gate_t := 0.0
 var _goal: Label
+var _rest: Label  ## 병원에서 쉬는 남은 시간
+var _rest_t := 0.0
+var _was_resting := false
+var _villagers: Array[FieldMob] = []
+const BUILDING_ROOF := {"forge": Color("c0634a"), "board": Color("6f8fd0"), "hospital": Color("f2f2f2"), "tree": Color("4f8f57")}
 var _quests: Control
 
 static var _map_tex: ImageTexture
@@ -53,6 +59,7 @@ func open(args: Dictionary) -> void:
 		{"id": "forge", "pos": map.spot(1, "forge"), "key": "ui.field.forge", "color": UiKit.APRICOT},
 		{"id": "tree", "pos": map.spot(1, "tree"), "key": "ui.field.tree", "color": UiKit.LEAF},
 		{"id": "board", "pos": map.spot(1, "board"), "key": "ui.field.order", "color": UiKit.PINK},
+		{"id": "hospital", "pos": map.spot(1, "hospital"), "key": "ui.field.hospital", "color": UiKit.BAD},
 		{"id": "notice", "pos": map.spot(1, "notice"), "key": "ui.field.notice", "color": UiKit.SKY},
 		{"id": "boss", "pos": map.spot(1, "boss"), "key": "ui.field.boss", "color": UiKit.GRAY},
 	]
@@ -60,6 +67,13 @@ func open(args: Dictionary) -> void:
 		var e := _new_enemy()
 		if e:
 			_enemies.append(e)
+	for i in int(_f.get("villagers", 0)):
+		var v := FieldMob.new()
+		v.kind = "wander"
+		v.pos = _town_spot()
+		v.words = [str(_rng.randi_range(1, 6))] as Array[String]  # 말버릇 번호
+		_villagers.append(v)
+	_was_resting = main.flow.rest_left() > 0
 	_build_hud()
 	_build_minimap()
 	if args.get("msg", "") != "":
@@ -92,6 +106,13 @@ func _build_hud() -> void:
 	gc.add_child(_goal)
 	add_child(gc)
 	gc.position = Vector2(16, 150 + map.h * MINI_SCALE + 10)
+	_rest = UiKit.label("", 22, UiKit.BAD.darkened(0.2))
+	var rc := UiKit.card(Color("fff4dc"))
+	rc.add_child(_rest)
+	add_child(rc)
+	rc.position = Vector2(16, 150 + map.h * MINI_SCALE + 10 + 48)
+	rc.visible = false
+	_rest.set_meta("card", rc)
 	var home := UiKit.button(t("ui.field.home"), _go_home, UiKit.PAPER, 24)
 	home.custom_minimum_size = Vector2(150, 70)
 	add_child(home)
@@ -196,6 +217,25 @@ func _process(delta: float) -> void:
 	var was_town := map.is_town(_hero)
 	var before := _hero
 	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * delta, HERO_R, _gates)
+	var left: int = main.flow.rest_left()
+	if left > 0 and was_town and not map.is_town(_hero):  # 병원에서 쉬는 중: 마을 밖으로 못 나간다
+		_hero = before
+		if _rest_t <= 0.0:
+			_rest_t = 2.0
+			_show_toast(t("ui.field.rest_block").format({"left": _mmss(left)}))
+	_rest_t -= delta
+	var card: Control = _rest.get_meta("card")
+	card.visible = left > 0
+	if left > 0:
+		_rest.text = t("ui.field.resting").format({"left": _mmss(left)})
+	elif _was_resting:
+		_show_toast(t("ui.field.rest_done"))
+	_was_resting = left > 0
+	for v in _villagers:  # 마을 사람: 마을 안에서만 천천히
+		var vv := v.steer(_hero, delta, _f["kinds"], _rng) * 0.5
+		var vp: Vector2 = map.move(v.pos, vv * delta, ENEMY_R)
+		if map.is_town(vp):
+			v.pos = vp
 	if was_town and not map.is_town(_hero) and map.stage_at(_hero) == GameFlow.STAGE:
 		main.flow.entered_field()
 	# 닫힌 스테이지 문에 막히면 알려 준다
@@ -235,6 +275,10 @@ func _process(delta: float) -> void:
 	for sp in _spots:
 		if (sp["pos"] as Vector2).distance_to(_hero) < TOUCH_R:
 			_near = sp
+	if _near.is_empty():
+		for v in _villagers:
+			if v.pos.distance_to(_hero) < TOUCH_R * 0.8:
+				_near = {"id": "villager", "key": "ui.field.villager", "line": v.words[0]}
 	_act_btn.visible = not _near.is_empty()
 	if _act_btn.visible:
 		_act_btn.text = t("ui.field.act").format({"place": t(_near["key"])})
@@ -272,6 +316,11 @@ func _act() -> void:
 			main.notice(t("ui.field.tree_msg"))
 		"board":
 			main.flow.town_minigame()
+		"hospital":
+			var left: int = main.flow.rest_left()
+			main.notice(t("ui.field.nurse_rest").format({"left": _mmss(left)}) if left > 0 else t("ui.field.nurse"))
+		"villager":
+			main.notice(t("ui.npc.s01_%s" % _near["line"]))
 		"notice":
 			_busy = true
 			_stick_on = false
@@ -296,6 +345,21 @@ func _quest_done() -> void:
 	_update_top()
 	_map_tex = null  # 미니맵도 다시(길목 색)
 	_mini.texture = map_texture(map, _gates)
+
+
+static func _mmss(sec: int) -> String:
+	return "%d:%02d" % [sec / 60, sec % 60]
+
+
+## 마을 안 아무 서 있을 수 있는 자리(마을 사람).
+func _town_spot() -> Vector2:
+	var t: Array = map.region(GameFlow.STAGE)["town"]
+	for k in 80:
+		var c := Vector2i(int(t[0]) + _rng.randi_range(1, int(t[2]) - 2), int(t[1]) + _rng.randi_range(1, int(t[3]) - 2))
+		var p := (Vector2(c) + Vector2(0.5, 0.5)) * map.tile
+		if map.is_town(p) and map.fits(p, ENEMY_R):
+			return p
+	return map.start(GameFlow.STAGE)
 
 
 func _go_home() -> void:
@@ -370,9 +434,15 @@ func _draw() -> void:
 	draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), TILE_COL["^"])
 	_draw_tiles(o)
 	var font := ThemeDB.fallback_font
+	_draw_buildings(o)
+	for v in _villagers:
+		_draw_villager(o + v.pos)
 	for sp in _spots:
 		var p: Vector2 = o + sp["pos"]
 		var col: Color = sp["color"]
+		if sp["id"] in BUILDING_ROOF:  # 건물이 있는 시설: 문 앞에 이름만
+			if sp["id"] == "hospital" or sp["id"] == "forge" or sp["id"] == "board" or sp["id"] == "tree":
+				continue
 		if sp["id"] == "boss" and main.flow.seen("boss_s01"):
 			col = UiKit.LEAF
 		var art_id: String = "boss_gate_open" if sp["id"] == "boss" and main.flow.seen("boss_s01") else str(sp["id"])
@@ -413,6 +483,69 @@ func _draw() -> void:
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))
+
+
+## 마을 건물: 벽(타일) 위에 지붕, 문, 창, 간판. 말뿌리 나무는 큰 나무로.
+func _draw_buildings(o: Vector2) -> void:
+	var ts := float(map.tile)
+	var font := ThemeDB.fallback_font
+	for b in map.region(GameFlow.STAGE).get("buildings", []):
+		var rc: Array = b["rect"]
+		var r := Rect2(o + Vector2(float(rc[0]), float(rc[1])) * ts, Vector2(float(rc[2]), float(rc[3])) * ts)
+		if not r.grow(200).intersects(Rect2(Vector2.ZERO, size)):
+			continue
+		var id := String(b["id"])
+		if id == "tree":
+			var c := r.get_center()
+			draw_rect(Rect2(c + Vector2(-14, 0), Vector2(28, ts)), Color("7a5a3a"))
+			draw_circle(c + Vector2(0, -20), ts * 1.1, Color("4f8f57"))
+			draw_circle(c + Vector2(-40, 0), ts * 0.7, Color("5f9f67"))
+			draw_circle(c + Vector2(40, 0), ts * 0.7, Color("5f9f67"))
+			draw_string(font, c + Vector2(-90, ts * 1.6), t("ui.field.tree"), HORIZONTAL_ALIGNMENT_CENTER, 180, 22, UiKit.INK)
+			continue
+		var roof: Color = BUILDING_ROOF.get(id, Color("a46a4a") if id.ends_with("1") or id.ends_with("3") else Color("8a6aa4"))
+		draw_rect(r, Color("efe3cf"))
+		draw_rect(r, UiKit.INK, false, 3)
+		var top := Rect2(r.position - Vector2(10, 0), Vector2(r.size.x + 20, r.size.y * 0.45))
+		draw_colored_polygon(PackedVector2Array([top.position + Vector2(0, top.size.y), top.position + Vector2(top.size.x / 2, -ts * 0.5),
+			top.end]), roof)
+		draw_polyline(PackedVector2Array([top.position + Vector2(0, top.size.y), top.position + Vector2(top.size.x / 2, -ts * 0.5),
+			top.end]), UiKit.INK, 3)
+		var dp: Array = b["door"]
+		var door := o + Vector2(float(dp[0]), float(dp[1])) - Vector2(ts * 0.3, ts * 0.9)
+		draw_rect(Rect2(door, Vector2(ts * 0.6, ts * 0.8)), Color("8b6640"))
+		for k in 2:  # 창
+			var wx := r.position.x + (k + 0.5) * r.size.x / 2.0 - ts * 0.25
+			if absf(wx + ts * 0.25 - (door.x + ts * 0.3)) > ts * 0.6:
+				draw_rect(Rect2(Vector2(wx, r.position.y + r.size.y * 0.55), Vector2(ts * 0.5, ts * 0.4)), Color("bfe3f5"))
+		if id == "hospital":
+			var c := Vector2(r.get_center().x, r.position.y + r.size.y * 0.2)
+			draw_rect(Rect2(c - Vector2(8, 22), Vector2(16, 44)), UiKit.BAD)
+			draw_rect(Rect2(c - Vector2(22, 8), Vector2(44, 16)), UiKit.BAD)
+		if id == "forge":  # 굴뚝 연기
+			var ch0 := r.position + Vector2(r.size.x * 0.8, -ts * 0.2)
+			draw_rect(Rect2(ch0, Vector2(18, 30)), Color("6f6257"))
+			for k in 3:
+				var ph := fmod(Time.get_ticks_msec() / 900.0 + k / 3.0, 1.0)
+				draw_circle(ch0 + Vector2(9 + sin(ph * 6.0) * 6, -ph * 70), 8 + ph * 8, Color(0.9, 0.9, 0.9, 0.7 * (1.0 - ph)))
+		var key: String = {"forge": "ui.field.forge", "board": "ui.field.order", "hospital": "ui.field.hospital"}.get(id, "")
+		if key != "":
+			var label := t(key)
+			var tw := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x + 20
+			var lp := Vector2(r.get_center().x - tw / 2, r.end.y - r.size.y * 0.15 - 30)
+			draw_rect(Rect2(lp, Vector2(tw, 30)), Color("fff4dc"))
+			draw_rect(Rect2(lp, Vector2(tw, 30)), UiKit.INK, false, 2)
+			draw_string(font, lp + Vector2(0, 22), label, HORIZONTAL_ALIGNMENT_CENTER, tw, 22, UiKit.INK)
+
+
+func _draw_villager(p: Vector2) -> void:
+	if Art.draw(self, "npc", "villager", p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
+		return
+	draw_circle(p + Vector2(0, 14), 18, Color("e9c46a"))
+	draw_circle(p - Vector2(0, 10), 16, Color("ffe3c4"))
+	draw_arc(p - Vector2(0, 10), 16, 0, TAU, 24, UiKit.INK, 2)
+	draw_circle(p + Vector2(-5, -12), 2, UiKit.INK)
+	draw_circle(p + Vector2(5, -12), 2, UiKit.INK)
 
 
 ## 몹 모양: 배회(보라, 동그란 눈), 쫓기(주황, 뿔과 성난 눈썹, 쫓을 때 !), 도망(민트, 긴 귀와 땀방울, 도망칠 때 땀).
@@ -499,6 +632,31 @@ func _draw_tiles(o: Vector2) -> void:
 						else:  # 내려가는 계단
 							for k2 in 4:
 								draw_line(r.position + Vector2(6, 10 + k2 * 14), r.position + Vector2(ts - 6, 10 + k2 * 14), Color("b8a27a"), 3)
+				"s":
+					if hsh % 3 == 0:
+						draw_rect(Rect2(r.position + Vector2(6 + hsh % 20, 8 + (hsh / 3) % 30), Vector2(18, 12)), Color("c8c0b0"))
+				"F":
+					draw_rect(Rect2(r.position + Vector2(0, ts * 0.35), Vector2(ts, 8)), Color("8b6640"))
+					draw_rect(Rect2(r.position + Vector2(0, ts * 0.65), Vector2(ts, 8)), Color("8b6640"))
+					for k2 in 2:
+						draw_rect(Rect2(r.position + Vector2(10 + k2 * 32, ts * 0.2), Vector2(10, ts * 0.65)), Color("7a5a3a"))
+				"o":  # 분수·우물: 이웃한 칸끼리 한 연못으로 이어진다
+					draw_rect(r, Color("a7a7b4"))
+					var inner := r.grow(-8)
+					if map.ch(Vector2i(x - 1, y)) == "o":
+						inner = inner.grow_side(SIDE_LEFT, 8)
+					if map.ch(Vector2i(x + 1, y)) == "o":
+						inner = inner.grow_side(SIDE_RIGHT, 8)
+					if map.ch(Vector2i(x, y - 1)) == "o":
+						inner = inner.grow_side(SIDE_TOP, 8)
+					if map.ch(Vector2i(x, y + 1)) == "o":
+						inner = inner.grow_side(SIDE_BOTTOM, 8)
+					draw_rect(inner, Color("8cc6e8"))
+					if hsh % 2 == 0:
+						draw_circle(c + Vector2(0, -6 + sin(Time.get_ticks_msec() / 200.0) * 3), 5, Color(1, 1, 1, 0.8))
+				"f":
+					for k2 in 3:
+						draw_line(r.position + Vector2(8 + k2 * 22, 10), r.position + Vector2(8 + k2 * 22, ts - 10), Color("6f9a3a"), 4)
 				"=":
 					var open: bool = map.walkable(Vector2i(x, y), _gates)
 					if not open:

@@ -36,7 +36,7 @@ static func from_dict(d: Dictionary) -> WorldMap:
 	m.regions = d.get("regions", [])
 	for z in d.get("zones", []):
 		m.zones.append(String(z))
-	m.walk = String(d.get("walk", ".,pb"))
+	m.walk = String(d.get("walk", ".,pbs"))
 	for gt in d.get("gates", []):
 		for t in gt["tiles"]:
 			m._gate[Vector2i(int(t[0]), int(t[1]))] = int(gt["stage"])
@@ -158,8 +158,10 @@ func stage_of(c: Vector2i) -> int:
 	return 10 if n == 0 else n
 
 
+## 마을 바닥(,)과 마을 돌길(s). 몹은 마을에 생기지 않고, 병원에서 쉬는 동안은 마을 밖으로 못 나간다.
 func is_town(p: Vector2) -> bool:
-	return ch(cell(p)) == ","
+	var k := ch(cell(p))
+	return k == "," or k == "s"
 
 
 func start(stage: int) -> Vector2:
@@ -182,7 +184,7 @@ func random_field_spot(stage: int, rng: RandomNumberGenerator, near: Vector2, lo
 		if stage_of(c) != stage:
 			continue
 		var snapped := (Vector2(c) + Vector2(0.5, 0.5)) * tile
-		if ch(c) != "," and fits(snapped, r):
+		if not is_town(snapped) and fits(snapped, r):
 			return snapped
 	return Vector2.INF
 

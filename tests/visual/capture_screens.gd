@@ -52,6 +52,14 @@ func _run() -> void:
 	s.pos = wm.spot(1, "forge") + Vector2(60, 110)
 	main.flow.go_field()
 	await _shot("05_town_forge")
+	s.pos = wm.start(1)
+	main.flow.go_field()
+	await _shot("05_town_plaza")
+	s.pos = wm.spot(1, "hospital")
+	s.rest_until = int(Time.get_unix_time_from_system()) + 151
+	main.flow.go_field()
+	await _shot("05_town_hospital_rest")
+	s.rest_until = 0
 	s.pos = wm.spot(1, "boss") + Vector2(0, 100)
 	main.flow.go_field()
 	await _shot("05_field_boss")

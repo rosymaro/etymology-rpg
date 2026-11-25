@@ -20,6 +20,7 @@ var place := "town"  ## town | field
 var pos := Vector2.ZERO
 var titles: Array[String] = []
 var exam_fail_date := ""
+var rest_until := 0  ## 병원에서 쉬기가 끝나는 시각(유닉스 초). 그때까지 마을 밖으로 못 나간다(04-meta 9절)
 var dev_mode := false  ## 개발자 모드(모든 단어를 갖고 평가용으로 시작). 저장 파일도 따로
 var roots_cache: Dictionary = {}  ## 가진 스킬 어근(저장하지 않음, ProgressRules가 채운다)
 
@@ -52,6 +53,7 @@ func to_dict() -> Dictionary:
 		"joined": joined, "equipment": eqs, "magics": magics, "chosen_roots": _str_keys(chosen_roots),
 		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y],
 		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode,
+		"rest_until": rest_until,
 	}
 
 
@@ -78,6 +80,7 @@ static func from_dict(d: Dictionary) -> GameState:
 	g.flags = d.get("flags", {})
 	g.recapture = d.get("recapture", {})
 	g.place = d.get("place", "town")
+	g.rest_until = int(d.get("rest_until", 0))
 	var p: Array = d.get("pos", [0, 0])
 	g.pos = Vector2(float(p[0]), float(p[1]))
 	for t in d.get("titles", []):
