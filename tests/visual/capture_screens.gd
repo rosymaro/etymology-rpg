@@ -43,6 +43,18 @@ func _run() -> void:
 	for i in 40:
 		gd.rules.gain_word(s, field[i].id)
 	var wm := WorldMap.load_default()
+	gd.tutorials_enabled = true  # 튜토리얼 모습(08-tutorial.md)
+	s.pos = wm.start(1)
+	main.flow.go_field()
+	await get_tree().create_timer(0.6).timeout
+	await _shot("00_tut_field")
+	for o in main.current().find_children("*", "TutorialOverlay", true, false):
+		o._next()
+	await get_tree().create_timer(0.3).timeout
+	await _shot("00_tut_field_2")
+	for o in main.current().find_children("*", "TutorialOverlay", true, false):
+		o._finish()
+	gd.tutorials_enabled = false
 	s.pos = wm.start(1) + Vector2(260, 200)
 	main.flow.go_field()
 	await _shot("04_field_gate")

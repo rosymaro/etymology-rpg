@@ -55,6 +55,10 @@ func open(_args: Dictionary) -> void:
 	row.add_child(back)
 	UiKit.thumb(row)  # 엄지 자리
 	_refresh()
+	(func() -> void:
+		await get_tree().process_frame
+		TutorialOverlay.run(self, "gacha", [{"target": _coins, "text": "tut.gacha.coins", "mode": "any"},
+			{"target": _btns[0], "text": "tut.gacha.pull", "mode": "any"}] as Array[Dictionary])).call()
 
 
 func _refresh() -> void:

@@ -24,6 +24,8 @@ var feedback: Dictionary = {}
 var resume_path := "user://resume.cfg"  ## 다른 앱을 보다 돌아왔을 때 이어서 할 곳(04-meta.md)
 ## 테스트·화면 캡처에서는 이어 하기를 끈다(앞 테스트가 남긴 곳으로 시작하지 않게). 이어 하기 테스트만 켠다.
 var resume_enabled := _resume_allowed()
+## 튜토리얼(08-tutorial.md): 테스트·화면 캡처에서는 끈다(튜토리얼 테스트만 켠다).
+var tutorials_enabled := _resume_allowed()
 
 
 func _ready() -> void:

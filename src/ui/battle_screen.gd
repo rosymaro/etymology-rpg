@@ -237,6 +237,7 @@ func _wait_tap() -> void:
 		return
 	_tapped = false
 	_next_btn.visible = true
+	_tutorial("battle")
 	while not _tapped and not _skip:
 		await get_tree().process_frame
 	_next_btn.visible = false
@@ -602,6 +603,22 @@ func _magic_text(ev: Dictionary) -> String:
 	return t(key).format(f) if t(key) != key else GameText.magic_name(id)
 
 
+## 처음 전투(08-tutorial.md): 아군 카드 → 적 카드 → 코인 → '다음'. 마법이 있으면 처음 마법 고르기 때 마법 칸.
+func _tutorial(id: String) -> void:
+	var steps: Array[Dictionary] = []
+	match id:
+		"battle":
+			steps = [
+				{"target": _a_box, "text": "tut.battle.ally", "mode": "any"},
+				{"target": _b_box, "text": "tut.battle.enemy", "mode": "any"},
+				{"target": _a_box.coins, "text": "tut.battle.coin", "mode": "any"},
+				{"target": _next_btn, "text": "tut.battle.next", "mode": "tap"},
+			]
+		"battle_magic":
+			steps = [{"target": _tray, "text": "tut.battle.magic", "mode": "any"}, {"target": _next_btn, "text": "tut.battle.magic_skip", "mode": "any"}]
+	TutorialOverlay.run(self, id, steps)
+
+
 # ----- 턴마다 마법 고르기 -----
 
 func _tray_button(id: String) -> Button:
@@ -676,6 +693,8 @@ func _decide() -> Array:
 	_deciding = true
 	_refresh_tray()
 	_next_btn.visible = true
+	if not _ctx.offer.is_empty():
+		_tutorial("battle_magic")
 	var usable := _ctx.offer.any(func(m: String) -> bool: return can_use(m))
 	if usable and _banner.text == "":
 		_banner.text = t("ui.battle.magic_turn")

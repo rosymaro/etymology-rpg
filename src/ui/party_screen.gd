@@ -24,6 +24,22 @@ func open(_args: Dictionary) -> void:
 	_detail = UiKit.vbox(10)
 	v.add_child(UiKit.scroll(_detail))
 	_refresh()
+	_tutorial.call_deferred()
+
+
+var _first_root_btn: Button
+var _loadout_card: Control
+
+
+## 처음 유닛 창(08-tutorial.md): 장착 칸 → 유닛 어근 버튼 누르기 → (고르는 화면에서) 어근 하나 고르기.
+func _tutorial() -> void:
+	await get_tree().process_frame
+	var steps: Array[Dictionary] = [{"target": _loadout_card, "text": "tut.party.loadout", "mode": "any"}]
+	if _first_root_btn and not _first_root_btn.disabled:
+		steps.append({"target": _first_root_btn, "text": "tut.party.root", "mode": "tap"})
+	elif not _in_town():
+		steps.append({"target": _loadout_card, "text": "tut.party.town", "mode": "any"})
+	TutorialOverlay.run(self, "party", steps)
 
 
 func _in_town() -> bool:
@@ -65,6 +81,8 @@ func _refresh() -> void:
 			func() -> void: _choose_root(unit), UiKit.ACCENT.lightened(0.5), 20)
 		rb.disabled = not _in_town() or GameData.rules.equippable_roots(s, u).is_empty()
 		col.add_child(rb)
+		if _first_root_btn == null or not is_instance_valid(_first_root_btn) or (_first_root_btn.disabled and not rb.disabled):
+			_first_root_btn = rb
 		_detail.add_child(card)
 
 
@@ -72,6 +90,7 @@ func _refresh() -> void:
 func _build_loadout() -> void:
 	var s := GameData.state
 	var card := UiKit.card(UiKit.APRICOT.lightened(0.5))
+	_loadout_card = card
 	var col := UiKit.vbox(6)
 	card.add_child(col)
 	col.add_child(UiKit.label(t("ui.party.loadout"), 24))
@@ -131,6 +150,7 @@ func _choose_root(unit: int) -> void:
 	for c in _detail.get_children():
 		c.queue_free()
 	_detail.add_child(UiKit.label(t("ui.party.pick_root").format({"name": UiKit.unit_name(unit)}), 24))
+	var first := true
 	for r in GameData.rules.equippable_roots(s, unit):
 		var root := String(r)
 		var b := UiKit.button("%s — %s" % [root, GameText.root_desc(root)], func() -> void:
@@ -140,6 +160,12 @@ func _choose_root(unit: int) -> void:
 		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		_detail.add_child(b)
+		if first:
+			first = false
+			var fb := b
+			(func() -> void:
+				await get_tree().process_frame
+				TutorialOverlay.run(self, "party_root", [{"target": fb, "text": "tut.party.pick", "mode": "tap"}] as Array[Dictionary])).call()
 	_detail.add_child(UiKit.button(t("ui.common.back"), _refresh, UiKit.PAPER, 20))
 
 

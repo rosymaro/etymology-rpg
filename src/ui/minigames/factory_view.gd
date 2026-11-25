@@ -71,6 +71,24 @@ func build() -> void:
 	_build_search()
 	if bool(g.cfg.get("search_reverse", false)):
 		_show_intro(t("ui.factory.reverse_intro"))
+	_tutorial.call_deferred()
+
+
+## 미니게임마다 처음(08-tutorial.md 2절): 칠판 → 벨트 → 아래 작업대 → (영역이 여럿이면) 옆 영역 버튼.
+func _tutorial() -> void:
+	await get_tree().process_frame
+	var id := "minigame_" + String(game_id)
+	var key := "tut.mini.%s." % String(game_id)
+	var c := _canvas
+	var at := func(r: Rect2) -> Callable: return func() -> Rect2: return Rect2(c.get_global_rect().position + r.position, r.size)
+	var steps: Array[Dictionary] = [
+		{"target": at.call(Rect2(16, 4, _aw - 32, BOARD_H)), "text": key + "1", "mode": "any"},
+		{"target": at.call(Rect2(0, BELT_TOP - 30, _aw, BELT_BOTTOM - BELT_TOP + 60)), "text": key + "2", "mode": "any"},
+		{"target": at.call(Rect2(0, BELT_BOTTOM + 50, _aw, 280)), "text": key + "3", "mode": "any"},
+	]
+	if g.areas().size() > 1:
+		steps.append({"target": _nav_r, "text": "tut.mini.nav", "mode": "any"})
+	TutorialOverlay.run(self, id, steps)
 
 
 # ----- 좌표 -----

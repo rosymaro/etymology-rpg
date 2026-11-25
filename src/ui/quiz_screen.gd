@@ -74,6 +74,8 @@ func open(args: Dictionary) -> void:
 	var gap2 := Control.new()
 	gap2.custom_minimum_size.y = UiKit.THUMB_ROW - UiKit.THUMB_H / 2.0 - 32.0 - 14.0
 	v.add_child(gap2)
+	if _mode == "encounter":
+		_tutorial.call_deferred()
 	if _i >= _qs.size():
 		_done.call_deferred(_right)
 	elif _mode == "evolve" and _i == 0:
@@ -160,6 +162,17 @@ func _show_parts(q: QuizQuestion, reveal: bool) -> void:
 		_hint_lbl.text = iq.explain(GameData.repo.get_word(iq.word_id).meaning)
 	elif iq.kind == "infer":
 		_hint_lbl.text = t("ui.quiz.infer_hint")
+
+
+## 처음 조우 퀴즈(08-tutorial.md): 조각 칩 → 보기.
+func _tutorial() -> void:
+	await get_tree().process_frame
+	var steps: Array[Dictionary] = []
+	if _parts_row.get_child_count() > 0:
+		steps.append({"target": _parts_row, "text": "tut.quiz.parts", "mode": "any"})
+	steps.append({"target": _word_lbl if _word_lbl.visible else _parts_row, "text": "tut.quiz.word", "mode": "any"})
+	steps.append({"target": _opts, "text": "tut.quiz.pick", "mode": "any"})
+	TutorialOverlay.run(self, "quiz", steps)
 
 
 func _skip_anim() -> bool:

@@ -24,6 +24,10 @@ func open(args: Dictionary) -> void:
 	v.add_child(_toggle("ui.option.bgm", s.bgm, func(on: bool) -> void: s.bgm = on))
 	v.add_child(_slider(s.bgm_volume, func(x: float) -> void: s.bgm_volume = x))
 	v.add_child(_toggle("ui.option.touch_marker", s.touch_marker, func(on: bool) -> void: s.touch_marker = on))
+	v.add_child(UiKit.button(t("ui.options.tutorial_again"), func() -> void:  # 08-tutorial.md
+		TutorialBook.reset_all(GameData.state)
+		GameData.save()
+		main.notice(t("ui.options.tutorial_reset")), UiKit.PAPER))
 	v.add_child(UiKit.button(t("ui.common.back"), _close))
 
 
