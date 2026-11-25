@@ -16,6 +16,9 @@ var walk := ".,pb"
 var zones: PackedStringArray = []  ## 칸마다 지역(스테이지 % 10, 바다 -). 지역 경계는 곧은 선이 아니다
 var _gate := {}  ## Vector2i -> 스테이지(int, 그 보스를 이겨야 열리는 문) 또는 퀘스트 id(String)
 var quest_gates: Array = []  ## {id, kind(bridge|cliff), tiles, spot}
+var puzzles: Array = []  ## 돌 밀기 퍼즐(07-fun 3절) 원본 목록
+var extra_block := {}  ## 지금 막힌 칸(퍼즐의 돌·상자): 화면이 채운다
+var extra_walk := {}  ## 지금 지나갈 수 있게 된 칸(돌로 메운 물·구멍)
 
 static var _cache: WorldMap
 
@@ -36,10 +39,11 @@ static func from_dict(d: Dictionary) -> WorldMap:
 	m.regions = d.get("regions", [])
 	for z in d.get("zones", []):
 		m.zones.append(String(z))
-	m.walk = String(d.get("walk", ".,pbs"))
+	m.walk = String(d.get("walk", ".,pbsi"))
 	for gt in d.get("gates", []):
 		for t in gt["tiles"]:
 			m._gate[Vector2i(int(t[0]), int(t[1]))] = int(gt["stage"])
+	m.puzzles = d.get("puzzles", [])
 	m.quest_gates = d.get("quest_gates", [])
 	for qg in m.quest_gates:
 		for t in qg["tiles"]:
@@ -63,6 +67,10 @@ func ch(c: Vector2i) -> String:
 
 ## 그 칸을 지나갈 수 있는가. open_gates: 스테이지 -> true(그 스테이지에서 다음으로 가는 문이 열림)
 func walkable(c: Vector2i, open_gates: Dictionary = {}) -> bool:
+	if extra_block.has(c):
+		return false
+	if extra_walk.has(c):
+		return true
 	var k := ch(c)
 	if k == "=" or k == "q":
 		return bool(open_gates.get(_gate.get(c, 0), false))

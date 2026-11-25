@@ -290,3 +290,50 @@ func test_mobs_never_enter_town_and_look_by_attribute() -> void:
 	assert_true(main.current() is FieldScreen, "마을 안에서는 몹과 마주치지 않는다")
 	for e in f._enemies:
 		assert_false(f.map.is_town(e.pos), "%s 몹이 마을에 들어오지 못한다" % e.kind)
+
+
+func test_push_rock_open_chest_and_piece_lock() -> void:
+	GameData.new_game("테스트")
+	GameData.state.flags["s01_tut_battle"] = true
+	GameData.puzzles.clear()
+	var wm := WorldMap.load_default()
+	var q: Dictionary = wm.puzzles.filter(func(x: Dictionary) -> bool: return x["kind"] == "plates")[0]
+	GameData.state.pos = (Vector2(int(q["entry"][0]), int(q["entry"][1])) + Vector2(0.5, 0.5)) * wm.tile
+	main.flow.go_field()
+	await wait_physics_frames(2)
+	var f := main.current() as FieldScreen
+	f._enemies.clear()
+	var pz: PushPuzzle = GameData.puzzles[q["id"]]
+	# 돌 왼쪽에 서서 오른쪽으로 민다
+	var rock: Vector2i = pz.rocks.keys()[0]
+	f._hero = (Vector2(rock - Vector2i(1, 0)) + Vector2(0.5, 0.5)) * f.map.tile
+	for k in 40:
+		f._stick_on = true
+		f._stick_vec = Vector2(1, 0)
+		await wait_physics_frames(1)
+		if not pz.rocks.has(rock):
+			break
+	f._stick_on = false
+	assert_true(pz.rocks.has(rock + Vector2i(1, 0)), "돌이 한 칸 밀렸다")
+	assert_true(f.map.extra_block.has(rock + Vector2i(1, 0)), "밀린 돌이 길을 막는다")
+	# 발판을 다 채우면 상자가 열린다
+	f._open_chest(pz)
+	assert_false(GameData.state.flags.get("chest_" + pz.id, false), "발판 전에는 안 열린다")
+	pz.rocks.clear()
+	for c in pz.plates:
+		pz.rocks[c] = "R"
+	var coins := GameData.state.wallet
+	f._open_chest(pz)
+	assert_true(GameData.state.flags.get("chest_" + pz.id, false))
+	assert_gt(GameData.state.wallet, coins, "보물: 코인")
+	# 조각 자물쇠: 쪽지 조각을 차례로 눌러 답 단어
+	var lq: Dictionary = wm.puzzles.filter(func(x: Dictionary) -> bool: return x["kind"] == "lock")[0]
+	var lz: PushPuzzle = GameData.puzzles[lq["id"]]
+	GameData.state.notes = ["forma", "in-"]
+	f._open_lock(lz)
+	assert_not_null(f._lock)
+	var btns := f._lock.find_children("*", "Button", true, false)
+	(btns[1] as Button).pressed.emit()  # in-
+	(btns[0] as Button).pressed.emit()  # forma
+	assert_true(GameData.state.flags.get("chest_" + lz.id, false), "in + form = inform 으로 열린다")
+	assert_true(GameData.state.has_word("inform"))

@@ -8,10 +8,14 @@
 - 지역 안은 젤다의 전설 꿈꾸는 섬의 들판처럼: 호수·언덕·숲이 길을 가르고, 강은 다리 하나로만 건넌다.
   미로는 세 지역에만(2 사냥꾼 숲, 6 왕성 정원, 9 광산 갱도). 보스는 들어온 곳에서 걸어서 가장 먼 쪽.
 - 스테이지 1 퀘스트 길목(q): 강의 다리는 끊어져 있어 fac 퀘스트로 고치고, 보스 둘레 절벽은 de- 퀘스트로 내려간다.
+- 돌 밀기 퍼즐(07-fun 3·4절): tools/map/puzzles/s01.txt의 판을 지역 1 들판의 빈 풀밭에 박는다(풀 수 있는지 push_puzzle.py가 확인).
+  O 구멍(돌로 메움)  i 얼음(돌이 미끄러짐). 돌·발판·상자·숨은 쪽지는 지도 글자가 아니라 puzzles 목록에 적는다.
 - 스테이지 1 마을은 30 × 20(04-meta 9절): 울타리(F)와 문, 가운데 광장과 분수(o), 돌길(s), 건물(h, 지붕은 게임이 그린다), 밭(f).
 글자: . 풀  , 마을 바닥  s 마을 돌길  F 울타리  h 건물 벽  o 분수·우물  f 밭  p 길·고갯길  b 다리  = 스테이지 문  q 퀘스트 길목  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
 """
-import json, os, random, heapq, collections, math
+import json, os, random, heapq, collections, math, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import push_puzzle
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 W, H = 260, 160
 TILE = 64
@@ -406,8 +410,44 @@ def main(river_seed=1000):
                         'maze': [maze[0], maze[1], maze[2], maze[3]] if maze else [], 'hour': HOURS.get(st, 0)})
     for gt in gates:
         for x, y in gt['tiles']: g[y][x] = '='
+    # 돌 밀기 퍼즐: 지역 1 들판의 빈 풀밭(길·마을·문에서 떨어진 곳)에 판을 박는다
+    puzzles = []
+    pr = random.Random(77)
+    town1 = regions[0]['town']
+    cand = [(x, y) for y in range(H) for x in range(W) if inside(1, x, y)]
+    pr.shuffle(cand)
+    for b in push_puzzle.load(os.path.join(ROOT, 'tools/map/puzzles/s01.txt')):
+        assert push_puzzle.solve(b['rows']) is not None, ('못 푸는 퍼즐', b['id'])
+        bh, bw = len(b['rows']), len(b['rows'][0])
+        info0 = push_puzzle.parse(b['rows'])[2]
+        placed = None
+        for (x0, y0) in cand:
+            if not all(inside(1, x0 + dx, y0 + dy) and g[y0 + dy][x0 + dx] in '.T^' for dy in range(bh) for dx in range(bw)):
+                continue
+            exx, eyy = x0 + info0['entry'][0][0], y0 + info0['entry'][0][1]  # 입구 바깥이 풀밭이어야 들어온다
+            if not any(g[eyy + dy][exx + dx] == '.' and not (0 <= exx - x0 + dx < bw and 0 <= eyy - y0 + dy < bh) for dx, dy in push_puzzle.N4):
+                continue
+            if abs(x0 - (town1[0] + town1[2] // 2)) < town1[2] // 2 + 6 and abs(y0 - (town1[1] + town1[3] // 2)) < town1[3] // 2 + 6:
+                continue
+            if any(x0 < q['origin'][0] + q['size'][0] + 3 and q['origin'][0] < x0 + bw + 3 and
+                   y0 < q['origin'][1] + q['size'][1] + 3 and q['origin'][1] < y0 + bh + 3 for q in puzzles):  # 겹치지 않게(3칸 띄움)
+                continue
+            placed = (x0, y0)
+            break
+        assert placed, ('퍼즐 자리가 없다', b['id'])
+        x0, y0 = placed
+        base, rocks, info = push_puzzle.parse(b['rows'])
+        for (bx, by), c in base.items():
+            g[y0 + by][x0 + bx] = {'T': 'T', 'w': 'w', 'O': 'O', 'i': 'i'}.get(c, '.')
+        ab = lambda c: [x0 + c[0], y0 + c[1]]
+        ex, ey = ab(info['entry'][0])  # 입구 바깥 한 칸은 풀밭으로 이어 둔다
+        puzzles.append({'id': b['id'], 'kind': b['kind'], 'reward': b['reward'], 'answer': b['answer'], 'note': b['note'],
+                        'origin': [x0, y0], 'size': [bw, bh], 'rows': b['rows'],
+                        'rocks': [ab(c) + [k] for c, k in rocks.items()], 'plates': [ab(c) for c in info['plates']],
+                        'chest': [ab(c) for c in info['chest']], 'secret': [ab(c) for c in info['secret']],
+                        'entry': ab(info['entry'][0]), 'spot': px(*ab(info['entry'][0]))})
     # 지나갈 수 있는지 확인(문 없이 지역마다 마을 → 보스, 문을 다 열면 가운데 → 모든 지역)
-    walk = set('.,pbs')
+    walk = set('.,pbsi')
     def reach(a, allow):
         seen = {a}; q = collections.deque([a])
         while q:
@@ -477,10 +517,14 @@ def main(river_seed=1000):
         zs = {zone[y][x] for (x, y) in got if not wall[y][x]}
         assert zs <= {1, st_k + 1}, ('문 하나로 다른 지역까지 간다', st_k, zs)
         assert tuple(int(v // TILE) for v in regions[st_k]['start']) in got, ('문을 열어도 못 간다', st_k)
+    s1 = tuple(int(v // TILE) for v in regions[0]['start'])
+    allq = reach(s1, walk | {'q'})
+    for q in puzzles:
+        assert tuple(q['entry']) in allq, ('퍼즐 입구에 못 간다', q['id'])
     zones = [''.join(str(zone[y][x] % 10) if not sea[y][x] else '-' for x in range(W)) for y in range(H)]
     out = {'_doc': 'tools/map/build_world.py가 만든다(손으로 고치지 않는다). 글자 뜻은 그 스크립트 머리말. zones = 칸마다 지역(스테이지 % 10, 바다 -).',
            'tile': TILE, 'w': W, 'h': H, 'rows': [''.join(r) for r in g], 'zones': zones, 'regions': regions, 'gates': gates, 'quest_gates': quest_gates,
-           'walk': '.,pbs', 'gate': '='}
+           'puzzles': puzzles, 'walk': '.,pbsi', 'gate': '='}
     json.dump(out, open(os.path.join(ROOT, 'data/map/world.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('world', W, 'x', H)
 

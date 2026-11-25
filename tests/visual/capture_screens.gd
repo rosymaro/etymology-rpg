@@ -92,6 +92,18 @@ func _run() -> void:
 	s.pos = Vector2(float(cl[0]), float(cl[1]))
 	main.flow.go_field()
 	await _shot("05_field_cliff")
+	for kind in ["water", "plates", "lock"]:  # 돌 밀기 퍼즐
+		var pq: Dictionary = wm.puzzles.filter(func(x: Dictionary) -> bool: return x["kind"] == kind)[0]
+		s.pos = (Vector2(int(pq["entry"][0]), int(pq["entry"][1])) + Vector2(0.5, 0.5)) * wm.tile  # 입구(설 수 있는 칸)
+		main.flow.go_field()
+		(main.current() as FieldScreen)._enemies.clear()
+		await _shot("05_puzzle_" + kind)
+	s.notes = ["in-", "forma"]
+	var lq: Dictionary = wm.puzzles.filter(func(x: Dictionary) -> bool: return x["kind"] == "lock")[0]
+	(main.current() as FieldScreen)._open_lock(gd.puzzles[lq["id"]])
+	await _shot("05_puzzle_lock_open")
+	(main.current() as FieldScreen)._close_lock()
+	s.notes = []
 	s.flags.erase("s01_q_root")
 	var ids: Array[String] = [field[50].id, field[51].id]
 	main.flow.encounter(["information", "format"] as Array[String])

@@ -133,6 +133,9 @@ func say(key: String) -> String:
 	return TranslationServer.translate(key).format({"hero": state.hero_name if state else ""})
 
 
+var puzzles := {}  ## 퍼즐 id -> PushPuzzle(돌 자리는 화면이 바뀌어도 남는다, 저장은 안 함)
+
+
 ## 필드 사냥 나들이(상태는 state.hunt에 있어서 화면이 바뀌어도, 저장해도 남는다).
 func hunt_run() -> HuntRun:
 	return HuntRun.new(state.hunt, hunt_cfg)

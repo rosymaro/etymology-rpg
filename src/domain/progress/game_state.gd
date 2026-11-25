@@ -21,6 +21,7 @@ var pos := Vector2.ZERO
 var titles: Array[String] = []
 var exam_fail_date := ""
 var wallet := 0  ## 코인(07-fun 8절)
+var notes: Array = []  ## 주운 조각 쪽지(조각 id, 07-fun 4절). 가방에 남아 조각 사전이 된다
 var hunt: Dictionary = {}  ## 필드 사냥 한 번의 나들이(HuntRun, 주머니 포함)
 var field_skills: Array = ["hammer"]  ## 가진 어원 스킬(사냥 무기, 07-fun 2절)
 var loadout: Dictionary = {}  ## 장착(07-fun.md 2절): {"field": [필드 마법 2], "deck": [전투 마법 4]}
@@ -59,7 +60,7 @@ func to_dict() -> Dictionary:
 		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y],
 		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode,
 		"rest_until": rest_until, "pieces": pieces, "loadout": loadout,
-		"wallet": wallet, "hunt": hunt, "field_skills": field_skills,
+		"wallet": wallet, "hunt": hunt, "field_skills": field_skills, "notes": notes,
 	}
 
 
@@ -90,6 +91,7 @@ static func from_dict(d: Dictionary) -> GameState:
 	g.pieces = d.get("pieces", {})
 	g.loadout = d.get("loadout", {})
 	g.wallet = int(d.get("wallet", 0))
+	g.notes = d.get("notes", [])
 	g.hunt = d.get("hunt", {})
 	g.field_skills = d.get("field_skills", ["hammer"])
 	var p: Array = d.get("pos", [0, 0])
