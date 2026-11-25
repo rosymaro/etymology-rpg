@@ -96,7 +96,10 @@ func test_stage1_loop() -> void:
 	assert_true(main.current() is BattleScreen)
 	var bs := main.current() as BattleScreen
 	bs.skip_all()
-	await wait_seconds(1.0)
+	for _k in 300:  # 빨리 보기: 끝날 때까지(느린 기계에서도)
+		if bs._ended:
+			break
+		await wait_physics_frames(1)
 	assert_true(bs._end_btn.visible)
 	var hist := "\n".join(bs.lines)
 	assert_string_contains(hist, "1턴", "기록에 턴이 남는다")
@@ -174,7 +177,10 @@ func test_stage1_loop() -> void:
 	assert_not_null(boss_screen)
 	assert_true(boss_screen._ctx.enemies[-1].is_boss)
 	boss_screen.skip_all()
-	await wait_seconds(1.0)
+	for _k in 300:  # 빨리 보기: 끝날 때까지(느린 기계에서도)
+		if boss_screen._ended:
+			break
+		await wait_physics_frames(1)
 	boss_screen._end_btn.pressed.emit()
 	await wait_physics_frames(3)
 	await _finish_overlays()
