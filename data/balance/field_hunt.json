@@ -23,12 +23,21 @@
   "_no_fire_near_doc": "이 거리 안의 몹은 쏘지 않는다(붙어서 퀴즈를 하고 싶을 때)",
   "bank": { "exp_per_orb": 6, "lose_ratio": 0.5 },
   "eater": { "after_sec": 360, "again_sec": 180, "speed": 420, "hard_step": 1, "bonus_orbs": 40, "words": 3 },
+  "_weapons_doc": "필드 무기는 데리고 다니는 유닛마다 다르다(07-fun 1절, 사용자 의견). 배열은 강화 단계 0~4. type은 src/domain/hunt/unit_weapons.gd",
   "weapons": {
-    "hammer": { "root": "fac", "type": "boomerang", "cd": [1.4, 1.25, 1.1, 0.95, 0.8], "dmg": [1, 1, 2, 2, 3], "count": [1, 1, 1, 2, 2], "range": 420, "speed": 700 },
-    "spin":   { "root": "vertere", "type": "orbit", "cd": [0, 0, 0, 0, 0], "dmg": [1, 1, 1, 2, 2], "count": [1, 2, 2, 3, 3], "range": 110, "speed": 3.2, "hit_gap": 0.6 },
-    "shout":  { "root": "dicere", "type": "nova", "cd": [3.0, 2.6, 2.2, 1.9, 1.6], "dmg": [1, 1, 2, 2, 3], "count": [1, 1, 1, 1, 1], "range": 200 }
+    "u01": { "unit": 1,  "type": "boomerang", "cd": [1.4, 1.25, 1.1, 0.95, 0.8], "dmg": [1, 1, 2, 2, 3], "count": [1, 1, 1, 2, 2], "range": 420, "speed": 700 },
+    "u02": { "unit": 2,  "type": "grab",  "cd": [1.6, 1.5, 1.4, 1.3, 1.2], "dmg": [1, 1, 1, 2, 2], "count": [1, 1, 2, 2, 3], "range": 260, "stun": [0.8, 1.0, 1.1, 1.2, 1.4] },
+    "u03": { "unit": 3,  "type": "beam",  "cd": [2.2, 2.0, 1.8, 1.6, 1.4], "dmg": [1, 1, 2, 2, 3], "count": [1, 1, 1, 1, 1], "range": 520, "width": [30, 34, 38, 42, 46] },
+    "u04": { "unit": 4,  "type": "snipe", "cd": [1.8, 1.6, 1.4, 1.2, 1.0], "dmg": [1, 2, 2, 3, 3], "count": [1, 1, 1, 2, 2], "range": 480 },
+    "u05": { "unit": 5,  "type": "nova",  "cd": [3.0, 2.6, 2.2, 1.9, 1.6], "dmg": [1, 1, 2, 2, 3], "count": [1, 1, 1, 1, 1], "range": [200, 210, 220, 235, 250] },
+    "u06": { "unit": 6,  "type": "arrow", "cd": [0.9, 0.8, 0.7, 0.6, 0.5], "dmg": [1, 1, 1, 2, 2], "count": [1, 1, 2, 2, 3], "range": 560, "speed": 900 },
+    "u07": { "unit": 7,  "type": "lob",   "cd": [2.4, 2.2, 2.0, 1.8, 1.6], "dmg": [1, 2, 2, 3, 3], "count": [1, 1, 1, 1, 1], "range": 380, "radius": [90, 100, 110, 125, 140], "flight": 0.6 },
+    "u08": { "unit": 8,  "type": "aura",  "cd": [1.0, 0.9, 0.8, 0.7, 0.6], "dmg": [1, 1, 1, 1, 2], "count": [1, 1, 1, 1, 1], "range": [130, 145, 160, 175, 190] },
+    "u09": { "unit": 9,  "type": "fan",   "cd": [1.6, 1.45, 1.3, 1.15, 1.0], "dmg": [1, 1, 1, 2, 2], "count": [3, 3, 4, 4, 5], "range": 380, "speed": 750, "spread": 0.6 },
+    "u10": { "unit": 10, "type": "orbit", "cd": [0, 0, 0, 0, 0], "dmg": [1, 1, 1, 2, 2], "count": [1, 2, 2, 3, 3], "range": 110, "speed": 3.2, "hit_gap": 0.6 },
+    "u11": { "unit": 11, "type": "bash",  "cd": [2.0, 1.8, 1.6, 1.4, 1.2], "dmg": [1, 1, 1, 2, 2], "count": [1, 1, 1, 1, 1], "range": 130, "push": [260, 280, 300, 320, 340] },
+    "u12": { "unit": 12, "type": "slam",  "cd": [3.4, 3.1, 2.8, 2.5, 2.2], "dmg": [2, 2, 3, 3, 4], "count": [1, 1, 1, 1, 1], "range": 300, "radius": [80, 90, 100, 110, 120] }
   },
-  "start_skills": ["hammer"],
-  "boss_skills": { "1": "spin", "2": "shout" },
-  "_boss_skills_doc": "보스 1~4가 주는 어원 스킬(07-fun 2절). 그 뒤는 보물로"
+  "field_party": 3,
+  "_field_party_doc": "필드에 데리고 다니는 유닛 수(파티 화면에서 고른다)"
 }

@@ -1,7 +1,8 @@
 class_name HuntRun
 extends RefCounted
 ## 필드 사냥 한 번의 나들이(07-fun.md 1절). 노드·화면을 모른다. 상태는 GameState.hunt(사전)에 두어 저장·화면 전환에도 남는다.
-## hunt = {level, exp, weapons: {id: 단계(0부터)}, speed, magnet, sec, eaters, bag: {orbs, coins, words: []}}
+## hunt = {level, exp, units: [데리고 다니는 유닛], weapons: {무기 id: 단계(0부터)}, speed, magnet, sec, eaters, bag: {orbs, coins, words: []}}
+## 무기는 데리고 다니는 유닛마다 하나(u01 망치, u05 외침, u10 팽이 …, field_hunt.json weapons).
 ## 사냥으로 얻은 것은 주머니(bag)에 담기고, 마을에 들어가야(bank) 내 것이 된다. 지면 주머니의 절반을 잃는다.
 
 var d: Dictionary
@@ -18,10 +19,29 @@ func _init(hunt: Dictionary, hunt_cfg: Dictionary) -> void:
 ## 마을을 나설 때: 레벨·강화는 0에서. 주머니는 그대로(마을에 들어가면 비워진다).
 func reset() -> void:
 	var bag: Dictionary = d.get("bag", {"orbs": 0, "coins": 0, "words": []})
+	var units: Array = d.get("units", [1])
 	d.clear()
-	d.merge({"level": 0, "exp": 0, "weapons": {}, "speed": 0.0, "magnet": 0.0, "sec": 0.0, "eaters": 0, "bag": bag})
-	for w in cfg["start_skills"]:
-		d["weapons"][w] = 0
+	d.merge({"level": 0, "exp": 0, "units": [], "weapons": {}, "speed": 0.0, "magnet": 0.0, "sec": 0.0, "eaters": 0, "bag": bag})
+	set_units(units)
+
+
+## 그 유닛의 무기 id(없으면 "").
+func weapon_of(unit: int) -> String:
+	for id in cfg["weapons"]:
+		if int(cfg["weapons"][id].get("unit", 0)) == unit:
+			return String(id)
+	return ""
+
+
+## 데리고 다니는 유닛을 정한다: 그 유닛들의 무기만 남긴다(이미 있던 무기의 강화는 그대로, 새 무기는 0단계).
+func set_units(units: Array) -> void:
+	var keep := {}
+	for u in units:
+		var id := weapon_of(int(u))
+		if id != "":
+			keep[id] = int(d["weapons"].get(id, 0))
+	d["units"] = units.map(func(u: Variant) -> int: return int(u))
+	d["weapons"] = keep
 
 
 func level() -> int:
@@ -102,16 +122,12 @@ func pick_word(id: String) -> void:
 		(bag()["words"] as Array).append(id)
 
 
-## 레벨업 보기 3개: 가진 어원 스킬 중 아직 안 쓴 무기(new), 쓰는 무기 강화(up), 이동 속도(speed), 구슬 끌기(magnet).
-func choices(owned_skills: Array, rng: RandomNumberGenerator) -> Array[Dictionary]:
+## 레벨업 보기 3개: 데리고 다니는 유닛의 무기 강화(up), 이동 속도(speed), 구슬 끌기(magnet).
+func choices(rng: RandomNumberGenerator) -> Array[Dictionary]:
 	var pool: Array[Dictionary] = []
-	for w in owned_skills:
-		if not cfg["weapons"].has(w):
-			continue
-		if not d["weapons"].has(w):
-			pool.append({"type": "new", "id": w})
-		elif int(d["weapons"][w]) < (cfg["weapons"][w]["dmg"] as Array).size() - 1:
-			pool.append({"type": "up", "id": w})
+	for w in d["weapons"]:
+		if int(d["weapons"][w]) < (cfg["weapons"][w]["dmg"] as Array).size() - 1:
+			pool.append({"type": "up", "id": String(w)})
 	pool.append({"type": "speed", "id": ""})
 	pool.append({"type": "magnet", "id": ""})
 	var out: Array[Dictionary] = []
@@ -122,8 +138,6 @@ func choices(owned_skills: Array, rng: RandomNumberGenerator) -> Array[Dictionar
 
 func apply(c: Dictionary) -> void:
 	match String(c["type"]):
-		"new":
-			d["weapons"][c["id"]] = 0
 		"up":
 			d["weapons"][c["id"]] = int(d["weapons"][c["id"]]) + 1
 		"speed":
@@ -132,12 +146,23 @@ func apply(c: Dictionary) -> void:
 			d["magnet"] = float(d["magnet"]) + float(cfg["magnet_up"])
 
 
-## 무기의 지금 수치 {type, cd, dmg, count, range, speed, hit_gap}.
+## 무기의 지금 수치 {unit, type, cd, dmg, count, range, …}: 배열 값은 지금 강화 단계의 값.
 func weapon(id: String) -> Dictionary:
 	var w: Dictionary = cfg["weapons"][id]
 	var lv := mini(int(d["weapons"].get(id, 0)), (w["dmg"] as Array).size() - 1)
-	return {"type": w["type"], "cd": float(w["cd"][lv]), "dmg": int(w["dmg"][lv]), "count": int(w["count"][lv]),
-		"range": float(w["range"]), "speed": float(w.get("speed", 0.0)), "hit_gap": float(w.get("hit_gap", 0.5))}
+	var out := {}
+	for k in w:
+		var v: Variant = w[k]
+		out[k] = v[lv] if v is Array else v
+	return out
+
+
+## 지금 무기 모두 {무기 id: 수치}.
+func weapons_now() -> Dictionary:
+	var out := {}
+	for id in d["weapons"]:
+		out[id] = weapon(String(id))
+	return out
 
 
 func magnet() -> float:

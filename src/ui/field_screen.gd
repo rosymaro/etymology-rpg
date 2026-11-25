@@ -46,11 +46,10 @@ var _fbtns: Array[Button] = []
 # 필드 사냥(07-fun 1절)
 var _run: HuntRun
 var _hc: Dictionary  ## data/balance/field_hunt.json
-var _wt := {}  ## 무기 id -> 다음 쏘기까지 남은 시간
-var _shots: Array[Dictionary] = []  ## 날아가는 망치 {pos, to, back, dmg, hit: {}}
-var _novas: Array[Dictionary] = []  ## 퍼지는 외침 {r, max, t}
-var _orbit_a := 0.0
-var _orbit_hit := {}  ## 몹 -> 다음에 맞을 수 있는 시각
+var _uw := UnitWeapons.new()  ## 데리고 다니는 유닛의 무기(07-fun 1절)
+var _pals: Array[Dictionary] = []  ## 주인공을 따라다니는 유닛 {unit, pos}
+var _trail: Array[Vector2] = []  ## 주인공이 지나온 자리(앞이 최근). 유닛이 이 길을 따라온다
+var _facing := Vector2.RIGHT  ## 주인공이 걷는 쪽
 var _drops: Array[Dictionary] = []  ## 떨어진 것 {pos, kind: orb|coin|word, v}
 var _hunt_lbl: Label
 var _lvl_bar: ProgressBar
@@ -111,7 +110,8 @@ func _setup_map() -> void:
 	_enemies.clear()
 	_villagers.clear()
 	_drops.clear()
-	_shots.clear()
+	_uw.clear()
+	_set_pals()
 	_puz.clear()
 	_spots = []
 	if _cave != "":
@@ -151,6 +151,36 @@ func _setup_map() -> void:
 			GameData.puzzles[q["id"]] = PushPuzzle.from_dict(q)
 		_puz.append(GameData.puzzles[q["id"]])
 	_sync_blocks()
+
+
+## 데리고 다니는 유닛(파티 화면에서 고른다)을 주인공 둘레에 둔다.
+func _set_pals() -> void:
+	_run.set_units(Loadout.companions(GameData.state))
+	_pals.clear()
+	_trail.clear()
+	for u in _run.d["units"]:
+		_pals.append({"unit": int(u), "pos": _hero})
+
+
+## 유닛은 주인공이 지나온 길을 따라 줄지어 온다(겹치지 않게 간격을 둔다).
+func _follow_pals(dir: Vector2, delta: float) -> void:
+	if dir.length() > 0.2:
+		_facing = dir.normalized()
+	if _trail.is_empty() or _trail[0].distance_to(_hero) > 12.0:
+		_trail.push_front(_hero)
+		if _trail.size() > 60:
+			_trail.resize(60)
+	for k in _pals.size():
+		var gap := (k + 1) * 5
+		var to: Vector2 = _trail[mini(gap, _trail.size() - 1)] if not _trail.is_empty() else _hero
+		if to.distance_to(_hero) < 40.0 * (k + 1) and _trail.size() <= gap:  # 아직 길이 짧으면 뒤쪽 옆에
+			to = _hero - _facing * 46.0 * (k + 1) + _facing.orthogonal() * (18.0 if k % 2 == 0 else -18.0)
+		if not map.fits(to, 14.0, _gates):  # 벽 위에는 서지 않는다(벽 너머를 쏘지 않게)
+			to = _trail[mini(gap, _trail.size() - 1)] if not _trail.is_empty() else _hero
+			if not map.fits(to, 14.0, _gates):
+				to = _hero
+		var pal := _pals[k]
+		pal["pos"] = (pal["pos"] as Vector2).lerp(to, minf(1.0, delta * 8.0))
 
 
 ## 동굴 입구(c)를 밟으면 동굴 지도로, 동굴의 나가는 곳(x)을 밟으면 큰 지도의 그 입구 밖으로.
@@ -383,6 +413,7 @@ func _process(delta: float) -> void:
 	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * _run.speed_mult() * delta, HERO_R, _gates)
 	_puzzle_step(dir, before, delta)
 	_cave_step()
+	_follow_pals(dir, delta)
 	var left: int = main.flow.rest_left()
 	if left > 0 and was_town and not map.is_town(_hero):  # 병원에서 쉬는 중: 마을 밖으로 못 나간다
 		_hero = before
@@ -605,15 +636,16 @@ func _town_edge() -> void:
 	_in_town_now = now
 	if now:
 		var got := _run.bank(GameData.state, GameData.rules)
-		_shots.clear()
+		_uw.clear()
 		_drops.clear()
 		if int(got["orbs"]) + int(got["coins"]) + (got["words"] as Array).size() > 0:
 			GameData.save()
 			_show_toast(t("ui.hunt.banked").format({"orbs": got["orbs"], "coins": got["coins"], "words": (got["words"] as Array).size(), "wallet": GameData.state.wallet}))
 		_enemies = _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater")
 	else:
+		_run.set_units(Loadout.companions(GameData.state))
 		_run.reset()
-		_wt.clear()
+		_uw.clear()
 		_tutorial("hunt")
 
 
@@ -621,46 +653,13 @@ func _hunt(delta: float) -> void:
 	# 뿌리먹이
 	if _run.tick(delta):
 		_spawn_eater()
-	# 무기
-	for id in _run.d["weapons"]:
-		var w := _run.weapon(String(id))
-		match String(w["type"]):
-			"boomerang", "nova":
-				_wt[id] = float(_wt.get(id, 0.5)) - delta
-				if _wt[id] <= 0.0:
-					_wt[id] = float(w["cd"])
-					_fire(String(id), w)
-			"orbit":
-				_orbit_a += float(w["speed"]) * delta
-				for k in int(w["count"]):
-					var p := _hero + Vector2.from_angle(_orbit_a + k * TAU / int(w["count"])) * float(w["range"])
-					for e in _enemies:
-						if e.pos.distance_to(p) < ENEMY_R + 18 and Time.get_ticks_msec() / 1000.0 >= float(_orbit_hit.get(e, 0.0)) and map.clear_line(_hero, e.pos):
-							_orbit_hit[e] = Time.get_ticks_msec() / 1000.0 + float(w["hit_gap"])
-							_hit(e, int(w["dmg"]), p)
-	# 날아가는 망치: 목표까지 갔다가 돌아온다
-	for sh in _shots.duplicate():
-		var to: Vector2 = _hero if sh["back"] else sh["to"]
-		var d: Vector2 = to - (sh["pos"] as Vector2)
-		var step := float(_hc["weapons"]["hammer"]["speed"]) * delta
-		if d.length() <= step:
-			if sh["back"]:
-				_shots.erase(sh)
-				continue
-			sh["back"] = true
-		else:
-			sh["pos"] = (sh["pos"] as Vector2) + d.normalized() * step
-		if not map.walkable(map.cell(sh["pos"]), _gates):  # 망치는 벽을 뚫지 못한다: 부딪히면 떨어진다
-			_shots.erase(sh)
-			continue
-		for e in _enemies:
-			if not (sh["hit"] as Dictionary).has(e) and e.pos.distance_to(sh["pos"]) < ENEMY_R + 14:
-				sh["hit"][e] = true
-				_hit(e, int(sh["dmg"]), sh["pos"])
-	for nv in _novas.duplicate():
-		nv["t"] = float(nv["t"]) + delta
-		if nv["t"] > 0.35:
-			_novas.erase(nv)
+	# 무기: 데리고 다니는 유닛이 저마다 쏜다. 몹은 주인공에게 온다
+	var origins := {}
+	for pal in _pals:
+		origins[_run.weapon_of(int(pal["unit"]))] = pal["pos"]
+	_uw.no_fire_near = float(_hc["no_fire_near"])
+	for h in _uw.tick(delta, _run.weapons_now(), origins, _hero, _facing, _enemies, map):
+		_hit(h["mob"], int(h["dmg"]), h["from"], float(h.get("push", 0.0)), float(h.get("stun", 0.0)))
 	# 떨어진 것: 가까우면 빨려 오고, 닿으면 줍는다
 	for dr in _drops.duplicate():
 		var dd: Vector2 = _hero - (dr["pos"] as Vector2)
@@ -713,40 +712,18 @@ func _base_count() -> int:
 	return int(_f.get("cave_enemies", 5)) if _cave != "" else int(_f["enemy_count"])
 
 
-## 붙기 직전(no_fire_near 안)의 몹은 쏘지 않는다: 퀴즈를 하고 싶으면 다가가면 된다.
-func _targets(range_px: float) -> Array[FieldMob]:
-	var out: Array[FieldMob] = []
-	for e in _enemies:
-		var dist := e.pos.distance_to(_hero)
-		if dist <= range_px and dist > float(_hc["no_fire_near"]) and map.clear_line(_hero, e.pos):  # 벽 너머는 못 맞힌다
-			out.append(e)
-	out.sort_custom(func(a: FieldMob, b: FieldMob) -> bool: return a.pos.distance_to(_hero) < b.pos.distance_to(_hero))
-	return out
-
-
-func _fire(id: String, w: Dictionary) -> void:
-	var ts := _targets(float(w["range"]))
-	if ts.is_empty():
-		_wt[id] = 0.2
-		return
-	if w["type"] == "nova":
-		_novas.append({"r": float(w["range"]), "t": 0.0})
-		for e in ts:
-			_hit(e, int(w["dmg"]), _hero)
-		return
-	for k in mini(int(w["count"]), ts.size()):
-		_shots.append({"pos": _hero, "to": ts[k].pos, "back": false, "dmg": int(w["dmg"]), "hit": {}})
-
-
-func _hit(e: FieldMob, dmg: int, from: Vector2) -> void:
+## 맞음: push > 0이면 그만큼, 0이면 기본만큼 뒤로 밀려나고, < 0이면 밀리지 않는다(붙잡힘). stun초 동안 멈춘다.
+func _hit(e: FieldMob, dmg: int, from: Vector2, push := 0.0, stun := 0.0) -> void:
 	if not _enemies.has(e):
 		return
 	var dead := e.take_hit(dmg)
-	if e.kind != "eater":  # 맞으면 뒤로 밀려난다(0.3초)
+	if stun > 0.0 and e.kind != "eater":
+		e.stun = maxf(e.stun, stun)
+	if e.kind != "eater" and push >= 0.0:  # 맞으면 뒤로 밀려난다(0.3초)
 		var away := e.pos - from
 		if away.length() < 1.0:
 			away = e.pos - _hero
-		e.set_meta("push", (away.normalized() if away.length() > 0.5 else Vector2.RIGHT) * float(_hc["knockback"]))
+		e.set_meta("push", (away.normalized() if away.length() > 0.5 else Vector2.RIGHT) * (push if push > 0.0 else float(_hc["knockback"])))
 		e.set_meta("push_t", 0.3)
 	if dead:
 		var got := _run.drops(e.kind, e.words, _rng)
@@ -784,7 +761,7 @@ func _spawn_eater() -> void:
 
 ## 레벨업: 보기 3개(무기 새로·강화, 이동 속도, 구슬 끌기) 중 하나. 고르는 동안 필드는 멈춘다.
 func _open_level_up() -> void:
-	var cs := _run.choices(GameData.state.field_skills, _rng)
+	var cs := _run.choices(_rng)
 	_stick_on = false
 	_choosing = Control.new()
 	_choosing.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -1230,21 +1207,12 @@ func _draw() -> void:
 				draw_rect(Rect2(dp - Vector2(12, 15), Vector2(24, 30)), UiKit.ACCENT, false, 3)
 	for e in _enemies:
 		_draw_mob(e, o + e.pos)
-	for sh in _shots:  # 망치
-		var sp: Vector2 = o + sh["pos"]
-		draw_set_transform(sp, Time.get_ticks_msec() / 60.0, Vector2.ONE)
-		draw_rect(Rect2(-14, -6, 28, 12), Color("8b6640"))
-		draw_rect(Rect2(6, -12, 12, 24), Color("6f6257"))
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	if _run and _run.d["weapons"].has("spin") and not map.is_town(_hero):  # 도는 팽이
-		var w := _run.weapon("spin")
-		for k in int(w["count"]):
-			var p := o + _hero + Vector2.from_angle(_orbit_a + k * TAU / int(w["count"])) * float(w["range"])
-			draw_circle(p, 14, Color("e9a0b8"))
-			draw_arc(p, 14, _orbit_a * 3.0, _orbit_a * 3.0 + PI, 10, UiKit.INK, 3)
-	for nv in _novas:  # 외침
-		var k := float(nv["t"]) / 0.35
-		draw_arc(o + _hero, float(nv["r"]) * k, 0, TAU, 48, Color(UiKit.ACCENT, 1.0 - k), 8)
+	if not map.is_town(_hero):
+		_draw_weapons(o)
+	for pal in _pals:  # 동행 유닛과 이름
+		var pp: Vector2 = o + pal["pos"]
+		PalArt.draw(self, int(pal["unit"]), pp, _facing)
+		draw_string(ThemeDB.fallback_font, pp + Vector2(-40, 38), t("name.char." + GameData.UNIT_CHARS[int(pal["unit"]) - 1]), HORIZONTAL_ALIGNMENT_CENTER, 80, 14, UiKit.INK)
 	for e in _enemies:  # 화면 밖 뿌리먹이: 가장자리 빨간 화살표
 		if e.kind == "eater":
 			var sp := o + e.pos
@@ -1278,6 +1246,77 @@ func _draw() -> void:
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))
+
+
+## 유닛 무기 그리기: 날아가는 것(shots), 도는 것(orbit), 잠깐 효과(fx).
+func _draw_weapons(o: Vector2) -> void:
+	var now := Time.get_ticks_msec() / 1000.0
+	for sh in _uw.shots:
+		var sp: Vector2 = o + sh["pos"]
+		var col := PalArt.color(int(sh["unit"]))
+		match String(sh["type"]):
+			"boomerang":  # 망치
+				draw_set_transform(sp, now * 16.0, Vector2.ONE)
+				draw_rect(Rect2(-14, -6, 28, 12), Color("8b6640"))
+				draw_rect(Rect2(6, -12, 12, 24), Color("6f6257"))
+				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			"straight":
+				var v: Vector2 = (sh["vel"] as Vector2).normalized()
+				if int(sh["unit"]) == 6:  # 쌩: 바람 화살
+					draw_line(sp - v * 30, sp, Color(col, 0.6), 6)
+					draw_colored_polygon(PackedVector2Array([sp + v * 14, sp + v.orthogonal() * 8, sp - v.orthogonal() * 8]), col.darkened(0.3))
+				else:  # 휙: 돌멩이
+					draw_circle(sp, 9, Color("9a8f86"))
+					draw_arc(sp, 9, 0, TAU, 12, UiKit.INK, 2)
+			"lob":  # 영차: 보따리(포물선)
+				var k := float(sh["t"]) / float(sh["max"])
+				var up := Vector2(0, -sin(k * PI) * 90.0)
+				draw_circle(o + sh["to"], float(sh["r"]) * 0.35, Color(0, 0, 0, 0.15))
+				draw_circle(sp + up, 14, Color("c9a874"))
+				draw_line(sp + up + Vector2(-6, -12), sp + up + Vector2(6, -12), Color("8b6640"), 4)
+	for id in _run.d["weapons"]:
+		var w := _run.weapon(String(id))
+		if w["type"] != "orbit":
+			continue
+		var base := _pal_pos(int(w["unit"]))
+		for k in int(w["count"]):
+			var p := o + _uw.orbit_pos(base, w, k)
+			draw_circle(p, 14, Color("e9a0b8"))
+			draw_arc(p, 14, _uw.orbit_a * 3.0, _uw.orbit_a * 3.0 + PI, 10, UiKit.INK, 3)
+	for id in _run.d["weapons"]:  # 대장의 깃발 둘레(언제나 흐리게)
+		var w2 := _run.weapon(String(id))
+		if w2["type"] == "aura":
+			draw_circle(o + _pal_pos(int(w2["unit"])), float(w2["range"]), Color(PalArt.color(8), 0.12))
+	for f in _uw.fx:
+		var k := float(f["t"]) / float(f["max"])
+		var col := PalArt.color(int(f["unit"]))
+		var a: Vector2 = o + f["a"]
+		match String(f["type"]):
+			"grab":  # 덥석: 늘어나는 팔
+				var b: Vector2 = o + f["b"]
+				draw_line(a, a.lerp(b, minf(1.0, k * 2.0)), col.darkened(0.2), 10)
+				draw_circle(a.lerp(b, minf(1.0, k * 2.0)), 14, col)
+			"beam":  # 힐끔: 눈빛
+				draw_line(a, o + f["b"], Color(col, 0.7 * (1.0 - k)), float(f["r"]))
+				draw_line(a, o + f["b"], Color(1, 1, 1, 0.8 * (1.0 - k)), 6)
+			"snipe":  # 척척: 콕 찍는 별
+				var b2: Vector2 = o + f["b"]
+				draw_line(a, b2, Color(col, 0.5 * (1.0 - k)), 3)
+				draw_circle(b2, 18 * (1.0 - k) + 6, Color(col, 1.0 - k))
+			"nova", "bash":  # 조잘: 퍼지는 말 / 꿈쩍: 방패 밀치기
+				draw_arc(a, float(f["r"]) * k, 0, TAU, 48, Color(col, 1.0 - k), 8 if f["type"] == "nova" else 14)
+			"aura":
+				draw_arc(a, float(f["r"]), 0, TAU, 48, Color(col, 0.6 * (1.0 - k)), 5)
+			"slam":  # 와장·영차: 쾅
+				draw_circle(a, float(f["r"]) * (0.5 + 0.5 * k), Color(col, 0.35 * (1.0 - k)))
+				draw_arc(a, float(f["r"]) * (0.5 + 0.5 * k), 0, TAU, 32, Color(col.darkened(0.3), 1.0 - k), 5)
+
+
+func _pal_pos(unit: int) -> Vector2:
+	for pal in _pals:
+		if int(pal["unit"]) == unit:
+			return pal["pos"]
+	return _hero
 
 
 ## 마을 건물: 벽(타일) 위에 지붕, 문, 창, 간판. 말뿌리 나무는 큰 나무로.

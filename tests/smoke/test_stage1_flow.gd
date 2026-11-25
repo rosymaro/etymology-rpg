@@ -225,26 +225,47 @@ func test_losing_wakes_up_in_hospital_and_rests_in_town() -> void:
 	GameData.state.rest_until = 0
 
 
+## 벽 없이 탁 트인 들판 자리(오른쪽으로 500px, 둘레 120px가 다 지나갈 수 있다). 무작위 자리가 벽 옆이면 시험이 흔들린다.
+func _open_field_spot(m: WorldMap) -> Vector2:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	for k in 400:
+		var p := m.random_field_spot(1, rng, m.start(1), 900, 2200, 30)
+		if p == Vector2.INF:
+			continue
+		var ok := true
+		for x in range(-2, 9):
+			for y in range(-2, 3):
+				var c := m.cell(p + Vector2(x * 60, y * 60))
+				if not m.walkable(c) or m.is_town(p + Vector2(x * 60, y * 60)) or m.ch(c) == "c":
+					ok = false
+		if ok:
+			return p
+	return Vector2.INF
+
+
 func test_field_hunt_hammer_kills_mob_and_bag_is_banked_in_town() -> void:
 	GameData.new_game("테스트")
 	GameData.state.flags["s01_tut_battle"] = true
 	var m := WorldMap.load_default()
-	GameData.state.pos = m.random_field_spot(1, RandomNumberGenerator.new(), m.start(1), 900, 1400, 30)
+	GameData.state.pos = _open_field_spot(m)
+	assert_ne(GameData.state.pos, Vector2.INF, "탁 트인 들판 자리")
 	main.flow.go_field()
 	await wait_physics_frames(2)
 	var f := main.current() as FieldScreen
 	assert_false(f.map.is_town(f._hero))
-	# 몹 하나만 망치 사거리 안에 둔다
+	# 몹 하나만 망치 사거리 안에 둔다(레벨에 따라 새로 생기는 몹은 이 시험 동안 막는다)
+	f._spawn_t = 1e9
 	f._enemies.clear()
 	var e := FieldMob.new()
 	e.kind = "wander"
 	e.max_hp = 2
 	e.hp = 2
 	e.words = ["information"] as Array[String]
-	e.pos = f._hero + Vector2(250, 0)
+	e.pos = f._hero + Vector2(160, 0)  # 맞으면 밀려나도 망치 사거리 안
 	e.stun = 99.0
 	f._enemies.append(e)
-	for k in 240:
+	for k in 400:
 		await wait_physics_frames(1)
 		if not f._enemies.has(e):
 			break
