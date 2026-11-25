@@ -23,50 +23,63 @@ blood, wounds, scary, text, letters, watermark, logo, existing game characters
 
 ## 그림마다
 
-| 파일 | 프롬프트(공통 스타일 뒤에) |
+이름과 크기는 [README.md](README.md)(그림 콘티)가 기준이다. 아래는 공통 스타일 뒤에 붙이는 내용이다.
+
+### 오프닝·타이틀 (배경 있음: `transparent background` 대신 `full scene, portrait 9:16`)
+
+| 파일 | 프롬프트 |
 |---|---|
-| `map/s01_world.png` | top-down view of a small craftsman village on the left with dirt paths and cozy round-roofed houses, a wooden fence running vertically with an open gate in the middle, a wide flowery meadow on the right, empty clearings where buildings will be placed, 26:15 wide map, no characters |
-| `map/grass_tuft.png` | a single small tuft of grass with two tiny pink flower dots, top-down |
-| `building/forge.png` | a cute round blacksmith forge with a glowing furnace and an anvil, small chimney puffing a heart-shaped smoke, 3/4 top-down view |
-| `building/tree.png` | a big friendly tree whose roots end in little hanging word cards, some roots cut with a faint crack pattern, 3/4 top-down view |
-| `building/board.png` | a wooden workbench with order slips pinned on a board, a tiny conveyor belt beside it, 3/4 top-down view |
-| `building/boss.png` | a rounded stone gate on a hill covered with a grey crack pattern spreading like ink, slightly ominous but cute |
-| `building/boss_gate_open.png` | the same rounded stone gate, crack pattern gone, small flowers blooming around it |
-| `hero/look0.png` | a young apprentice in a simple apron and cap, full body, 3/4 top-down view, standing, friendly smile |
-| `hero/look1.png` ~ `look5.png` | the same apprentice wearing (1) a sprout-green little cape (2) an explorer vest with pockets (3) a scholar robe (4) a sage cape with leaf pattern (5) a golden cape; same face and pose as look0 |
-| `face/hero_normal.png` | bust portrait of the apprentice from look0, facing slightly right, gentle smile |
-| `face/ttukttak_normal.png` | bust portrait of a chubby penguin-chick holding a small hammer and a ruler, apricot accent color, cheerful |
-| `face/blacksmith_normal.png` | bust portrait of a round, kind blacksmith with a big mustache and a leather apron, tired but warm |
-| `unit/u01.png` ~ `u12.png` | a chubby penguin-chick character, full body, {대표 색} accent color, holding {소품}, battle-ready cute pose (표는 README '유닛 12종') |
-| `enemy/field_wanderer.png` | a tiny speech-bubble shaped fairy made of a word card, faded grey colors as if it lost its color, curious face |
-| `enemy/attr_NN.png` | the same speech-bubble word fairy, colored with {속성 이름} theme (예: 생명 = leaf and heart, 원소 = fire and water drops, 파동 = sound waves), cute |
-| `boss/destroyer.png` | a big clumsy destroyer monster made of broken tools and bricks, exaggerated surprised face, grey crack pattern on its body, more silly than scary |
-| `mini/order_belt.png` | side view of a seamless horizontal conveyor belt with rollers, soft grey-violet, wide 1280x200, no objects on it |
-| `mini/order_card.png` | a blank rounded rectangle wooden tag, white and very light grey, empty center for text, slight shadow |
-| `mini/fish_word.png` | a cute long fish seen from the side, wide pale cream body with an empty space in the middle for text, small tail fin, 240x80 |
-| `mini/fish_bait.png` | a small cute bait on a fishing hook, 60x60 |
-| `mini/guard_wall.png` | a stone castle wall seen from outside with a round wooden gate in the center, wide banner shape, 1280x190 |
-| `mini/guard_traveler.png` | a cute traveler holding a wide blank sign board for text, 240x110 |
-| `mini/guard_climber.png` | a sneaky cute figure carrying a ladder, blank space for text in the middle, 180x70 |
-| `mini/guard_unit.png` | a cute guard seen from behind holding a wide shield, blocking stance, 200x90 |
-| `mini/sprout.png` | a tiny two-leaf sprout popping up, 60x60 |
-| `mini/root_wisp.png` | a floating round root spirit with tiny root tendrils, empty pale space in the middle for text, 190x70 |
-| `mini/fish_top.png` | a cute fish seen from directly above facing right, pale cream body with empty space for text, 150x54 |
-| `mini/trap_critter.png` | a small cute field critter with round ears seen from above, empty pale space for text, 130x56 |
-| `mini/trap_snare.png` | a cute toothed snare trap seen from above with an empty plank for text, 170x60 |
-| `mini/trap_hunter.png` | the apprentice hero with a hunter hat seen from above, 56x56 |
-| `mini/furnace.png` | a small cute glowing smelting furnace, 160x100 |
-| `mini/anvil.png` | a cute anvil with a hammer resting on it, 160x68 |
-| `mini/order_hero.png` | the apprentice hero with an apron seen from above, 64x64 |
-| `mini/moat_soldier.png` | a small cute soldier holding a blank flag board for text, 150x60 |
-| `mini/waterwheel.png` | a cute wooden waterwheel with a small bow mounted on top, 110x110 |
-| `slot/weapon.png` · `head.png` · `chest.png` · `hands.png` · `feet.png` | five small cute equipment icons (sword, helmet, armor top, glove, boot), thick soft indigo outline, transparent background, 48x48 each |
-| `mini/ore_vein.png` | a rounded ore rock with a shining vein, drawn in white and very light grey only |
-| `mini/ore_rock.png` | a plain grey round rock with a small grumpy face |
-| `ui/order_ticket.png` | a small paper order slip icon with a pin |
+| `title/key_art.png` | a giant friendly tree on a hill whose root tips hold small glowing word cards like lanterns, a young apprentice boy and girl and a chubby penguin chick with a hammer standing under it, upper third left empty for a title, dawn light |
+| `opening/op01_tree.png` | a giant magical tree under a night sky, every root tip holds a tiny glowing card like a lantern, warm golden glow, mysterious and gentle, no characters |
+| `opening/op02_crack.png` | the same tree at deep navy night, a grey crack pattern spreading over the roots like ink, roots snapping, lonely rather than scary |
+| `opening/op03_fall.png` | close view of colorless grey cards falling like autumn leaves, soft bokeh, melancholic |
+| `opening/op04_village.png` | morning view from a hill of a cozy craftsman village with round roofs and chimney smoke, a glowing forge, but signboards and notice boards are faded grey |
+| `opening/op05_forge_front_m.png` / `_f.png` | in front of a cozy forge in the morning, a big kind blacksmith with a mustache introduces a chubby penguin chick raising a hammer, a young apprentice {boy / girl} in an apron and cap watches |
+| `opening/op06_hammer_m.png` / `_f.png` | inside the forge, the apprentice {boy / girl} raises a hammer over an anvil, warm furnace light on the face |
+| `opening/op07_defect.png` | close-up of a freshly made object cracking, a blank grey card popping out of the crack, sparks, no text on the card |
+| `opening/op08_split.png` | the chubby penguin chick happily holding a grey card split into two pieces, color starting to bloom from the split, blank card faces |
 
-## 넣는 법
+### 주인공 남·여
 
-1. 만든 그림을 위 파일 이름으로 `assets/art/<종류>/`에 넣는다(예: `assets/art/unit/u01.png`).
-2. 배경이 남아 있으면 투명으로 지운다.
-3. 커밋하면 CI가 APK를 만들고 `debug-latest` 릴리스에 올린다. 폰에서 덮어 설치해 확인한다.
+| 파일 | 프롬프트 |
+|---|---|
+| `hero/m_down.png` 등 | a young apprentice {boy / girl} in a simple apron and soft cap, full body, 3/4 top-down view, facing {down / up / left / right}, standing, friendly |
+| `hero/m_look1~5.png` | the same apprentice wearing (1) a sprout-green little cape (2) an explorer vest with pockets (3) a scholar robe (4) a sage cape with leaf pattern (5) a golden cape; same face and pose |
+| `face/hero_m_<표정>.png` | bust portrait of the apprentice {boy / girl}, facing slightly right, {gentle smile / big happy smile / surprised / sad / pouting angry} |
+
+### 유닛(펭귄·병아리 두 모습)
+
+| 파일 | 프롬프트 |
+|---|---|
+| `unit/penguin/uNN.png` | a chubby baby penguin character, full body, {대표 색} accent color, {소품·모습}, {성격이 보이는 자세}, battle-ready cute pose (README 4절 표) |
+| `unit/chick/uNN.png` | a chubby yellow baby chick character with the same {대표 색} accessories, {소품·모습}, {성격이 보이는 자세} |
+| `unit/*/palNN.png` | the same character, small full body, 3/4 top-down view, walking, very simple shapes so the prop is readable when small |
+| `face/uNN_p_<표정>.png` | bust portrait of the same character, {cheerful / happy / surprised / sad / angry} |
+
+한 유닛은 펭귄 카드를 먼저 만들고, 그것을 참조 이미지로 병아리·동행·얼굴을 만든다. 12유닛은 뚝딱을 참조로 같은 그림체를 맞춘다.
+
+### 보스
+
+| 파일 | 프롬프트 |
+|---|---|
+| `boss/<id>.png` | a huge but goofy {보스 모습(README 5절)}, exaggerated funny expression, a grey crack pattern spreading on part of its body, more silly than scary, full body |
+| `boss/<id>_down.png` | the same boss defeated and dizzy, the crack pattern shattered, colors returning, relieved face |
+| `opening/devil_reveal.png` | a tall rounded figure covered in a grey splitting pattern (the one who divides), serious but still soft-shaped, standing at the top of a cracked tower, dramatic sky, full scene |
+
+### 사람(NPC)
+
+| 파일 | 프롬프트 |
+|---|---|
+| `face/<id>_normal.png` | bust portrait of {인물 모습(README 6절)}, picture book villager, 2.5-head-tall chibi |
+| `npc/<id>.png` | the same person, full body, 3/4 top-down view, standing |
+
+### 몹·지도·물건
+
+| 파일 | 프롬프트 |
+|---|---|
+| `enemy/aNN_<성격>.png` | a tiny faded-grey word fairy whose body is {속성 모티프(README 7절)}, small accents in {속성 색}, a blank light band across the belly for a word, {wander: sleepy half-closed eyes, floating calmly / chase: raised eyebrows, tiny fang, leaning forward with arms up / flee: wide scared eyes, one sweat drop, looking back while running away, tiny sparkles / rush: crouched low, puffing, frowning, head thrust forward ready to charge}, 3/4 top-down view, no symbols or text |
+| `enemy/card_aNN.png` | the same word fairy, front view, larger, battle-ready cute pose |
+| `enemy/eater.png` | a dark crimson blob with root-like tentacles and yellow eyes, creepy-cute |
+| `tile/<이름>.png` | seamless top-down tile of {grass / dirt town floor / stone road / sea / pond water / cliff / forest canopy / mountain / castle wall / ice / hole / cave floor …}, hand-painted, tileable, no characters |
+| `building/<id>.png` | a cute {forge with glowing furnace / workbench with order slips / white-roofed hospital with a big clock / big tree with word cards on roots / notice board with three blanks / gacha shop / small round house}, 3/4 top-down view |
+| `prop/<id>.png` | a {round push rock / heavy striped rock / pressure plate / treasure chest / chest with a word lock / paper note / toy hammer / glowing orb / coin / word card}, 3/4 top-down view |
