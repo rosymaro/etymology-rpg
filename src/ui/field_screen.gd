@@ -106,7 +106,7 @@ func _build_hud() -> void:
 	_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_toast)
-	UiKit.pin(_toast, 0.5, 0, 0, 160)
+	UiKit.pin(_toast, 0.5, 0, 0, 150 + map.h * MINI_SCALE + 70)  # 미니맵·할 일 아래(가리지 않게)
 	_update_top()
 
 
@@ -115,8 +115,19 @@ func _update_top() -> void:
 	_top.text = t("ui.field.top").format({"stage": t("name.stage.s01"), "have": g["have"],
 		"total": GameData.repo.first_tier(GameFlow.STAGE).size(), "need": g["need"],
 		"title": t("ui.dev.badge") if GameData.state.dev_mode else t("name.title.none")})
-	var q := GameData.quests.next_quest(GameData.state, GameFlow.STAGE)
-	_goal.text = t("ui.field.goal").format({"title": t("ui.quest.%s.title" % q["id"])}) if not q.is_empty() else t("ui.quest.all_done")
+	_goal.text = t("ui.field.goal").format({"title": _goal_text()})
+
+
+## 할 일: 퀘스트가 아직 없으면 들판에서 단어 잡기, 알림판 퀘스트를 아직 받지 않았으면 알림판에 가 보기.
+func _goal_text() -> String:
+	var s := GameData.state
+	var book := GameData.quests
+	var q := book.next_quest(s, GameFlow.STAGE)
+	if q.is_empty():
+		return t("ui.quest.goal_none") if book.boss_blockers(s, GameFlow.STAGE).size() > 0 else t("ui.quest.all_done")
+	if q["kind"] == "words" and not main.flow.seen(String(q["id"]) + "_got"):
+		return t("ui.quest.goal_board")
+	return t("ui.quest.%s.title" % q["id"])
 
 
 func _go(f: Callable) -> void:
@@ -269,6 +280,15 @@ func _act() -> void:
 			main.flow.boss_gate()
 
 
+## 알림판 퀘스트가 열렸는데 아직 받지 않았거나, 단어를 다 모아 마칠 수 있을 때.
+func _board_calls() -> bool:
+	var s := GameData.state
+	var q := GameData.quests.get_quest("s01_q_word")
+	if q.is_empty() or not GameData.quests.visible(s, q) or GameData.quests.done(s, q["id"]):
+		return false
+	return not main.flow.seen("s01_q_word_got") or GameData.quests.progress(s, q, [])["ready"]
+
+
 ## 퀘스트를 마치면(장면이 끝나면) 길목을 다시 읽는다.
 func _quest_done() -> void:
 	_gates = main.flow.open_gates()
@@ -311,7 +331,13 @@ func _open_quests() -> void:
 	card.add_child(v)
 	v.add_child(UiKit.label(t("ui.quest.list_title"), 30, UiKit.ACCENT.darkened(0.3)))
 	var roots := GameData.rules.owned_roots(GameData.state)
-	for q in GameData.quests.of_stage(GameFlow.STAGE):
+	var shown := GameData.quests.shown(GameData.state, GameFlow.STAGE)
+	if shown.is_empty():
+		var none := UiKit.label(t("ui.quest.none"), 22, UiKit.INK.lightened(0.2))
+		none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		none.custom_minimum_size.x = 600
+		v.add_child(none)
+	for q in shown:
 		var done := GameData.quests.done(GameData.state, q["id"])
 		var pr := GameData.quests.progress(GameData.state, q, roots)
 		var head := "%s %s  (%s)" % ["✔" if done else "●", t("ui.quest.%s.title" % q["id"]),
@@ -354,8 +380,10 @@ func _draw() -> void:
 			draw_circle(p, 54, col)
 			draw_arc(p, 54, 0, TAU, 40, UiKit.INK, 4)
 		draw_string(font, p + Vector2(-80, 86), t(sp["key"]), HORIZONTAL_ALIGNMENT_CENTER, 160, 22, UiKit.INK)
+		if sp["id"] == "notice" and _board_calls():  # 알림판에 가야 할 때: 머리 위에 깜빡이는 !
+			draw_string(font, p + Vector2(-20, -70), "!", HORIZONTAL_ALIGNMENT_CENTER, 40, 48 + 6 * sin(Time.get_ticks_msec() / 200.0), UiKit.BAD)
 	for qg in map.quest_gates:  # 닫힌 퀘스트 길목에 표지판(어디서 무엇을 해야 하는지)
-		if _gates.get(qg["id"], false):
+		if _gates.get(qg["id"], false) or not GameData.quests.visible(GameData.state, GameData.quests.by_gate(qg["id"])):
 			continue
 		var sp: Array = qg["spot"]
 		var p := o + Vector2(float(sp[0]), float(sp[1])) + Vector2(0, -40)

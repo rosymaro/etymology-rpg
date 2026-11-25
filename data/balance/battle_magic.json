@@ -19,6 +19,9 @@
       "class": "SwapToBack",
       "params": {
         "hp_per_passed": "ceil(P/2)"
+      },
+      "unlock": {
+        "stage": 2
       }
     },
     {
@@ -28,6 +31,9 @@
       "class": "MoveToFront",
       "params": {
         "atk_per_passed": "ceil(P/2)"
+      },
+      "unlock": {
+        "stage": 5
       }
     },
     {
@@ -37,6 +43,9 @@
       "class": "CoinBias",
       "params": {
         "heads_chance": 0.75
+      },
+      "unlock": {
+        "stage": 2
       }
     },
     {
@@ -44,7 +53,10 @@
       "prefix": "dis-",
       "kind": "effect",
       "class": "ZeroBaseAttack",
-      "params": {}
+      "params": {},
+      "unlock": {
+        "stage": 5
+      }
     },
     {
       "id": "de",
@@ -54,6 +66,9 @@
       "params": {
         "damage": "2*P",
         "atk_down": 1
+      },
+      "unlock": {
+        "stage": 2
       }
     },
     {
@@ -64,6 +79,9 @@
       "params": {
         "damage": "ceil(P/2)",
         "cancel_first_skill": true
+      },
+      "unlock": {
+        "stage": 4
       }
     },
     {
@@ -73,6 +91,9 @@
       "class": "StrikeSilence",
       "params": {
         "damage": "P"
+      },
+      "unlock": {
+        "stage": 4
       }
     },
     {
@@ -83,6 +104,9 @@
       "params": {
         "damage": "P",
         "reflect": 0.5
+      },
+      "unlock": {
+        "stage": 3
       }
     },
     {
@@ -94,7 +118,10 @@
         "share": 0.333,
         "taken_by_others": 0.5
       },
-      "quiz": "combo"
+      "quiz": "combo",
+      "unlock": {
+        "stage": 3
+      }
     },
     {
       "id": "re",
@@ -104,7 +131,10 @@
       "params": {
         "heal": "P"
       },
-      "quiz": "combo"
+      "quiz": "combo",
+      "unlock": {
+        "stage": 3
+      }
     },
     {
       "id": "ad",
@@ -114,7 +144,10 @@
       "params": {
         "shield": "P"
       },
-      "quiz": "combo"
+      "quiz": "combo",
+      "unlock": {
+        "stage": 3
+      }
     },
     {
       "id": "sub",
@@ -124,7 +157,10 @@
       "params": {
         "give_ratio": 0.5
       },
-      "quiz": "combo"
+      "quiz": "combo",
+      "unlock": {
+        "stage": 2
+      }
     },
     {
       "id": "prae",
@@ -132,7 +168,10 @@
       "kind": "defense",
       "class": "StrikeFirstAll",
       "params": {},
-      "quiz": "combo"
+      "quiz": "combo",
+      "unlock": {
+        "stage": 4
+      }
     },
     {
       "id": "inter",
@@ -143,13 +182,17 @@
         "clashes": 2,
         "reduce": "ceil(P/2)"
       },
-      "quiz": "combo"
+      "quiz": "combo",
+      "unlock": {
+        "stage": 5
+      }
     }
   ],
   "prefix_resist": {
     "damage_ratio": 0.5,
     "_doc": "그 접두사가 든 적 단어는 공격 마법 피해를 덜 받는다"
   },
-  "default_unlock": "same_id_field_magic",
-  "_unlock_doc": "전투 마법을 얻는 방법. 기본은 같은 id의 필드 마법을 얻을 때. 필드 마법이 없는 전투 마법을 더할 때는 항목에 unlock을 적는다(예: {\"boss\": 7}, {\"dex_count\": 1500})"
+  "_unlock_doc": "전투 마법을 얻는 때: unlock.stage = 이 스테이지가 열리면(그 앞 보스를 이기면) 얻는다. 스테이지 1에는 전투 마법이 없다. 스테이지 2에 종류마다 하나씩(de 공격, sub 방어, in 효과, ex 순서). 필드 마법(data/field_magic.json)과 따로다",
+  "offer_count": 3,
+  "_offer_doc": "한 전투에 가진 마법 중 무작위로 이만큼 나온다. 턴마다 하나씩 쓸 수 있고, 쓴 마법은 그 전투에서 다시 못 쓴다"
 }

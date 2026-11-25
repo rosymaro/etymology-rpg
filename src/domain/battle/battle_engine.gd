@@ -13,35 +13,81 @@ func _init(context: BattleContext) -> void:
 	ctx = context
 
 
+var res: BattleResult
+var finished := false
+var turns := 0  ## 지나간 턴(라운드) 수. 턴마다 마법을 고를 수 있다(01-rpg-base '마법 쓰기')
+var _a: Combatant
+var _b: Combatant
+var _rnd := 0
+
+
+## 한 번에 끝까지(마법 없이 턴을 넘긴다). 시뮬레이션·테스트용. 시작 마법(ctx.magic)은 begin에서 건다.
 func run() -> BattleResult:
-	var res := BattleResult.new()
+	begin()
+	while not finished:
+		turn("")
+	return res
+
+
+## 전투를 연다: 시작 마법 → 첫 두 유닛 등장 → 격돌 준비(보스 능력·스킬). 다음 턴 앞에서 멈춘다.
+func begin() -> void:
+	res = BattleResult.new()
 	res.enemy_count = ctx.enemies.size()
+	res.log = ctx.log
 	if ctx.magic:
 		ctx.cast_magic(Combatant.ALLY)
-	var i := 0
-	var j := 0
-	var a: Combatant = null
-	var b: Combatant = null
-	while i < ctx.allies.size() and j < ctx.enemies.size():
-		if a == null:
-			a = ctx.allies[i]
-			_enter(a, i)
-		if b == null:
-			b = ctx.enemies[j]
-			_enter(b, j)
-		_clash(a, b, i, j)
-		if b.hp <= 0:
-			res.killed.append(j)
-			ctx.add_log({"t": "down", "side": Combatant.ENEMY, "idx": j})
-			j += 1
-			b = null
-		if a.hp <= 0:
-			ctx.add_log({"t": "down", "side": Combatant.ALLY, "idx": i})
-			i += 1
-			a = null
-	ctx.add_log({"t": "end", "kills": res.killed.size(), "total": res.enemy_count})
-	res.log = ctx.log
-	return res
+	_resolve()
+
+
+## 한 턴: (고른 마법을 먼저 건다) → 두 유닛이 서로 공격 → 쓰러지면 다음 유닛이 나오고 격돌 준비. 다음 턴 앞에서 멈춘다.
+## magic_id가 있으면 그 마법을 건다(ok = false면 퀴즈 실패로 효과 없음). 마법으로 쓰러지거나 순서가 바뀌면 이 턴은 공격 없이 끝난다.
+func turn(magic_id: String = "", ok := true) -> void:
+	if finished:
+		return
+	if magic_id != "":
+		var pair := [_a, _b]
+		_traced(_a, _b, func() -> void: ctx.use_magic(magic_id, ok))
+		if _a.hp <= 0 or _b.hp <= 0 or ctx.cur(Combatant.ALLY) != pair[0] or ctx.cur(Combatant.ENEMY) != pair[1]:
+			_resolve()
+			return
+	turns += 1
+	_round(_a, _b)
+	_resolve()
+
+
+## 쓰러진 쪽을 내보내고, 빈 자리에 다음 유닛을 들인다. 한쪽이 다 쓰러지면 끝.
+func _resolve() -> void:
+	if _b != null and _b.hp <= 0:
+		var jb := ctx.enemies.find(_b)
+		res.killed.append(jb)
+		ctx.add_log({"t": "down", "side": Combatant.ENEMY, "idx": jb})
+		_b = null
+	if _a != null and _a.hp <= 0:
+		ctx.add_log({"t": "down", "side": Combatant.ALLY, "idx": ctx.allies.find(_a)})
+		_a = null
+	if _a != null and ctx.cur(Combatant.ALLY) != _a:  # 순서 마법으로 뒤로 간 유닛
+		_a = null
+	if _b != null and ctx.cur(Combatant.ENEMY) != _b:
+		_b = null
+	if ctx.cur(Combatant.ALLY) == null or ctx.cur(Combatant.ENEMY) == null or _rnd >= MAX_ROUNDS:
+		if not finished:
+			finished = true
+			ctx.add_log({"t": "end", "kills": res.killed.size(), "total": res.enemy_count})
+		return
+	var fresh := false
+	if _a == null:
+		_a = ctx.cur(Combatant.ALLY)
+		_enter(_a, ctx.allies.find(_a))
+		fresh = true
+	if _b == null:
+		_b = ctx.cur(Combatant.ENEMY)
+		_enter(_b, ctx.enemies.find(_b))
+		fresh = true
+	if fresh:
+		_rnd = 0
+		_clash(_a, _b, ctx.allies.find(_a), ctx.enemies.find(_b))
+		if _a.hp <= 0 or _b.hp <= 0:  # 보스 능력·스킬로 바로 쓰러짐
+			_resolve()
 
 
 func _enter(u: Combatant, idx: int) -> void:
@@ -94,28 +140,31 @@ func _clash(a: Combatant, b: Combatant, i: int, j: int) -> void:
 				ctx.add_log({"t": "skill", "side": u.side, "root": u.skill.root}))
 	ctx.add_log({"t": "clash", "a": i, "b": j, "a_atk": a.atk, "a_def": a.def, "a_hp": a.hp,
 		"b_atk": b.atk, "b_def": b.def, "b_hp": b.hp})
-	var rnd := 0
-	while a.hp > 0 and b.hp > 0 and rnd < MAX_ROUNDS:
-		rnd += 1
-		var da := _damage(a, b, rnd)
-		var db := _damage(b, a, rnd)
-		if a.first_strike and not b.first_strike:
-			b.hp -= da
-			if b.hp > 0:
-				a.hp -= db
-			else:
-				db = 0
-		elif b.first_strike and not a.first_strike:
+
+
+## 한 라운드: 두 쪽이 동시에(먼저 공격이 있으면 먼저) 친다.
+func _round(a: Combatant, b: Combatant) -> void:
+	_rnd += 1
+	var rnd := _rnd
+	var da := _damage(a, b, rnd)
+	var db := _damage(b, a, rnd)
+	if a.first_strike and not b.first_strike:
+		b.hp -= da
+		if b.hp > 0:
 			a.hp -= db
-			if a.hp > 0:
-				b.hp -= da
-			else:
-				da = 0
 		else:
-			a.hp -= db
+			db = 0
+	elif b.first_strike and not a.first_strike:
+		a.hp -= db
+		if a.hp > 0:
 			b.hp -= da
-		var first := Combatant.ALLY if a.first_strike and not b.first_strike else (Combatant.ENEMY if b.first_strike and not a.first_strike else -1)
-		ctx.add_log({"t": "round", "n": rnd, "to_b": da, "to_a": db, "a_hp": maxi(a.hp, 0), "b_hp": maxi(b.hp, 0), "first": first})
+		else:
+			da = 0
+	else:
+		a.hp -= db
+		b.hp -= da
+	var first := Combatant.ALLY if a.first_strike and not b.first_strike else (Combatant.ENEMY if b.first_strike and not a.first_strike else -1)
+	ctx.add_log({"t": "round", "n": rnd, "to_b": da, "to_a": db, "a_hp": maxi(a.hp, 0), "b_hp": maxi(b.hp, 0), "first": first})
 
 
 func _damage(x: Combatant, y: Combatant, rnd: int) -> int:

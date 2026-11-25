@@ -1,8 +1,39 @@
 {
-  "_doc": "스테이지 퀘스트(04-meta.md 8절). kind: words(단어를 모아 와서 giver에게) | root(그 어근을 가진 유닛이 길목을 고친다) | magic(그 필드 마법으로 길목을 지난다). gate = data/map/world.json quest_gates의 id(같은 id). boss = 이 퀘스트를 마쳐야 보스와 싸운다",
+  "_doc": "스테이지 퀘스트(04-meta.md 8절). kind: words(단어를 모아 와서 giver에게) | root(그 어근을 가진 유닛이 길목을 고친다) | magic(그 필드 마법으로 길목을 지난다). gate = data/map/world.json quest_gates의 id(같은 id). boss = 이 퀘스트를 마쳐야 보스와 싸운다. after = 이 깃발(본 장면·마친 퀘스트)이 서야 퀘스트가 보인다(이야기를 따라 하나씩 열린다)",
   "quests": [
-    { "id": "s01_q_word", "stage": 1, "kind": "words", "words": ["information", "inform", "format"], "giver": "notice", "scene": "s01_q_word", "boss": true },
-    { "id": "s01_q_root", "stage": 1, "kind": "root", "root": "fac", "gate": "s01_q_root", "scene": "s01_q_root", "boss": true },
-    { "id": "s01_q_magic", "stage": 1, "kind": "magic", "magic": "de", "gate": "s01_q_magic", "scene": "s01_q_magic", "boss": true }
+    {
+      "id": "s01_q_word",
+      "stage": 1,
+      "kind": "words",
+      "words": [
+        "information",
+        "inform",
+        "format"
+      ],
+      "giver": "notice",
+      "scene": "s01_q_word",
+      "boss": true,
+      "after": "s01_skit_cheok"
+    },
+    {
+      "id": "s01_q_root",
+      "stage": 1,
+      "kind": "root",
+      "root": "fac",
+      "gate": "s01_q_root",
+      "scene": "s01_q_root",
+      "boss": true,
+      "after": "s01_q_word"
+    },
+    {
+      "id": "s01_q_magic",
+      "stage": 1,
+      "kind": "magic",
+      "magic": "de",
+      "gate": "s01_q_magic",
+      "scene": "s01_q_magic",
+      "boss": true,
+      "after": "s01_q_root"
+    }
   ]
 }

@@ -469,7 +469,7 @@
     "cheokcheok"
    ],
    "staging_note": "바위 위에 학자 모자를 쓴 알기 유닛 척척이 서 있다. 첫 알기 단어(notify)를 잡은 직후. 스킷처럼 얼굴만 클로즈업해 주고받는다.",
-   "game_note": "알기 유닛 합류(잡담)",
+   "game_note": "알기 유닛 합류(잡담). 끝에 알림판 퀘스트(s01_q_word)가 열린다(04-meta.md 8절)",
    "borrow": [
     {
      "game": "테일즈 오브 시리즈",
@@ -496,6 +496,10 @@
     {
      "speaker": "cheokcheok",
      "text": "story.s01.skit_cheok.005"
+    },
+    {
+     "speaker": "cheokcheok",
+     "text": "story.s01.skit_cheok.006"
     }
    ],
    "conti": [
@@ -544,6 +548,27 @@
      },
      "say": 3,
      "note": "척척의 클로즈업 일러스트: 머리 위에 차 없는 파이 그림."
+    },
+    {
+     "shot": "mid",
+     "bg": "field",
+     "actors": [
+      {
+       "id": "cheokcheok",
+       "x": 55,
+       "y": 60,
+       "pose": ""
+      },
+      {
+       "id": "hero",
+       "x": 35,
+       "y": 70,
+       "pose": ""
+      }
+     ],
+     "fx": {},
+     "say": 6,
+     "note": "척척이 마을 쪽을 가리킨다. 퀘스트가 열린다."
     }
    ]
   },

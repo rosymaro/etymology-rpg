@@ -27,6 +27,7 @@ var hp: int
 var heads_chance := 0.5
 var perm_atk := 0  ## 전투 내내 붙는 공격 보정(de- 등)
 var pre_damage := 0  ## 나올 때 받는 피해(공격 마법)
+var hold_hp := 0  ## 순서 마법으로 뒤로 갔다가 다시 나올 때 지닐 체력(0이면 새로 정한다)
 var reduce := 0  ## 이번 격돌 받는 피해 감소
 var first_strike := false
 var double_first := false
@@ -58,6 +59,9 @@ func roll(coin_src: CoinSource, formula: StatFormula) -> void:
 	atk = base.atk + t.atk + perm_atk
 	def = base.def
 	hp = maxi(1, base.hp + t.hp) - pre_damage
+	if hold_hp > 0:
+		hp = hold_hp
+	hold_hp = 0
 	pre_damage = 0
 	entered = true
 

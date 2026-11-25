@@ -3,8 +3,9 @@ extends Screen
 ## 전투 연출. 규칙 층(BattleEngine)이 이미 계산한 기록(log)을 차례로 보여 준다. 화면은 계산하지 않는다.
 ## 순서: 마법 알림 → 유닛 등장(코인이 돌고, 코인 전→후 능력치가 깜빡임) → 스킬·보스 능력(바뀐 능력치 깜빡임)
 ## → "1턴" → 공격(깎인 체력이 빨갛게 깜빡이고, 맞은 카드에서 단어 뜻과 피해 숫자가 튀어나온다) → … 단계마다 '다음'을 눌러야 넘어간다.
-## 전투를 시작할 때 거는 마법은 코인을 다 던진 뒤에 보여 준다(코인 → 다음 → 마법 → 다음 → 스킬 → 다음 → 1턴 …).
-## 마법을 쓰면 왼쪽 아래 마법 버튼에서 마법 카드가 돌며 커져 나와, 공격 마법은 적 카드 위, 방어 마법은 아군 카드 위,
+## 턴마다(공격 앞에서) 왼쪽 아래 이번 전투의 마법(최대 3개) 중 하나를 눌러 쓸 수 있다. 안 쓰면 '다음'. 쓴 마법은 다시 못 쓴다.
+## 엔진(BattleEngine)은 턴 앞에서 멈추고, 화면이 고른 마법을 넘기면 다음 턴 앞까지 계산한다. 방어 마법은 조합 뜻 고르기를 먼저 한다.
+## 마법을 쓰면 왼쪽 아래 그 마법 버튼에서 마법 카드가 돌며 커져 나와, 공격 마법은 적 카드 위, 방어 마법은 아군 카드 위,
 ## 효과·순서 마법은 두 카드 가운데에 놓이고 그 마법의 이펙트(MagicFx, data/magic_fx.json)가 터진다.
 ## 일어난 일은 기록(entries)으로 모아 결과 화면에 턴마다 줄을 그어 보여 준다.
 
@@ -18,7 +19,15 @@ const FALL_SEC := 1.3  ## 쓰러짐: 앞으로 쓰러지며 깜빡이다 사라�
 const MAGIC_FLY := 0.55  ## 마법 카드가 마법 버튼에서 날아와 놓이는 시간
 
 var _ctx: BattleContext
+var _engine: BattleEngine
 var _result: BattleResult
+var _tray: HBoxContainer  ## 왼쪽 아래 이번 전투의 마법 버튼들
+var _tray_btns := {}  ## 마법 id -> Button
+var _deciding := false
+var _picked := ""
+var _picks: Array = []  ## [[id, ok], …] 턴마다 고른 것(이어 하기에 적는다)
+var _dec_n := 0  ## 지나간 마법 고르기 수
+var _hold_t := {}  ## 마법 버튼을 누르고 있는 시간(길게 누르면 설명)
 var _words: Array[String] = []
 var _boss := false
 var _party: Array[int] = []
@@ -50,7 +59,9 @@ var last_magic_card: Control  ## 마지막으로 놓인 마법 카드(테스트�
 
 func open(args: Dictionary) -> void:
 	_ctx = args["ctx"]
-	_result = args["result"]
+	_engine = args["engine"]
+	_result = _engine.res
+	_picks = (args.get("picks", []) as Array).duplicate(true)
 	_words = args["words"]
 	_boss = args["boss"]
 	_party = args["party"]
@@ -118,15 +129,14 @@ func open(args: Dictionary) -> void:
 		var bx: BattleCard = box
 		bx.held.connect(func(on: bool, at: Vector2) -> void:
 			_show_popup(_info(bx.combatant, bx.base_lines()) if on and bx.combatant else [] as Array[String], at))
-	# 내가 쓴 마법: 왼쪽 아래 카드. 누르고 있으면 마법 내용 팝업
-	_magic_btn = UiKit.button("✦ " + GameText.magic_name(_ctx.magic_id), func() -> void: pass, UiKit.APRICOT.lightened(0.2), 20)
-	_magic_btn.custom_minimum_size = Vector2(220, 54)
-	add_child(_magic_btn)
-	UiKit.pin(_magic_btn, 0, 1, 20, -96)
-	_magic_btn.button_down.connect(func() -> void:
-		_show_popup([GameText.magic_name(_ctx.magic_id), GameText.magic_desc(_ctx.magic_id, _ctx.power)] as Array[String],
-			_magic_btn.get_global_rect().get_center()))
-	_magic_btn.button_up.connect(func() -> void: _show_popup([] as Array[String], Vector2.ZERO))
+	# 이번 전투의 마법: 왼쪽 아래. 턴 앞에서 누르면 쓰고, 길게 누르면 설명
+	_tray = UiKit.hbox(8)
+	add_child(_tray)
+	UiKit.pin(_tray, 0, 1, 20, -96)
+	for id in _ctx.offer:
+		_tray.add_child(_tray_button(id))
+	_magic_btn = _tray_btns.get(_ctx.offer[0]) if not _ctx.offer.is_empty() else null
+	_refresh_tray()
 	var skip := UiKit.button(t("ui.battle.skip"), skip_all, UiKit.PAPER, 22)
 	add_child(skip)
 	UiKit.pin(skip, 0, 1, 20, -20)
@@ -145,42 +155,37 @@ func _play() -> void:
 		_a_box.skip = true
 		_b_box.skip = true
 	var log := _ctx.log
-	# 첫 격돌 전에 건 마법은 코인을 다 던진 뒤에 알린다(기록 순번으로 가린다)
-	var deferred_at: Array[int] = []
-	for k in log.size():
-		if log[k]["t"] == "clash":
+	var k := 0
+	var need_tap := false  ## 다음 보이는 일 앞에서 '다음'을 기다린다(쓰러짐·끝은 바로)
+	while true:
+		while k < log.size():
+			var ev: Dictionary = log[k]
+			match String(ev["t"]):
+				"enter":  # 잇달아 나오는 유닛(처음엔 아군·적 둘 다)은 함께 나오고 코인도 함께 돈다
+					var group: Array[Dictionary] = [ev]
+					while k + 1 < log.size() and log[k + 1]["t"] == "enter":
+						k += 1
+						group.append(log[k])
+					if need_tap:
+						await _wait_tap()
+					await _enter_group(group)
+					need_tap = true
+				"clash", "end":
+					await _step(ev)
+				"down":
+					await _step(ev)  # 체력이 0이 되자마자 쓰러지고, 그다음에 '다음'
+					need_tap = true
+				_:
+					if need_tap:
+						await _wait_tap()
+					await _step(ev)
+					need_tap = true
+			k += 1
+		if _engine.finished:
 			break
-		if log[k]["t"] == "magic":
-			_pending_magic[log[k]["target"]] = log[k]
-			deferred_at.append(k)
-	var deferred: Array = _pending_magic.values()
-	var k := -1
-	while k + 1 < log.size():
-		k += 1
-		var ev: Dictionary = log[k]
-		if k in deferred_at:
-			continue
-		if ev["t"] == "enter":  # 잇달아 나오는 유닛(처음엔 아군·적 둘 다)은 함께 나오고 코인도 함께 돈다
-			var group: Array[Dictionary] = [ev]
-			while k + 1 < log.size() and log[k + 1]["t"] == "enter":
-				k += 1
-				group.append(log[k])
-			await _enter_group(group)
-		var next: String = log[k + 1]["t"] if k + 1 < log.size() else ""
-		if ev["t"] != "enter":
-			await _step(ev)
-		if ev["t"] == "enter" and next != "enter":
-			await _wait_tap()  # 코인을 다 보고 나서
-			for m in deferred:
-				await _play_magic(m)
-				await _wait_tap()
-			deferred.clear()
-		elif ev["t"] in ["skill", "skill_copy", "boss_ability", "magic"]:
-			await _wait_tap()
-		elif ev["t"] == "round" and next != "down":
-			await _wait_tap()  # 둘 다 살아 있으면 다음 턴으로
-		elif ev["t"] == "down" and not next in ["down", "end"]:
-			await _wait_tap()  # 체력이 0이 되자마자 쓰러지고, 그다음에 '다음'을 누른다
+		var pick: Array = await _decide()  # 턴 앞: 마법을 고르거나 '다음'(이것이 이번 '다음'이다)
+		need_tap = false
+		_engine.turn(String(pick[0]), bool(pick[1]))
 	_end_btn.visible = true
 	_ended = true
 	_a_box.hold_enabled = true
@@ -497,7 +502,8 @@ func _magic_card(id: String) -> void:
 		card.global_position = rest
 		card.queue_free()
 		return
-	card.global_position = _magic_btn.get_global_rect().get_center() - card.size / 2.0
+	var src: Control = _tray_btns.get(id, _tray)
+	card.global_position = src.get_global_rect().get_center() - card.size / 2.0
 	card.scale = Vector2(0.3, 0.3)
 	card.rotation_degrees = -360.0
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -550,11 +556,13 @@ func _effect(ev: Dictionary) -> void:
 			text = t("ui.battle.boss_ability").format({"count": ev.get("count", 0)})
 			GameData.vibrate()
 		"magic":
-			text = t("ui.battle.magic_cast").format({"magic": GameText.magic_name(ev["id"]), "target": _ctx.enemies[ev["target"]].word_id,
-				"damage": ev["damage"], "down": ev.get("atk_down", 0)})
+			text = _magic_text(ev)
 	_banner.text = text
 	if ev["t"] == "magic":
 		await _magic_card(String(ev["id"]))
+		for mv in ev.get("moved", []):  # 순서 마법: 옆 목록에서도 맨 뒤로
+			var card: Control = _ally_cards[mv[1]].get_parent().get_parent() if int(mv[0]) == Combatant.ALLY else _enemy_cards[mv[1]]
+			card.get_parent().move_child(card, -1)
 	var changes: Array[String] = []
 	var b4: Dictionary = ev.get("before", {})
 	var af: Dictionary = ev.get("after", {})
@@ -575,6 +583,129 @@ func _effect(ev: Dictionary) -> void:
 				_coin_text(b4[pair[0] + "_flips"]), _coin_text(af[pair[0] + "_flips"])])
 	_log("✦ " + text + "  " + (", ".join(changes) if not changes.is_empty() else t("ui.battle.h_nothing")), UiKit.ACCENT.darkened(0.3))
 	await _wait(maxf(STEP, FLASH + 0.1) if not changes.is_empty() else STEP)
+
+
+## 마법 알림 글(마법마다 다르다).
+func _magic_text(ev: Dictionary) -> String:
+	var id := String(ev["id"])
+	var f := {"magic": GameText.magic_name(id)}
+	if ev.get("failed", false):
+		return t("ui.battle.magic_failed").format(f)
+	match id:
+		"de":
+			f.merge({"target": _ctx.enemies[ev["target"]].word_id, "damage": ev["damage"], "down": ev.get("atk_down", 0)})
+			return t("ui.battle.magic_cast").format(f)
+		"in", "sub":
+			f.merge({"who": _who(Combatant.ALLY, int(ev.get("who", 0))), "gain": ev.get("gain", 0)})
+			return t("ui.battle.magic_" + id).format(f)
+	var key := "ui.battle.magic_" + id
+	return t(key).format(f) if t(key) != key else GameText.magic_name(id)
+
+
+# ----- 턴마다 마법 고르기 -----
+
+func _tray_button(id: String) -> Button:
+	var b := UiKit.button("✦ " + GameText.magic_name(id), func() -> void: pass, Color(String(MagicFx.def_of(id)["color"])).lightened(0.55), 18)
+	b.custom_minimum_size = Vector2(0, 54)
+	b.add_theme_color_override("font_disabled_color", UiKit.INK.lightened(0.5))
+	b.button_down.connect(func() -> void:
+		_hold_t[id] = Time.get_ticks_msec()
+		get_tree().create_timer(0.45).timeout.connect(func() -> void:
+			if _hold_t.get(id, -1) >= 0 and Time.get_ticks_msec() - int(_hold_t[id]) >= 440:
+				_hold_t[id] = -2  # 길게 눌렀다: 설명만
+				_show_popup([GameText.magic_name(id), GameText.magic_desc(id, _ctx.power)] as Array[String], b.get_global_rect().get_center())))
+	b.button_up.connect(func() -> void:
+		_show_popup([] as Array[String], Vector2.ZERO)
+		var long: bool = _hold_t.get(id, -1) == -2
+		_hold_t[id] = -1
+		if not long:
+			_tap_magic(id))
+	_tray_btns[id] = b
+	return b
+
+
+## 쓸 수 있는가: 아직 안 썼고, 방어 마법이면 아군 장착 어근과 조합 단어가 있어야 한다.
+func can_use(id: String) -> bool:
+	if id in _ctx.used:
+		return false
+	var d := GameData.bal.magic_def(id)
+	if String(d.get("kind", "")) == "defense":
+		return ComboQuiz.possible(GameData.repo, String(d.get("prefix", "")), _ally_roots())
+	return true
+
+
+func _ally_roots() -> Array:
+	return _ctx.allies.map(func(c: Combatant) -> String: return c.skill_root)
+
+
+func _refresh_tray() -> void:
+	for id in _tray_btns:
+		var b: Button = _tray_btns[id]
+		b.disabled = not (_deciding and can_use(id))
+		b.modulate = Color(1, 1, 1, 0.45) if id in _ctx.used else Color.WHITE
+
+
+func _tap_magic(id: String) -> void:
+	if not _deciding or not can_use(id):
+		if _deciding and not id in _ctx.used:
+			_banner.text = t("ui.battle.magic_no_combo")
+		return
+	_picked = id
+
+
+## 턴 앞: 마법을 고르거나 '다음'. 돌려주는 값 [마법 id("" = 안 씀), 퀴즈 통과].
+func pick_magic(id: String) -> void:  ## 테스트·캡처용
+	_tap_magic(id)
+
+
+func _decide() -> Array:
+	var out: Array = ["", true]
+	if _dec_n < _picks.size():  # 이어 하기: 그때 고른 것
+		out = _picks[_dec_n]
+		_dec_n += 1
+		if _resume_to > 0 and steps_done < _resume_to:
+			await _wait_tap()
+			return out
+		steps_done += 1
+		return out
+	if _skip:
+		_record(out)
+		return out
+	_tapped = false
+	_picked = ""
+	_deciding = true
+	_refresh_tray()
+	_next_btn.visible = true
+	var usable := _ctx.offer.any(func(m: String) -> bool: return can_use(m))
+	if usable and _banner.text == "":
+		_banner.text = t("ui.battle.magic_turn")
+	while not _tapped and _picked == "" and not _skip:
+		await get_tree().process_frame
+	_next_btn.visible = false
+	_deciding = false
+	_refresh_tray()
+	if _picked != "" and not _skip:
+		out = [_picked, true]
+		var d := GameData.bal.magic_def(_picked)
+		if String(d.get("kind", "")) == "defense":
+			var qrng := RandomNumberGenerator.new()  # 전투 무작위(코인)와 따로: 이어 하기가 같은 전투를 다시 계산하게
+			qrng.randomize()
+			var q := ComboQuiz.make(GameData.repo, String(d.get("prefix", "")), _ally_roots(), qrng)
+			if q:
+				var ov := ComboQuizOverlay.new()
+				add_child(ov)
+				ov.open(q, _picked)
+				var ok: bool = await ov.finished
+				out = [_picked, ok]
+	_dec_n += 1
+	_record(out)
+	return out
+
+
+func _record(pick: Array) -> void:
+	_picks.append(pick)
+	steps_done += 1
+	GameData.patch_route("battle", {"step": steps_done, "picks": _picks})
 
 
 ## 한 턴: 가운데 "N턴"을 띄우고, 서로 공격해 깎인 체력을 빨갛게 깜빡인다.

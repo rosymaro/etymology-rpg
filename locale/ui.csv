@@ -229,3 +229,23 @@ ui.quest.s01_q_magic.title,절벽 아래 창고
 ui.quest.s01_q_magic.desc,"언덕 앞 절벽 아래로 내려가야 해요. 필드 마법 de-(아래로)가 있으면 내려갈 수 있어요."
 ui.quest.s01_q_magic.hint,"절벽이 가팔라요. 필드 마법 de-(아래로)가 있으면 내려갈 수 있어요."
 ui.quest.state_ready,할 수 있어요! 길목에 가 보세요
+ui.quest.none,"아직 퀘스트가 없어요. 들판에서 단어를 잡으며 동료를 만나 보세요."
+ui.quest.goal_none,들판에서 단어를 잡아 보기
+ui.quest.goal_board,마을 알림판에 가 보기
+ui.quest.board_empty,알림판이 낡아 글자가 희미해요. 아직은 볼 게 없어요.
+ui.quest.s01_q_word.next,"알림판 첫 소식: ""동쪽 강의 다리가 무너졌다."" fac(만들다) 어근이 있으면 고칠 수 있을지도 몰라요."
+ui.quest.s01_q_root.next,"강 건너 절벽 아래로 내려가면 마을 입구 언덕이에요. 필드 마법 de-(아래로)를 써 보세요."
+ui.quest.s01_q_root.locked,"다리가 무너져 건널 수 없어요. 마을에서 소식을 먼저 알아보세요."
+ui.quest.s01_q_magic.locked,"절벽이 가팔라요. 아직은 내려갈 수 없어요."
+ui.quest.s01_q_word.locked,알림판이 낡아 글자가 희미해요.
+ui.battle.magic_offer,"이번 전투의 마법(턴마다 하나씩 쓸 수 있어요. 쓴 마법은 다시 못 써요)"
+ui.battle.magic_turn,"마법을 쓰려면 왼쪽 아래 마법을 누르세요. 안 쓰면 '다음'"
+ui.battle.magic_failed,"마법 {magic}: 조합을 틀려 효과가 없었다"
+ui.battle.magic_in,"마법 {magic} 발동! {who}의 뒷면 코인을 다시 던진다"
+ui.battle.magic_ex,"마법 {magic} 발동! 싸우던 둘이 맨 뒤로 물러나 체력이 오른다"
+ui.battle.magic_sub,"마법 {magic} 발동! 기다리던 동료들이 {who}에게 체력 {gain}을 보탰다"
+ui.battle.magic_no_combo,"지금 장착 어근으로는 조합 단어가 없어 쓸 수 없어요"
+ui.combo.title,{magic}: 조합 뜻 고르기
+ui.combo.how,"접두사와 아군 장착 어근으로 만들어지는 단어의 뜻을 {n}개 고르세요. 틀린 뜻을 고르면 실패(마법은 쓰여요)."
+ui.combo.ok,성공! 마법이 걸린다
+ui.combo.fail,실패… 마법이 흩어졌다
