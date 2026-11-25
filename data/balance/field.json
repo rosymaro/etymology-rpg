@@ -8,32 +8,12 @@
     1500
   ],
   "spawn_far": 2600,
+  "_rush_doc": "rush(돌진): 주인공이 sight 안에 오면 windup초 멈춰 떨고(!), dash초 동안 그때 주인공 자리로 아주 빠르게 돌진, rest초 쉰다",
   "kinds": {
-    "wander": {
-      "weight": 50,
-      "speed": [
-        0,
-        120
-      ],
-      "turn": [
-        1.0,
-        2.5
-      ]
-    },
-    "chase": {
-      "weight": 30,
-      "speed": 250,
-      "sight": 520,
-      "give_up": 900,
-      "wander_speed": 90
-    },
-    "flee": {
-      "weight": 20,
-      "speed": 300,
-      "sight": 460,
-      "wander_speed": 90,
-      "rare": true
-    }
+    "wander": {"weight": 40, "speed": [0, 120], "turn": [1.0, 2.5]},
+    "chase": {"weight": 28, "speed": 250, "sight": 520, "give_up": 900, "wander_speed": 90},
+    "flee": {"weight": 17, "speed": 300, "sight": 460, "wander_speed": 90, "rare": true},
+    "rush": {"weight": 15, "speed": 640, "sight": 560, "windup": 0.6, "dash": 0.7, "rest": 1.6, "wander_speed": 70}
   },
   "_rare_doc": "rare = 도망가는 몹은 빈도가 낮은(드문) 단어를 더 자주 갖고 있다(뽑기 무게를 1/빈도로)",
   "rest_sec": 180,
