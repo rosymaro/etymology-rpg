@@ -79,6 +79,9 @@ func best_dmg() -> int:
 ## 몹 체력: 레벨이 오르면 조금씩 단단해지고, 언제나 가장 센 무기 한 방보다 1 많다(한 방에 죽지 않는다).
 func mob_hp(kind: String) -> int:
 	var base := int(cfg["mob_hp"].get(kind, 2)) + int(floor(level() * float(cfg["mob_hp_per_level"])))
+	var mult: Array = cfg.get("mob_hp_party", [1.0])  # 동행 수에 따라(혼자면 약하게, 셋이면 세게)
+	var n := clampi((d["units"] as Array).size(), 1, mult.size())
+	base = maxi(1, roundi(base * float(mult[n - 1])))
 	return maxi(base, best_dmg() + 1)
 
 

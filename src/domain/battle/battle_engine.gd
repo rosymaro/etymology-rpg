@@ -148,27 +148,38 @@ func _round(a: Combatant, b: Combatant) -> void:
 	var rnd := _rnd
 	var da := _damage(a, b, rnd)
 	var db := _damage(b, a, rnd)
-	if a.first_strike and not b.first_strike:
-		b.hp -= da
+	var first := Combatant.ALLY if a.first_strike and not b.first_strike else (Combatant.ENEMY if b.first_strike and not a.first_strike else -1)
+	if first == Combatant.ALLY:
+		_hit(b, a, da)
 		if b.hp > 0:
-			a.hp -= db
+			_hit(a, b, db)
 		else:
 			db = 0
-	elif b.first_strike and not a.first_strike:
-		a.hp -= db
+	elif first == Combatant.ENEMY:
+		_hit(a, b, db)
 		if a.hp > 0:
-			b.hp -= da
+			_hit(b, a, da)
 		else:
 			da = 0
 	else:
-		a.hp -= db
-		b.hp -= da
-	var first := Combatant.ALLY if a.first_strike and not b.first_strike else (Combatant.ENEMY if b.first_strike and not a.first_strike else -1)
+		_hit(a, b, db)
+		_hit(b, a, da)
+	for u in [a, b]:
+		if u.wall_rounds > 0:
+			u.wall_rounds -= 1
 	ctx.add_log({"t": "round", "n": rnd, "to_b": da, "to_a": db, "a_hp": maxi(a.hp, 0), "b_hp": maxi(b.hp, 0), "first": first})
 
 
+## y가 x에게서 dmg를 받는다: 동료가 나눠 받고(com-), 받은 만큼의 일부를 되돌린다(ob-).
+func _hit(y: Combatant, x: Combatant, dmg: int) -> void:
+	var took := ctx.split_damage(y, dmg)
+	y.hp -= took
+	if y.reflect > 0.0 and took > 0:
+		x.hp -= int(ceil(took * y.reflect))
+
+
 func _damage(x: Combatant, y: Combatant, rnd: int) -> int:
-	var d := maxi(1, x.atk - y.def - y.reduce)
+	var d := maxi(1, x.atk - y.def - y.reduce - (y.wall if y.wall_rounds > 0 else 0))
 	if x.double_first and rnd == 1:
 		d *= 2
 	if y.boss_ability and ctx.is_boss_battle:

@@ -61,6 +61,38 @@ func waiting(side: int) -> Array[Combatant]:
 	return out
 
 
+## u를 순서 맨 앞으로 꺼낸다(pro-). 지금 싸우던 유닛은 그 바로 뒤가 된다.
+func bring_front(u: Combatant) -> void:
+	var o := _order(u.side)
+	var k := team(u.side).find(u)
+	var c := cur(u.side)
+	o.erase(k)
+	var at := o.find(team(u.side).find(c)) if c else 0
+	o.insert(maxi(0, at), k)
+
+
+## 이번 격돌 동안 u가 받는 피해 중 share 몫을 기다리는 동료가 나눠 받는다(com-). u가 실제로 받을 피해를 돌려준다.
+func split_damage(u: Combatant, dmg: int) -> int:
+	if u.share <= 0.0 or dmg <= 0:
+		return dmg
+	var w := waiting(u.side)
+	if w.is_empty():
+		return dmg
+	var give := int(floor(dmg * u.share))
+	var each := give / w.size()
+	if each <= 0:
+		return dmg
+	var hit := int(ceil(each * u.share_taken))  # 함께 막아 덜 받는다
+	for m in w:
+		if m.entered:
+			m.hp = maxi(1, m.hp - hit)
+			if m.hold_hp > 0:
+				m.hold_hp = maxi(1, m.hold_hp - hit)
+		else:
+			m.pre_damage += hit
+	return dmg - each * w.size()
+
+
 ## u를 순서 맨 뒤로 보낸다(순서 마법).
 func send_back(u: Combatant) -> void:
 	var o := _order(u.side)

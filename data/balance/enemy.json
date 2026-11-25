@@ -1,123 +1,22 @@
 {
   "_doc": "적 능력치는 층을 쌓아 정한다: 스테이지 곡선 → 빈도 보정 → 성향(계열 어근, 없으면 주속성) → 단어별 덮어쓰기. 레벨 테스트 때는 위에서부터 고친다. stage_curve는 10스테이지 시뮬레이션(docs/design/sim-10stage.md)으로 맞춘 값",
   "stage_curve": [
-    {
-      "stage": 1,
-      "base_level": 1,
-      "coins": 1,
-      "gear_bonus": [
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "stage": 2,
-      "base_level": 10,
-      "coins": 1,
-      "gear_bonus": [
-        3,
-        2,
-        4
-      ]
-    },
-    {
-      "stage": 3,
-      "base_level": 13,
-      "coins": 1,
-      "gear_bonus": [
-        5,
-        6,
-        10
-      ]
-    },
-    {
-      "stage": 4,
-      "base_level": 15,
-      "coins": 2,
-      "gear_bonus": [
-        7,
-        6,
-        12
-      ]
-    },
-    {
-      "stage": 5,
-      "base_level": 20,
-      "coins": 2,
-      "gear_bonus": [
-        7,
-        7,
-        13
-      ]
-    },
-    {
-      "stage": 6,
-      "base_level": 25,
-      "coins": 2,
-      "gear_bonus": [
-        7,
-        7,
-        14
-      ]
-    },
-    {
-      "stage": 7,
-      "base_level": 31,
-      "coins": 3,
-      "gear_bonus": [
-        8,
-        8,
-        15
-      ]
-    },
-    {
-      "stage": 8,
-      "base_level": 37,
-      "coins": 3,
-      "gear_bonus": [
-        8,
-        8,
-        16
-      ]
-    },
-    {
-      "stage": 9,
-      "base_level": 43,
-      "coins": 3,
-      "gear_bonus": [
-        9,
-        9,
-        17
-      ]
-    },
-    {
-      "stage": 10,
-      "base_level": 49,
-      "coins": 4,
-      "gear_bonus": [
-        9,
-        9,
-        18
-      ]
-    }
+    { "stage": 1, "base_level": 1, "coins": 1, "gear_bonus": [0, 0, 0] },
+    { "stage": 2, "base_level": 20, "coins": 1, "gear_bonus": [3, 2, 4] },
+    { "stage": 3, "base_level": 20, "coins": 1, "gear_bonus": [5, 6, 10] },
+    { "stage": 4, "base_level": 20, "coins": 2, "gear_bonus": [7, 6, 12] },
+    { "stage": 5, "base_level": 24, "coins": 2, "gear_bonus": [7, 7, 13] },
+    { "stage": 6, "base_level": 33, "coins": 2, "gear_bonus": [7, 7, 14] },
+    { "stage": 7, "base_level": 35, "coins": 3, "gear_bonus": [8, 8, 15] },
+    { "stage": 8, "base_level": 44, "coins": 3, "gear_bonus": [8, 8, 16] },
+    { "stage": 9, "base_level": 48, "coins": 3, "gear_bonus": [9, 9, 17] },
+    { "stage": 10, "base_level": 56, "coins": 4, "gear_bonus": [9, 9, 18] }
   ],
-  "frequency_level_bonus": {
-    "formula": "5 - frequency",
-    "min": -2,
-    "max": 3
-  },
+  "frequency_level_bonus": { "formula": "5 - frequency", "min": -2, "max": 3 },
   "stat_formula": "unit_formula",
-  "tendency_from": [
-    "root_family",
-    "primary_attribute"
-  ],
+  "tendency_from": ["root_family", "primary_attribute"],
   "attribute_ability_from_stage": 3,
-  "team_bundle": {
-    "same_primary_min": 3,
-    "tier_at_3": 1,
-    "tier_at_4": 2
-  },
+  "team_bundle": { "same_primary_min": 3, "tier_at_3": 1, "tier_at_4": 2 },
   "skill_pick": "random",
   "_skill_pick_doc": "random | weighted | scripted. 적 스킬 고르는 방식. scripted면 overrides의 skills를 순서대로 쓴다",
   "gear_bonus_ratio": 1.0,

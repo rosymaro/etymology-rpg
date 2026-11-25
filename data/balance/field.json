@@ -3,17 +3,21 @@
   "hero_speed": 380,
   "enemy_count": 18,
   "cave_enemies": 5,
-  "spawn_near": [
-    450,
-    1500
-  ],
+  "spawn_near": [450, 1500],
   "spawn_far": 2600,
   "_rush_doc": "rush(돌진): 주인공이 sight 안에 오면 windup초 멈춰 떨고(!), dash초 동안 그때 주인공 자리로 아주 빠르게 돌진, rest초 쉰다",
+  "rock_push": {
+    "first": 0.6,
+    "faster": 0.85,
+    "min": 0.34,
+    "ice_cell": 0.12,
+    "_doc": "돌 밀기(사용자 의견: 끊기지 않고 이어서, 처음엔 느리게, 계속 밀면 조금씩 빨라지지만 그래도 느리게). 한 칸에 걸리는 초: 처음 first, 이어 밀 때마다 × faster, 가장 빨라도 min. 얼음에서 미끄러지는 칸마다 ice_cell"
+  },
   "kinds": {
-    "wander": {"weight": 40, "speed": [0, 120], "turn": [1.0, 2.5]},
-    "chase": {"weight": 28, "speed": 250, "sight": 520, "give_up": 900, "wander_speed": 90},
-    "flee": {"weight": 17, "speed": 300, "sight": 460, "wander_speed": 90, "rare": true},
-    "rush": {"weight": 15, "speed": 640, "sight": 560, "windup": 0.6, "dash": 0.7, "rest": 1.6, "wander_speed": 70}
+    "wander": { "weight": 40, "speed": [0, 120], "turn": [1.0, 2.5] },
+    "chase": { "weight": 28, "speed": 250, "sight": 520, "give_up": 900, "wander_speed": 90 },
+    "flee": { "weight": 17, "speed": 300, "sight": 460, "wander_speed": 90, "rare": true },
+    "rush": { "weight": 15, "speed": 640, "sight": 560, "windup": 0.6, "dash": 0.7, "rest": 1.6, "wander_speed": 70 }
   },
   "_rare_doc": "rare = 도망가는 몹은 빈도가 낮은(드문) 단어를 더 자주 갖고 있다(뽑기 무게를 1/빈도로)",
   "rest_sec": 180,
@@ -21,37 +25,14 @@
   "villagers": 4,
   "magic": {
     "_doc": "필드 마법 버튼(07-fun 2절): cd = 쉬는 시간(초), r = 미치는 거리, sec = 이어지는 시간",
-    "de": {
-      "cd": 6,
-      "r": 260,
-      "stun": 2.0
-    },
-    "sub": {
-      "cd": 20,
-      "sec": 10
-    },
-    "re": {
-      "cd": 30
-    },
-    "ob": {
-      "cd": 8,
-      "r": 320,
-      "push": 360
-    },
-    "com": {
-      "cd": 10
-    },
-    "pro": {
-      "cd": 40,
-      "sec": 30
-    },
-    "ex": {
-      "cd": 20
-    }
+    "de": { "cd": 6, "r": 260, "stun": 2.0 },
+    "sub": { "cd": 20, "sec": 10 },
+    "re": { "cd": 30 },
+    "ob": { "cd": 8, "r": 320, "push": 360 },
+    "com": { "cd": 10 },
+    "pro": { "cd": 40, "sec": 30 },
+    "ex": { "cd": 20 }
   },
-  "cave_light": [
-    170,
-    460
-  ],
+  "cave_light": [170, 460],
   "_cave_light_doc": "동굴 안에서 보이는 둘레(반지름): [그냥, pro- 앞길 비추기 동안]"
 }

@@ -21,9 +21,19 @@ static func _skills() -> Dictionary:
 static func _magics() -> Dictionary:
 	return {
 		"StrikeFirst": StrikeFirstMagic,
+		"StrikeUndo": StrikeUndoMagic,
+		"StrikeSilence": StrikeSilenceMagic,
+		"StrikeReflect": StrikeReflectMagic,
 		"CoinBias": CoinBiasMagic,
+		"HalveAttack": HalveAttackMagic,
 		"SwapToBack": SwapToBackMagic,
+		"PullFromBack": PullFromBackMagic,
 		"PoolToFirst": PoolToFirstMagic,
+		"ShareDamage": ShareDamageMagic,
+		"HealNow": HealNowMagic,
+		"Shield": ShieldMagic,
+		"FirstStrikeNow": FirstStrikeNowMagic,
+		"DamageWall": DamageWallMagic,
 	}
 
 static func _boss() -> Dictionary:
