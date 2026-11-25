@@ -49,3 +49,17 @@ sys.magic.inter.name,inter- (사이)
 sys.magic.sub.desc,"기다리는 아군이 저마다 체력의 절반을 지금 싸우는 아군에게 보탠다. 걸 때 조합 뜻 고르기를 통과해야 한다."
 sys.magic.in.desc,"지금 싸우는 아군의 뒷면 코인을 다시 던진다(앞면 확률 75%). 이번 전투 내내 그 유닛 코인이 앞면이 잘 나온다."
 sys.magic.ex.desc,"지금 싸우는 아군과 적을 둘 다 맨 뒤로 보낸다. 지나친 유닛 하나마다 체력 +{hp_per_passed}."
+sys.field_magic.de,de- 내리꽂기·내려가기
+sys.field_magic.sub,sub- 몰래 걷기
+sys.field_magic.re,re- 마을로 돌아가기
+sys.field_magic.com,com- 함께 끌어오기
+sys.field_magic.ad,ad- 다가가기
+sys.field_magic.ob,ob- 밀어내기
+sys.field_magic.prae,prae- 미리 보기
+sys.field_magic.in,in- 들어가기
+sys.field_magic.pro,pro- 앞길 비추기
+sys.field_magic.ex,ex- 밖으로
+sys.field_magic.in_neg,in- 보이지 않기
+sys.field_magic.un,un- 열기
+sys.field_magic.dis,dis- 풀기
+sys.field_magic.inter,inter- 잇기

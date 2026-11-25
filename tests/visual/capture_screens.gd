@@ -91,8 +91,6 @@ func _run() -> void:
 	s.stage = 2  # 스테이지 2부터 전투 마법(종류마다 하나씩)이 생긴다
 	main.flow.go_battle_prep(ids, false)
 	await _shot("07_prep_magic")
-	(main.current() as BattlePrepScreen)._step_roots()
-	await _shot("08_prep_roots")
 	(main.current() as BattlePrepScreen)._start()
 	await get_tree().create_timer(0.05).timeout
 	await _shot("09_battle_enter")  # 옆 목록에서 커지며 나오는 중

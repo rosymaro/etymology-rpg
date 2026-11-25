@@ -265,3 +265,15 @@ ui.npc.s01_6,"마을 사람: 말뿌리 나무가 시들어서 다들 말을 잊�
 ui.quiz.infer_hint,조각 뜻을 이어서 단어 뜻을 짐작해 보세요
 ui.quiz.hint,"힌트: {h}"
 ui.quiz.find_piece,아는 조각이 숨어 있어요. 찾아서 뜻을 짐작해 보세요
+ui.prep.roots,"장착 어근(유닛 창에서 바꿔요): {list}"
+ui.party.loadout,장착
+ui.party.town_only,마법과 어근은 마을에서만 바꿀 수 있어요
+ui.party.field,필드 마법
+ui.party.deck,전투 마법 덱
+ui.party.empty,(비움)
+ui.party.root,"어근: {root}"
+ui.party.pick_field,필드 마법 고르기
+ui.party.pick_deck,전투 마법 고르기(전투마다 덱 4개 중 3개가 나와요)
+ui.party.pick_root,"{name}의 어근 고르기"
+ui.field.magic_used,{magic}!
+ui.field.magic_soon,이 마법의 필드 효과는 아직 준비 중이에요

@@ -8,6 +8,8 @@ var pos := Vector2.ZERO
 var vel := Vector2.ZERO
 var words: Array[String] = []
 var alert := false  ## 쫓는 중·도망가는 중
+var stun := 0.0  ## 남은 멈춤 시간(필드 마법 de- 등)
+var ignore := false  ## 주인공을 못 알아챔(필드 마법 sub- 몰래 걷기)
 var _t := 0.0
 
 
@@ -25,7 +27,14 @@ static func pick_kind(kinds: Dictionary, rng: RandomNumberGenerator) -> String:
 
 ## 이번 프레임에 가고 싶은 속도(벽은 WorldMap.move가 막는다).
 func steer(hero: Vector2, delta: float, kinds: Dictionary, rng: RandomNumberGenerator) -> Vector2:
+	if stun > 0.0:
+		stun -= delta
+		vel = Vector2.ZERO
+		return vel
 	var k: Dictionary = kinds.get(kind, kinds["wander"])
+	if ignore:
+		alert = false
+		return _wander(delta, k, kinds, rng)
 	var d := hero - pos
 	var dist := d.length()
 	match kind:
@@ -42,6 +51,10 @@ func steer(hero: Vector2, delta: float, kinds: Dictionary, rng: RandomNumberGene
 			if alert and dist > 1.0:
 				vel = -d / dist * float(k["speed"])
 				return vel
+	return _wander(delta, k, kinds, rng)
+
+
+func _wander(delta: float, k: Dictionary, kinds: Dictionary, rng: RandomNumberGenerator) -> Vector2:
 	_t -= delta
 	if _t <= 0.0:
 		var turn: Array = kinds["wander"]["turn"]

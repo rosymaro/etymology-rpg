@@ -143,10 +143,12 @@ func battle_magics(state: GameState) -> Array[String]:
 	return out
 
 
-## 이번 전투에 나올 마법: 가진 것 중 무작위 offer_count개. 방어 마법은 장착 어근과 조합 단어가 있어야 나온다.
+## 이번 전투에 나올 마법: 덱(장착한 4개, 07-fun 2절) 중 무작위 offer_count개. 방어 마법은 장착 어근과 조합 단어가 있어야 나온다.
 func magic_offer(state: GameState, roots: Array, rng: RandomNumberGenerator) -> Array[String]:
 	var pool: Array[String] = []
-	for id in battle_magics(state):
+	for id in Loadout.deck(state, self):
+		if id == "":
+			continue
 		var d := bal.magic_def(id)
 		if String(d.get("kind", "")) == "defense" and not ComboQuiz.possible(repo, String(d.get("prefix", "")), roots):
 			continue

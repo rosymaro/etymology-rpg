@@ -90,7 +90,6 @@ func test_stage1_loop() -> void:
 	await _answer_all(false)
 	assert_true(main.current() is BattlePrepScreen, "틀리면 전투 준비")
 	var prep := main.current() as BattlePrepScreen
-	prep._step_roots()
 	await wait_physics_frames(2)
 	prep._start()
 	await wait_physics_frames(2)
