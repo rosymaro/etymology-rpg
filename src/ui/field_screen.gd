@@ -185,6 +185,14 @@ func _build_hud() -> void:
 	_toast.custom_minimum_size = Vector2(640, 0)
 	_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var tb := UiKit.box(Color(0.25, 0.25, 0.3, 0.72), 16, 0)  # 반투명 회색 바탕 + 밝은 글씨(사용자 의견): 어디서나 보이게
+	_toast.add_theme_color_override("font_color", Color.WHITE)
+	tb.content_margin_left = 14
+	tb.content_margin_right = 14
+	tb.content_margin_top = 8
+	tb.content_margin_bottom = 8
+	_toast.add_theme_stylebox_override("normal", tb)
+	_toast.visible = false
 	add_child(_toast)
 	UiKit.pin(_toast, 0.5, 0, 0, 150 + map.h * MINI_SCALE + 70)  # 미니맵·할 일 아래(가리지 않게)
 	_update_top()
@@ -224,6 +232,7 @@ func _remember() -> void:
 
 func _show_toast(text: String) -> void:
 	_toast.text = text
+	_toast.visible = text != ""
 	_toast_t = 2.5
 
 
@@ -391,6 +400,7 @@ func _process(delta: float) -> void:
 		_toast_t -= delta
 		if _toast_t <= 0.0:
 			_toast.text = ""
+			_toast.visible = false
 	var view := size
 	_cam = (_hero - view / 2).clamp(Vector2.ZERO, (map.size_px() - view).max(Vector2.ZERO))
 	_mini.queue_redraw()
@@ -1066,8 +1076,8 @@ func _draw() -> void:
 		var lr: Array = _f["cave_light"]
 		var rad := float(lr[1]) if _fmagic.light > 0.0 else float(lr[0])
 		var big := 2600.0
-		draw_arc(h, rad + big / 2.0, 0, TAU, 96, Color(0.04, 0.03, 0.06, 0.94), big)
-		draw_arc(h, rad, 0, TAU, 64, Color(0.04, 0.03, 0.06, 0.5), 30)
+		draw_arc(h, rad + big / 2.0, 0, TAU, 96, Color(0.35, 0.35, 0.38, 0.55), big)  # 반투명한 밝은 회색(글씨가 보이게)
+		draw_arc(h, rad, 0, TAU, 64, Color(0.35, 0.35, 0.38, 0.25), 30)
 		if _fmagic.light <= 0.0 and _toast_t <= 0.0 and not "pro" in GameData.state.magics:
 			_show_toast(t("ui.cave.dark"))
 	if _stick_on:
