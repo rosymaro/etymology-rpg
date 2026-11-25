@@ -24,8 +24,22 @@ func test_quest_gates_match_the_map() -> void:
 			assert_false(m.quest_gate(q["gate"]).is_empty(), "지도에 길목 %s" % q["gate"])
 
 
+func test_quests_open_one_by_one_with_the_story() -> void:
+	var s := GameState.new()
+	assert_eq(book.shown(s, 1).size(), 0, "이야기 전에는 퀘스트가 없다")
+	assert_true(book.next_quest(s, 1).is_empty())
+	s.flags["s01_skit_cheok"] = true
+	assert_eq(book.shown(s, 1).map(func(q: Dictionary) -> String: return q["id"]), ["s01_q_word"])
+	assert_false(book.finish(s, "s01_q_root", ["fac"]), "보이지 않는 퀘스트는 못 마친다")
+	s.flags["s01_q_word"] = true
+	assert_eq(book.shown(s, 1).size(), 2, "알림판을 마치면 다리 퀘스트가 열린다")
+	assert_true(book.finish(s, "s01_q_root", ["fac"]))
+	assert_eq(book.shown(s, 1).size(), 3, "다리를 고치면 절벽 퀘스트가 열린다")
+
+
 func test_word_quest_needs_all_three_words() -> void:
 	var s := GameState.new()
+	s.flags["s01_skit_cheok"] = true
 	var q := book.get_quest("s01_q_word")
 	assert_eq(book.progress(s, q, [])["have"], 0)
 	s.dex["information"] = 1
@@ -39,6 +53,7 @@ func test_word_quest_needs_all_three_words() -> void:
 
 func test_root_and_magic_quests_open_their_gates() -> void:
 	var s := GameState.new()
+	s.flags["s01_q_word"] = true
 	s.magics = []
 	assert_false(book.finish(s, "s01_q_root", []), "fac 없으면 다리를 못 고친다")
 	assert_true(book.finish(s, "s01_q_root", ["fac"]))
@@ -50,6 +65,7 @@ func test_root_and_magic_quests_open_their_gates() -> void:
 
 func test_boss_waits_for_all_stage_quests() -> void:
 	var s := GameState.new()
+	s.flags["s01_skit_cheok"] = true
 	assert_eq(book.boss_blockers(s, 1).size(), 3)
 	assert_eq(book.next_quest(s, 1)["id"], "s01_q_word")
 	for id in ["s01_q_word", "s01_q_root", "s01_q_magic"]:

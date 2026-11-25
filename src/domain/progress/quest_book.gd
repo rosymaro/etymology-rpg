@@ -35,6 +35,17 @@ func by_gate(gate: String) -> Dictionary:
 	return {}
 
 
+## 이야기가 그만큼 나아갔는가(after 깃발). 보이지 않는 퀘스트는 목록·할 일·표지판에 나오지 않는다.
+func visible(state: GameState, q: Dictionary) -> bool:
+	var a := String(q.get("after", ""))
+	return a == "" or bool(state.flags.get(a, false))
+
+
+## 보이는 퀘스트만.
+func shown(state: GameState, stage: int) -> Array:
+	return of_stage(stage).filter(func(q: Dictionary) -> bool: return visible(state, q))
+
+
 func done(state: GameState, id: String) -> bool:
 	return bool(state.flags.get(id, false))
 
@@ -60,7 +71,7 @@ func progress(state: GameState, q: Dictionary, roots: Array) -> Dictionary:
 ## 마칠 수 있으면 마치고 true.
 func finish(state: GameState, id: String, roots: Array) -> bool:
 	var q := get_quest(id)
-	if q.is_empty() or done(state, id) or not progress(state, q, roots)["ready"]:
+	if q.is_empty() or done(state, id) or not visible(state, q) or not progress(state, q, roots)["ready"]:
 		return false
 	state.flags[id] = true
 	return true
@@ -80,9 +91,9 @@ func boss_blockers(state: GameState, stage: int) -> Array:
 	return of_stage(stage).filter(func(q: Dictionary) -> bool: return bool(q.get("boss", false)) and not done(state, q["id"]))
 
 
-## 다음에 할 일(퀘스트 목록 순서대로 첫 미완료). 없으면 {}.
+## 다음에 할 일(보이는 퀘스트 중 목록 순서대로 첫 미완료). 없으면 {}.
 func next_quest(state: GameState, stage: int) -> Dictionary:
-	for q in of_stage(stage):
+	for q in shown(state, stage):
 		if not done(state, q["id"]):
 			return q
 	return {}

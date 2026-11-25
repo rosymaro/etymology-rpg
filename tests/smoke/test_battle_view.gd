@@ -25,10 +25,10 @@ func _battle() -> BattleScreen:
 
 func test_turns_count_up_across_enemies() -> void:
 	var bs := await _battle()
-	var rounds := bs._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "round").size()
 	bs.skip_all()
 	await wait_seconds(1.0)
 	assert_true(bs._ended)
+	var rounds := bs._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "round").size()
 	assert_eq(bs._turn_n, rounds, "턴은 전투 처음부터 이어서 센다")
 	var hist := "\n".join(bs.lines)
 	assert_string_contains(hist, "%d턴" % rounds, "마지막 턴 번호가 기록에 남는다")
@@ -58,22 +58,37 @@ func test_magic_card_lands_by_kind() -> void:
 
 func test_battle_magic_card_flies_from_magic_button() -> void:
 	var bs := await _battle()
-	if bs._ctx.magic_id == "":
-		pass_test("마법 없이 시작")
-		return
-	var ev_i := bs._ctx.log.map(func(e: Dictionary) -> String: return e["t"]).find("magic")
-	if ev_i < 0:
-		pass_test("마법이 걸리지 않음")
-		return
-	# 마법 기록이 나올 때까지 '다음'을 누른다
+	assert_eq(bs._ctx.offer.size(), 3, "가진 마법 중 3개가 나온다")
+	var id := ""
+	for m in bs._ctx.offer:
+		if GameData.bal.magic_def(m)["kind"] != "defense":
+			id = m
+			break
+	# 첫 턴 앞(마법 고르기)까지 '다음'을 누른다
 	for i in 40:
-		if bs.last_magic_card:
+		if bs._deciding:
 			break
 		bs._tapped = true
-		await wait_seconds(0.4)
+		await wait_seconds(0.3)
+	assert_true(bs._deciding, "턴 앞에서 마법을 고를 수 있다")
+	assert_false((bs._tray_btns[id] as Button).disabled)
+	bs.pick_magic(id)
+	for i in 20:
+		if bs.last_magic_card:
+			break
+		await wait_physics_frames(2)
 	assert_not_null(bs.last_magic_card, "마법 카드가 나왔다")
 	await wait_physics_frames(2)
 	var rest: Vector2 = bs.last_magic_card.get_meta("rest")
 	var kind: String = bs.last_magic_card.get_meta("kind")
 	var want := MagicFx.anchor(kind, bs._a_box.get_global_rect(), bs._b_box.get_global_rect())
 	assert_almost_eq(rest.x, want.x, 1.0, "종류에 맞는 자리에 놓인다")
+	assert_true(id in bs._ctx.used)
+	# 다음 턴 앞: 쓴 마법은 다시 못 고른다
+	for i in 60:
+		if bs._deciding or bs._ended:
+			break
+		bs._tapped = true
+		await wait_seconds(0.3)
+	if bs._deciding:
+		assert_true((bs._tray_btns[id] as Button).disabled, "쓴 마법은 다시 못 고른다")

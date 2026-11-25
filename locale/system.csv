@@ -30,7 +30,7 @@ sys.root.cond.easy,쉬움(앞면 1개 이상)
 sys.root.cond.normal,보통(앞면 절반 이상)
 sys.root.cond.hard,어려움(모두 앞면)
 sys.magic.de.name,de- (아래로)
-sys.magic.de.desc,"전투를 시작할 때 적 1번을 내리쳐 피해 {damage}을 주고, 그 적의 공격을 전투 내내 {atk_down} 낮춘다."
+sys.magic.de.desc,"지금 싸우는 적을 내리쳐 피해 {damage}을 주고, 그 적의 공격을 전투 내내 {atk_down} 낮춘다."
 sys.magic.none.name,마법 안 씀
 sys.magic.none.desc,"이번 전투에는 마법을 쓰지 않는다."
 sys.boss.destroyer.desc,"결함: 격돌마다 아군 코인 {count}개를 뒷면으로 고정한다."
@@ -46,3 +46,6 @@ sys.magic.ad.name,ad- (~쪽으로)
 sys.magic.sub.name,sub- (아래)
 sys.magic.prae.name,prae- (미리)
 sys.magic.inter.name,inter- (사이)
+sys.magic.sub.desc,"기다리는 아군이 저마다 체력의 절반을 지금 싸우는 아군에게 보탠다. 걸 때 조합 뜻 고르기를 통과해야 한다."
+sys.magic.in.desc,"지금 싸우는 아군의 뒷면 코인을 다시 던진다(앞면 확률 75%). 이번 전투 내내 그 유닛 코인이 앞면이 잘 나온다."
+sys.magic.ex.desc,"지금 싸우는 아군과 적을 둘 다 맨 뒤로 보낸다. 지나친 유닛 하나마다 체력 +{hp_per_passed}."

@@ -124,7 +124,6 @@ func test_battle_resumes_at_the_same_step_with_same_result() -> void:
 	(m.current() as BattlePrepScreen)._start()
 	await wait_physics_frames(2)
 	var bs := m.current() as BattleScreen
-	var log_size := bs._ctx.log.size()
 	var first_flips: Array = bs._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "enter")[0]["flips"]
 	for k in 2:  # '다음'을 두 번 누른다
 		for f in 600:
@@ -134,11 +133,12 @@ func test_battle_resumes_at_the_same_step_with_same_result() -> void:
 		bs._tapped = true
 		await wait_physics_frames(2)
 	assert_eq(bs.steps_done, 2)
+	var log_size := bs._ctx.log.size()  # 엔진은 턴 앞까지만 계산한다: 이 단계까지의 기록
+	var picks: Array = bs._picks.duplicate(true)
 	await _kill(m)
 	var m2 := await _boot()
 	var bs2 := m2.current() as BattleScreen
 	assert_not_null(bs2, "전투 화면으로 이어 한다")
-	assert_eq(bs2._ctx.log.size(), log_size, "같은 씨앗이라 같은 전투")
 	var flips2: Array = bs2._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "enter")[0]["flips"]
 	assert_eq(flips2, first_flips, "코인도 같다")
 	for f in 600:
@@ -146,4 +146,6 @@ func test_battle_resumes_at_the_same_step_with_same_result() -> void:
 		if bs2._next_btn.visible:
 			break
 	assert_eq(bs2.steps_done, 2, "본 단계까지는 건너뛰고 그다음 단계에서 기다린다")
+	assert_eq(bs2._ctx.log.size(), log_size, "같은 씨앗·같은 선택이라 같은 전투")
+	assert_eq(bs2._picks, picks, "고른 마법도 그대로")
 	await _kill(m2)

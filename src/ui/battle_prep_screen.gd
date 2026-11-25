@@ -1,13 +1,15 @@
 class_name BattlePrepScreen
 extends Screen
-## 전투 준비(01-rpg-base): ① 마법 고르기 → 다음 → ② 어근 고르기 → 전투 시작(이전으로 돌아갈 수 있다).
+## 전투 준비(01-rpg-base): ① 이번 전투의 마법 보기 → 다음 → ② 어근 고르기 → 전투 시작(이전으로 돌아갈 수 있다).
+## 마법은 가진 것 중 무작위 3개가 나오고(ProgressRules.magic_offer), 전투 중 턴마다 하나씩 쓴다. 가진 마법이 없으면 ①을 건너뛴다.
 ## 적 카드는 원래 자리(오른쪽 위)에 그대로 두고, 고르는 판은 오른쪽 아래 절반에 오른쪽 정렬로 놓는다(아군은 왼쪽에 보인다).
 ## 마법·어근은 누르면 고르고, 고른 것의 설명이 바로 아래에 나온다.
 
 var _words: Array[String] = []
 var _boss := false
 var _party: Array[int] = []
-var _magic := ""
+var _magic := ""  ## 설명을 보여 줄 마법(마지막으로 누른 것)
+var _offer: Array[String] = []
 var _roots: Dictionary = {}
 var _panel: PanelContainer
 var _body: VBoxContainer
@@ -25,8 +27,8 @@ func open(args: Dictionary) -> void:
 		var cand := GameData.rules.equippable_roots(s, u)
 		var prev: String = s.chosen_roots.get(u, "")
 		_roots[u] = prev if prev in cand else (cand[0] if not cand.is_empty() else "")
-	var mags := _magics()
-	_magic = mags[0] if not mags.is_empty() else ""
+	_offer = GameData.rules.magic_offer(s, _roots.values(), GameData.rng)
+	_magic = _offer[0] if not _offer.is_empty() else ""
 	UiKit.fill_bg(self, Color("e9e2f3"))
 	_build_field_view()
 	_panel = UiKit.card()
@@ -40,15 +42,10 @@ func open(args: Dictionary) -> void:
 	add_child(_panel)
 	_body = UiKit.vbox(10)
 	_panel.add_child(_body)
-	_step_magic()
-
-
-func _magics() -> Array[String]:
-	var out: Array[String] = []
-	for m in GameData.state.magics:
-		if EffectRegistry.magic_implemented(GameData.bal.magic_def(m)):
-			out.append(m)
-	return out
+	if _offer.is_empty():
+		_step_roots()  # 가진 전투 마법이 없으면 마법 단계는 건너뛴다
+	else:
+		_step_magic()
 
 
 func _build_field_view() -> void:
@@ -89,14 +86,12 @@ func _clear() -> void:
 
 func _step_magic() -> void:
 	_clear()
-	_body.add_child(_right(UiKit.label(t("ui.battle.magic_pick"), 24)))
+	_body.add_child(_right(UiKit.wrap(UiKit.label(t("ui.battle.magic_offer"), 22))))
 	var row := _flow()
 	_body.add_child(row)
-	var opts: Array[String] = _magics()
-	opts.append("")
-	for m in opts:
+	for m in _offer:
 		var id := m
-		var key := "sys.magic.%s.name" % (m if m != "" else "none")
+		var key := "sys.magic.%s.name" % m
 		var b := UiKit.button(t(key), func() -> void:
 			_magic = id
 			_step_magic(), UiKit.ACCENT.lightened(0.45) if _magic == m else UiKit.PAPER, 24)
@@ -148,7 +143,8 @@ func _step_roots() -> void:
 	_help = _right(UiKit.wrap(UiKit.label(desc, 22, UiKit.INK.lightened(0.2))))
 	_body.add_child(_help)
 	var nav := _nav_row()
-	nav.add_child(UiKit.button(t("ui.battle.back"), _step_magic, UiKit.PAPER))
+	if not _offer.is_empty():
+		nav.add_child(UiKit.button(t("ui.battle.back"), _step_magic, UiKit.PAPER))
 	nav.add_child(UiKit.button(t("ui.battle.start"), _start, UiKit.ACCENT.lightened(0.3)))
 
 
@@ -182,4 +178,4 @@ func _nav_row() -> HBoxContainer:
 
 
 func _start() -> void:
-	main.flow.start_battle(_party, _roots, _magic, _words, _boss)
+	main.flow.start_battle(_party, _roots, _offer, _words, _boss)

@@ -73,6 +73,7 @@ func _run() -> void:
 	var ids: Array[String] = [field[50].id, field[51].id]
 	main.flow.encounter(ids)
 	await _shot("06_quiz")
+	s.stage = 2  # 스테이지 2부터 전투 마법(종류마다 하나씩)이 생긴다
 	main.flow.go_battle_prep(ids, false)
 	await _shot("07_prep_magic")
 	(main.current() as BattlePrepScreen)._step_roots()
@@ -87,7 +88,7 @@ func _run() -> void:
 	var bs := main.current() as BattleScreen
 	for k in 900:  # 첫 턴이 끝나고 '다음 턴'을 기다릴 때까지
 		await get_tree().process_frame
-		if bs and bs._next_btn.visible:
+		if bs and bs._deciding:
 			break
 	await _shot("09_battle")
 	if bs and bs._b_box.combatant:
@@ -95,9 +96,20 @@ func _run() -> void:
 		await _shot("09_battle_enemy_info")
 		bs._show_popup(bs._info(bs._a_box.combatant, bs._a_box.base_lines()), bs._a_box.card_center())
 		await _shot("09_battle_ally_info")
-		bs._magic_btn.button_down.emit()
-		await _shot("09_battle_magic")
-		bs._magic_btn.button_up.emit()
+		bs._show_popup([] as Array[String], Vector2.ZERO)
+		var q := ComboQuiz.make(gd.repo, "sub-", ["fac", "form"], RandomNumberGenerator.new())
+		if q:
+			var ov := ComboQuizOverlay.new()
+			bs.add_child(ov)
+			ov.open(q, "sub")
+			await _shot("09_battle_combo_quiz")
+			ov.queue_free()
+		for mid in bs._ctx.offer:  # 턴 앞: 공격·효과·순서 마법을 하나 쓴다
+			if gd.bal.magic_def(mid)["kind"] != "defense":
+				bs.pick_magic(mid)
+				await get_tree().create_timer(0.75).timeout
+				await _shot("09_battle_magic")
+				break
 		for mid in ["de", "com", "in"]:  # 마법 카드: 공격(적 위) / 방어(아군 위) / 효과(가운데)
 			bs._magic_card(mid)
 			await get_tree().create_timer(0.62).timeout

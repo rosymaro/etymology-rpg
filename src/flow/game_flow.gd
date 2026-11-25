@@ -61,8 +61,8 @@ func _restore(r: Dictionary) -> void:
 			var roots := {}
 			for k in r.get("roots", {}):
 				roots[int(k)] = r["roots"][k]
-			start_battle(party, roots, String(r.get("magic", "")), _ids(r.get("words", [])), bool(r.get("boss", false)),
-				int(r.get("seed", -1)), int(r.get("step", 0)))
+			start_battle(party, roots, _ids(r.get("offer", [])), _ids(r.get("words", [])), bool(r.get("boss", false)),
+				int(r.get("seed", -1)), int(r.get("step", 0)), r.get("picks", []))
 		"prep":
 			go_battle_prep(_ids(r.get("words", [])), bool(r.get("boss", false)))
 		"options":
@@ -214,6 +214,8 @@ func quest_gate(gate: String, done: Callable) -> String:
 	var q := GameData.quests.by_gate(gate)
 	if q.is_empty():
 		return ""
+	if not GameData.quests.visible(GameData.state, q):  # 아직 이야기가 거기까지 오지 않았다
+		return TranslationServer.translate("ui.quest.%s.locked" % q["id"])
 	var roots := GameData.rules.owned_roots(GameData.state)
 	if not GameData.quests.finish(GameData.state, q["id"], roots):
 		return TranslationServer.translate("ui.quest.%s.hint" % q["id"])
@@ -221,14 +223,25 @@ func quest_gate(gate: String, done: Callable) -> String:
 	GameData.save()
 	main.play_scene(String(q["scene"]), func() -> void:
 		done.call()
-		main.notice(TranslationServer.translate("ui.quest.done").format({"title": TranslationServer.translate("ui.quest.%s.title" % q["id"])})))
+		main.notice(_done_text(q["id"])))
 	return ""
 
 
 ## 마을 알림판: 처음엔 퀘스트를 받고(장면), 단어를 다 모아 오면 마친다.
+## 퀘스트를 마친 알림 + 다음 퀘스트로 이어지는 소식(있으면).
+func _done_text(id: String) -> String:
+	var tx := TranslationServer.translate("ui.quest.done").format({"title": TranslationServer.translate("ui.quest.%s.title" % id)})
+	var key := "ui.quest.%s.next" % id
+	var nx := TranslationServer.translate(key)
+	return tx + ("\n" + nx if nx != key else "")
+
+
 func notice_board(done: Callable) -> void:
 	var s := GameData.state
 	var q := GameData.quests.get_quest("s01_q_word")
+	if not GameData.quests.visible(s, q):
+		main.notice(TranslationServer.translate("ui.quest.board_empty"), done)
+		return
 	if GameData.quests.done(s, q["id"]):
 		main.notice(TranslationServer.translate("ui.quest.board_done"), done)
 		return
@@ -240,8 +253,7 @@ func notice_board(done: Callable) -> void:
 	if GameData.quests.finish(s, q["id"], []):
 		GameData.vibrate(true)
 		GameData.save()
-		main.notice(TranslationServer.translate("ui.quest.board_fill") + "\n" + TranslationServer.translate("ui.quest.done").format(
-			{"title": TranslationServer.translate("ui.quest.s01_q_word.title")}), done)
+		main.notice(TranslationServer.translate("ui.quest.board_fill") + "\n" + _done_text(q["id"]), done)
 		return
 	var pr := GameData.quests.progress(s, q, [])
 	main.notice(TranslationServer.translate("ui.quest.s01_q_word.hint").format(pr), done)
@@ -298,27 +310,32 @@ func go_battle_prep(word_ids: Array[String], boss: bool) -> void:
 	main.show_screen(BattlePrepScreen.new(), {"words": word_ids, "boss": boss})
 
 
-## 전투 준비가 끝남: 마법과 어근이 정해졌다.
-## seed: 전투 무작위의 씨앗. 이어 하기는 같은 씨앗으로 같은 전투를 다시 계산하고 step 단계까지 건너뛴다.
-func start_battle(party: Array[int], roots: Dictionary, magic_id: String, word_ids: Array[String], boss: bool,
-		seed: int = -1, step: int = 0) -> void:
+## 전투 준비가 끝남: 이번 전투의 마법(offer, 턴마다 하나씩)과 어근이 정해졌다.
+## seed: 전투 무작위의 씨앗. 이어 하기는 같은 씨앗과 같은 마법 선택(picks: [[id, ok], …] 턴 순)으로 같은 전투를 다시 계산하고
+## step 단계까지 건너뛴다.
+func start_battle(party: Array[int], roots: Dictionary, offer: Array[String], word_ids: Array[String], boss: bool,
+		seed: int = -1, step: int = 0, picks: Array = []) -> void:
 	if seed < 0:
 		seed = randi()
 	GameData.rng.seed = seed
-	GameData.set_route({"s": "battle", "party": party, "roots": roots, "magic": magic_id, "words": word_ids, "boss": boss,
-		"seed": seed, "step": step})
+	GameData.set_route({"s": "battle", "party": party, "roots": roots, "offer": offer, "words": word_ids, "boss": boss,
+		"seed": seed, "step": step, "picks": picks})
 	var s := GameData.state
 	for u in roots:
 		s.chosen_roots[u] = roots[u]
-	var ctx := GameData.setup.make_context(s, party, roots, magic_id)
+	var ctx := GameData.setup.make_context(s, party, roots, "")
+	ctx.offer = offer
+	for m in GameData.bal.magic["magics"]:
+		ctx.magic_defs[m["id"]] = m
 	var ids := word_ids
 	if boss:
 		ids = GameData.setup.boss_enemies(ctx, s, STAGE)
 	else:
 		GameData.setup.field_enemies(ctx, word_ids, STAGE)
-	var result := BattleEngine.new(ctx).run()
-	main.show_screen(BattleScreen.new(), {"ctx": ctx, "result": result, "words": ids, "boss": boss,
-		"party": party, "resume_step": step})
+	var engine := BattleEngine.new(ctx)
+	engine.begin()
+	main.show_screen(BattleScreen.new(), {"ctx": ctx, "engine": engine, "words": ids, "boss": boss,
+		"party": party, "resume_step": step, "picks": picks, "roots": roots})
 
 
 func battle_finished(result: BattleResult, word_ids: Array[String], boss: bool, history: Array[Dictionary] = []) -> void:

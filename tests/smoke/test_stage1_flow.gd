@@ -154,6 +154,8 @@ func test_stage1_loop() -> void:
 	assert_true(main.current() is FieldScreen, "퀘스트 전에는 보스에 못 간다")
 	# 알림판: 처음엔 받고, 단어가 다 있으면 마친다. 다리(fac)·절벽(de-)은 길목에 닿으면 장면 뒤 열린다
 	var noop := func() -> void: pass
+	assert_ne(main.flow.quest_gate("s01_q_root", noop), "", "이야기 전에는 다리 퀘스트가 없다")
+	GameData.state.flags["s01_skit_cheok"] = true  # 척척 합류 장면 끝에 알림판 퀘스트가 열린다
 	main.flow.notice_board(noop)
 	await _finish_overlays()
 	main.flow.notice_board(noop)

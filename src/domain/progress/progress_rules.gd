@@ -132,6 +132,32 @@ func equippable_roots(state: GameState, unit_no: int) -> Array[String]:
 	return out
 
 
+## 가진 전투 마법(동작이 만들어진 것만): 그 스테이지가 열렸으면 얻는다(battle_magic.json unlock.stage). 개발자 모드는 모두.
+func battle_magics(state: GameState) -> Array[String]:
+	var out: Array[String] = []
+	for m in bal.magic["magics"]:
+		if not EffectRegistry.magic_implemented(m):
+			continue
+		if state.dev_mode or state.stage >= int(m.get("unlock", {}).get("stage", 99)):
+			out.append(String(m["id"]))
+	return out
+
+
+## 이번 전투에 나올 마법: 가진 것 중 무작위 offer_count개. 방어 마법은 장착 어근과 조합 단어가 있어야 나온다.
+func magic_offer(state: GameState, roots: Array, rng: RandomNumberGenerator) -> Array[String]:
+	var pool: Array[String] = []
+	for id in battle_magics(state):
+		var d := bal.magic_def(id)
+		if String(d.get("kind", "")) == "defense" and not ComboQuiz.possible(repo, String(d.get("prefix", "")), roots):
+			continue
+		pool.append(id)
+	var out: Array[String] = []
+	var n := int(bal.magic.get("offer_count", 3))
+	while out.size() < n and not pool.is_empty():
+		out.append(pool.pop_at(rng.randi_range(0, pool.size() - 1)))
+	return out
+
+
 func team_size(state: GameState) -> int:
 	return mini(int(p["team_max"]), state.joined.size())
 
