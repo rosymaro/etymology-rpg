@@ -56,6 +56,8 @@ var _hunt_lbl: Label
 var _lvl_bar: ProgressBar
 var _choosing: Control  ## 레벨업 보기 창
 var _in_town_now := true
+var _spawn_t := 0.0
+var _full_t := 0.0
 # 돌 밀기 퍼즐(07-fun 3·4절)
 var _puz: Array[PushPuzzle] = []
 var _push_t := 0.0
@@ -238,7 +240,7 @@ func _build_hud() -> void:
 	add_child(hc)
 	UiKit.pin(hc, 1, 0, -16, 150)
 	_hunt_lbl.set_meta("card", hc)
-	hc.visible = not map.is_town(_hero)
+	_update_hunt_hud()
 	var home := UiKit.button(t("ui.field.home"), _go_home, UiKit.PAPER, 24)
 	_home_btn = home
 	home.custom_minimum_size = Vector2(150, 70)
@@ -332,7 +334,7 @@ func _new_enemy() -> FieldMob:
 	var w0 := GameData.repo.get_word(m.words[0]) if not m.words.is_empty() else null
 	m.attr = int(w0.attrs[0]) if w0 and not w0.attrs.is_empty() else 0
 	m.slot = w0.slot if w0 else ""
-	m.max_hp = int(_hc["mob_hp"].get(m.kind, 2))
+	m.max_hp = _run.mob_hp(m.kind)  # 레벨이 올라도 한 방에 죽지 않는다
 	m.hp = m.max_hp
 	return m
 
@@ -428,7 +430,7 @@ func _process(delta: float) -> void:
 		if map.touching_gate(_hero, HERO_R, _gates) > 0:
 			_gate_t = 3.0
 			_show_toast(t("ui.field.gate_closed"))
-	(_hunt_lbl.get_meta("card") as Control).visible = not map.is_town(_hero)  # 사냥 칸은 마을 밖에서만
+	_update_hunt_hud()
 	if not map.is_town(_hero):
 		_hunt(delta)
 	for i in _enemies.size():
@@ -607,7 +609,7 @@ func _town_edge() -> void:
 		_drops.clear()
 		if int(got["orbs"]) + int(got["coins"]) + (got["words"] as Array).size() > 0:
 			GameData.save()
-			_show_toast(t("ui.hunt.banked").format({"orbs": got["orbs"], "coins": got["coins"], "words": (got["words"] as Array).size()}))
+			_show_toast(t("ui.hunt.banked").format({"orbs": got["orbs"], "coins": got["coins"], "words": (got["words"] as Array).size(), "wallet": GameData.state.wallet}))
 		_enemies = _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater")
 	else:
 		_run.reset()
@@ -633,7 +635,7 @@ func _hunt(delta: float) -> void:
 				for k in int(w["count"]):
 					var p := _hero + Vector2.from_angle(_orbit_a + k * TAU / int(w["count"])) * float(w["range"])
 					for e in _enemies:
-						if e.pos.distance_to(p) < ENEMY_R + 18 and Time.get_ticks_msec() / 1000.0 >= float(_orbit_hit.get(e, 0.0)):
+						if e.pos.distance_to(p) < ENEMY_R + 18 and Time.get_ticks_msec() / 1000.0 >= float(_orbit_hit.get(e, 0.0)) and map.clear_line(_hero, e.pos):
 							_orbit_hit[e] = Time.get_ticks_msec() / 1000.0 + float(w["hit_gap"])
 							_hit(e, int(w["dmg"]), p)
 	# 날아가는 망치: 목표까지 갔다가 돌아온다
@@ -648,6 +650,9 @@ func _hunt(delta: float) -> void:
 			sh["back"] = true
 		else:
 			sh["pos"] = (sh["pos"] as Vector2) + d.normalized() * step
+		if not map.walkable(map.cell(sh["pos"]), _gates):  # 망치는 벽을 뚫지 못한다: 부딪히면 떨어진다
+			_shots.erase(sh)
+			continue
 		for e in _enemies:
 			if not (sh["hit"] as Dictionary).has(e) and e.pos.distance_to(sh["pos"]) < ENEMY_R + 14:
 				sh["hit"][e] = true
@@ -667,15 +672,45 @@ func _hunt(delta: float) -> void:
 				"orb":
 					if _run.pick_orbs(int(dr["v"])):
 						_open_level_up()
+						if _run.max_level():
+							_show_toast(t("ui.hunt.level_max"))
 				"coin":
-					_run.pick_coins(int(dr["v"]))
+					if _run.pick_coins(int(dr["v"])):
+						_full_t = 20.0
+						_show_toast(t("ui.hunt.coins_full").format({"cap": _run.coin_cap()}))
 				"word":
 					_run.pick_word(String(dr["v"]))
 					_show_toast(t("ui.hunt.word").format({"word": dr["v"]}))
+	# 레벨이 오르면 몹이 더 많이 나온다
+	_spawn_t -= delta
+	if _spawn_t <= 0.0 and _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater").size() < _run.mob_count(_base_count()):
+		_spawn_t = 0.4
+		var ne := _new_enemy()
+		if ne:
+			_enemies.append(ne)
+	# 주머니 코인이 가득: 잊지 않게 가끔 다시 알린다
+	_full_t -= delta
+	if _run.coins_full() and _full_t <= 0.0:
+		_full_t = 20.0
+		_show_toast(t("ui.hunt.coins_full").format({"cap": _run.coin_cap()}))
+
+
+## 사냥 칸: 마을 밖이면 사냥 레벨·주머니, 마을 안이면 내 코인(지갑)만. 내 코인은 언제나 보인다.
+func _update_hunt_hud() -> void:
+	var town := map.is_town(_hero)
 	var b := _run.bag()
-	_hunt_lbl.text = t("ui.hunt.hud").format({"lv": _run.level(), "orbs": b["orbs"], "coins": b["coins"], "words": (b["words"] as Array).size()})
+	if town:
+		_hunt_lbl.text = t("ui.hunt.hud_town").format({"wallet": GameData.state.wallet})
+	else:
+		_hunt_lbl.text = t("ui.hunt.hud").format({"lv": (t("ui.hunt.max") if _run.max_level() else str(_run.level())),
+			"wallet": GameData.state.wallet, "orbs": b["orbs"], "coins": b["coins"], "cap": _run.coin_cap(), "words": (b["words"] as Array).size()})
+	_lvl_bar.visible = not town
 	_lvl_bar.max_value = _run.need()
-	_lvl_bar.value = int(_run.d["exp"])
+	_lvl_bar.value = _run.need() if _run.max_level() else int(_run.d["exp"])
+
+
+func _base_count() -> int:
+	return int(_f.get("cave_enemies", 5)) if _cave != "" else int(_f["enemy_count"])
 
 
 ## 붙기 직전(no_fire_near 안)의 몹은 쏘지 않는다: 퀴즈를 하고 싶으면 다가가면 된다.
@@ -683,7 +718,7 @@ func _targets(range_px: float) -> Array[FieldMob]:
 	var out: Array[FieldMob] = []
 	for e in _enemies:
 		var dist := e.pos.distance_to(_hero)
-		if dist <= range_px and dist > float(_hc["no_fire_near"]):
+		if dist <= range_px and dist > float(_hc["no_fire_near"]) and map.clear_line(_hero, e.pos):  # 벽 너머는 못 맞힌다
 			out.append(e)
 	out.sort_custom(func(a: FieldMob, b: FieldMob) -> bool: return a.pos.distance_to(_hero) < b.pos.distance_to(_hero))
 	return out
@@ -697,7 +732,7 @@ func _fire(id: String, w: Dictionary) -> void:
 	if w["type"] == "nova":
 		_novas.append({"r": float(w["range"]), "t": 0.0})
 		for e in ts:
-			_hit(e, int(w["dmg"]), e.pos)
+			_hit(e, int(w["dmg"]), _hero)
 		return
 	for k in mini(int(w["count"]), ts.size()):
 		_shots.append({"pos": _hero, "to": ts[k].pos, "back": false, "dmg": int(w["dmg"]), "hit": {}})
@@ -707,8 +742,12 @@ func _hit(e: FieldMob, dmg: int, from: Vector2) -> void:
 	if not _enemies.has(e):
 		return
 	var dead := e.take_hit(dmg)
-	if e.kind != "eater":
-		e.set_meta("push", (e.pos - from).normalized() * float(_hc["knockback"]))
+	if e.kind != "eater":  # 맞으면 뒤로 밀려난다(0.3초)
+		var away := e.pos - from
+		if away.length() < 1.0:
+			away = e.pos - _hero
+		e.set_meta("push", (away.normalized() if away.length() > 0.5 else Vector2.RIGHT) * float(_hc["knockback"]))
+		e.set_meta("push_t", 0.3)
 	if dead:
 		var got := _run.drops(e.kind, e.words, _rng)
 		_drops.append({"pos": e.pos, "kind": "orb", "v": got["orbs"]})
