@@ -1,7 +1,7 @@
 class_name BattlePrepScreen
 extends Screen
-## 전투 준비(01-rpg-base): ① 이번 전투의 마법 보기 → 다음 → ② 어근 고르기 → 전투 시작(이전으로 돌아갈 수 있다).
-## 마법은 가진 것 중 무작위 3개가 나오고(ProgressRules.magic_offer), 전투 중 턴마다 하나씩 쓴다. 가진 마법이 없으면 ①을 건너뛴다.
+## 전투 준비(01-rpg-base): 출전 유닛과 적, 이번 전투의 마법(덱 4개 중 무작위 3개, 턴마다 하나씩 쓴다)을 보고 전투 시작.
+## 유닛 어근은 유닛 창에서 미리 장착한 것을 쓴다(07-fun 2절, 어근 고르기 단계는 없앴다). 덱이 비었으면 마법은 보여 주지 않는다.
 ## 적 카드는 원래 자리(오른쪽 위)에 그대로 두고, 고르는 판은 오른쪽 아래 절반에 오른쪽 정렬로 놓는다(아군은 왼쪽에 보인다).
 ## 마법·어근은 누르면 고르고, 고른 것의 설명이 바로 아래에 나온다.
 
@@ -23,10 +23,7 @@ func open(args: Dictionary) -> void:
 	_boss = args["boss"]
 	_party = GameData.setup.pick_party(GameData.state)
 	var s := GameData.state
-	for u in _party:
-		var cand := GameData.rules.equippable_roots(s, u)
-		var prev: String = s.chosen_roots.get(u, "")
-		_roots[u] = prev if prev in cand else (cand[0] if not cand.is_empty() else "")
+	_roots = Loadout.roots(s, GameData.rules, _party)
 	_offer = GameData.rules.magic_offer(s, _roots.values(), GameData.rng)
 	_magic = _offer[0] if not _offer.is_empty() else ""
 	UiKit.fill_bg(self, Color("e9e2f3"))
@@ -42,10 +39,7 @@ func open(args: Dictionary) -> void:
 	add_child(_panel)
 	_body = UiKit.vbox(10)
 	_panel.add_child(_body)
-	if _offer.is_empty():
-		_step_roots()  # 가진 전투 마법이 없으면 마법 단계는 건너뛴다
-	else:
-		_step_magic()
+	_step_magic()
 
 
 func _build_field_view() -> void:
@@ -86,20 +80,26 @@ func _clear() -> void:
 
 func _step_magic() -> void:
 	_clear()
-	_body.add_child(_right(UiKit.wrap(UiKit.label(t("ui.battle.magic_offer"), 22))))
-	var row := _flow()
-	_body.add_child(row)
-	for m in _offer:
-		var id := m
-		var key := "sys.magic.%s.name" % m
-		var b := UiKit.button(t(key), func() -> void:
-			_magic = id
-			_step_magic(), UiKit.ACCENT.lightened(0.45) if _magic == m else UiKit.PAPER, 24)
-		row.add_child(b)
-	_help = _right(UiKit.wrap(UiKit.label(_magic_desc(_magic), 22, UiKit.INK.lightened(0.2))))
-	_body.add_child(_help)
+	if not _offer.is_empty():
+		_body.add_child(_right(UiKit.wrap(UiKit.label(t("ui.battle.magic_offer"), 22))))
+		var row := _flow()
+		_body.add_child(row)
+		for m in _offer:
+			var id := m
+			var key := "sys.magic.%s.name" % m
+			var b := UiKit.button(t(key), func() -> void:
+				_magic = id
+				_step_magic(), UiKit.ACCENT.lightened(0.45) if _magic == m else UiKit.PAPER, 24)
+			row.add_child(b)
+		_help = _right(UiKit.wrap(UiKit.label(_magic_desc(_magic), 22, UiKit.INK.lightened(0.2))))
+		_body.add_child(_help)
+	# 장착한 어근(유닛 창에서 바꾼다)
+	var names: Array[String] = []
+	for u in _party:
+		names.append("%s: %s" % [UiKit.unit_name(u), _roots[u] if _roots[u] != "" else "-"])
+	_body.add_child(_right(UiKit.wrap(UiKit.label(t("ui.prep.roots").format({"list": ", ".join(names)}), 20, UiKit.INK.lightened(0.25)))))
 	var nav := _nav_row()
-	nav.add_child(UiKit.button(t("ui.battle.next"), _step_roots, UiKit.LEAF))
+	nav.add_child(UiKit.button(t("ui.battle.start"), _start, UiKit.ACCENT.lightened(0.3)))
 
 
 func _magic_desc(id: String) -> String:
@@ -111,41 +111,6 @@ func _avg_level() -> int:
 	for u in _party:
 		s += GameData.rules.level(GameData.state, u)
 	return s / maxi(1, _party.size())
-
-
-func _step_roots() -> void:
-	_clear()
-	_body.add_child(_right(UiKit.label(t("ui.battle.root_pick"), 24)))
-	var grid := UiKit.vbox(6)
-	_body.add_child(grid)
-	for u in _party:
-		var unit := u
-		var row := _flow()
-		row.add_child(UiKit.label(UiKit.unit_name(u), 22))
-		var cand := GameData.rules.equippable_roots(GameData.state, u)
-		if cand.is_empty():
-			row.add_child(UiKit.label(t("ui.prep.no_root"), 20, UiKit.GRAY.darkened(0.3)))
-		for r in cand:
-			var root := r
-			var b := UiKit.button(r, func() -> void:
-				_roots[unit] = root
-				_root_shown = root
-				_step_roots(), UiKit.ACCENT.lightened(0.45) if _roots.get(u, "") == r else UiKit.PAPER, 22)
-			b.custom_minimum_size = Vector2(90, 54)
-			row.add_child(b)
-		grid.add_child(row)
-	if _root_shown == "":
-		for u in _party:  # 처음엔 어근을 가진 첫 유닛의 고른 어근 설명
-			if _roots.get(u, "") != "":
-				_root_shown = _roots[u]
-				break
-	var desc := _root_desc(_root_shown) if _root_shown != "" else ""
-	_help = _right(UiKit.wrap(UiKit.label(desc, 22, UiKit.INK.lightened(0.2))))
-	_body.add_child(_help)
-	var nav := _nav_row()
-	if not _offer.is_empty():
-		nav.add_child(UiKit.button(t("ui.battle.back"), _step_magic, UiKit.PAPER))
-	nav.add_child(UiKit.button(t("ui.battle.start"), _start, UiKit.ACCENT.lightened(0.3)))
 
 
 func _root_desc(root: String) -> String:

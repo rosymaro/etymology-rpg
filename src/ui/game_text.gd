@@ -28,6 +28,15 @@ static func magic_desc(id: String, power: int) -> String:
 	return tr_("sys.magic.%s.desc" % id).format(vals)
 
 
+## 필드 마법 이름(data/field_magic.json의 접두사 + 필드 효과 뜻).
+static func field_magic_name(id: String) -> String:
+	if id == "":
+		return ""
+	var key := "sys.field_magic.%s" % id
+	var s := tr_(key)
+	return s if s != key else magic_name(id)
+
+
 static func magic_name(id: String) -> String:
 	return tr_("sys.magic.%s.name" % (id if id != "" else "none"))
 

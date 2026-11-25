@@ -1,6 +1,7 @@
 class_name PartyScreen
 extends Screen
-## 파티: 합류한 유닛의 레벨·능력치·장비 5칸. 칸을 누르면 그 유닛·부위의 가진 단어로 바꿔 입는다.
+## 파티: 장착(07-fun 2절: 필드 마법 2, 전투 마법 덱 4, 유닛 어근)과 합류한 유닛의 레벨·능력치·장비 5칸.
+## 칸을 누르면 고를 것이 나온다. 마법·어근 장착은 마을에서만 바꾼다(장비는 어디서나).
 
 var _detail: VBoxContainer
 
@@ -25,10 +26,15 @@ func open(_args: Dictionary) -> void:
 	_refresh()
 
 
+func _in_town() -> bool:
+	return GameData.state.place == "town"
+
+
 func _refresh() -> void:
 	for c in _detail.get_children():
 		c.queue_free()
 	var s := GameData.state
+	_build_loadout()
 	for u in s.joined:
 		var unit: int = u
 		var lv := GameData.rules.level(s, u)
@@ -54,7 +60,87 @@ func _refresh() -> void:
 			b.custom_minimum_size = Vector2(196, 70)
 			slots.add_child(b)
 		col.add_child(slots)
+		var root := Loadout.unit_root(s, GameData.rules, u)
+		var rb := UiKit.button(t("ui.party.root").format({"root": root if root != "" else "-"}),
+			func() -> void: _choose_root(unit), UiKit.ACCENT.lightened(0.5), 20)
+		rb.disabled = not _in_town() or GameData.rules.equippable_roots(s, u).is_empty()
+		col.add_child(rb)
 		_detail.add_child(card)
+
+
+## 장착: 필드 마법 2칸, 전투 마법 덱 4칸.
+func _build_loadout() -> void:
+	var s := GameData.state
+	var card := UiKit.card(UiKit.APRICOT.lightened(0.5))
+	var col := UiKit.vbox(6)
+	card.add_child(col)
+	col.add_child(UiKit.label(t("ui.party.loadout"), 24))
+	if not _in_town():
+		col.add_child(UiKit.label(t("ui.party.town_only"), 18, UiKit.BAD.darkened(0.2)))
+	for kind in ["field", "deck"]:
+		var row := HFlowContainer.new()
+		row.add_theme_constant_override("h_separation", 8)
+		row.add_theme_constant_override("v_separation", 8)
+		row.add_child(UiKit.label(t("ui.party." + kind), 20))
+		var slots: Array[String] = Loadout.field(s) if kind == "field" else Loadout.deck(s, GameData.rules)
+		for i in slots.size():
+			var k: int = i
+			var kd: String = kind
+			var id := slots[i]
+			var b := UiKit.button(GameText.magic_name(id) if id != "" else t("ui.party.empty"),
+				func() -> void: _choose_magic(kd, k), UiKit.PAPER, 18)
+			b.custom_minimum_size = Vector2(150, 56)
+			b.disabled = not _in_town()
+			row.add_child(b)
+		col.add_child(row)
+	_detail.add_child(card)
+
+
+func _choose_magic(kind: String, i: int) -> void:
+	var s := GameData.state
+	var owned: Array = s.magics if kind == "field" else GameData.rules.battle_magics(s)
+	for c in _detail.get_children():
+		c.queue_free()
+	_detail.add_child(UiKit.label(t("ui.party.pick_" + kind), 24))
+	var flow := HFlowContainer.new()
+	flow.add_theme_constant_override("h_separation", 8)
+	flow.add_theme_constant_override("v_separation", 8)
+	_detail.add_child(flow)
+	for m in owned:
+		var id := String(m)
+		var name := GameText.magic_name(id) if kind == "deck" else GameText.field_magic_name(id)
+		flow.add_child(UiKit.button(name, func() -> void:
+			if kind == "field":
+				Loadout.set_field(s, i, id)
+			else:
+				Loadout.set_deck(s, GameData.rules, i, id)
+			GameData.save()
+			_refresh(), UiKit.SKY, 20))
+	flow.add_child(UiKit.button(t("ui.party.empty"), func() -> void:
+		if kind == "field":
+			Loadout.set_field(s, i, "")
+		else:
+			Loadout.set_deck(s, GameData.rules, i, "")
+		GameData.save()
+		_refresh(), UiKit.PAPER, 20))
+	flow.add_child(UiKit.button(t("ui.common.back"), _refresh, UiKit.PAPER, 20))
+
+
+func _choose_root(unit: int) -> void:
+	var s := GameData.state
+	for c in _detail.get_children():
+		c.queue_free()
+	_detail.add_child(UiKit.label(t("ui.party.pick_root").format({"name": UiKit.unit_name(unit)}), 24))
+	for r in GameData.rules.equippable_roots(s, unit):
+		var root := String(r)
+		var b := UiKit.button("%s — %s" % [root, GameText.root_desc(root)], func() -> void:
+			Loadout.set_unit_root(s, GameData.rules, unit, root)
+			GameData.save()
+			_refresh(), UiKit.SKY, 18)
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		_detail.add_child(b)
+	_detail.add_child(UiKit.button(t("ui.common.back"), _refresh, UiKit.PAPER, 20))
 
 
 func _choose(unit: int, slot: String) -> void:

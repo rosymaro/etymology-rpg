@@ -40,6 +40,8 @@ var _rest: Label  ## 병원에서 쉬는 남은 시간
 var _rest_t := 0.0
 var _was_resting := false
 var _villagers: Array[FieldMob] = []
+var _fmagic: FieldMagicUse  ## 필드 마법 버튼 2개(07-fun 2절)
+var _fbtns: Array[Button] = []
 const BUILDING_ROOF := {"forge": Color("c0634a"), "board": Color("6f8fd0"), "hospital": Color("f2f2f2"), "tree": Color("4f8f57")}
 var _quests: Control
 
@@ -74,6 +76,7 @@ func open(args: Dictionary) -> void:
 		v.words = [str(_rng.randi_range(1, 6))] as Array[String]  # 말버릇 번호
 		_villagers.append(v)
 	_was_resting = main.flow.rest_left() > 0
+	_fmagic = FieldMagicUse.new(_f["magic"])
 	_build_hud()
 	_build_minimap()
 	if args.get("msg", "") != "":
@@ -117,6 +120,19 @@ func _build_hud() -> void:
 	home.custom_minimum_size = Vector2(150, 70)
 	add_child(home)
 	UiKit.thumb(home, 0.0)  # 엄지 자리 왼쪽
+	# 필드 마법 버튼: 엄지 자리 바로 위 오른쪽, 장착한 2개
+	var mrow := UiKit.hbox(10)
+	add_child(mrow)
+	var slots := Loadout.field(GameData.state)
+	for i in slots.size():
+		var id := slots[i]
+		var b := UiKit.button("", func() -> void: _cast(id), UiKit.SKY.lightened(0.2), 20)
+		b.custom_minimum_size = Vector2(150, 64)
+		b.visible = id != ""
+		b.set_meta("id", id)
+		mrow.add_child(b)
+		_fbtns.append(b)
+	UiKit.pin(mrow, 1, 1, -24, -(UiKit.THUMB_ROW + UiKit.THUMB_H + 20))
 	_act_btn = UiKit.button("", _act, UiKit.ACCENT.lightened(0.4), 28)
 	_act_btn.custom_minimum_size = Vector2(260, 80)
 	_act_btn.visible = false
@@ -235,6 +251,14 @@ func _process(delta: float) -> void:
 	elif _was_resting:
 		_show_toast(t("ui.field.rest_done"))
 	_was_resting = left > 0
+	_fmagic.tick(delta)
+	for b in _fbtns:
+		var id: String = b.get_meta("id")
+		if id == "":
+			continue
+		var cd := float(_fmagic.cool.get(id, 0.0))
+		b.text = GameText.field_magic_name(id).split(" ")[0] + ("  %d" % ceili(cd) if cd > 0.0 else "")
+		b.modulate = Color(1, 1, 1, 0.5) if cd > 0.0 else Color.WHITE
 	for v in _villagers:  # 마을 사람: 마을 안에서만 천천히
 		var vv := v.steer(_hero, delta, _f["kinds"], _rng) * 0.5
 		var vp: Vector2 = map.move(v.pos, vv * delta, ENEMY_R)
@@ -266,11 +290,19 @@ func _process(delta: float) -> void:
 			if ne:
 				_enemies[i] = ne
 			continue
+		e.ignore = _fmagic.sneak > 0.0
 		var v := e.steer(_hero, delta, _f["kinds"], _rng)
+		if e.has_meta("push"):  # ob-: 밀쳐진 몹은 0.3초 동안 날아간다
+			v = (e.get_meta("push") as Vector2) / 0.3
+			var pt := float(e.get_meta("push_t", 0.3)) - delta
+			e.set_meta("push_t", pt)
+			if pt <= 0.0:
+				e.remove_meta("push")
+				e.remove_meta("push_t")
 		var np: Vector2 = map.move(e.pos, v * delta, ENEMY_R)
 		if not map.is_town(np) and map.stage_at(np) == GameFlow.STAGE:
 			e.pos = np
-		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R:
+		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0:
 			_busy = true
 			_remember()
 			main.flow.encounter(e.words)
@@ -349,6 +381,35 @@ func _quest_done() -> void:
 	_update_top()
 	_map_tex = null  # 미니맵도 다시(길목 색)
 	_mini.texture = map_texture(map, _gates)
+
+
+## 필드 마법을 쓴다(07-fun 2절). de-는 절벽 길목 가까이면 내려가기(퀘스트), re-는 마을로.
+func _cast(id: String) -> void:
+	if _busy or id == "":
+		return
+	if not _fmagic.implemented(id):
+		_show_toast(t("ui.field.magic_soon"))
+		return
+	if not _fmagic.ready(id):
+		return
+	if id == "de":
+		var qg := map.touching_quest(_hero, HERO_R + 90.0, _gates)
+		if qg == "s01_q_magic":
+			_fmagic.use(id, _hero, [])
+			_busy = true
+			_remember()
+			var hint: String = main.flow.quest_gate(qg, _quest_done)
+			if hint != "":
+				_busy = false
+				_show_toast(hint)
+			return
+	if id == "re":
+		_fmagic.use(id, _hero, [])
+		_go_home()
+		return
+	_fmagic.use(id, _hero, _enemies)
+	_show_toast(t("ui.field.magic_used").format({"magic": GameText.field_magic_name(id)}))
+	queue_redraw()
 
 
 static func _mmss(sec: int) -> String:
@@ -472,8 +533,10 @@ func _draw() -> void:
 		draw_string(font, p + Vector2(-10, -40), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 30 + 4 * sin(Time.get_ticks_msec() / 200.0), UiKit.BAD)
 	for e in _enemies:
 		_draw_mob(e, o + e.pos)
-	# 주인공과 칭호 리본(04-meta.md 5절)
+	# 주인공과 칭호 리본(04-meta.md 5절). 몰래 걷는 동안은 흐리게
 	var h := o + _hero
+	if _fmagic and _fmagic.sneak > 0.0:
+		draw_circle(h, HERO_R + 14, Color(UiKit.SKY, 0.35))
 	if not Art.draw(self, "hero", "look0", h + Vector2(0, -12), Vector2(HERO_R * 3.2, HERO_R * 3.6)):
 		draw_circle(h, HERO_R, Color("fff3c4"))
 		draw_arc(h, HERO_R, 0, TAU, 32, UiKit.INK, 4)
@@ -575,6 +638,10 @@ func _draw_mob(e: FieldMob, p: Vector2) -> void:
 		if e.kind == "chase":
 			draw_line(p + Vector2(-15, -14), p + Vector2(-4, -9), UiKit.INK, 3)
 			draw_line(p + Vector2(15, -14), p + Vector2(4, -9), UiKit.INK, 3)
+	if e.stun > 0.0:  # de-로 멈춘 몹: 머리 위 별
+		for k in 3:
+			var a := Time.get_ticks_msec() / 200.0 + k * TAU / 3.0
+			draw_circle(p + Vector2(cos(a) * 22, -ENEMY_R - 10 + sin(a) * 6), 5, Color("f5c542"))
 	if e.alert:
 		if e.kind == "chase":
 			draw_string(font, p + Vector2(-10, -46), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 34, UiKit.BAD)

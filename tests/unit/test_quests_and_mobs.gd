@@ -129,3 +129,52 @@ func test_big_town_has_facilities_and_a_hospital() -> void:
 		assert_gt(m.path_len(s, p), -1, "%s까지 걸어간다" % id)
 	var ids: Array = m.region(1)["buildings"].map(func(b: Dictionary) -> String: return b["id"])
 	assert_true("hospital" in ids)
+
+
+func test_field_magic_cooldown_and_effects() -> void:
+	var cfg: Dictionary = JsonFile.read("res://data/balance/field.json")["magic"]
+	var fm := FieldMagicUse.new(cfg)
+	var near := FieldMob.new()
+	near.pos = Vector2(100, 0)
+	var far := FieldMob.new()
+	far.pos = Vector2(2000, 0)
+	assert_true(fm.use("de", Vector2.ZERO, [near, far]))
+	assert_gt(near.stun, 0.0, "de-: 가까운 몹이 멈춘다")
+	assert_eq(far.stun, 0.0)
+	assert_false(fm.use("de", Vector2.ZERO, [near]), "쉬는 동안은 못 쓴다")
+	fm.tick(float(cfg["de"]["cd"]) + 0.1)
+	assert_true(fm.ready("de"))
+	var v := near.steer(Vector2.ZERO, 0.1, kinds, rng)
+	assert_eq(v, Vector2.ZERO, "멈춘 몹은 움직이지 않는다")
+	fm.use("ob", Vector2.ZERO, [near])
+	assert_gt((near.get_meta("push") as Vector2).x, 0.0, "ob-: 바깥으로 밀친다")
+	fm.use("sub", Vector2.ZERO, [])
+	assert_gt(fm.sneak, 0.0, "sub-: 몰래 걷기")
+	var ch := FieldMob.new()
+	ch.kind = "chase"
+	ch.ignore = true
+	ch.steer(Vector2(100, 0), 0.016, kinds, rng)
+	assert_false(ch.alert, "몰래 걷는 동안은 쫓지 않는다")
+
+
+func test_loadout_slots() -> void:
+	var s := GameState.new()
+	s.magics = ["de", "sub", "re"] as Array[String]
+	assert_eq(Loadout.field(s), ["de", "sub"] as Array[String], "처음엔 가진 것 앞에서부터")
+	assert_true(Loadout.set_field(s, 0, "re"))
+	assert_eq(Loadout.field(s), ["re", "sub"] as Array[String])
+	assert_true(Loadout.set_field(s, 1, "re"), "다른 칸에 있으면 서로 바꾼다")
+	assert_eq(Loadout.field(s), ["sub", "re"] as Array[String])
+	assert_false(Loadout.set_field(s, 0, "ob"), "가진 것만")
+	assert_eq(Loadout.deck(s, GameData.rules), ["", "", "", ""] as Array[String], "스테이지 1은 전투 마법 없음")
+	s.stage = 2
+	assert_eq(Loadout.deck(s, GameData.rules).filter(func(x: String) -> bool: return x != "").size(), 4)
+	assert_true(Loadout.set_deck(s, GameData.rules, 3, ""))
+	var rng2 := RandomNumberGenerator.new()
+	for k in 10:
+		var off := GameData.rules.magic_offer(s, ["fac"], rng2)
+		assert_eq(off.size(), 3, "덱 3개 중 3개")
+		for id in off:
+			assert_true(id in Loadout.deck(s, GameData.rules), "덱에 있는 것만 나온다")
+	var back := GameState.from_dict(s.to_dict())
+	assert_eq(Loadout.field(back), ["sub", "re"] as Array[String], "저장된다")

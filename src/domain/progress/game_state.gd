@@ -20,6 +20,7 @@ var place := "town"  ## town | field
 var pos := Vector2.ZERO
 var titles: Array[String] = []
 var exam_fail_date := ""
+var loadout: Dictionary = {}  ## 장착(07-fun.md 2절): {"field": [필드 마법 2], "deck": [전투 마법 4]}
 var pieces: Dictionary = {}  ## 어원 조각 id -> {seen, right}: 유추 문제에서 본·맞힌 수(06-learning.md)
 var rest_until := 0  ## 병원에서 쉬기가 끝나는 시각(유닉스 초). 그때까지 마을 밖으로 못 나간다(04-meta 9절)
 var dev_mode := false  ## 개발자 모드(모든 단어를 갖고 평가용으로 시작). 저장 파일도 따로
@@ -54,7 +55,7 @@ func to_dict() -> Dictionary:
 		"joined": joined, "equipment": eqs, "magics": magics, "chosen_roots": _str_keys(chosen_roots),
 		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y],
 		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode,
-		"rest_until": rest_until, "pieces": pieces,
+		"rest_until": rest_until, "pieces": pieces, "loadout": loadout,
 	}
 
 
@@ -83,6 +84,7 @@ static func from_dict(d: Dictionary) -> GameState:
 	g.place = d.get("place", "town")
 	g.rest_until = int(d.get("rest_until", 0))
 	g.pieces = d.get("pieces", {})
+	g.loadout = d.get("loadout", {})
 	var p: Array = d.get("pos", [0, 0])
 	g.pos = Vector2(float(p[0]), float(p[1]))
 	for t in d.get("titles", []):
