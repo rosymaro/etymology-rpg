@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>그림 콘티</title><style>
+:root{--ink:#4b3f72;--paper:#fffaf2;--line:#e6dccb;--soft:#f3ecff;--acc:#e9876a;--mute:#7a7090}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.65 "Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
+.wrap{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+nav{position:sticky;top:0;height:100vh;overflow:auto;padding:20px 14px;background:#fff;border-right:1px solid var(--line);font-size:13px}
+nav b{display:block;margin-bottom:10px;font-size:15px}
+nav a{display:block;color:var(--ink);text-decoration:none;padding:3px 6px;border-radius:6px}
+nav a:hover{background:var(--soft)}
+nav a.l3{padding-left:18px;color:var(--mute)}
+main{padding:28px 40px 80px;max-width:1180px}
+h1{font-size:28px;margin:0 0 6px}
+h2{margin-top:44px;padding-bottom:6px;border-bottom:3px solid var(--line);font-size:22px}
+h3{margin-top:26px;font-size:17px}
+.meta{color:var(--mute);font-size:13px;margin-bottom:18px}
+.tw{overflow-x:auto;margin:10px 0 16px;border:1px solid var(--line);border-radius:12px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:var(--soft);text-align:left;white-space:nowrap}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+code{background:#f1ebe0;border-radius:5px;padding:1px 5px;font-size:12.5px;white-space:nowrap}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid rgba(75,63,114,.4);vertical-align:-2px;margin-right:4px}
+.chip{display:inline-block;min-width:30px;text-align:center;border-radius:8px;padding:0 6px;color:#fff;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.pri{color:var(--acc);font-weight:700;letter-spacing:-1px}
+.tag{font-size:11px;padding:1px 6px;border-radius:8px;margin-right:4px;vertical-align:1px}
+.tag.user{background:#ffe2d6;color:#a2482b}.tag.opin{background:#e3ecff;color:#3a5aa0}
+blockquote{margin:12px 0;padding:10px 14px;background:#fff;border-left:4px solid var(--acc);border-radius:8px}
+li.sub{margin-left:18px;list-style:circle}
+a{color:#3a5aa0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:8px 0 6px;font-size:13px;color:var(--mute)}
+@media (max-width:860px){.wrap{display:block}nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}main{padding:18px 16px 60px}}
+@media print{nav{display:none}.wrap{display:block}main{max-width:none;padding:0}h2{page-break-before:always}h2:first-of-type{page-break-before:avoid}}
+</style></head><body><div class="wrap"><nav><b>그림 콘티</b><a class="l2" href="#s0">0. 한눈에</a><a class="l2" href="#s1">1. 공통 규칙</a><a class="l2" href="#s2">2. A. 오프닝과 타이틀 ★★★</a><a class="l2" href="#s3">3. B. 주인공 남·여 ★★★</a><a class="l2" href="#s4">4. C. 유닛 12 × 두 모습 ★★★</a><a class="l2" href="#s5">5. D. 보스 10 ★★</a><a class="l2" href="#s6">6. E. 중요 인물(NPC) ★★</a><a class="l2" href="#s7">7. F. 몹(단어 요정) ★★</a><a class="l3" href="#s8">성격 4가지 (모든 속성 공통 규칙)</a><a class="l3" href="#s9">속성 20가지</a><a class="l3" href="#s10">뿌리먹이 (enemy/eater.png, 320×320)</a><a class="l2" href="#s11">8. G. 지도·건물·물건 ★</a><a class="l2" href="#s12">9. H. 효과·아이콘 (나중)</a><a class="l2" href="#s13">10. 코드로 만들기 어려운 것(그림이 꼭 필요한 것)</a><a class="l2" href="#s14">11. 만드는 순서(추천)</a><a class="l2" href="#s15">12. 코드 연결(그림이 들어올 때 한다)</a><a class="l2" href="#s16">부록: 미니게임 그림(지난 목록, 이름 그대로)</a></nav><main><h1>그림 콘티 (무엇을, 몇 장, 어떤 느낌, 어떤 크기, 어떤 이름으로)</h1><div class="meta">어원 RPG(가칭) · 그림 목록과 느낌·크기·파일 이름 · 원본: <a href="https://github.com/rosymaro/etymology-rpg/blob/main/assets/art/README.md" target="_blank">assets/art/README.md</a></div><div class="legend"><span><span class="pri p3">★★★</span> 가장 먼저</span><span><span class="pri p2">★★</span> 다음</span><span><span class="pri p1">★</span> 스테이지 1에 바로 보임</span><span>크기 = 화면에 보이는 크기의 약 2배(세로 720×1280 화면)</span></div>
+<blockquote>디자이너용 한 장짜리 HTML: <a href="https://github.com/rosymaro/etymology-rpg/blob/main/docs/art/conti/index.html" target="_blank"><code>docs/art/conti/index.html</code></a> (이 문서로 <code>python3 tools/art/build_conti.py</code>가 만든다. 이 문서를 고치면 다시 만든다)</blockquote>
+<p>게임은 <code>res://assets/art/&lt;종류&gt;/&lt;id&gt;.png</code>가 있으면 그림을, 없으면 지금처럼 도형을 그린다(<code>src/ui/art.gd</code>). 그래서 그림은 <b>한 장씩 넣는 대로 그 자리만</b> 바뀐다. 이 문서가 그림 목록의 기준이다. 그림 방향은 <a href="https://github.com/rosymaro/etymology-rpg/blob/main/docs/design/art-direction.md" target="_blank">art-direction.md</a>, AI 프롬프트는 <a href="https://github.com/rosymaro/etymology-rpg/blob/main/assets/art/PROMPTS.md" target="_blank">PROMPTS.md</a>.</p>
+<h2 id="s0">0. 한눈에</h2>
+<div class="tw"><table><thead><tr><th>묶음</th><th>장 수</th><th>우선</th><th>이유</th></tr></thead><tbody>
+<tr><td>A. 오프닝과 타이틀</td><td>13</td><td><span class="pri p3"><span class="pri p2">★<span class="pri p1">★</span></span>★</span></td><td>처음 1분이 게임의 첫인상. 가장 공들인다</td></tr>
+<tr><td>B. 주인공(남·여)</td><td>30</td><td><span class="pri p3"><span class="pri p2">★<span class="pri p1">★</span></span>★</span></td><td>화면에 늘 나온다</td></tr>
+<tr><td>C. 유닛: 펭귄 12 + 병아리 12</td><td>100</td><td><span class="pri p3"><span class="pri p2">★<span class="pri p1">★</span></span>★</span> (뚝딱·척척 먼저)</td><td>전투 카드·필드 동행·대화 얼굴</td></tr>
+<tr><td>D. 보스 10</td><td>31</td><td><span class="pri p2">★<span class="pri p1">★</span></span> (destroyer 먼저)</td><td>스테이지의 얼굴</td></tr>
+<tr><td>E. 중요 인물(NPC) 21명</td><td>약 40</td><td><span class="pri p2">★<span class="pri p1">★</span></span> (대장장이·간호사·마을 아이 먼저)</td><td>이야기를 끌고 가는 사람들</td></tr>
+<tr><td>F. 몹(단어 요정): 속성 20 × 성격 4</td><td>101</td><td><span class="pri p2">★<span class="pri p1">★</span></span> (스테이지 1은 파동 5장만)</td><td>필드에 가장 많이 보인다</td></tr>
+<tr><td>G. 지도 타일·건물·물건</td><td>약 50</td><td><span class="pri p1">★</span> (스테이지 1 것 먼저)</td><td>배경의 손맛</td></tr>
+<tr><td>H. 효과·아이콘·미니게임</td><td>약 55</td><td>나중</td><td>지금 도형 효과도 쓸 만하다</td></tr>
+<tr><td>합계</td><td><b>약 420장</b></td><td></td><td>1차(11절 1·2단계와 파동 몹 5장, 스테이지 1을 끝까지 해 볼 때 보이는 것)는 <b>약 85장</b></td></tr>
+</tbody></table></div>
+<blockquote><span class="tag opin">의견</span> 유닛 펭귄 12·병아리 12: 같은 12유닛(성격·무기·이름)을 <b>두 가지 모습</b>으로 만들고, 새 게임에서 주인공(남·여)을 고를 때 유닛 모습(펭귄·병아리)도 고른다. 후보 ① 두 모습 중 고르기 ② 12유닛 중 6은 펭귄 6은 병아리 ③ 남주는 펭귄, 여주는 병아리 → ①(고르는 재미, 같은 유닛이라 이야기·밸런스는 그대로). 고르는 화면과 그림 이름 바꾸기는 그림이 들어올 때 코드에 넣는다(아래 '코드 연결').</blockquote>
+<h2 id="s1">1. 공통 규칙</h2>
+<ul><li><b>형식:</b> PNG. 배경 투명("바탕 있음"이라고 적은 것만 불투명).</li><li><b>크기:</b> 게임 화면은 세로 720×1280이다. 표의 크기는 <b>화면에 보이는 크기의 약 2배</b>다. 그보다 크게 그려도 되지만 <b>비율은 지킨다</b>.</li><li><b>보는 각도:</b></li><li class="sub">필드에 서 있는 것(주인공, 동행, 몹, 건물, 물건): <b>위에서 45도쯤 비스듬히 본 3/4 시점</b>. 지도는 정면 위(탑다운).</li><li class="sub">전투 카드·대화 얼굴·오프닝 그림: <b>정면 또는 3/4 정면</b>.</li><li><b>선과 색:</b> 둥근 선, 짙은 남보라 외곽선(<span class="sw" style="background:#4b3f72"></span>#4b3f72), 파스텔, 수채 번짐, 볼터치. 검정 선, 실사 그림자는 쓰지 않는다.</li><li><b>같은 캐릭터는 같은 얼굴:</b> 한 캐릭터의 그림(카드·필드·얼굴)은 첫 그림을 참조로 넣고 만든다.</li><li><b>색이 바뀌는 그림:</b> "흰색·밝은 회색으로"라고 적은 것은 게임이 색을 입힌다(속성 색). 무늬와 명암만 넣는다.</li><li><b>이름:</b> 소문자와 밑줄만. 표의 이름 그대로 둔다.</li></ul>
+<h2 id="s2">2. A. 오프닝과 타이틀 <span class="pri p3"><span class="pri p2">★<span class="pri p1">★</span></span>★</span> (<code>opening/</code>, <code>title/</code>)</h2>
+<p>오프닝은 <code>s01_intro</code>(말뿌리 나무)와 <code>s01_ki</code>(결함)다. 낭독 4줄 → 뿌리가 끊기는 밤 → 아침의 공방 마을 → 대장간에서 첫 망치질 → defect 카드. 한 컷이 한 장의 큰 그림이고, 글자(낭독·대사)는 게임이 위에 얹는다(그림 아래 1/3은 글자가 올라가니 복잡하지 않게).</p>
+<div class="tw"><table><thead><tr><th>파일</th><th>크기</th><th>컷</th><th>느낌</th></tr></thead><tbody>
+<tr><td><code>title/key_art.png</code></td><td>1440×2560 (바탕 있음)</td><td>타이틀 화면</td><td>말뿌리 나무 아래에 주인공 둘(남·여)과 뚝딱. 뿌리 끝에 반짝이는 단어 카드. 위쪽 1/3은 제목 자리로 비운다</td></tr>
+<tr><td><code>title/logo.png</code></td><td>1200×520</td><td>제목 글자</td><td>둥근 손글씨풍 "어원 RPG"(가칭). 뿌리가 글자를 감싼다. 이름이 정해지면 다시</td></tr>
+<tr><td><code>opening/op01_tree.png</code></td><td>1440×2560 (바탕 있음)</td><td>#1 낭독 "옛날에는 모든 말에 뿌리가 있었다"</td><td>밤하늘 아래 거대한 말뿌리 나무. 뿌리 끝마다 작은 단어 카드가 등불처럼 빛난다. 따뜻한 금빛, 신비롭게</td></tr>
+<tr><td><code>opening/op02_crack.png</code></td><td>1440×2560 (바탕 있음)</td><td>#2 "누군가 말의 뿌리를 몽땅 잘라 버렸다"</td><td>같은 나무, 남색 밤. 갈라진 회색 문양이 잉크처럼 번지고 뿌리가 끊어진다. 무섭지 않게, 쓸쓸하게</td></tr>
+<tr><td><code>opening/op03_fall.png</code></td><td>1440×2560 (바탕 있음)</td><td>#3 "말은 그냥… 소리가 되었다"</td><td>색을 잃은 회색 단어 카드들이 낙엽처럼 떨어진다. 가까이 본 컷</td></tr>
+<tr><td><code>opening/op04_village.png</code></td><td>1440×2560 (바탕 있음)</td><td>#4 아침</td><td>언덕에서 내려다본 공방 마을 아침. 굴뚝 연기, 둥근 지붕, 대장간 불빛. 그런데 마을 곳곳(간판, 게시판)이 회색으로 바래 있다</td></tr>
+<tr><td><code>opening/op05_forge_front_m.png</code>, <code>_f.png</code></td><td>1440×2560 (바탕 있음)</td><td>#5 대장간 앞</td><td>주인공(남/여), 대장장이, 뚝딱. 대장장이가 뚝딱을 소개하고 뚝딱이 손을 번쩍 든다. 주인공만 다른 두 장</td></tr>
+<tr><td><code>opening/op06_hammer_m.png</code>, <code>_f.png</code></td><td>1440×2560 (바탕 있음)</td><td>#6 첫 망치질</td><td>대장간 안. 주인공이 모루 앞에서 망치를 든다. 용광로 불빛이 얼굴에</td></tr>
+<tr><td><code>opening/op07_defect.png</code></td><td>1440×2560 (바탕 있음)</td><td>#7 결함</td><td>만든 물건에 금이 가며 회색 카드 "defect"가 튀어나온다(카드 글자는 비워 둔다, 게임이 쓴다). 가까이</td></tr>
+<tr><td><code>opening/op08_split.png</code></td><td>1440×2560 (바탕 있음)</td><td>#8 뜻이 보인다</td><td>뚝딱이 카드를 두 조각으로 갈라 들고 신난 얼굴. 조각 자리는 비워 둔다(de- / fac는 게임이 쓴다). 회색 카드에 색이 번지기 시작</td></tr>
+<tr><td><code>opening/op09_choose.png</code></td><td>1440×2560 (바탕 있음)</td><td>주인공·유닛 모습 고르기 화면 바탕</td><td>대장간 안 따뜻한 바탕. 가운데 둘(남·여) 설 자리를 비워 둔다</td></tr>
+</tbody></table></div>
+<h2 id="s3">3. B. 주인공 남·여 <span class="pri p3"><span class="pri p2">★<span class="pri p1">★</span></span>★</span> (<code>hero/</code>, <code>face/</code>)</h2>
+<p>같은 견습생, 남(<code>m</code>)과 여(<code>f</code>). 앞치마와 모자(견습 옷). 2~2.5등신. 칭호가 오르면 옷이 바뀐다(04-meta.md 5절).</p>
+<div class="tw"><table><thead><tr><th>파일</th><th>장 수</th><th>크기</th><th>쓰는 곳</th><th>메모</th></tr></thead><tbody>
+<tr><td><code>hero/m_down.png</code> <code>m_up.png</code> <code>m_left.png</code> <code>m_right.png</code> (<code>f_…</code> 같게)</td><td>8</td><td>256×288</td><td>필드(걷는 쪽마다)</td><td>3/4 시점 전신. 오른쪽은 왼쪽을 뒤집어도 되면 생략 가능</td></tr>
+<tr><td><code>hero/m_look1.png</code> ~ <code>m_look5.png</code> (<code>f_…</code>)</td><td>10</td><td>256×288</td><td>칭호 옷 1~5(앞모습만)</td><td>새싹 망토, 탐험가 조끼, 학자 로브, 현자 망토, 금빛 망토. 얼굴·자세는 m_down과 같게</td></tr>
+<tr><td><code>face/hero_m_normal.png</code> <code>_happy</code> <code>_surprised</code> <code>_sad</code> <code>_angry</code> (<code>hero_f_…</code>)</td><td>10</td><td>512×512</td><td>대화 얼굴</td><td>어깨 위까지, 오른쪽으로 살짝</td></tr>
+<tr><td><code>hero/m_stand.png</code> <code>f_stand.png</code></td><td>2</td><td>768×1152</td><td>오프닝·고르기 화면·결과 화면</td><td>서 있는 전신, 정면 3/4</td></tr>
+</tbody></table></div>
+<h2 id="s4">4. C. 유닛 12 × 두 모습 <span class="pri p3"><span class="pri p2">★<span class="pri p1">★</span></span>★</span> (<code>unit/penguin/</code>, <code>unit/chick/</code>)</h2>
+<p>12유닛은 성격·무기·대표 색·소품이 정해져 있다. <b>펭귄</b>과 <b>병아리</b> 두 모습으로 같은 유닛을 그린다(소품·색은 같게). 계열 뜻이 곧 성격이다(docs/story/00-overview.md).</p>
+<div class="tw"><table><thead><tr><th>번호</th><th>이름(계열)</th><th>대표 색</th><th>소품·모습</th><th>성격이 보이는 자세</th><th>필드 무기</th></tr></thead><tbody>
+<tr><td><span class="chip" style="background:#f0a35e">01</span></td><td>뚝딱(만들기)</td><td>살구</td><td>앞치마, 망치와 자</td><td>망치를 번쩍, 수다스러운 입</td><td>망치 던지기</td></tr>
+<tr><td><span class="chip" style="background:#b98c5a">02</span></td><td>덥석(잡기)</td><td>갈색</td><td>커다란 두 손, 카우보이 모자, 밧줄</td><td>무엇이든 꽉 쥔 손</td><td>붙잡기</td></tr>
+<tr><td><span class="chip" style="background:#a88bd6">03</span></td><td>힐끔(보기)</td><td>연보라</td><td>큰 눈 하나(또는 망원경), 잎 뒤에 숨음</td><td>수줍게 반쯤 숨어 엿본다</td><td>눈빛</td></tr>
+<tr><td><span class="chip" style="background:#6f9fd8">04</span></td><td>척척(알기)</td><td>하늘</td><td>동그란 안경, 책, 학자 모자</td><td>아는 척 손가락을 든다(살짝 틀린 얼굴)</td><td>콕 찍기</td></tr>
+<tr><td><span class="chip" style="background:#f29bb8">05</span></td><td>조잘(말하기)</td><td>분홍</td><td>큰 입, 깃펜, 말풍선</td><td>입을 크게 벌리고 받아 적는다</td><td>외침</td></tr>
+<tr><td><span class="chip" style="background:#8fd3f0">06</span></td><td>쌩(가기)</td><td>연두</td><td>앞으로 기운 몸, 등에 작은 날개, 바람 줄</td><td>늘 급해서 달리는 중</td><td>바람 화살</td></tr>
+<tr><td><span class="chip" style="background:#7fb77e">07</span></td><td>영차(나르기)</td><td>초록</td><td>네모난 몸, 등짐 보따리(항구 출신 천하장사)</td><td>듬직하게 짐을 든다. 눈빛에 살짝 그늘(배신 복선)</td><td>보따리</td></tr>
+<tr><td><span class="chip" style="background:#e0675a">08</span></td><td>대장(이끌기)</td><td>빨강</td><td>깃발, 작은 왕관, 지휘봉</td><td>앞장서 가리키지만 지도를 거꾸로 듦</td><td>깃발</td></tr>
+<tr><td><span class="chip" style="background:#f2cf4a">09</span></td><td>휙(던지기)</td><td>노랑</td><td>돌을 든 팔, 활</td><td>뭐든 던지려는 자세</td><td>돌 던지기</td></tr>
+<tr><td><span class="chip" style="background:#5cc2b0">10</span></td><td>빙글(돌리기)</td><td>청록</td><td>몸의 소용돌이 무늬, 머리 위 도는 별</td><td>빙글 돌며 반대로 말하는 얼굴</td><td>팽이</td></tr>
+<tr><td><span class="chip" style="background:#9aa3ad">11</span></td><td>꿈쩍(서기)</td><td>회청</td><td>바위 같은 네모 몸, 큰 방패</td><td>버티고 선 자세, 절대 안 움직임</td><td>방패</td></tr>
+<tr><td><span class="chip" style="background:#b0453f">12</span></td><td>와장(깨기)</td><td>진한 빨강</td><td>들쭉날쭉한 몸, 금, 뭉툭하고 큰 칼</td><td>다 부수려는 신난 얼굴</td><td>내리치기</td></tr>
+</tbody></table></div>
+<p>모습마다(펭귄 <code>p</code>, 병아리 <code>c</code>) 한 유닛에 4장씩 96장, 뚝딱 표정 2개 더해 100장:</p>
+<div class="tw"><table><thead><tr><th>파일 (펭귄 예, 병아리는 <code>unit/chick/</code>)</th><th>크기</th><th>쓰는 곳</th><th>메모</th></tr></thead><tbody>
+<tr><td><code>unit/penguin/u01.png</code> ~ <code>u12.png</code></td><td>512×512</td><td>전투 카드, 파티, 유닛 기쁨 화면</td><td>전신, 싸울 준비 자세</td></tr>
+<tr><td><code>unit/penguin/pal01.png</code> ~ <code>pal12.png</code></td><td>192×192</td><td>필드에서 주인공을 따라다니는 모습</td><td>3/4 시점 전신, 작아도 소품이 보이게 단순하게</td></tr>
+<tr><td><code>face/u01_p_normal.png</code> <code>_happy</code> (~u12)</td><td>512×512</td><td>대화 얼굴(유닛이 말할 때)</td><td>뚝딱은 대사가 105줄로 가장 많다. 표정 2개부터, 뚝딱은 <code>_surprised</code> <code>_sad</code>도</td></tr>
+</tbody></table></div>
+<h2 id="s5">5. D. 보스 10 <span class="pri p2">★<span class="pri p1">★</span></span> (<code>boss/</code>, <code>face/</code>)</h2>
+<p>무섭기보다 <b>허당스럽게</b>. 덩치가 크고 표정이 과장되며, 몸 어딘가에 회색으로 <b>갈라진 문양</b>(이야기의 적 devil의 표식)이 있다. 이기면 문양이 사라지고 색이 돌아온다.</p>
+<div class="tw"><table><thead><tr><th>보스</th><th>스테이지</th><th>모습</th><th>장 수</th></tr></thead><tbody>
+<tr><td>destroyer <span class="pri p1">★</span></td><td>1 공방 마을</td><td>다리를 무너뜨리는 큰 덩치 파괴자. 망치 주먹, 허당</td><td>3</td></tr>
+<tr><td>predator</td><td>2 사냥꾼 초원</td><td>앞(pre)에서 노리는 사냥꾼 짐승, 눈만 매섭고 몸은 통통</td><td>3</td></tr>
+<tr><td>wizard</td><td>3 망루 도서관</td><td>책 더미 모자를 쓴 마법사, 주문을 자꾸 틀림</td><td>3</td></tr>
+<tr><td>hurricane</td><td>4 바람 협곡</td><td>몸이 소용돌이 구름, 볼을 잔뜩 부풀린 얼굴</td><td>3</td></tr>
+<tr><td>pirate</td><td>5 항구 도시</td><td>외눈 안대 해적, 보물(단어 카드) 자루</td><td>3</td></tr>
+<tr><td>dictator</td><td>6 왕성</td><td>말(dict)로 명령하는 독재자, 큰 확성기</td><td>3</td></tr>
+<tr><td>vortex</td><td>7 소용돌이 호수</td><td>물 소용돌이 몸, 뒤집혀 말하는 얼굴</td><td>3</td></tr>
+<tr><td>guardian</td><td>8 성벽 요새</td><td>문을 지키는 거인 갑옷, 사실은 착함(진실 장면)</td><td>3</td></tr>
+<tr><td>dragon</td><td>9 부서진 광산</td><td>광석을 먹는 귀여운 용, 금 간 비늘</td><td>3</td></tr>
+<tr><td>devil</td><td>10 갈라진 탑</td><td>마지막. 갈라진 문양의 주인(dia + ballein, 갈라놓는 자). 다른 보스보다 조금 진지하게, 그래도 둥글게</td><td>4</td></tr>
+</tbody></table></div>
+<div class="tw"><table><thead><tr><th>파일</th><th>크기</th><th>쓰는 곳</th></tr></thead><tbody>
+<tr><td><code>boss/&lt;id&gt;.png</code></td><td>1024×1024</td><td>전투(크게), 등장 연출</td></tr>
+<tr><td><code>boss/&lt;id&gt;_down.png</code></td><td>1024×1024</td><td>졌을 때(문양이 깨지고 색이 돌아온 얼굴)</td></tr>
+<tr><td><code>face/&lt;id&gt;_normal.png</code></td><td>512×512</td><td>대화 얼굴</td></tr>
+<tr><td><code>opening/devil_reveal.png</code> (devil만)</td><td>1440×2560 (바탕 있음)</td><td>10스테이지 정체 공개 한 장면</td></tr>
+</tbody></table></div>
+<h2 id="s6">6. E. 중요 인물(NPC) <span class="pri p2">★<span class="pri p1">★</span></span> (<code>npc/</code>, <code>face/</code>)</h2>
+<p>대사가 있는 인물 21명. 사람(동화풍 2.5등신). 마을에 서 있는 사람은 필드 모습도 필요하다.</p>
+<div class="tw"><table><thead><tr><th>인물</th><th>처음 나오는 곳</th><th>모습</th><th>얼굴</th><th>필드</th></tr></thead><tbody>
+<tr><td>대장장이 <span class="pri p1">★</span></td><td>1 오프닝</td><td>둥글고 큰 체구, 큰 콧수염, 가죽 앞치마. 피곤하지만 따뜻함</td><td>normal, happy, surprised</td><td><code>npc/blacksmith.png</code></td></tr>
+<tr><td>간호사 <span class="pri p1">★</span></td><td>1 병원</td><td>둥근 간호 모자, 큰 벽시계를 가리키는 손</td><td>normal</td><td><code>npc/nurse.png</code></td></tr>
+<tr><td>마을 아이 <span class="pri p1">★</span></td><td>1 동굴 퀘스트</td><td>장난감 망치를 잃은 꼬마</td><td>normal, happy</td><td><code>npc/kid.png</code></td></tr>
+<tr><td>마을 사람 A·B <span class="pri p1">★</span></td><td>1 광장</td><td>소박한 마을 옷 두 가지(갸웃하는 얼굴)</td><td>normal</td><td><code>npc/villager_a.png</code> <code>villager_b.png</code> (필드에 6명이 돌아다닌다)</td></tr>
+<tr><td>사냥꾼</td><td>2</td><td>소에게 공손히 고개 숙이는 사냥꾼</td><td>normal</td><td></td></tr>
+<tr><td>상인</td><td>2 장터</td><td>좌판 상인</td><td>normal</td><td></td></tr>
+<tr><td>망루지기</td><td>3</td><td>눈을 감은 망루지기</td><td>normal</td><td></td></tr>
+<tr><td>사서</td><td>3 도서관</td><td>책 더미, 동그란 안경</td><td>normal</td><td></td></tr>
+<tr><td>연 할아버지</td><td>4 협곡</td><td>연을 든 할아버지</td><td>normal</td><td></td></tr>
+<tr><td>짐꾼</td><td>5 항구</td><td>수출을 "엑스포"로 아는 짐꾼</td><td>normal</td><td></td></tr>
+<tr><td>늙은 선원</td><td>5</td><td>파이프, 수염</td><td>normal</td><td></td></tr>
+<tr><td>조선공</td><td>5</td><td>나무 망치, 배 설계도</td><td>normal</td><td></td></tr>
+<tr><td>서기</td><td>6 왕성</td><td>두루마리와 깃펜</td><td>normal</td><td></td></tr>
+<tr><td>성 경비</td><td>6</td><td>창 든 경비</td><td>normal</td><td></td></tr>
+<tr><td>왕</td><td>6</td><td>나이 든 왕, devil의 과거를 고백(무거운 장면)</td><td>normal, sad</td><td></td></tr>
+<tr><td>방앗간 주인</td><td>7</td><td>물레방아</td><td>normal</td><td></td></tr>
+<tr><td>보초병</td><td>8</td><td>성벽 보초</td><td>normal</td><td></td></tr>
+<tr><td>석공</td><td>8</td><td>돌 쪼는 망치</td><td>normal</td><td></td></tr>
+<tr><td>광부</td><td>9</td><td>헬멧 등불, 곡괭이</td><td>normal</td><td></td></tr>
+<tr><td>탑 아래 아이</td><td>10</td><td>소리만 내는 마을의 아이</td><td>normal</td><td></td></tr>
+<tr><td>말 뽑기 주인</td><td>1 마을</td><td>뽑기 기계 옆 상인(07-fun 7절)</td><td>normal</td><td><code>npc/gacha.png</code></td></tr>
+</tbody></table></div>
+<ul><li>얼굴: <code>face/&lt;id&gt;_&lt;표정&gt;.png</code> 512×512. id는 표 왼쪽의 이름이 아니라 <code>locale/names.csv</code>의 <code>name.char.&lt;id&gt;</code>(blacksmith, nurse, kid, villager_a, villager_b, hunter, merchant, watchman, librarian, kite_elder, porter, sailor, shipwright, scribe, guard_castle, king, miller, sentry, mason, miner, tower_child, gacha).</li><li>필드 모습: <code>npc/&lt;id&gt;.png</code> 192×224, 3/4 시점 전신.</li></ul>
+<p><b>중간에 중요한 인물(이야기 무게가 큰 장면):</b> 영차(5 합류 → 8 배신 → 10 돌아옴: <code>face/u07_*_sad</code>, <code>_angry</code>가 필요), 왕(6 devil의 과거), guardian(8 진실), devil(10). 이 넷은 표정을 하나씩 더 만든다(아래 '추가 표정').</p>
+<div class="tw"><table><thead><tr><th>추가 표정</th><th>파일</th></tr></thead><tbody>
+<tr><td>영차 배신·후회</td><td><code>face/u07_p_sad.png</code> <code>u07_p_angry.png</code> (병아리도)</td></tr>
+<tr><td>왕 고백</td><td><code>face/king_sad.png</code></td></tr>
+<tr><td>guardian 진실</td><td><code>face/guardian_sad.png</code></td></tr>
+<tr><td>devil</td><td><code>face/devil_angry.png</code> <code>devil_sad.png</code></td></tr>
+</tbody></table></div>
+<h2 id="s7">7. F. 몹(단어 요정) <span class="pri p2">★<span class="pri p1">★</span></span> (<code>enemy/</code>)</h2>
+<p><span class="tag user">사용자 의견</span> 몹은 <b>속성마다 다른 모습</b>으로, 그리고 <b>성격(움직임)마다 다른 표정·자세</b>로 그린다. 속성은 그 단어의 첫(주) 속성이다(<code>locale/names.csv</code> <code>name.attr.NN</code>).</p>
+<ul><li><b>필드 몹:</b> 속성 20 × 성격 4 = <b>80장</b> <code>enemy/aNN_&lt;성격&gt;.png</code> 192×192, 3/4 시점, 투명.</li><li><b>전투 적 카드:</b> 속성마다 1장 = <b>20장</b> <code>enemy/card_aNN.png</code> 512×512, 정면, 싸울 준비 자세.</li><li><b>뿌리먹이:</b> <code>enemy/eater.png</code> 320×320 1장.</li><li>모두 "단어 요정"이다. 회색으로 바랜 몸(어원을 잃음)에 속성 색이 <b>조금</b> 남아 있고, 몸 가운데에 단어가 들어갈 밝은 빈 자리(가로 띠)를 둔다. 잡히면(퀴즈를 맞히면) 색이 돌아온다(게임 연출).</li><li>같은 속성의 네 성격은 <b>같은 몸, 다른 표정·자세</b>로 그린다(첫 장을 참조로).</li></ul>
+<h3 id="s8">성격 4가지 (모든 속성 공통 규칙)</h3>
+<div class="tw"><table><thead><tr><th>성격</th><th>파일 끝</th><th>움직임(게임)</th><th>표정·자세</th><th>비율</th></tr></thead><tbody>
+<tr><td>그냥 있는 애(배회)</td><td><code>_wander</code></td><td>이리저리 느긋하게 돌아다닌다. 주인공을 신경 안 씀</td><td>졸린 반달눈, 살짝 웃는 입, 둥실 떠 있는 듯 똑바로 선 자세, 몸이 동글동글</td><td>40%</td></tr>
+<tr><td>덤비는 애(쫓기)</td><td><code>_chase</code></td><td>주인공이 가까이 오면 쫓아온다</td><td>치켜올린 눈썹, 앙 다문 입(작은 송곳니 하나), 몸을 앞으로 기울이고 팔(또는 몸 끝)을 쳐든 자세</td><td>28%</td></tr>
+<tr><td>피하는 애(도망)</td><td><code>_flee</code></td><td>가까이 오면 달아난다. <b>드문 단어</b>를 가졌다</td><td>동그랗게 뜬 겁먹은 눈, 땀방울 하나, 뒤돌아보며 도망가는 자세. 몸에 작은 반짝이(드문 단어라 잡으면 좋다)</td><td>17%</td></tr>
+<tr><td>돌진하는 애(돌진)</td><td><code>_rush</code></td><td>멈춰 부르르 떨다가 주인공 쪽으로 아주 빠르게 곧장 돌진</td><td>낮게 웅크린 몸, 콧김, 단단히 찡그린 눈, 머리(또는 몸의 뾰족한 곳)를 앞으로 내민 자세</td><td>15%</td></tr>
+</tbody></table></div>
+<ul><li>게임이 성격 표시를 따로 얹는다: 덤비는 애는 머리 위 <b>!</b>, 돌진하는 애는 떠는 동안 <b>!!</b>와 달릴 때 뒤로 바람 줄, 피하는 애는 파란 땀방울. 그러니 그림에는 글자나 기호를 넣지 않는다.</li><li>크기는 같게(192×192 안에 몸이 70%쯤). 돌진하는 애만 몸을 낮춰 조금 넓게.</li></ul>
+<h3 id="s9">속성 20가지</h3>
+<p>색은 게임의 속성 색(단어 카드·미니게임과 같다)이다. 몸은 회색으로 바래 있고, 이 색은 <b>무늬·장식·눈빛</b>에만 남긴다.</p>
+<div class="tw"><table><thead><tr><th>번호</th><th>속성</th><th>색</th><th>몸의 모양(모티프)</th><th>느낌</th><th>처음 많이 나오는 곳</th></tr></thead><tbody>
+<tr><td>a01</td><td>생명</td><td><code><span class="sw" style="background:#f4a6a6"></span>#f4a6a6</code> 연한 빨강</td><td>새싹이 돋은 둥근 씨앗, 심장 박동처럼 통통</td><td>따뜻하고 살아 있는</td><td>스테이지 2</td></tr>
+<tr><td>a02</td><td>영혼</td><td><code><span class="sw" style="background:#c9b6e4"></span>#c9b6e4</code> 연보라</td><td>꼬리가 길게 흐르는 반투명 유령 불꽃</td><td>몽글몽글, 조금 신비로운</td><td>5</td></tr>
+<tr><td>a03</td><td>지혜</td><td><code><span class="sw" style="background:#a8d8ea"></span>#a8d8ea</code> 하늘</td><td>책장을 접어 만든 몸, 머리에 작은 전구</td><td>똑똑한 척, 안경 낀 듯한 눈</td><td>4</td></tr>
+<tr><td>a04</td><td>파동 <span class="pri p1">★</span></td><td><code><span class="sw" style="background:#ffd59e"></span>#ffd59e</code> 살구 노랑</td><td>몸 둘레로 퍼지는 물결 고리, 소리굽쇠 같은 두 뿔</td><td>통통 튀는, 울림이 있는</td><td><b>스테이지 1(모든 단어)</b></td></tr>
+<tr><td>a05</td><td>자연</td><td><code><span class="sw" style="background:#b5e5b5"></span>#b5e5b5</code> 연두</td><td>잎사귀 망토, 머리에 작은 꽃·버섯</td><td>풀숲 냄새, 순한</td><td>5</td></tr>
+<tr><td>a06</td><td>원소</td><td><code><span class="sw" style="background:#f7c59f"></span>#f7c59f</code> 주황</td><td>불·물·흙·바람 네 조각이 섞인 몸(작은 불꽃 꼬리)</td><td>반짝이는 에너지</td><td>6</td></tr>
+<tr><td>a07</td><td>일상</td><td><code><span class="sw" style="background:#d6d6b0"></span>#d6d6b0</code> 올리브 베이지</td><td>찻잔·양말·빗자루 같은 생활 물건 모양</td><td>수더분하고 친근한</td><td>3</td></tr>
+<tr><td>a08</td><td>창조</td><td><code><span class="sw" style="background:#f2b5d4"></span>#f2b5d4</code> 분홍</td><td>붓끝 머리, 몸에 물감 얼룩, 작은 망치 손</td><td>신나서 뭔가 만드는</td><td>4</td></tr>
+<tr><td>a09</td><td>공간</td><td><code><span class="sw" style="background:#aec6f0"></span>#aec6f0</code> 연파랑</td><td>상자·문틀 모양 몸, 안에 작은 별이 보이는 구멍</td><td>넓고 텅 빈, 몽환</td><td>6</td></tr>
+<tr><td>a10</td><td>시간</td><td><code><span class="sw" style="background:#e8c8a0"></span>#e8c8a0</code> 모래</td><td>모래시계 허리, 배에 시계 판</td><td>느릿느릿, 째깍째깍</td><td>3</td></tr>
+<tr><td>a11</td><td>바람</td><td><code><span class="sw" style="background:#c4e8f2"></span>#c4e8f2</code> 연청록</td><td>회오리 꼬리, 연·깃털 장식</td><td>가볍고 휙휙</td><td>5</td></tr>
+<tr><td>a12</td><td>유대</td><td><code><span class="sw" style="background:#f0b8b8"></span>#f0b8b8</code> 장미</td><td>둘이 손잡은 듯 붙은 쌍둥이 몸, 실로 묶인 리본</td><td>다정하고 붙어 다니는</td><td>5</td></tr>
+<tr><td>a13</td><td>권위</td><td><code><span class="sw" style="background:#d8c4f0"></span>#d8c4f0</code> 라벤더</td><td>작은 왕관, 망토 깃, 곧은 자세</td><td>거들먹거리는(귀엽게)</td><td>2</td></tr>
+<tr><td>a14</td><td>파멸</td><td><code><span class="sw" style="background:#e0a0a0"></span>#e0a0a0</code> 탁한 빨강</td><td>금이 간 몸, 부서진 조각이 둥둥</td><td>장난스러운 말썽꾼(무섭지 않게)</td><td>6</td></tr>
+<tr><td>a15</td><td>번영</td><td><code><span class="sw" style="background:#f5e3a3"></span>#f5e3a3</code> 금빛 노랑</td><td>동전·이삭이 달린 통통한 주머니 몸</td><td>풍요롭고 배부른</td><td>2</td></tr>
+<tr><td>a16</td><td>영감</td><td><code><span class="sw" style="background:#b8e0d2"></span>#b8e0d2</code> 민트</td><td>머리 위 반짝이는 별·번개 아이디어</td><td>번뜩이는, 들뜬</td><td>3</td></tr>
+<tr><td>a17</td><td>신성</td><td><code><span class="sw" style="background:#fff1a8"></span>#fff1a8</code> 연한 금</td><td>작은 날개와 머리 위 빛고리</td><td>고요하고 맑은</td><td>6</td></tr>
+<tr><td>a18</td><td>형상</td><td><code><span class="sw" style="background:#cfd8a8"></span>#cfd8a8</code> 연올리브</td><td>각진 블록·도형을 쌓은 몸(점토 인형 느낌)</td><td>단단하고 또렷한</td><td>3</td></tr>
+<tr><td>a19</td><td>심판</td><td><code><span class="sw" style="background:#c8b8a8"></span>#c8b8a8</code> 회갈색</td><td>저울을 든 몸, 판사 가발 같은 머리</td><td>진지한 척, 눈을 가늘게</td><td>4</td></tr>
+<tr><td>a20</td><td>질서</td><td><code><span class="sw" style="background:#b0c8e8"></span>#b0c8e8</code> 회청</td><td>줄 맞춘 칸·격자 무늬 몸, 반듯한 각</td><td>꼼꼼하고 깔끔한</td><td>4</td></tr>
+</tbody></table></div>
+<ul><li>그리는 순서: <b>a04 파동</b>(스테이지 1은 이것뿐, 4장 + 카드 1장) → 스테이지 2의 a01 생명·a13 권위·a15 번영 → 스테이지 3(a07, a10, a16, a18) → 4(a03, a08, a19, a20) → 5(a02, a05, a11, a12) → 6(a06, a09, a14, a17).</li><li>속성이 아직 나오지 않는 스테이지 1에서 다 그릴 필요는 없다. 그림이 없는 속성은 지금처럼 색 입힌 도형으로 나온다.</li></ul>
+<h3 id="s10">뿌리먹이 (<code>enemy/eater.png</code>, 320×320)</h3>
+<p>시간이 지나면 나타나는 아주 센 몹. 무기를 맞아도 쓰러지지 않고 뚫고 온다. 검붉은 덩어리, 뿌리 같은 촉수 6개, 노란 눈 둘. 섬뜩하지만 귀엽게. 속성 색을 입히지 않는다.</p>
+<h2 id="s11">8. G. 지도·건물·물건 <span class="pri p1">★</span> (<code>tile/</code>, <code>building/</code>, <code>prop/</code>)</h2>
+<p>지도는 260×160칸, 한 칸 64픽셀(그림은 128×128로). 지금은 칸마다 색과 간단한 무늬를 코드로 그린다.</p>
+<p><b>타일 (<code>tile/&lt;글자&gt;.png</code>, 128×128, (바탕 있음), 이어 붙여도 이음매가 안 보이게):</b></p>
+<div class="tw"><table><thead><tr><th>파일</th><th>타일</th><th>파일</th><th>타일</th></tr></thead><tbody>
+<tr><td><code>tile/grass.png</code> (+<code>grass2</code>, <code>grass3</code> 변형)</td><td>풀</td><td><code>tile/sea.png</code></td><td>바다</td></tr>
+<tr><td><code>tile/town.png</code></td><td>마을 바닥</td><td><code>tile/water.png</code></td><td>호수·강</td></tr>
+<tr><td><code>tile/road.png</code></td><td>마을 돌길</td><td><code>tile/cliff.png</code></td><td>절벽</td></tr>
+<tr><td><code>tile/pass.png</code></td><td>고갯길</td><td><code>tile/forest.png</code></td><td>숲(나무 덩어리)</td></tr>
+<tr><td><code>tile/bridge.png</code></td><td>다리</td><td><code>tile/mountain.png</code></td><td>산</td></tr>
+<tr><td><code>tile/bridge_broken.png</code></td><td>무너진 다리(퀘스트 길목)</td><td><code>tile/wall.png</code></td><td>성벽</td></tr>
+<tr><td><code>tile/gate.png</code></td><td>다음 스테이지 문(닫힘)</td><td><code>tile/fence.png</code></td><td>울타리</td></tr>
+<tr><td><code>tile/crop.png</code></td><td>밭</td><td><code>tile/ice.png</code></td><td>얼음</td></tr>
+<tr><td><code>tile/hole.png</code></td><td>구멍</td><td><code>tile/cave_floor.png</code> <code>cave_wall.png</code> <code>cave_exit.png</code></td><td>동굴 바닥·바위벽·나가는 곳</td></tr>
+<tr><td><code>tile/cave_mouth.png</code></td><td>동굴 입구(산에 난 굴)</td><td><code>tile/fountain.png</code></td><td>분수·우물(2×2칸 = 256×256)</td></tr>
+</tbody></table></div>
+<p><b>건물 (<code>building/</code>, 3/4 시점):</b></p>
+<div class="tw"><table><thead><tr><th>파일</th><th>크기</th><th>메모</th></tr></thead><tbody>
+<tr><td><code>building/forge.png</code> <span class="pri p1">★</span></td><td>512×512</td><td>대장간(진화). 용광로 불빛, 하트 모양 연기</td></tr>
+<tr><td><code>building/board.png</code> <span class="pri p1">★</span></td><td>512×512</td><td>주문 제작소(미니게임)</td></tr>
+<tr><td><code>building/hospital.png</code> <span class="pri p1">★</span></td><td>512×512</td><td>병원. 하얀 지붕, 큰 벽시계</td></tr>
+<tr><td><code>building/tree.png</code> <span class="pri p1">★</span></td><td>768×768</td><td>말뿌리 나무. 뿌리 끝에 단어 카드</td></tr>
+<tr><td><code>building/notice.png</code> <span class="pri p1">★</span></td><td>256×256</td><td>마을 알림판(빈칸 세 개)</td></tr>
+<tr><td><code>building/gacha.png</code></td><td>384×384</td><td>말 뽑기 가게</td></tr>
+<tr><td><code>building/house_1.png</code> ~ <code>house_3.png</code></td><td>384×384</td><td>마을 집 세 가지</td></tr>
+<tr><td><code>building/boss_gate.png</code> <code>boss_gate_open.png</code> <span class="pri p1">★</span></td><td>512×512</td><td>보스 자리 바위 문(문양 있음 / 꽃 핀 뒤)</td></tr>
+<tr><td><code>building/&lt;stage&gt;_&lt;id&gt;.png</code></td><td></td><td>스테이지 2~10 마을 건물(스테이지를 만들 때 정한다)</td></tr>
+</tbody></table></div>
+<p><b>물건 (<code>prop/</code>, 3/4 시점, 투명):</b></p>
+<div class="tw"><table><thead><tr><th>파일</th><th>크기</th><th>메모</th></tr></thead><tbody>
+<tr><td><code>prop/rock.png</code> <span class="pri p1">★</span></td><td>128×128</td><td>미는 돌</td></tr>
+<tr><td><code>prop/rock_heavy.png</code> <span class="pri p1">★</span></td><td>128×128</td><td>무거운 돌(줄무늬, com-으로만 민다)</td></tr>
+<tr><td><code>prop/plate.png</code> <code>plate_on.png</code></td><td>128×128</td><td>발판(꺼짐 / 돌이 올라가 켜짐)</td></tr>
+<tr><td><code>prop/chest.png</code> <code>chest_open.png</code> <span class="pri p1">★</span></td><td>128×128</td><td>보물 상자</td></tr>
+<tr><td><code>prop/lock_chest.png</code></td><td>128×128</td><td>조각 자물쇠가 달린 상자</td></tr>
+<tr><td><code>prop/note.png</code></td><td>96×96</td><td>돌 밑 쪽지(조각)</td></tr>
+<tr><td><code>prop/toy_hammer.png</code></td><td>96×96</td><td>마을 아이의 장난감 망치</td></tr>
+<tr><td><code>prop/orb.png</code> <code>coin.png</code> <code>word_drop.png</code></td><td>64×64</td><td>사냥 떨어지는 것(구슬, 코인, 단어)</td></tr>
+<tr><td><code>prop/sign.png</code></td><td>128×128</td><td>길 표지판</td></tr>
+<tr><td><code>prop/crates.png</code></td><td>128×128</td><td>상자 더미(장면)</td></tr>
+</tbody></table></div>
+<h2 id="s12">9. H. 효과·아이콘 (나중) (<code>fx/</code>, <code>weapon/</code>, <code>slot/</code>)</h2>
+<div class="tw"><table><thead><tr><th>파일</th><th>장 수</th><th>크기</th><th>메모</th></tr></thead><tbody>
+<tr><td><code>fx/magic_&lt;id&gt;.png</code></td><td>15</td><td>512×512</td><td>전투 마법(de, un, in_neg, ob, com, re, ad, sub, prae, inter, in, dis, ex, pro). 뜻에 맞게(01-rpg-base '마법 연출')</td></tr>
+<tr><td><code>fx/impact.png</code></td><td>1</td><td>256×256</td><td>맞을 때 터짐</td></tr>
+<tr><td><code>weapon/u01.png</code> ~ <code>u12.png</code></td><td>12</td><td>96×96</td><td>필드 무기가 날아가는 모양(망치, 손, 눈빛 끝, 별, 말 물결, 화살, 보따리, 깃발, 돌, 팽이, 방패, 큰 칼)</td></tr>
+<tr><td><code>slot/weapon.png</code> <code>head</code> <code>chest</code> <code>hands</code> <code>feet</code></td><td>5</td><td>96×96</td><td>착용 부위 아이콘</td></tr>
+<tr><td><code>mini/…</code></td><td>약 22</td><td></td><td>미니게임 조각(아래 '미니게임' 표는 지난 목록 그대로)</td></tr>
+</tbody></table></div>
+<h2 id="s13">10. 코드로 만들기 어려운 것(그림이 꼭 필요한 것)</h2>
+<p>지금 게임의 그림은 모두 코드로 원·네모·선을 그린 임시 도형이다. 그림이 얼마나 필요한지 셋으로 나눴다.</p>
+<p><b>꼭 그림이 필요하다(코드로는 거의 못 만든다):</b></p>
+<ul><li><b>사람·동물의 얼굴과 표정:</b> 주인공 남·여, 유닛 24모습, 보스 10, NPC 21. 눈·입 점으로는 성격과 감정(배신, 고백, 허당)이 안 나온다. 오프닝과 영차·왕·devil 장면의 무게는 그림이 다 한다.</li><li><b>오프닝·타이틀 한 장 그림:</b> 말뿌리 나무, 뿌리가 끊기는 밤, 회색 카드 비, 아침 마을, 대장간 불빛. 빛과 번짐, 깊이가 있는 큰 그림은 코드로 못 그린다.</li><li><b>보스의 덩치와 문양:</b> 크고 과장된 몸, 몸에 번진 갈라진 문양.</li><li><b>건물:</b> 대장간, 병원, 집, 말뿌리 나무처럼 지붕·창·굴뚝·나무껍질이 있는 것. 지금은 네모 지붕이라 다 비슷해 보인다.</li><li><b>자연물의 손맛:</b> 나무, 숲, 산, 절벽, 물가. 지금은 타일마다 같은 무늬가 반복된다. 특히 <b>물가·절벽·숲 가장자리가 이어지는 모양</b>(타일 경계)은 그림 없이는 각진 계단처럼 보인다.</li></ul>
+<p><b>그림이 있으면 훨씬 좋다(지금 도형도 쓸 만하다):</b></p>
+<ul><li>몹(단어 요정) 속성 20 × 성격 4와 뿌리먹이(지금 도형은 색과 모양 5가지뿐이라 속성 느낌이 안 난다), 돌·상자·발판·쪽지, 장난감 망치, 동굴 입구, 착용 부위 아이콘.</li></ul>
+<p><b>코드로 충분하다(그림이 없어도 된다):</b></p>
+<ul><li>버튼·카드·창 같은 UI, 미니맵, 튜토리얼 반투명 화면, 글자, 코인·구슬 같은 작은 점, 마법·무기 효과 대부분(번쩍, 원, 선, 파티클), 바람 줄·!! 같은 표시, 동굴의 어둠, 날씨.</li></ul>
+<h2 id="s14">11. 만드는 순서(추천)</h2>
+<ol><li><b>스테이지 1 첫인상(약 40장):</b> 타이틀 2, 오프닝 11, 주인공 남·여 필드 8과 얼굴 normal 2, 뚝딱·척척 두 모습 카드·동행·얼굴(16), 대장장이·간호사·마을 아이 얼굴과 필드, destroyer 3.</li><li><b>스테이지 1 마을과 들판(약 40장):</b> 타일 20, 건물 9, 물건 12.</li><li><b>몹(스테이지 1: 파동 4성격 + 카드), 주인공 표정·칭호 옷 20, 나머지 유닛 20모습(펭귄·병아리 × 10)의 카드·동행.</b></li><li>스테이지 2~10을 만들 때 그 스테이지의 보스, NPC, 건물.</li></ol>
+<h2 id="s15">12. 코드 연결(그림이 들어올 때 한다)</h2>
+<ul><li>지금 코드가 찾는 이름: <code>hero/look0</code>, <code>unit/uNN</code>, <code>pal/NN</code>, <code>face/&lt;인물&gt;_&lt;표정&gt;</code>, <code>npc/villager</code>, <code>building/&lt;id&gt;</code>, <code>enemy/attr_NN</code>, <code>fx/magic_&lt;id&gt;</code>, <code>fx/impact</code>, <code>slot/&lt;부위&gt;</code>.</li><li>이 문서의 새 이름에 맞춰 바꿀 것:</li><li class="sub">주인공 남·여와 유닛 펭귄·병아리 고르기: 새 게임 화면, <code>GameState</code>에 저장.</li><li class="sub">주인공 그림: <code>hero/&lt;m|f&gt;_&lt;방향&gt;</code>, 칭호 옷은 <code>hero/&lt;m|f&gt;_lookN</code>.</li><li class="sub">유닛 그림: 카드 <code>unit/&lt;penguin|chick&gt;/uNN</code>, 동행 <code>unit/&lt;…&gt;/palNN</code>, 얼굴 <code>face/uNN_&lt;p|c&gt;_&lt;표정&gt;</code>(대화의 화자 id ttukttak → u01 연결).</li><li class="sub">몹: 필드는 <code>enemy/aNN_&lt;wander|chase|flee|rush&gt;</code>, 전투는 <code>enemy/card_aNN</code>(지금은 <code>attr_NN</code> 한 장, 그림이 없으면 색 = 속성·모양 = 부위 도형).</li><li class="sub">타일: <code>tile/&lt;이름&gt;</code>(지도 글자 → 이름 표).</li><li class="sub">오프닝: <code>opening/opNN</code>을 <code>s01_intro</code>·<code>s01_ki</code> 컷에 붙인다.</li><li>그림이 없으면 지금 도형이 그대로 나온다. 그래서 순서와 상관없이 넣어도 된다.</li></ul>
+<h2 id="s16">부록: 미니게임 그림(지난 목록, 이름 그대로)</h2>
+<div class="tw"><table><thead><tr><th>파일</th><th>크기</th><th>게임</th><th>비고</th></tr></thead><tbody>
+<tr><td><code>mini/order_belt.png</code></td><td>1280×200 (바탕 있음)</td><td>주문 제작</td><td>가로로 이어지는 컨베이어 벨트(좌우가 이어지게)</td></tr>
+<tr><td><code>mini/order_card.png</code></td><td>230×130</td><td>주문 제작</td><td><b>흰색·밝은 회색</b>으로. 가운데에 글자 자리</td></tr>
+<tr><td><code>mini/furnace.png</code></td><td>160×100</td><td>주문 제작</td><td>불이 이글거리는 작은 용광로</td></tr>
+<tr><td><code>mini/anvil.png</code></td><td>160×68</td><td>주문 제작</td><td>망치가 걸친 모루</td></tr>
+<tr><td><code>mini/order_hero.png</code></td><td>64×64</td><td>주문 제작</td><td>위에서 본 앞치마 두른 주인공</td></tr>
+<tr><td><code>mini/fish_word.png</code></td><td>240×80</td><td>낚시</td><td>옆으로 긴 물고기, 몸통 가운데 단어 자리</td></tr>
+<tr><td><code>mini/fish_top.png</code></td><td>150×54</td><td>낚시</td><td>위에서 본 물고기</td></tr>
+<tr><td><code>mini/fish_bait.png</code></td><td>60×60</td><td>낚시</td><td>미끼</td></tr>
+<tr><td><code>mini/guard_wall.png</code></td><td>1280×190</td><td>보초 서기</td><td>돌 성벽, 가운데 둥근 나무 성문</td></tr>
+<tr><td><code>mini/guard_traveler.png</code></td><td>240×110</td><td>보초 서기</td><td>뜻 팻말을 든 손님</td></tr>
+<tr><td><code>mini/guard_climber.png</code></td><td>180×70</td><td>보초 서기</td><td>사다리를 멘 수상한 손님</td></tr>
+<tr><td><code>mini/guard_unit.png</code></td><td>200×90</td><td>보초 서기</td><td>방패를 든 내 유닛(뒷모습)</td></tr>
+<tr><td><code>mini/sprout.png</code></td><td>60×60</td><td>문양 잇기</td><td>작은 새싹</td></tr>
+<tr><td><code>mini/root_wisp.png</code></td><td>190×70</td><td>문양 잇기</td><td>떠다니는 말뿌리 정령</td></tr>
+<tr><td><code>mini/trap_critter.png</code></td><td>130×56</td><td>덫 놓기</td><td>작은 들짐승</td></tr>
+<tr><td><code>mini/trap_snare.png</code></td><td>170×60</td><td>덫 놓기</td><td>위에서 본 덫</td></tr>
+<tr><td><code>mini/trap_hunter.png</code></td><td>56×56</td><td>덫 놓기</td><td>위에서 본 내 캐릭터</td></tr>
+<tr><td><code>mini/moat_soldier.png</code></td><td>150×60</td><td>해자 지키기</td><td>깃발 든 병사</td></tr>
+<tr><td><code>mini/waterwheel.png</code></td><td>110×110</td><td>해자 지키기</td><td>활 달린 물레방아</td></tr>
+<tr><td><code>mini/ore_vein.png</code></td><td>128×128</td><td>광석 캐기</td><td><b>흰색·밝은 회색</b>으로</td></tr>
+<tr><td><code>mini/ore_rock.png</code></td><td>128×128</td><td>광석 캐기</td><td>깨면 안 되는 돌</td></tr>
+<tr><td><code>ui/order_ticket.png</code></td><td>64×64</td><td>주문서 아이콘</td><td></td></tr>
+</tbody></table></div></main></div></body></html>
