@@ -82,3 +82,32 @@ func test_eater_comes_after_time_and_cannot_be_killed() -> void:
 	var run2 := HuntRun.new({}, cfg)
 	run2.d["level"] = int(cfg["max_level"])
 	assert_true(run2.tick(0.1), "최대 레벨이면 바로 나온다")
+
+
+func test_mobs_never_die_in_one_hit_and_grow_with_level() -> void:
+	var run := HuntRun.new({}, cfg)
+	assert_eq(run.mob_hp("flee"), 2, "도망 몹(기본 1)도 망치 한 방(1)에는 안 죽는다")
+	assert_eq(run.mob_count(18), 18)
+	run.d["level"] = 20
+	run.d["weapons"] = {"hammer": 4, "spin": 4, "shout": 4}
+	for kind in ["wander", "chase", "flee"]:
+		assert_gt(run.mob_hp(kind), run.best_dmg(), "레벨 20, 다 강화해도 한 방에 안 죽는다: " + kind)
+	assert_gt(run.mob_hp("wander"), int(cfg["mob_hp"]["wander"]), "레벨이 오르면 단단해진다")
+	assert_eq(run.mob_count(18), 38, "레벨이 오르면 몹이 많아진다")
+	run.d["level"] = 40
+	assert_eq(run.mob_count(18), int(cfg["spawn_max"]), "최대까지만")
+
+
+func test_level_and_coin_caps() -> void:
+	var run := HuntRun.new({}, cfg)
+	run.d["level"] = int(cfg["max_level"])
+	assert_true(run.max_level())
+	assert_false(run.pick_orbs(1000), "MAX에서는 더 오르지 않는다")
+	assert_eq(run.level(), int(cfg["max_level"]))
+	var cap := run.coin_cap()
+	assert_false(run.pick_coins(cap - 1))
+	assert_true(run.pick_coins(5), "이번에 가득 찼다")
+	assert_eq(int(run.bag()["coins"]), cap, "상한 넘게는 모이지 않는다")
+	assert_false(run.pick_coins(3), "이미 가득")
+	for k in 50:
+		assert_eq(int(run.drops("wander", [], rng)["coins"]), 0, "가득 차면 코인이 떨어지지 않는다")

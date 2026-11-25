@@ -296,8 +296,21 @@ func _after_encounter(word_ids: Array[String], right: Array[bool]) -> void:
 			GameData.hunt_run().pick_orbs(int(GameData.hunt_cfg["eater"]["bonus_orbs"]))
 		enc = {}
 		_give_words(word_ids, "ui.result.caught_all")
-	else:
-		go_battle_prep(word_ids, false)
+	else:  # 맞힌 단어는 싸우지 않고 잡는다. 틀린 단어만 전투로(사용자 의견: 맞힐 까닭이 있게)
+		var caught: Array[String] = []
+		var fight: Array[String] = []
+		for i in word_ids.size():
+			if i < right.size() and right[i]:
+				caught.append(word_ids[i])
+			else:
+				fight.append(word_ids[i])
+		for id in caught:
+			GameData.rules.gain_word(GameData.state, id)
+			EventBus.word_captured.emit(id)
+		GameData.save()
+		go_battle_prep(fight, false)
+		if not caught.is_empty():
+			main.notice(TranslationServer.translate("ui.quiz.caught_some").format({"words": ", ".join(caught), "n": fight.size()}))
 
 
 ## 마을 미니게임(스테이지 1: 주문 제작). 마을 단어는 이것으로만 얻는다(01-rpg-base '마을과 특수 행위').

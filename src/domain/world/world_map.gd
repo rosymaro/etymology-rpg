@@ -158,6 +158,15 @@ func move(p: Vector2, d: Vector2, r: float, open_gates: Dictionary = {}) -> Vect
 	return n
 
 
+## a에서 b까지 벽(지나갈 수 없는 칸) 없이 곧게 보이는가. 무기가 벽 너머를 맞히지 않게(07-fun 1절).
+func clear_line(a: Vector2, b: Vector2) -> bool:
+	var n := int(ceil(a.distance_to(b) / (tile * 0.4)))
+	for k in range(1, n):
+		if not walkable(cell(a.lerp(b, float(k) / n)), {}, true):
+			return false
+	return true
+
+
 ## 원이 닿는 닫힌 문의 스테이지(없으면 0). 막혔을 때 "아직 못 가는 길" 알림용.
 func touching_gate(p: Vector2, r: float, open_gates: Dictionary = {}) -> int:
 	for v in _probe(r + 6.0):

@@ -344,3 +344,26 @@ func test_push_rock_open_chest_and_piece_lock() -> void:
 	(btns[0] as Button).pressed.emit()  # forma
 	assert_true(GameData.state.flags.get("chest_" + lz.id, false), "in + form = inform 으로 열린다")
 	assert_true(GameData.state.has_word("inform"))
+
+
+func test_right_words_are_caught_and_only_wrong_ones_fight() -> void:
+	main.flow.new_game()
+	await wait_physics_frames(2)
+	await _finish_overlays()
+	var pool := GameData.repo.first_tier(1, "field")
+	var ids: Array[String] = [pool[2].id, pool[3].id]
+	main.flow.encounter(ids)
+	await wait_physics_frames(2)
+	for k in 2:  # 첫 단어는 맞히고 둘째는 틀린다
+		var q := main.current() as QuizScreen
+		var ans := q._qs[q._i].answer
+		q._pick(ans if k == 0 else (ans + 1) % q._qs[q._i].options.size())
+		await wait_seconds(float(GameData.learning["reveal_sec"]["right" if k == 0 else "wrong"]) + 0.3)
+	for f in 20:
+		if main.current() is BattlePrepScreen:
+			break
+		await wait_physics_frames(2)
+	assert_true(main.current() is BattlePrepScreen, "틀린 단어가 있으면 전투 준비")
+	assert_eq((main.current() as BattlePrepScreen)._words, [ids[1]] as Array[String], "틀린 단어만 싸운다")
+	assert_true(GameData.state.has_word(ids[0]), "맞힌 단어는 싸우지 않고 잡았다")
+	assert_false(GameData.state.has_word(ids[1]))

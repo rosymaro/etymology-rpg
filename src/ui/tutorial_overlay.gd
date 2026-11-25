@@ -2,7 +2,7 @@ class_name TutorialOverlay
 extends Control
 ## 튜토리얼 한 묶음(08-tutorial.md 1절): 가리킬 자리만 뚫고 바깥은 반투명한 밝은 회색으로 덮는다.
 ## 화살표가 그 자리를 가리키고, 말풍선(반투명 바탕 + 밝은 글씨)으로 설명한다.
-## 단계 = {target: Control 또는 Callable(-> Rect2 화면 좌표), text: 대사 키, speaker: 인물 id, mode: "tap"(그 자리를 눌러야) | "any"(아무 곳)}
+## 단계 = {target: Control 또는 Callable(-> Rect2 화면 좌표), text: 대사 키, args: 대사의 {자리}에 넣을 값, speaker: 인물 id, mode: "tap"(그 자리를 눌러야) | "any"(아무 곳)}
 ## 다 보거나 건너뛰면 done을 부르고 사라진다.
 
 signal finished
@@ -84,7 +84,7 @@ func _show() -> void:
 	_armed = 0.25
 	var sp := String(st.get("speaker", "ttukttak"))
 	_who.text = GameData.say("name.char." + sp) if sp != "" else ""
-	_text.text = tr(String(st["text"]))
+	_text.text = tr(String(st["text"])).format(st.get("args", {}))  # args: 지금 화면에 맞춘 낱말(예: 지금 단어의 조각)
 	(_bubble.find_child("Hint", true, false) as Label).text = tr("tut.tap_target") if st.get("mode", "any") == "tap" else tr("tut.tap_next")
 	_layout()
 	if st.get("mode", "any") == "tap":

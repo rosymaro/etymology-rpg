@@ -1,7 +1,7 @@
 class_name QuizScreen
 extends Screen
 ## 뜻 고르기 4지선다를 차례로 낸다. 조우·게시판·진화가 함께 쓴다. 다 풀면 done(맞음 목록)을 부른다.
-## 조우는 하나라도 틀리면 전투로 간다(01-rpg-base '조우'). 진화는 문제 전에 어원 풀이를 보여 준다(02-rpg-v2).
+## 조우는 맞힌 단어는 잡고, 틀린 단어만 전투로 간다(01-rpg-base '조우'). 진화는 문제 전에 어원 풀이를 보여 준다(02-rpg-v2).
 ## 조우는 유추 문제다(06-learning.md): 배운 조각이 든 단어면 스테이지 단계대로 조각을 나눠 보여 주거나 뜻을 숨기고,
 ## 고른 뒤에는 언제나 풀이(조각 뜻 → 단어 뜻)를 보여 준다. 조각마다 맞힌 수를 남긴다.
 
@@ -169,10 +169,22 @@ func _tutorial() -> void:
 	await get_tree().process_frame
 	var steps: Array[Dictionary] = []
 	if _parts_row.get_child_count() > 0:
-		steps.append({"target": _parts_row, "text": "tut.quiz.parts", "mode": "any"})
+		steps.append({"target": _parts_row, "text": "tut.quiz.parts", "mode": "any", "args": {"ex": _parts_example()}})
 	steps.append({"target": _word_lbl if _word_lbl.visible else _parts_row, "text": "tut.quiz.word", "mode": "any"})
 	steps.append({"target": _opts, "text": "tut.quiz.pick", "mode": "any"})
 	TutorialOverlay.run(self, "quiz", steps)
+
+
+## 튜토리얼 예: 지금 문제 단어의 조각과 뜻(예: "in(안에) + form(모양)"). 몹의 단어와 같은 단어로 설명한다.
+func _parts_example() -> String:
+	if _i >= _qs.size() or not _qs[_i] is InferenceQuestion:
+		return ""
+	var bits: Array[String] = []
+	for p in (_qs[_i] as InferenceQuestion).parts:
+		if String(p["piece"]) == "":
+			continue
+		bits.append("%s(%s)" % [p["text"], p["meaning"]] if p["shown"] else String(p["text"]))
+	return " + ".join(bits)
 
 
 func _skip_anim() -> bool:

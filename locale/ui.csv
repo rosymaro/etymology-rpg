@@ -277,8 +277,13 @@ ui.party.pick_deck,전투 마법 고르기(전투마다 덱 4개 중 3개가 나
 ui.party.pick_root,"{name}의 어근 고르기"
 ui.field.magic_used,{magic}!
 ui.field.magic_soon,이 마법의 필드 효과는 아직 준비 중이에요
-ui.hunt.hud,"사냥 Lv {lv}  ·  주머니: 구슬 {orbs} · 코인 {coins} · 단어 {words}"
-ui.hunt.banked,"마을에서 주머니를 풀었어요: 구슬 {orbs}(경험치), 코인 {coins}, 단어 {words}"
+ui.hunt.hud,"사냥 Lv {lv}  ·  내 코인 {wallet}\n주머니: 구슬 {orbs} · 코인 {coins}/{cap} · 단어 {words}"
+ui.quiz.caught_some,"맞힌 단어 {words}는 싸우지 않고 잡았어요! 틀린 단어 {n}개만 싸워요"
+ui.hunt.hud_town,내 코인 {wallet}
+ui.hunt.max,MAX
+ui.hunt.level_max,"사냥 레벨이 가장 높아요(MAX). 더는 오르지 않아요"
+ui.hunt.coins_full,"주머니에 코인이 가득 찼어요({cap}개)! 마을로 돌아가 내 것으로 만드세요"
+ui.hunt.banked,"마을에서 주머니를 풀었어요: 구슬 {orbs}(경험치), 코인 +{coins} → 내 코인 {wallet}, 단어 {words}"
 ui.hunt.word,"단어를 주웠어요: {word} (마을에 가면 내 것)"
 ui.hunt.eater,뿌리먹이가 나타났어요! 공격을 뚫고 다가와요
 ui.hunt.level_up,"사냥 레벨 {lv}! 하나를 고르세요"
@@ -346,7 +351,7 @@ tut.puzzle.push,"돌이야! 돌에 몸을 붙이고 잠깐 밀면 한 칸 밀려
 tut.puzzle.reset,"막혔으면 걱정 마. 이 울타리를 벗어났다 오면 돌이 제자리로 돌아와."
 tut.cave,"동굴 안은 흐려서 둘레만 잘 보여. pro-로 밝히고, ex-로 바로 나갈 수 있어."
 tut.lock,"조각 자물쇠야. 새겨진 뜻을 보고, 주운 쪽지 조각을 차례로 눌러 그 뜻의 단어를 만들어!"
-tut.quiz.parts,"단어를 조각으로 나눠 봤어. 아래가 조각의 뜻이야. in(안에) + form(모양)… 뜻이 보이지?"
+tut.quiz.parts,"단어를 조각으로 나눠 봤어. 아래가 조각의 뜻이야. {ex}… 뜻이 보이지?"
 tut.quiz.word,"모르는 단어도 아는 조각을 찾으면 뜻을 짐작할 수 있어. 이게 이 여행의 힘이야!"
 tut.quiz.pick,"짐작한 뜻을 골라. 다 맞히면 싸우지 않고 잡고, 틀리면 전투야. 고르면 풀이가 나와."
 tut.prep.enemy,"오른쪽 위가 적이야. 차례대로 한 명씩 나와."

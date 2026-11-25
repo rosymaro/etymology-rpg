@@ -223,3 +223,11 @@ func test_cave_is_saved() -> void:
 	var s := GameState.new()
 	s.cave = "s01_cave_pass"
 	assert_eq(GameState.from_dict(s.to_dict()).cave, "s01_cave_pass")
+
+
+func test_weapons_do_not_see_through_walls() -> void:
+	var m := WorldMap.from_dict({"w": 5, "h": 1, "tile": 64, "rows": [".^..."], "walk": "."})
+	var a := Vector2(32, 32)
+	assert_false(m.clear_line(a, Vector2(32 + 64 * 3, 32)), "벽 너머")
+	var m2 := WorldMap.from_dict({"w": 5, "h": 1, "tile": 64, "rows": ["....."], "walk": "."})
+	assert_true(m2.clear_line(a, Vector2(32 + 64 * 3, 32)))

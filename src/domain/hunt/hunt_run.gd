@@ -36,10 +36,41 @@ func bag() -> Dictionary:
 	return d["bag"]
 
 
+func max_level() -> bool:
+	return level() >= int(cfg["max_level"])
+
+
+func coin_cap() -> int:
+	return int(cfg["coin_cap"])
+
+
+func coins_full() -> bool:
+	return int(bag()["coins"]) >= coin_cap()
+
+
+## 지금 들고 있는 무기 가운데 한 방이 가장 센 값.
+func best_dmg() -> int:
+	var best := 0
+	for id in d["weapons"]:
+		best = maxi(best, int(weapon(String(id))["dmg"]))
+	return best
+
+
+## 몹 체력: 레벨이 오르면 조금씩 단단해지고, 언제나 가장 센 무기 한 방보다 1 많다(한 방에 죽지 않는다).
+func mob_hp(kind: String) -> int:
+	var base := int(cfg["mob_hp"].get(kind, 2)) + int(floor(level() * float(cfg["mob_hp_per_level"])))
+	return maxi(base, best_dmg() + 1)
+
+
+## 필드에 있을 몹 수: 레벨이 오를수록 많아진다.
+func mob_count(base: int) -> int:
+	return mini(base + level() * int(cfg["spawn_per_level"]), int(cfg["spawn_max"]))
+
+
 ## 몹을 쓰러뜨렸다: 떨어지는 것 {orbs, coins, word}. 주머니에 담는 것은 줍기(pick_*)에서.
 func drops(kind: String, words: Array, rng: RandomNumberGenerator) -> Dictionary:
 	var out := {"orbs": int(cfg["orb"].get(kind, 1)), "coins": 0, "word": ""}
-	if rng.randf() < float(cfg["coin"]["chance"]):
+	if rng.randf() < float(cfg["coin"]["chance"]) and not coins_full():
 		out["coins"] = rng.randi_range(int(cfg["coin"]["min"]), int(cfg["coin"]["max"]))
 	if not words.is_empty() and rng.randf() < float(cfg["word_chance"]):
 		out["word"] = String(words[rng.randi_range(0, words.size() - 1)])
@@ -59,8 +90,11 @@ func pick_orbs(n: int) -> bool:
 	return false
 
 
-func pick_coins(n: int) -> void:
-	bag()["coins"] = int(bag()["coins"]) + n
+## 코인을 주웠다(주머니 상한까지만). 이번에 가득 찼으면 true(화면이 마을로 가라고 알린다).
+func pick_coins(n: int) -> bool:
+	var was := coins_full()
+	bag()["coins"] = mini(int(bag()["coins"]) + n, coin_cap())
+	return not was and coins_full()
 
 
 func pick_word(id: String) -> void:
@@ -103,7 +137,7 @@ func weapon(id: String) -> Dictionary:
 	var w: Dictionary = cfg["weapons"][id]
 	var lv := mini(int(d["weapons"].get(id, 0)), (w["dmg"] as Array).size() - 1)
 	return {"type": w["type"], "cd": float(w["cd"][lv]), "dmg": int(w["dmg"][lv]), "count": int(w["count"][lv]),
-		"range": float(w["range"]), "speed": float(w["speed"]), "hit_gap": float(w.get("hit_gap", 0.5))}
+		"range": float(w["range"]), "speed": float(w.get("speed", 0.0)), "hit_gap": float(w.get("hit_gap", 0.5))}
 
 
 func magnet() -> float:
