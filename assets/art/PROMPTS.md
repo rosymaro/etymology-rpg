@@ -77,7 +77,8 @@ blood, wounds, scary, text, letters, watermark, logo, existing game characters
 
 | 파일 | 프롬프트 |
 |---|---|
-| `enemy/slot_<부위>.png` | a tiny word fairy shaped like a {star blade / round helmet / square armor / glove / droplet boot / speech bubble}, two big eyes, blush, drawn in white and light grey only (color is added in game) |
+| `enemy/aNN_<성격>.png` | a tiny faded-grey word fairy whose body is {속성 모티프(README 7절)}, small accents in {속성 색}, a blank light band across the belly for a word, {wander: sleepy half-closed eyes, floating calmly / chase: raised eyebrows, tiny fang, leaning forward with arms up / flee: wide scared eyes, one sweat drop, looking back while running away, tiny sparkles / rush: crouched low, puffing, frowning, head thrust forward ready to charge}, 3/4 top-down view, no symbols or text |
+| `enemy/card_aNN.png` | the same word fairy, front view, larger, battle-ready cute pose |
 | `enemy/eater.png` | a dark crimson blob with root-like tentacles and yellow eyes, creepy-cute |
 | `tile/<이름>.png` | seamless top-down tile of {grass / dirt town floor / stone road / sea / pond water / cliff / forest canopy / mountain / castle wall / ice / hole / cave floor …}, hand-painted, tileable, no characters |
 | `building/<id>.png` | a cute {forge with glowing furnace / workbench with order slips / white-roofed hospital with a big clock / big tree with word cards on roots / notice board with three blanks / gacha shop / small round house}, 3/4 top-down view |
