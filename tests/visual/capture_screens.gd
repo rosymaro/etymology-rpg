@@ -79,6 +79,13 @@ func _run() -> void:
 	await _shot("05_field_cliff")
 	s.flags.erase("s01_q_root")
 	var ids: Array[String] = [field[50].id, field[51].id]
+	main.flow.encounter(["information", "format"] as Array[String])
+	await _shot("06_quiz_infer")  # 단계 A: 조각을 나눠 뜻까지 보여 준다
+	var qz := main.current() as QuizScreen
+	qz._pick(qz._qs[0].answer)
+	await get_tree().create_timer(0.4).timeout
+	await _shot("06_quiz_reveal")  # 풀이
+	await get_tree().create_timer(1.6).timeout
 	main.flow.encounter(ids)
 	await _shot("06_quiz")
 	s.stage = 2  # 스테이지 2부터 전투 마법(종류마다 하나씩)이 생긴다

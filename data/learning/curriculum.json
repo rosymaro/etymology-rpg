@@ -1,0 +1,510 @@
+{
+ "_doc": "tools/data/build_curriculum.py가 만든다(06-learning.md 3절). 조각 id = 단어 etym의 root(in-이 \"아닌\"이면 in_neg-)",
+ "stages": [
+  {
+   "stage": 1,
+   "pieces": [
+    "facere",
+    "forma",
+    "de-",
+    "in-",
+    "com-"
+   ]
+  },
+  {
+   "stage": 2,
+   "pieces": [
+    "capere",
+    "quaerere",
+    "ex-",
+    "re-"
+   ]
+  },
+  {
+   "stage": 3,
+   "pieces": [
+    "videre",
+    "legere",
+    "prae-",
+    "pro-"
+   ]
+  },
+  {
+   "stage": 4,
+   "pieces": [
+    "ire (exire)",
+    "cedere",
+    "ad-",
+    "sub-"
+   ]
+  },
+  {
+   "stage": 5,
+   "pieces": [
+    "portare",
+    "ferre",
+    "dare (datum)",
+    "trans-"
+   ]
+  },
+  {
+   "stage": 6,
+   "pieces": [
+    "dicere",
+    "regere",
+    "ducere",
+    "dis-"
+   ]
+  },
+  {
+   "stage": 7,
+   "pieces": [
+    "vertere",
+    "tornare (tornus)",
+    "inter-",
+    "ob-"
+   ]
+  },
+  {
+   "stage": 8,
+   "pieces": [
+    "stare",
+    "ligare",
+    "trahere",
+    "un-"
+   ]
+  },
+  {
+   "stage": 9,
+   "pieces": [
+    "rumpere (rupta)",
+    "finis",
+    "pars",
+    "in_neg-"
+   ]
+  },
+  {
+   "stage": 10,
+   "pieces": [
+    "mittere",
+    "tenere",
+    "spectare"
+   ]
+  }
+ ],
+ "pieces": {
+  "facere": {
+   "stage": 1,
+   "kind": "root",
+   "meaning": "만들다",
+   "forms": [
+    "fac",
+    "fect"
+   ],
+   "name": "facere"
+  },
+  "forma": {
+   "stage": 1,
+   "kind": "root",
+   "meaning": "모양",
+   "forms": [
+    "form"
+   ],
+   "name": "forma"
+  },
+  "de-": {
+   "stage": 1,
+   "kind": "prefix",
+   "meaning": "떨어져",
+   "forms": [
+    "de"
+   ],
+   "name": "de-"
+  },
+  "in-": {
+   "stage": 1,
+   "kind": "prefix",
+   "meaning": "안에",
+   "forms": [
+    "in",
+    "en",
+    "im",
+    "em"
+   ],
+   "name": "in-"
+  },
+  "com-": {
+   "stage": 1,
+   "kind": "prefix",
+   "meaning": "함께",
+   "forms": [
+    "con",
+    "com",
+    "co"
+   ],
+   "name": "com-"
+  },
+  "capere": {
+   "stage": 2,
+   "kind": "root",
+   "meaning": "잡다",
+   "forms": [
+    "cap",
+    "cept",
+    "ceive"
+   ],
+   "name": "capere"
+  },
+  "quaerere": {
+   "stage": 2,
+   "kind": "root",
+   "meaning": "찾다",
+   "forms": [
+    "quest",
+    "quir",
+    "quis",
+    "quer"
+   ],
+   "name": "quaerere"
+  },
+  "ex-": {
+   "stage": 2,
+   "kind": "prefix",
+   "meaning": "밖으로",
+   "forms": [
+    "ex",
+    "e"
+   ],
+   "name": "ex-"
+  },
+  "re-": {
+   "stage": 2,
+   "kind": "prefix",
+   "meaning": "다시",
+   "forms": [
+    "re"
+   ],
+   "name": "re-"
+  },
+  "videre": {
+   "stage": 3,
+   "kind": "root",
+   "meaning": "보다",
+   "forms": [
+    "vis",
+    "vid"
+   ],
+   "name": "videre"
+  },
+  "legere": {
+   "stage": 3,
+   "kind": "root",
+   "meaning": "고르다",
+   "forms": [
+    "lect",
+    "leg"
+   ],
+   "name": "legere"
+  },
+  "prae-": {
+   "stage": 3,
+   "kind": "prefix",
+   "meaning": "미리",
+   "forms": [
+    "pre"
+   ],
+   "name": "prae-"
+  },
+  "pro-": {
+   "stage": 3,
+   "kind": "prefix",
+   "meaning": "앞으로",
+   "forms": [
+    "pro",
+    "pur"
+   ],
+   "name": "pro-"
+  },
+  "ire (exire)": {
+   "stage": 4,
+   "kind": "root",
+   "meaning": "가다",
+   "forms": [
+    "it",
+    "iss"
+   ],
+   "name": "ire"
+  },
+  "cedere": {
+   "stage": 4,
+   "kind": "root",
+   "meaning": "가다",
+   "forms": [
+    "cess",
+    "ced",
+    "ceed"
+   ],
+   "name": "cedere"
+  },
+  "ad-": {
+   "stage": 4,
+   "kind": "prefix",
+   "meaning": "~에",
+   "forms": [
+    "ad",
+    "ac",
+    "ap",
+    "as",
+    "at",
+    "al",
+    "af",
+    "ag"
+   ],
+   "name": "ad-"
+  },
+  "sub-": {
+   "stage": 4,
+   "kind": "prefix",
+   "meaning": "아래",
+   "forms": [
+    "sub",
+    "sup",
+    "sus",
+    "suc",
+    "suf",
+    "sug"
+   ],
+   "name": "sub-"
+  },
+  "portare": {
+   "stage": 5,
+   "kind": "root",
+   "meaning": "나르다",
+   "forms": [
+    "port"
+   ],
+   "name": "portare"
+  },
+  "ferre": {
+   "stage": 5,
+   "kind": "root",
+   "meaning": "나르다",
+   "forms": [
+    "fer"
+   ],
+   "name": "ferre"
+  },
+  "dare (datum)": {
+   "stage": 5,
+   "kind": "root",
+   "meaning": "주다",
+   "forms": [
+    "dat",
+    "dit",
+    "don"
+   ],
+   "name": "dare"
+  },
+  "trans-": {
+   "stage": 5,
+   "kind": "prefix",
+   "meaning": "건너",
+   "forms": [
+    "trans"
+   ],
+   "name": "trans-"
+  },
+  "dicere": {
+   "stage": 6,
+   "kind": "root",
+   "meaning": "말하다",
+   "forms": [
+    "dict",
+    "dic"
+   ],
+   "name": "dicere"
+  },
+  "regere": {
+   "stage": 6,
+   "kind": "root",
+   "meaning": "다스리다, 이끌다",
+   "forms": [
+    "rect",
+    "reg"
+   ],
+   "name": "regere"
+  },
+  "ducere": {
+   "stage": 6,
+   "kind": "root",
+   "meaning": "이끌다",
+   "forms": [
+    "duc"
+   ],
+   "name": "ducere"
+  },
+  "dis-": {
+   "stage": 6,
+   "kind": "prefix",
+   "meaning": "따로",
+   "forms": [
+    "dis",
+    "di",
+    "dif"
+   ],
+   "name": "dis-"
+  },
+  "vertere": {
+   "stage": 7,
+   "kind": "root",
+   "meaning": "돌리다",
+   "forms": [
+    "vers",
+    "vert"
+   ],
+   "name": "vertere"
+  },
+  "tornare (tornus)": {
+   "stage": 7,
+   "kind": "root",
+   "meaning": "돌리다",
+   "forms": [
+    "turn",
+    "torn"
+   ],
+   "name": "tornare"
+  },
+  "inter-": {
+   "stage": 7,
+   "kind": "prefix",
+   "meaning": "사이에",
+   "forms": [
+    "inter",
+    "enter"
+   ],
+   "name": "inter-"
+  },
+  "ob-": {
+   "stage": 7,
+   "kind": "prefix",
+   "meaning": "맞서",
+   "forms": [
+    "ob",
+    "oc",
+    "op",
+    "of"
+   ],
+   "name": "ob-"
+  },
+  "stare": {
+   "stage": 8,
+   "kind": "root",
+   "meaning": "서다",
+   "forms": [
+    "sta",
+    "stit"
+   ],
+   "name": "stare"
+  },
+  "ligare": {
+   "stage": 8,
+   "kind": "root",
+   "meaning": "묶다",
+   "forms": [
+    "lig",
+    "ly",
+    "leag"
+   ],
+   "name": "ligare"
+  },
+  "trahere": {
+   "stage": 8,
+   "kind": "root",
+   "meaning": "끌다",
+   "forms": [
+    "tract",
+    "trac"
+   ],
+   "name": "trahere"
+  },
+  "un-": {
+   "stage": 8,
+   "kind": "prefix",
+   "meaning": "아닌",
+   "forms": [
+    "un"
+   ],
+   "name": "un-"
+  },
+  "rumpere (rupta)": {
+   "stage": 9,
+   "kind": "root",
+   "meaning": "깨다",
+   "forms": [
+    "rupt",
+    "rout"
+   ],
+   "name": "rumpere"
+  },
+  "finis": {
+   "stage": 9,
+   "kind": "root",
+   "meaning": "끝",
+   "forms": [
+    "fin"
+   ],
+   "name": "finis"
+  },
+  "pars": {
+   "stage": 9,
+   "kind": "root",
+   "meaning": "부분",
+   "forms": [
+    "part",
+    "port"
+   ],
+   "name": "pars"
+  },
+  "in_neg-": {
+   "stage": 9,
+   "kind": "prefix",
+   "meaning": "아닌",
+   "forms": [
+    "in",
+    "im",
+    "ir",
+    "il"
+   ],
+   "name": "in-"
+  },
+  "mittere": {
+   "stage": 10,
+   "kind": "root",
+   "meaning": "보내다, 놓아주다",
+   "forms": [
+    "mit",
+    "miss"
+   ],
+   "name": "mittere"
+  },
+  "tenere": {
+   "stage": 10,
+   "kind": "root",
+   "meaning": "붙들다",
+   "forms": [
+    "tain",
+    "ten"
+   ],
+   "name": "tenere"
+  },
+  "spectare": {
+   "stage": 10,
+   "kind": "root",
+   "meaning": "보다",
+   "forms": [
+    "spect"
+   ],
+   "name": "spectare"
+  }
+ }
+}

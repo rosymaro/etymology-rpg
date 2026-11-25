@@ -11,6 +11,8 @@ var evolution: EvolutionRule
 var coin_source: CoinSource
 var setup: BattleSetup
 var quests: QuestBook
+var curriculum: Curriculum
+var learning: Dictionary = {}  ## data/balance/learning.json
 var field: Dictionary = {}  ## data/balance/field.json
 var state: GameState
 var save_prefix := "user://"  ## 테스트는 다른 앞머리를 써서 진짜 저장을 건드리지 않는다
@@ -34,6 +36,8 @@ func _ready() -> void:
 	coin_source = CoinSource.new(rng)
 	setup = BattleSetup.new(repo, bal, rules, coin_source)
 	quests = QuestBook.load_default()
+	curriculum = Curriculum.load_default()
+	learning = JsonFile.read("res://data/balance/learning.json")
 	field = JsonFile.read("res://data/balance/field.json")
 	TranslationServer.set_locale("ko")
 

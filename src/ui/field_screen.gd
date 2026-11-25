@@ -184,6 +184,10 @@ func _new_enemy() -> FieldMob:
 ## rare(도망가는 몹)면 거꾸로 드문 단어일수록 자주.
 func _pick_words(rare := false) -> Array[String]:
 	var pool := GameData.repo.first_tier(GameFlow.STAGE, "field")
+	if _rng.randf() < float(GameData.learning["learned_mix"]):  # 유추 연습: 배운 조각이 든 단어를 절반쯤(06-learning.md 5절)
+		var lp := pool.filter(func(w: WordData) -> bool: return GameData.curriculum.has_learned(w, GameFlow.STAGE))
+		if lp.size() >= GameData.rules.team_size(GameData.state):
+			pool.assign(lp)
 	var n := GameData.rules.team_size(GameData.state)
 	var out: Array[String] = []
 	var targets: Array = GameData.state.recapture.values()
