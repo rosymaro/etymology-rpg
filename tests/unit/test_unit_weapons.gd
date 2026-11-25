@@ -72,3 +72,18 @@ func test_grab_holds_and_bash_pushes_hard() -> void:
 	assert_lt(float(g[0]["push"]), 0.0, "붙잡힌 몹은 밀리지 않는다")
 	var b := _run_weapon("u11", map, [_mob(o + Vector2(115, 0))], o)
 	assert_gt(float(b[0]["push"]), float(cfg["knockback"]), "꿈쩍: 세게 밀친다")
+
+
+func test_companions_up_to_three_and_at_least_one() -> void:
+	var s := GameState.new()
+	s.joined = [1, 2, 3, 4, 5] as Array[int]
+	assert_eq(Loadout.max_companions(), 3, "동행은 3명까지(field_hunt.json field_party)")
+	assert_eq(Loadout.companions(s), [1, 2, 3] as Array[int], "처음엔 합류한 순서로")
+	assert_false(Loadout.toggle_companion(s, 4), "가득 차면 더 못 넣는다")
+	assert_true(Loadout.toggle_companion(s, 2))
+	assert_true(Loadout.toggle_companion(s, 4))
+	assert_eq(Loadout.companions(s), [1, 3, 4] as Array[int])
+	Loadout.toggle_companion(s, 1)
+	Loadout.toggle_companion(s, 3)
+	assert_false(Loadout.toggle_companion(s, 4), "한 명은 남는다")
+	assert_eq(Loadout.companions(GameState.from_dict(s.to_dict())), [4] as Array[int], "저장된다")

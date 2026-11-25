@@ -124,9 +124,11 @@ ui.dex.group.field,필드
 ui.dex.group.town,마을
 ui.dex.group.evolved,진화
 ui.dex.group.boss,보스
-ui.party.companions,"필드에 데리고 다닐 유닛(최대 {n}명): 주인공을 따라다니며 저마다 다른 무기로 싸워요"
-ui.party.with,"[동행] "
-ui.party.companions_full,"데리고 다닐 수 있는 유닛이 가득 찼어요. 다른 유닛을 먼저 빼 주세요"
+ui.party.companions,"동행 {have}/{n}: {names}  (유닛 이름 왼쪽의 '동행' 버튼으로 골라요. 필드에서 주인공을 따라다니며 싸워요)"
+ui.party.with_on,동행 중
+ui.party.with_off,동행
+ui.party.field_attack,필드 공격: {w}
+ui.party.companions_full,"동행은 {n}명까지예요. 다른 유닛을 먼저 빼 주세요"
 ui.party.companions_one,"한 명은 꼭 데리고 다녀야 해요"
 ui.party.title,파티
 ui.party.unit,{name}  Lv {level} (경험치 {exp})  공격 {atk} 방어 {def} 체력 {hp} · 코인 {coins}개 · {attr}

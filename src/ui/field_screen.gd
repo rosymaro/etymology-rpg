@@ -1209,8 +1209,10 @@ func _draw() -> void:
 		_draw_mob(e, o + e.pos)
 	if not map.is_town(_hero):
 		_draw_weapons(o)
-	for pal in _pals:
-		PalArt.draw(self, int(pal["unit"]), o + pal["pos"], _facing)
+	for pal in _pals:  # 동행 유닛과 이름
+		var pp: Vector2 = o + pal["pos"]
+		PalArt.draw(self, int(pal["unit"]), pp, _facing)
+		draw_string(ThemeDB.fallback_font, pp + Vector2(-40, 38), t("name.char." + GameData.UNIT_CHARS[int(pal["unit"]) - 1]), HORIZONTAL_ALIGNMENT_CENTER, 80, 14, UiKit.INK)
 	for e in _enemies:  # 화면 밖 뿌리먹이: 가장자리 빨간 화살표
 		if e.kind == "eater":
 			var sp := o + e.pos

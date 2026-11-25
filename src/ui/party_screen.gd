@@ -28,6 +28,7 @@ func open(_args: Dictionary) -> void:
 
 
 var _first_root_btn: Button
+var _comp_lbl: Label
 var _loadout_card: Control
 
 
@@ -62,9 +63,24 @@ func _refresh() -> void:
 		var attr := AttributeResolver.new().resolve(s.eq(u), GameData.repo)
 		var attr_text := t("ui.party.attr_off") if attr["tier"] == 0 else t("ui.party.attr").format(
 			{"attr": t("name.attr.%02d" % attr["attr"]), "count": attr["count"]})
-		col.add_child(UiKit.wrap(UiKit.label(t("ui.party.unit").format({"name": UiKit.unit_name(u), "level": lv,
+		var head := UiKit.hbox(10)  # 이름 왼쪽에 동행 버튼
+		var on := unit in Loadout.companions(s)
+		var cb := UiKit.button(t("ui.party.with_on" if on else "ui.party.with_off"), func() -> void:
+			if Loadout.toggle_companion(s, unit):
+				GameData.save()
+				_refresh()
+			else:
+				main.notice(t("ui.party.companions_one" if unit in Loadout.companions(s) else "ui.party.companions_full").format({"n": Loadout.max_companions()})),
+			UiKit.ACCENT.lightened(0.3) if on else UiKit.PAPER, 18)
+		cb.custom_minimum_size = Vector2(110, 52)
+		cb.disabled = not _in_town()
+		head.add_child(cb)
+		head.add_child(UiKit.wrap(UiKit.label(t("ui.party.unit").format({"name": UiKit.unit_name(u), "level": lv,
 			"exp": s.unit_exp[u - 1], "atk": a.base.atk, "def": a.base.def, "hp": a.base.hp,
 			"coins": a.coins, "attr": attr_text}), 22)))
+		col.add_child(head)
+		var wid := GameData.hunt_run().weapon_of(unit)  # 필드에서 무엇으로 공격하는지
+		col.add_child(UiKit.wrap(UiKit.label(t("ui.party.field_attack").format({"w": t("ui.hunt.weapon." + wid)}), 18, PalArt.color(unit).darkened(0.45))))
 		var slots := HFlowContainer.new()  # 세로 화면: 넘치면 다음 줄
 		slots.add_theme_constant_override("h_separation", 8)
 		slots.add_theme_constant_override("v_separation", 8)
@@ -112,27 +128,12 @@ func _build_loadout() -> void:
 			b.disabled = not _in_town()
 			row.add_child(b)
 		col.add_child(row)
-	# 필드에 데리고 다니는 유닛(07-fun 1절): 따라다니며 저마다 다른 무기로 싸운다
-	col.add_child(UiKit.wrap(UiKit.label(t("ui.party.companions").format({"n": Loadout.COMPANIONS}), 20)))
-	var urow := HFlowContainer.new()
-	urow.add_theme_constant_override("h_separation", 8)
-	urow.add_theme_constant_override("v_separation", 8)
-	var comp := Loadout.companions(s)
-	var run := GameData.hunt_run()
-	for u in s.joined:
-		var unit: int = u
-		var on := unit in comp
-		var txt := "%s%s\n%s" % [t("ui.party.with") if on else "", t("name.char." + GameData.UNIT_CHARS[unit - 1]), t("ui.hunt.weapon." + run.weapon_of(unit))]
-		var b := UiKit.button(txt, func() -> void:
-			if Loadout.toggle_companion(s, unit):
-				GameData.save()
-				_refresh()
-			else:
-				main.notice(t("ui.party.companions_full" if not unit in Loadout.companions(s) else "ui.party.companions_one")), PalArt.color(unit).lightened(0.35 if on else 0.75), 16)
-		b.custom_minimum_size = Vector2(196, 64)
-		b.disabled = not _in_town()
-		urow.add_child(b)
-	col.add_child(urow)
+	# 동행(07-fun 1절): 유닛 카드의 '동행' 버튼으로 고르고, 여기(주인공 쪽)에는 이름만 보인다
+	var names: Array[String] = []
+	for u in Loadout.companions(s):
+		names.append(t("name.char." + GameData.UNIT_CHARS[u - 1]))
+	_comp_lbl = UiKit.wrap(UiKit.label(t("ui.party.companions").format({"names": ", ".join(names), "have": names.size(), "n": Loadout.max_companions()}), 20))
+	col.add_child(_comp_lbl)
 	_detail.add_child(card)
 
 

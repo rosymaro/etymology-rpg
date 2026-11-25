@@ -225,11 +225,31 @@ func test_losing_wakes_up_in_hospital_and_rests_in_town() -> void:
 	GameData.state.rest_until = 0
 
 
+## 벽 없이 탁 트인 들판 자리(오른쪽으로 500px, 둘레 120px가 다 지나갈 수 있다). 무작위 자리가 벽 옆이면 시험이 흔들린다.
+func _open_field_spot(m: WorldMap) -> Vector2:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	for k in 400:
+		var p := m.random_field_spot(1, rng, m.start(1), 900, 2200, 30)
+		if p == Vector2.INF:
+			continue
+		var ok := true
+		for x in range(-2, 9):
+			for y in range(-2, 3):
+				var c := m.cell(p + Vector2(x * 60, y * 60))
+				if not m.walkable(c) or m.is_town(p + Vector2(x * 60, y * 60)) or m.ch(c) == "c":
+					ok = false
+		if ok:
+			return p
+	return Vector2.INF
+
+
 func test_field_hunt_hammer_kills_mob_and_bag_is_banked_in_town() -> void:
 	GameData.new_game("테스트")
 	GameData.state.flags["s01_tut_battle"] = true
 	var m := WorldMap.load_default()
-	GameData.state.pos = m.random_field_spot(1, RandomNumberGenerator.new(), m.start(1), 900, 1400, 30)
+	GameData.state.pos = _open_field_spot(m)
+	assert_ne(GameData.state.pos, Vector2.INF, "탁 트인 들판 자리")
 	main.flow.go_field()
 	await wait_physics_frames(2)
 	var f := main.current() as FieldScreen
