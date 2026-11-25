@@ -255,3 +255,38 @@ func test_field_hunt_hammer_kills_mob_and_bag_is_banked_in_town() -> void:
 	await wait_physics_frames(3)
 	assert_eq(int(f._run.bag()["orbs"]), 0, "마을에 들어가면 주머니를 푼다")
 	assert_gt(GameData.state.unit_exp[0], exp0, "구슬이 경험치가 된다")
+
+
+func test_mobs_never_enter_town_and_look_by_attribute() -> void:
+	GameData.new_game("테스트")
+	GameData.state.flags["s01_tut_battle"] = true
+	GameData.state.pos = WorldMap.load_default().start(1)
+	main.flow.go_field()
+	await wait_physics_frames(2)
+	var f := main.current() as FieldScreen
+	for e in f._enemies:
+		assert_false(f.map.is_town(e.pos), "몹은 마을에 생기지 않는다")
+		assert_gt(e.attr, 0, "몹 색은 단어 속성으로")
+		assert_ne(e.slot, "", "몹 모양은 단어 착용 부위로")
+	# 마을 문 바로 밖의 쫓는 몹과 뿌리먹이: 마을 안 주인공을 쫓아도 들어오지 못한다
+	var t: Array = f.map.region(1)["town"]
+	var gate := Vector2i(-1, -1)
+	for x in range(int(t[0]), int(t[0]) + int(t[2])):
+		var c := Vector2i(x, int(t[1]) + int(t[3]) - 1)
+		if f.map.ch(c) == "s" and f.map.walkable(c + Vector2i(0, 1)):
+			gate = c
+			break
+	f._enemies.clear()
+	for kind in ["chase", "eater"]:
+		var m := FieldMob.new()
+		m.kind = kind
+		m.hp = 3
+		m.max_hp = 3
+		m.pos = (Vector2(gate + Vector2i(0, 2)) + Vector2(0.5, 0.5)) * f.map.tile
+		f._enemies.append(m)
+	f._hero = (Vector2(gate - Vector2i(0, 2)) + Vector2(0.5, 0.5)) * f.map.tile
+	for k in 90:
+		await wait_physics_frames(1)
+	assert_true(main.current() is FieldScreen, "마을 안에서는 몹과 마주치지 않는다")
+	for e in f._enemies:
+		assert_false(f.map.is_town(e.pos), "%s 몹이 마을에 들어오지 못한다" % e.kind)

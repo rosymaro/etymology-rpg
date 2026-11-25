@@ -289,3 +289,12 @@ ui.hunt.pick_magnet,구슬 끌어당기기 넓게
 ui.hunt.weapon.hammer,망치 던지기(fac)
 ui.hunt.weapon.spin,도는 팽이(vertere)
 ui.hunt.weapon.shout,외침(dicere)
+ui.field.gacha,말 뽑기
+ui.gacha.title,말 뽑기
+ui.gacha.how,"코인을 넣고 손잡이를 돌리면 단어가 하나 나와요. 빈도가 낮은 단어일수록 드물어요(★). 10번 뽑기는 ★ 하나 이상!"
+ui.gacha.coins,"코인 {n}"
+ui.gacha.pull,"{n}번 ({price})"
+ui.gacha.no_coins,코인이 모자라요. 들판에서 사냥하거나 보물을 찾아 보세요.
+ui.gacha.new,새 단어!
+ui.gacha.new_word,새 단어!
+ui.gacha.news,"새 단어 {n}개를 얻었어요."
