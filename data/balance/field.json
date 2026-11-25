@@ -2,6 +2,7 @@
   "_doc": "필드(월드맵) 수치(04-meta.md 7절). 주인공 속도보다 쫓는 몹이 느려야 피할 수 있다",
   "hero_speed": 380,
   "enemy_count": 18,
+  "cave_enemies": 5,
   "spawn_near": [
     450,
     1500

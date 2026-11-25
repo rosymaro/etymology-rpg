@@ -17,18 +17,34 @@ var zones: PackedStringArray = []  ## 칸마다 지역(스테이지 % 10, 바다
 var _gate := {}  ## Vector2i -> 스테이지(int, 그 보스를 이겨야 열리는 문) 또는 퀘스트 id(String)
 var quest_gates: Array = []  ## {id, kind(bridge|cliff), tiles, spot}
 var puzzles: Array = []  ## 돌 밀기 퍼즐(07-fun 3절) 원본 목록
-var caves: Array = []  ## 동굴(07-fun 5절) {id, kind, mouths}
-var items: Array = []  ## 동굴의 퀘스트 물건 {id, cell}
+var caves: Array = []  ## 동굴(07-fun 5절) {id, kind, mouths[[x,y]], outs[[x,y]]}: 큰 지도의 입구(c)와 그 바깥 칸
+var cave_maps: Dictionary = {}  ## 동굴 id -> 따로 된 동굴 지도 원본
+var items: Array = []  ## (동굴 지도) 퀘스트 물건 {id, cell}
+var exits: Array = []  ## (동굴 지도) 나가는 곳(x) [[x,y]]: 순서가 큰 지도 입구 순서
+var is_cave := false
 var extra_block := {}  ## 지금 막힌 칸(퍼즐의 돌·상자): 화면이 채운다
 var extra_walk := {}  ## 지금 지나갈 수 있게 된 칸(돌로 메운 물·구멍)
 
 static var _cache: WorldMap
+static var _caves := {}
 
 
 static func load_default() -> WorldMap:
 	if _cache == null:
 		_cache = from_dict(JsonFile.read(PATH))
 	return _cache
+
+
+## 동굴 지도(큰 지도의 cave_maps[id]). 돌·상자 상태가 남게 한 번만 만든다.
+static func load_cave(id: String) -> WorldMap:
+	if not _caves.has(id):
+		var d: Dictionary = load_default().cave_maps.get(id, {})
+		if d.is_empty():
+			return null
+		var m := from_dict(d)
+		m.is_cave = true
+		_caves[id] = m
+	return _caves[id]
 
 
 static func from_dict(d: Dictionary) -> WorldMap:
@@ -48,6 +64,8 @@ static func from_dict(d: Dictionary) -> WorldMap:
 	m.puzzles = d.get("puzzles", [])
 	m.caves = d.get("caves", [])
 	m.items = d.get("items", [])
+	m.cave_maps = d.get("cave_maps", {})
+	m.exits = d.get("exits", [])
 	m.quest_gates = d.get("quest_gates", [])
 	for qg in m.quest_gates:
 		for t in qg["tiles"]:
@@ -172,21 +190,61 @@ func stage_of(c: Vector2i) -> int:
 
 
 ## 마을 바닥(,)과 마을 돌길(s). 몹은 마을에 생기지 않고, 병원에서 쉬는 동안은 마을 밖으로 못 나간다.
-## 어두운 동굴 안(동굴 바닥 k).
-func in_cave(p: Vector2) -> bool:
-	return ch(cell(p)) == "k"
+## 어두운 동굴 안(동굴 지도 전체).
+func in_cave(_p: Vector2 = Vector2.ZERO) -> bool:
+	return is_cave
 
 
-## 가장 가까운 동굴 입구(c) 칸의 가운데. 없으면 p.
-func nearest_mouth(p: Vector2) -> Vector2:
-	var best := p
-	var bd := INF
+## 큰 지도: 그 칸이 동굴 입구면 [동굴 id, 입구 번호], 아니면 [].
+func mouth_at(c: Vector2i) -> Array:
+	if ch(c) != "c":
+		return []
 	for cv in caves:
-		for mo in cv["mouths"]:
-			var q := (Vector2(float(mo[0]), float(mo[1])) + Vector2(0.5, 0.5)) * tile
-			if q.distance_to(p) < bd:
-				bd = q.distance_to(p)
-				best = q
+		for i in (cv["mouths"] as Array).size():
+			var mo: Array = cv["mouths"][i]
+			if Vector2i(int(mo[0]), int(mo[1])) == c:
+				return [String(cv["id"]), i]
+	return []
+
+
+func cave_info(id: String) -> Dictionary:
+	for cv in caves:
+		if cv["id"] == id:
+			return cv
+	return {}
+
+
+## 큰 지도: 동굴 id의 i번째 입구 바깥 풀칸 가운데(동굴에서 나오는 자리).
+func cave_out(id: String, i: int) -> Vector2:
+	var o: Array = cave_info(id)["outs"][i]
+	return (Vector2(float(o[0]), float(o[1])) + Vector2(0.5, 0.5)) * tile
+
+
+## 동굴 지도: i번째 나가는 곳 바로 안쪽 칸 가운데(들어온 자리).
+func exit_inside(i: int) -> Vector2:
+	var e: Array = exits[i]
+	var c := Vector2i(int(e[0]), int(e[1]))
+	c.x += 1 if c.x == 0 else -1
+	return (Vector2(c) + Vector2(0.5, 0.5)) * tile
+
+
+## 동굴 지도: 그 칸이 나가는 곳이면 번호, 아니면 -1.
+func exit_at(c: Vector2i) -> int:
+	for i in exits.size():
+		if Vector2i(int(exits[i][0]), int(exits[i][1])) == c:
+			return i
+	return -1
+
+
+## 동굴 지도: 가장 가까운 나가는 곳 번호(ex-).
+func nearest_exit(p: Vector2) -> int:
+	var best := 0
+	var bd := INF
+	for i in exits.size():
+		var q := (Vector2(float(exits[i][0]), float(exits[i][1])) + Vector2(0.5, 0.5)) * tile
+		if q.distance_to(p) < bd:
+			bd = q.distance_to(p)
+			best = i
 	return best
 
 

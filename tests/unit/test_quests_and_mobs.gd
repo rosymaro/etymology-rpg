@@ -189,18 +189,37 @@ func test_item_quest_needs_the_cave_item() -> void:
 	assert_eq(book.boss_blockers(s, 1).filter(func(q: Dictionary) -> bool: return q["id"] == "s01_q_hammer").size(), 0, "보스와는 상관없다")
 
 
-func test_caves_on_the_map() -> void:
+func test_caves_are_separate_maps() -> void:
 	var m := WorldMap.load_default()
 	var kinds := m.caves.map(func(c: Dictionary) -> String: return c["kind"])
 	kinds.sort()
 	assert_eq(kinds, ["pass", "quest", "treasure"], "넘어가는·보물·퀘스트 동굴")
 	var open := {"s01_q_root": true, "s01_q_magic": true}
-	for it in m.items:
-		var p := (Vector2(float(it["cell"][0]), float(it["cell"][1])) + Vector2(0.5, 0.5)) * m.tile
-		assert_true(m.in_cave(p), "퀘스트 물건은 어두운 동굴 안")
-		assert_gt(m.path_len(m.start(1), p, open), -1, "걸어갈 수 있다")
-	var pc: Dictionary = m.caves.filter(func(c: Dictionary) -> bool: return c["kind"] == "pass")[0]
-	var a := (Vector2(float(pc["mouths"][0][0]), float(pc["mouths"][0][1])) + Vector2(0.5, 0.5)) * m.tile
-	var b := (Vector2(float(pc["mouths"][1][0]), float(pc["mouths"][1][1])) + Vector2(0.5, 0.5)) * m.tile
-	assert_gt(m.path_len(a, b, open), -1, "넘어가는 동굴은 두 입구가 이어진다")
-	assert_eq(m.nearest_mouth(a + Vector2(10, 10)), a, "ex-: 가장 가까운 입구로")
+	for cv in m.caves:
+		var id := String(cv["id"])
+		var cm := WorldMap.load_cave(id)
+		assert_not_null(cm, "동굴 지도 " + id)
+		assert_true(cm.in_cave(), "동굴 지도는 어둡다")
+		assert_false(m.in_cave(), "큰 지도는 밝다")
+		assert_eq(cm.exits.size(), (cv["mouths"] as Array).size(), "입구마다 나가는 곳")
+		for i in cm.exits.size():
+			var mo: Array = cv["mouths"][i]
+			assert_eq(m.mouth_at(Vector2i(int(mo[0]), int(mo[1]))), [id, i], "큰 지도 입구 칸")
+			assert_gt(m.path_len(m.start(1), m.cave_out(id, i), open), -1, "입구 밖까지 걸어간다")
+			assert_eq(cm.exit_at(cm.cell(cm.exit_inside(i)) + (Vector2i(-1, 0) if i == 0 else Vector2i(1, 0))), i, "들어온 자리 옆이 나가는 곳")
+		for it in cm.items:
+			var p := (Vector2(float(it["cell"][0]), float(it["cell"][1])) + Vector2(0.5, 0.5)) * cm.tile
+			assert_gt(cm.path_len(cm.exit_inside(0), p), -1, "퀘스트 물건까지 걸어간다")
+		if cv["kind"] == "pass":
+			assert_gt(cm.path_len(cm.exit_inside(0), cm.exit_inside(1)), -1, "넘어가는 동굴은 두 나가는 곳이 이어진다")
+			assert_eq(cm.nearest_exit(cm.exit_inside(1)), 1, "ex-: 가장 가까운 나가는 곳으로")
+		if cv["kind"] == "treasure":
+			assert_eq(cm.puzzles.size(), 1, "끝에 상자")
+		if cv["kind"] == "quest":
+			assert_eq(cm.items.map(func(x: Dictionary) -> String: return x["id"]), ["toy_hammer"])
+
+
+func test_cave_is_saved() -> void:
+	var s := GameState.new()
+	s.cave = "s01_cave_pass"
+	assert_eq(GameState.from_dict(s.to_dict()).cave, "s01_cave_pass")

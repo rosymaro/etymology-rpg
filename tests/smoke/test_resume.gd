@@ -126,10 +126,10 @@ func test_battle_resumes_at_the_same_step_with_same_result() -> void:
 	var bs := m.current() as BattleScreen
 	var first_flips: Array = bs._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "enter")[0]["flips"]
 	for k in 2:  # '다음'을 두 번 누른다
-		for f in 600:
-			await get_tree().process_frame
+		for f in 200:  # 연출은 진짜 시간으로 흐른다: 프레임 수가 아니라 시간(최대 10초)으로 기다린다
 			if bs._next_btn.visible:
 				break
+			await get_tree().create_timer(0.05).timeout
 		bs._tapped = true
 		await wait_physics_frames(2)
 	assert_eq(bs.steps_done, 2)
@@ -141,10 +141,10 @@ func test_battle_resumes_at_the_same_step_with_same_result() -> void:
 	assert_not_null(bs2, "전투 화면으로 이어 한다")
 	var flips2: Array = bs2._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "enter")[0]["flips"]
 	assert_eq(flips2, first_flips, "코인도 같다")
-	for f in 600:
-		await get_tree().process_frame
+	for f in 200:
 		if bs2._next_btn.visible:
 			break
+		await get_tree().create_timer(0.05).timeout
 	assert_eq(bs2.steps_done, 2, "본 단계까지는 건너뛰고 그다음 단계에서 기다린다")
 	assert_eq(bs2._ctx.log.size(), log_size, "같은 씨앗·같은 선택이라 같은 전투")
 	assert_eq(bs2._picks, picks, "고른 마법도 그대로")
