@@ -65,6 +65,9 @@ func progress(state: GameState, q: Dictionary, roots: Array) -> Dictionary:
 		"magic":
 			var ok: bool = String(q["magic"]) in state.magics
 			return {"have": int(ok), "need": 1, "ready": ok}
+		"item":
+			var ok: bool = String(q["item"]) in state.items
+			return {"have": int(ok), "need": 1, "ready": ok}
 	return {"have": 0, "need": 1, "ready": false}
 
 

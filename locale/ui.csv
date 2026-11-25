@@ -316,3 +316,14 @@ ui.puz.lock_hint,"뚝딱: 첫 조각은 ""{piece}""일 것 같아!"
 ui.puz.lock_reset,다시
 ui.puz.lock_close,닫기
 ui.quest.notes,"가방(쪽지): {list}"
+ui.field.kid,마을 아이
+ui.cave.item,"장난감 망치를 주웠어요! 마을 아이에게 가져다주세요."
+ui.cave.dark,어두워요… 필드 마법 pro-(앞길 비추기)가 있으면 밝힐 수 있어요
+ui.quest.s01_q_hammer.title,잃어버린 장난감 망치
+ui.quest.s01_q_hammer.desc,"마을 아이가 산속 동굴에서 장난감 망치를 잃어버렸대요. 어두운 동굴 끝을 찾아보세요."
+ui.quest.s01_q_hammer.hint,동굴은 산에 난 검은 구멍이에요. 동쪽 산을 찾아보세요.
+ui.quest.s01_q_hammer.locked,…
+ui.kid.ask,"마을 아이: 동굴에서 놀다가 장난감 망치를 잃어버렸어요… 찾아 주실 수 있어요?"
+ui.kid.wait,"마을 아이: 망치는 아직이에요? 어두운 동굴 맨 끝일 거예요."
+ui.kid.thanks,"마을 아이: 와, 내 망치! 고마워요! (코인 150)"
+ui.kid.done,"마을 아이: 뚝딱뚝딱! 나도 커서 대장장이가 될 거예요."

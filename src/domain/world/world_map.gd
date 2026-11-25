@@ -17,6 +17,8 @@ var zones: PackedStringArray = []  ## 칸마다 지역(스테이지 % 10, 바다
 var _gate := {}  ## Vector2i -> 스테이지(int, 그 보스를 이겨야 열리는 문) 또는 퀘스트 id(String)
 var quest_gates: Array = []  ## {id, kind(bridge|cliff), tiles, spot}
 var puzzles: Array = []  ## 돌 밀기 퍼즐(07-fun 3절) 원본 목록
+var caves: Array = []  ## 동굴(07-fun 5절) {id, kind, mouths}
+var items: Array = []  ## 동굴의 퀘스트 물건 {id, cell}
 var extra_block := {}  ## 지금 막힌 칸(퍼즐의 돌·상자): 화면이 채운다
 var extra_walk := {}  ## 지금 지나갈 수 있게 된 칸(돌로 메운 물·구멍)
 
@@ -39,11 +41,13 @@ static func from_dict(d: Dictionary) -> WorldMap:
 	m.regions = d.get("regions", [])
 	for z in d.get("zones", []):
 		m.zones.append(String(z))
-	m.walk = String(d.get("walk", ".,pbsi"))
+	m.walk = String(d.get("walk", ".,pbsikc"))
 	for gt in d.get("gates", []):
 		for t in gt["tiles"]:
 			m._gate[Vector2i(int(t[0]), int(t[1]))] = int(gt["stage"])
 	m.puzzles = d.get("puzzles", [])
+	m.caves = d.get("caves", [])
+	m.items = d.get("items", [])
 	m.quest_gates = d.get("quest_gates", [])
 	for qg in m.quest_gates:
 		for t in qg["tiles"]:
@@ -66,10 +70,11 @@ func ch(c: Vector2i) -> String:
 
 
 ## 그 칸을 지나갈 수 있는가. open_gates: 스테이지 -> true(그 스테이지에서 다음으로 가는 문이 열림)
-func walkable(c: Vector2i, open_gates: Dictionary = {}) -> bool:
-	if extra_block.has(c):
+## dynamic = false면 퍼즐 돌·상자·메운 칸(지금 상태)을 보지 않고 땅만 본다(path_len).
+func walkable(c: Vector2i, open_gates: Dictionary = {}, dynamic := true) -> bool:
+	if dynamic and extra_block.has(c):
 		return false
-	if extra_walk.has(c):
+	if dynamic and extra_walk.has(c):
 		return true
 	var k := ch(c)
 	if k == "=" or k == "q":
@@ -167,6 +172,24 @@ func stage_of(c: Vector2i) -> int:
 
 
 ## 마을 바닥(,)과 마을 돌길(s). 몹은 마을에 생기지 않고, 병원에서 쉬는 동안은 마을 밖으로 못 나간다.
+## 어두운 동굴 안(동굴 바닥 k).
+func in_cave(p: Vector2) -> bool:
+	return ch(cell(p)) == "k"
+
+
+## 가장 가까운 동굴 입구(c) 칸의 가운데. 없으면 p.
+func nearest_mouth(p: Vector2) -> Vector2:
+	var best := p
+	var bd := INF
+	for cv in caves:
+		for mo in cv["mouths"]:
+			var q := (Vector2(float(mo[0]), float(mo[1])) + Vector2(0.5, 0.5)) * tile
+			if q.distance_to(p) < bd:
+				bd = q.distance_to(p)
+				best = q
+	return best
+
+
 func is_town(p: Vector2) -> bool:
 	var k := ch(cell(p))
 	return k == "," or k == "s"
@@ -211,7 +234,7 @@ func path_len(a: Vector2, b: Vector2, open_gates: Dictionary = {}) -> int:
 			return int(dist[c])
 		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 			var n: Vector2i = c + d
-			if not dist.has(n) and walkable(n, open_gates):
+			if not dist.has(n) and walkable(n, open_gates, false):
 				dist[n] = int(dist[c]) + 1
 				q.append(n)
 	return -1

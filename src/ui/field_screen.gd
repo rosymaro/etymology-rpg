@@ -11,7 +11,7 @@ const ENEMY_R := 30.0
 const TOUCH_R := 110.0
 const MINI_SCALE := 0.9  ## 미니맵: 타일 하나당 픽셀
 const TILE_COL := {".": Color("d8eec9"), ",": Color("f3ead8"), "p": Color("d9c59a"), "b": Color("b98c5a"), "=": Color("e9876a"), "q": Color("8c6a4a"),
-	"s": Color("d9d2c3"), "O": Color("3d3530"), "i": Color("cfe9f5"), "F": Color("c9a874"), "h": Color("b7a48c"), "o": Color("8cc6e8"), "f": Color("b9d77e"),
+	"s": Color("d9d2c3"), "O": Color("3d3530"), "i": Color("cfe9f5"), "k": Color("5a5048"), "c": Color("9a8f86"), "F": Color("c9a874"), "h": Color("b7a48c"), "o": Color("8cc6e8"), "f": Color("b9d77e"),
 	"^": Color("9a8f86"), "~": Color("6fa8dc"), "w": Color("8cc6e8"), "#": Color("6f6257"), "T": Color("6fae74"), "H": Color("a7a7b4")}
 
 var map: WorldMap
@@ -84,6 +84,7 @@ func open(args: Dictionary) -> void:
 		{"id": "hospital", "pos": map.spot(1, "hospital"), "key": "ui.field.hospital", "color": UiKit.BAD},
 		{"id": "notice", "pos": map.spot(1, "notice"), "key": "ui.field.notice", "color": UiKit.SKY},
 		{"id": "gacha", "pos": map.spot(1, "gacha"), "key": "ui.field.gacha", "color": Color("f6a5c0")},
+		{"id": "kid", "pos": map.spot(1, "kid"), "key": "ui.field.kid", "color": Color("ffe3c4")},
 		{"id": "boss", "pos": map.spot(1, "boss"), "key": "ui.field.boss", "color": UiKit.GRAY},
 	]
 	for i in int(_f["enemy_count"]):
@@ -184,6 +185,14 @@ func _build_hud() -> void:
 	_toast.custom_minimum_size = Vector2(640, 0)
 	_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var tb := UiKit.box(Color(0.25, 0.25, 0.3, 0.72), 16, 0)  # 반투명 회색 바탕 + 밝은 글씨(사용자 의견): 어디서나 보이게
+	_toast.add_theme_color_override("font_color", Color.WHITE)
+	tb.content_margin_left = 14
+	tb.content_margin_right = 14
+	tb.content_margin_top = 8
+	tb.content_margin_bottom = 8
+	_toast.add_theme_stylebox_override("normal", tb)
+	_toast.visible = false
 	add_child(_toast)
 	UiKit.pin(_toast, 0.5, 0, 0, 150 + map.h * MINI_SCALE + 70)  # 미니맵·할 일 아래(가리지 않게)
 	_update_top()
@@ -202,8 +211,10 @@ func _goal_text() -> String:
 	var s := GameData.state
 	var book := GameData.quests
 	var q := book.next_quest(s, GameFlow.STAGE)
+	if book.boss_blockers(s, GameFlow.STAGE).is_empty():
+		return t("ui.quest.all_done")  # 보스 앞 퀘스트를 다 마쳤다(마을 아이 같은 곁 퀘스트는 목록에 남는다)
 	if q.is_empty():
-		return t("ui.quest.goal_none") if book.boss_blockers(s, GameFlow.STAGE).size() > 0 else t("ui.quest.all_done")
+		return t("ui.quest.goal_none")
 	if q["kind"] == "words" and not main.flow.seen(String(q["id"]) + "_got"):
 		return t("ui.quest.goal_board")
 	return t("ui.quest.%s.title" % q["id"])
@@ -221,6 +232,7 @@ func _remember() -> void:
 
 func _show_toast(text: String) -> void:
 	_toast.text = text
+	_toast.visible = text != ""
 	_toast_t = 2.5
 
 
@@ -388,6 +400,7 @@ func _process(delta: float) -> void:
 		_toast_t -= delta
 		if _toast_t <= 0.0:
 			_toast.text = ""
+			_toast.visible = false
 	var view := size
 	_cam = (_hero - view / 2).clamp(Vector2.ZERO, (map.size_px() - view).max(Vector2.ZERO))
 	_mini.queue_redraw()
@@ -420,6 +433,12 @@ func _act() -> void:
 			main.flow.town_minigame()
 		"gacha":
 			main.flow.go_gacha()
+		"kid":
+			_busy = true
+			_stick_on = false
+			main.flow.kid_talk(func() -> void:
+				_busy = false
+				_update_top())
 		"chest":
 			_open_chest(_near["puz"])
 		"hospital":
@@ -476,6 +495,11 @@ func _cast(id: String) -> void:
 	if id == "re":
 		_fmagic.use(id, _hero, [])
 		_go_home()
+		return
+	if id == "ex":  # 동굴에서 바로 밖으로
+		if map.in_cave(_hero):
+			_fmagic.use(id, _hero, [])
+			_hero = map.nearest_mouth(_hero)
 		return
 	if id == "com":  # 떨어진 것을 모두 끌어온다
 		for dr in _drops:
@@ -704,6 +728,11 @@ func _puzzle_step(dir: Vector2, before: Vector2, delta: float) -> void:
 						_show_toast(t("ui.puz.heavy"))
 	if not pushed:
 		_push_t = 0.0
+	for it in map.items:  # 동굴의 퀘스트 물건
+		if Vector2i(int(it["cell"][0]), int(it["cell"][1])) == hc and not it["id"] in GameData.state.items:
+			GameData.state.items.append(it["id"])
+			GameData.save()
+			_show_toast(t("ui.cave.item"))
 	for pz in _puz:
 		for sc in pz.secrets:  # 숨은 쪽지: 돌이 비킨 자리를 밟으면 줍는다
 			if sc == hc and not pz.rocks.has(sc) and pz.note != "" and not pz.note in GameData.state.notes:
@@ -947,11 +976,25 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	_draw_buildings(o)
 	_draw_puzzles(o)
+	for it in map.items:
+		if not it["id"] in GameData.state.items:
+			var ip := o + (Vector2(float(it["cell"][0]), float(it["cell"][1])) + Vector2(0.5, 0.5)) * map.tile
+			draw_rect(Rect2(ip + Vector2(-4, -2), Vector2(8, 22)), Color("8b6640"))
+			draw_rect(Rect2(ip + Vector2(-14, -12), Vector2(28, 12)), Color("e9876a"))
+			draw_circle(ip + Vector2(16, -16), 4 + 2 * sin(Time.get_ticks_msec() / 150.0), Color("f5c542"))
 	for v in _villagers:
 		_draw_villager(o + v.pos)
 	for sp in _spots:
 		var p: Vector2 = o + sp["pos"]
 		var col: Color = sp["color"]
+		if sp["id"] == "kid":  # 마을 아이(작은 마을 사람)
+			draw_circle(p + Vector2(0, 10), 13, Color("9fd8c8"))
+			draw_circle(p - Vector2(0, 8), 12, Color("ffe3c4"))
+			draw_arc(p - Vector2(0, 8), 12, 0, TAU, 20, UiKit.INK, 2)
+			var qk := GameData.quests.get_quest("s01_q_hammer")
+			if not qk.is_empty() and GameData.quests.visible(GameData.state, qk) and not GameData.quests.done(GameData.state, qk["id"]):
+				draw_string(font, p + Vector2(-10, -30), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 30, UiKit.BAD)
+			continue
 		if sp["id"] in BUILDING_ROOF:  # 건물이 있는 시설: 문 앞에 이름만
 			if sp["id"] == "hospital" or sp["id"] == "forge" or sp["id"] == "board" or sp["id"] == "tree":
 				continue
@@ -1029,6 +1072,14 @@ func _draw() -> void:
 	var tag := t("name.title.none")
 	draw_rect(Rect2(h + Vector2(-60, -64), Vector2(120, 26)), UiKit.PINK)
 	draw_string(font, h + Vector2(-60, -45), tag, HORIZONTAL_ALIGNMENT_CENTER, 120, 18, UiKit.INK)
+	if map.in_cave(_hero):  # 어두운 동굴: 둘레만 보인다(pro-로 밝힌다)
+		var lr: Array = _f["cave_light"]
+		var rad := float(lr[1]) if _fmagic.light > 0.0 else float(lr[0])
+		var big := 2600.0
+		draw_arc(h, rad + big / 2.0, 0, TAU, 96, Color(0.35, 0.35, 0.38, 0.55), big)  # 반투명한 밝은 회색(글씨가 보이게)
+		draw_arc(h, rad, 0, TAU, 64, Color(0.35, 0.35, 0.38, 0.25), 30)
+		if _fmagic.light <= 0.0 and _toast_t <= 0.0 and not "pro" in GameData.state.magics:
+			_show_toast(t("ui.cave.dark"))
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))
@@ -1225,6 +1276,10 @@ func _draw_tiles(o: Vector2) -> void:
 						else:  # 내려가는 계단
 							for k2 in 4:
 								draw_line(r.position + Vector2(6, 10 + k2 * 14), r.position + Vector2(ts - 6, 10 + k2 * 14), Color("b8a27a"), 3)
+				"c":  # 동굴 입구: 검은 굴
+					draw_rect(r, TILE_COL["^"])
+					draw_circle(c + Vector2(0, 8), ts * 0.42, Color("1e1a22"))
+					draw_rect(Rect2(c + Vector2(-ts * 0.42, 8), Vector2(ts * 0.84, ts * 0.42)), Color("1e1a22"))
 				"s":
 					if hsh % 3 == 0:
 						draw_rect(Rect2(r.position + Vector2(6 + hsh % 20, 8 + (hsh / 3) % 30), Vector2(18, 12)), Color("c8c0b0"))

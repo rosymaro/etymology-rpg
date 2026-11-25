@@ -6,6 +6,7 @@ extends RefCounted
 var cfg: Dictionary
 var cool := {}  ## 마법 id -> 남은 쉬는 시간
 var sneak := 0.0  ## sub-: 남은 몰래 걷기 시간
+var light := 0.0  ## pro-: 남은 앞길 비추기 시간(어두운 동굴)
 
 
 func _init(field_magic_cfg: Dictionary) -> void:
@@ -24,6 +25,7 @@ func tick(delta: float) -> void:
 	for k in cool:
 		cool[k] = maxf(0.0, float(cool[k]) - delta)
 	sneak = maxf(0.0, sneak - delta)
+	light = maxf(0.0, light - delta)
 
 
 ## 마법을 쓴다. 몹에게 미치는 효과를 주고 쉬는 시간을 건다. 못 쓰면 false.
@@ -44,5 +46,7 @@ func use(id: String, hero: Vector2, mobs: Array) -> bool:
 					fm.set_meta("push", (d.normalized() if d.length() > 1.0 else Vector2.RIGHT) * float(c["push"]))
 		"sub":
 			sneak = float(c["sec"])
+		"pro":
+			light = float(c["sec"])
 	cool[id] = float(c["cd"])
 	return true

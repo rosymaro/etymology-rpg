@@ -14,7 +14,7 @@ func before_each() -> void:
 
 func test_stage1_has_word_root_and_magic_quests() -> void:
 	var ids := book.of_stage(1).map(func(q: Dictionary) -> String: return q["id"])
-	assert_eq(ids, ["s01_q_word", "s01_q_root", "s01_q_magic"])
+	assert_eq(ids, ["s01_q_word", "s01_q_root", "s01_q_magic", "s01_q_hammer"])
 
 
 func test_quest_gates_match_the_map() -> void:
@@ -29,12 +29,12 @@ func test_quests_open_one_by_one_with_the_story() -> void:
 	assert_eq(book.shown(s, 1).size(), 0, "이야기 전에는 퀘스트가 없다")
 	assert_true(book.next_quest(s, 1).is_empty())
 	s.flags["s01_skit_cheok"] = true
-	assert_eq(book.shown(s, 1).map(func(q: Dictionary) -> String: return q["id"]), ["s01_q_word"])
+	assert_eq(book.shown(s, 1).map(func(q: Dictionary) -> String: return q["id"]), ["s01_q_word", "s01_q_hammer"], "알림판과 마을 아이(동굴)")
 	assert_false(book.finish(s, "s01_q_root", ["fac"]), "보이지 않는 퀘스트는 못 마친다")
 	s.flags["s01_q_word"] = true
-	assert_eq(book.shown(s, 1).size(), 2, "알림판을 마치면 다리 퀘스트가 열린다")
+	assert_eq(book.shown(s, 1).size(), 3, "알림판을 마치면 다리 퀘스트가 열린다")
 	assert_true(book.finish(s, "s01_q_root", ["fac"]))
-	assert_eq(book.shown(s, 1).size(), 3, "다리를 고치면 절벽 퀘스트가 열린다")
+	assert_eq(book.shown(s, 1).size(), 4, "다리를 고치면 절벽 퀘스트가 열린다")
 
 
 func test_word_quest_needs_all_three_words() -> void:
@@ -71,7 +71,7 @@ func test_boss_waits_for_all_stage_quests() -> void:
 	for id in ["s01_q_word", "s01_q_root", "s01_q_magic"]:
 		s.flags[id] = true
 	assert_eq(book.boss_blockers(s, 1).size(), 0)
-	assert_true(book.next_quest(s, 1).is_empty())
+	assert_eq(book.next_quest(s, 1)["id"], "s01_q_hammer", "보스와 상관없는 마을 아이 퀘스트는 남는다")
 
 
 func test_chaser_follows_and_gives_up() -> void:
@@ -178,3 +178,29 @@ func test_loadout_slots() -> void:
 			assert_true(id in Loadout.deck(s, GameData.rules), "덱에 있는 것만 나온다")
 	var back := GameState.from_dict(s.to_dict())
 	assert_eq(Loadout.field(back), ["sub", "re"] as Array[String], "저장된다")
+
+
+func test_item_quest_needs_the_cave_item() -> void:
+	var s := GameState.new()
+	s.flags["s01_skit_cheok"] = true
+	assert_false(book.finish(s, "s01_q_hammer", []), "망치가 없으면 못 마친다")
+	s.items.append("toy_hammer")
+	assert_true(book.finish(s, "s01_q_hammer", []))
+	assert_eq(book.boss_blockers(s, 1).filter(func(q: Dictionary) -> bool: return q["id"] == "s01_q_hammer").size(), 0, "보스와는 상관없다")
+
+
+func test_caves_on_the_map() -> void:
+	var m := WorldMap.load_default()
+	var kinds := m.caves.map(func(c: Dictionary) -> String: return c["kind"])
+	kinds.sort()
+	assert_eq(kinds, ["pass", "quest", "treasure"], "넘어가는·보물·퀘스트 동굴")
+	var open := {"s01_q_root": true, "s01_q_magic": true}
+	for it in m.items:
+		var p := (Vector2(float(it["cell"][0]), float(it["cell"][1])) + Vector2(0.5, 0.5)) * m.tile
+		assert_true(m.in_cave(p), "퀘스트 물건은 어두운 동굴 안")
+		assert_gt(m.path_len(m.start(1), p, open), -1, "걸어갈 수 있다")
+	var pc: Dictionary = m.caves.filter(func(c: Dictionary) -> bool: return c["kind"] == "pass")[0]
+	var a := (Vector2(float(pc["mouths"][0][0]), float(pc["mouths"][0][1])) + Vector2(0.5, 0.5)) * m.tile
+	var b := (Vector2(float(pc["mouths"][1][0]), float(pc["mouths"][1][1])) + Vector2(0.5, 0.5)) * m.tile
+	assert_gt(m.path_len(a, b, open), -1, "넘어가는 동굴은 두 입구가 이어진다")
+	assert_eq(m.nearest_mouth(a + Vector2(10, 10)), a, "ex-: 가장 가까운 입구로")

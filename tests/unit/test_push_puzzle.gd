@@ -50,9 +50,10 @@ func _solvable(q: Dictionary, heavy_ok: bool) -> bool:
 
 
 func test_stage1_has_eight_varied_puzzles() -> void:
-	assert_eq(m.puzzles.size(), 8)
+	var push := m.puzzles.filter(func(q: Dictionary) -> bool: return q["kind"] != "cave")
+	assert_eq(push.size(), 8)
 	var kinds := {}
-	for q in m.puzzles:
+	for q in push:
 		kinds[q["kind"]] = true
 	assert_gte(kinds.size(), 7, "여러 가지 경우")
 
