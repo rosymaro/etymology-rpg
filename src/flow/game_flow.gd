@@ -50,6 +50,8 @@ func _restore(r: Dictionary) -> void:
 			go_party()
 		"forge":
 			go_forge()
+		"gacha":
+			go_gacha()
 		"evolve_quiz":
 			evolve_quiz(String(r.get("id", "")), int(r.get("i", 0)), r.get("right", []))
 		"quiz":
@@ -462,6 +464,12 @@ func _maybe_cheok() -> void:
 
 
 # ----- 마을 -----
+
+## 말 뽑기(07-fun 7절, 마을 광장).
+func go_gacha() -> void:
+	GameData.set_route({"s": "gacha"})
+	main.show_screen(GachaScreen.new())
+
 
 func go_forge() -> void:
 	GameData.set_route({"s": "forge"})

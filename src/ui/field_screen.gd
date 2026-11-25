@@ -8,7 +8,6 @@ extends Screen
 
 const HERO_R := 26.0
 const ENEMY_R := 30.0
-const MOB_COL := {"wander": Color("c7b8e0"), "chase": Color("f0a08c"), "flee": Color("9fd8c8")}
 const TOUCH_R := 110.0
 const MINI_SCALE := 0.9  ## 미니맵: 타일 하나당 픽셀
 const TILE_COL := {".": Color("d8eec9"), ",": Color("f3ead8"), "p": Color("d9c59a"), "b": Color("b98c5a"), "=": Color("e9876a"), "q": Color("8c6a4a"),
@@ -78,6 +77,7 @@ func open(args: Dictionary) -> void:
 		{"id": "board", "pos": map.spot(1, "board"), "key": "ui.field.order", "color": UiKit.PINK},
 		{"id": "hospital", "pos": map.spot(1, "hospital"), "key": "ui.field.hospital", "color": UiKit.BAD},
 		{"id": "notice", "pos": map.spot(1, "notice"), "key": "ui.field.notice", "color": UiKit.SKY},
+		{"id": "gacha", "pos": map.spot(1, "gacha"), "key": "ui.field.gacha", "color": Color("f6a5c0")},
 		{"id": "boss", "pos": map.spot(1, "boss"), "key": "ui.field.boss", "color": UiKit.GRAY},
 	]
 	for i in int(_f["enemy_count"]):
@@ -224,6 +224,9 @@ func _new_enemy() -> FieldMob:
 	m.pos = p
 	m.kind = FieldMob.pick_kind(_f["kinds"], _rng)
 	m.words = _pick_words(bool(_f["kinds"][m.kind].get("rare", false)))
+	var w0 := GameData.repo.get_word(m.words[0]) if not m.words.is_empty() else null
+	m.attr = int(w0.attrs[0]) if w0 and not w0.attrs.is_empty() else 0
+	m.slot = w0.slot if w0 else ""
 	m.max_hp = int(_hc["mob_hp"].get(m.kind, 2))
 	m.hp = m.max_hp
 	return m
@@ -339,11 +342,13 @@ func _process(delta: float) -> void:
 				e.remove_meta("push")
 				e.remove_meta("push_t")
 		var np: Vector2 = map.move(e.pos, v * delta, ENEMY_R)
-		if e.kind == "eater":  # 뿌리먹이는 벽에 걸려도 미끄러지며 계속 온다(벽을 넘지는 않는다)
-			e.pos = np if np != e.pos else map.move(e.pos, v.rotated(0.8) * delta, ENEMY_R)
+		if e.kind == "eater":  # 뿌리먹이는 벽에 걸려도 미끄러지며 계속 온다(벽을 넘지 않고, 마을에는 못 들어온다)
+			var ep := np if np != e.pos else map.move(e.pos, v.rotated(0.8) * delta, ENEMY_R)
+			if not map.is_town(ep):
+				e.pos = ep
 		elif not map.is_town(np) and map.stage_at(np) == GameFlow.STAGE:
 			e.pos = np
-		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0:
+		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0 and not map.is_town(_hero):
 			_busy = true
 			_remember()
 			main.flow.encounter(e.words, 0, [], {"hurt": snappedf(e.hurt_ratio(), 0.01), "hard": e.kind == "eater"})
@@ -395,6 +400,8 @@ func _act() -> void:
 			main.notice(t("ui.field.tree_msg"))
 		"board":
 			main.flow.town_minigame()
+		"gacha":
+			main.flow.go_gacha()
 		"hospital":
 			var left: int = main.flow.rest_left()
 			main.notice(t("ui.field.nurse_rest").format({"left": _mmss(left)}) if left > 0 else t("ui.field.nurse"))
@@ -594,7 +601,10 @@ func _spawn_eater() -> void:
 	m.max_hp = int(_hc["mob_hp"]["eater"])
 	m.hp = m.max_hp
 	var p := map.random_field_spot(GameFlow.STAGE, _rng, _hero, 800, 1100, ENEMY_R)
-	m.pos = p if p != Vector2.INF else _hero + Vector2(900, 0)
+	if p == Vector2.INF:
+		_run.d["eaters"] = maxi(0, int(_run.d["eaters"]) - 1)  # 설 자리가 없으면 다음에 다시
+		return
+	m.pos = p
 	var pool := GameData.repo.first_tier(GameFlow.STAGE, "field").filter(func(w: WordData) -> bool: return GameData.curriculum.has_learned(w, GameFlow.STAGE))
 	for k in int(_hc["eater"]["words"]):
 		if not pool.is_empty():
@@ -878,6 +888,48 @@ func _draw_villager(p: Vector2) -> void:
 
 
 ## 몹 모양: 배회(보라, 동그란 눈), 쫓기(주황, 뿔과 성난 눈썹, 쫓을 때 !), 도망(민트, 긴 귀와 땀방울, 도망칠 때 땀).
+## 몹 모습은 단어의 성질로 나눈다(사용자 의견): 몸 색 = 주속성(스테이지 1은 모두 파동이라 같은 색),
+## 몸 모양 = 착용 부위(무기 별, 머리 동글, 가슴 네모, 장갑 물방울, 신발 세모) + 부위 첫 글자.
+## 움직임(배회·쫓기·도망)은 머리 위 표시(! / 땀방울)로만 알린다.
+func _draw_attr_body(e: FieldMob, p: Vector2) -> void:
+	var col := MinigameScreen.attr_color(e.attr)
+	var r := ENEMY_R
+	match e.slot:
+		"head":  # 동글
+			draw_circle(p, r, col)
+			draw_arc(p, r, 0, TAU, 32, UiKit.INK, 3)
+		"chest":  # 네모
+			var rc := Rect2(p - Vector2(r, r * 0.9), Vector2(r * 2, r * 1.8))
+			draw_rect(rc, col)
+			draw_rect(rc, UiKit.INK, false, 3)
+		"hands":  # 물방울(위가 뾰족)
+			var pts := PackedVector2Array([p + Vector2(0, -r * 1.4)])
+			for k in 13:
+				var a := PI * k / 12.0
+				pts.append(p + Vector2(cos(a) * r, sin(a) * r))  # 아래 반원
+			draw_colored_polygon(pts, col)
+			pts.append(pts[0])
+			draw_polyline(pts, UiKit.INK, 3)
+		"feet":  # 세모
+			var tri := PackedVector2Array([p + Vector2(0, -r * 1.2), p + Vector2(r * 1.1, r * 0.9), p + Vector2(-r * 1.1, r * 0.9)])
+			draw_colored_polygon(tri, col)
+			tri.append(tri[0])
+			draw_polyline(tri, UiKit.INK, 3)
+		_:  # 무기: 별(뾰족뾰족)
+			var st := PackedVector2Array()
+			for k in 12:
+				var a := k * TAU / 12.0 - PI / 2.0
+				st.append(p + Vector2(cos(a), sin(a)) * (r * 1.15 if k % 2 == 0 else r * 0.8))
+			draw_colored_polygon(st, col)
+			st.append(st[0])
+			draw_polyline(st, UiKit.INK, 3)
+	draw_circle(p + Vector2(-9, -4), 3.5, UiKit.INK)
+	draw_circle(p + Vector2(9, -4), 3.5, UiKit.INK)
+	if e.slot != "":  # 부위 첫 글자
+		var nm := t("name.slot." + e.slot)
+		draw_string(ThemeDB.fallback_font, p + Vector2(-12, 16), nm.substr(0, 1), HORIZONTAL_ALIGNMENT_CENTER, 24, 16, UiKit.INK)
+
+
 func _draw_mob(e: FieldMob, p: Vector2) -> void:
 	var font := ThemeDB.fallback_font
 	if e.kind == "eater":  # 뿌리먹이: 크고 검붉은, 뿌리 같은 촉수
@@ -889,28 +941,12 @@ func _draw_mob(e: FieldMob, p: Vector2) -> void:
 		draw_circle(p + Vector2(-12, -6), 6, Color("f5c542"))
 		draw_circle(p + Vector2(12, -6), 6, Color("f5c542"))
 		return
-	if e.flash > 0.0:
-		draw_circle(p, ENEMY_R + 6, Color(1, 1, 1, 0.8))
 	var bob := sin(Time.get_ticks_msec() / 160.0 + p.x * 0.01) * 3.0
 	p += Vector2(0, bob)
-	if not Art.draw(self, "enemy", "field_" + e.kind, p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
-		var col: Color = MOB_COL.get(e.kind, MOB_COL["wander"])
-		match e.kind:
-			"chase":
-				for sg in [-1.0, 1.0]:
-					draw_colored_polygon(PackedVector2Array([p + Vector2(sg * 10, -24), p + Vector2(sg * 24, -42), p + Vector2(sg * 24, -18)]), col.darkened(0.25))
-			"flee":
-				for sg in [-1.0, 1.0]:
-					draw_set_transform(p + Vector2(sg * 13, -30), sg * 0.25, Vector2(0.45, 1.0))
-					draw_circle(Vector2.ZERO, 14, col.darkened(0.15))
-					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		draw_circle(p, ENEMY_R, col)
-		draw_arc(p, ENEMY_R, 0, TAU, 32, UiKit.INK, 3)
-		draw_circle(p + Vector2(-9, -4), 3, UiKit.INK)
-		draw_circle(p + Vector2(9, -4), 3, UiKit.INK)
-		if e.kind == "chase":
-			draw_line(p + Vector2(-15, -14), p + Vector2(-4, -9), UiKit.INK, 3)
-			draw_line(p + Vector2(15, -14), p + Vector2(4, -9), UiKit.INK, 3)
+	if not Art.draw(self, "enemy", "attr_%02d" % e.attr, p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
+		_draw_attr_body(e, p)
+	if e.flash > 0.0:
+		draw_circle(p, ENEMY_R + 4, Color(1, 1, 1, 0.55))
 	if e.hp < e.max_hp:  # 깎인 체력
 		draw_rect(Rect2(p + Vector2(-24, ENEMY_R + 6), Vector2(48, 6)), Color(0, 0, 0, 0.3))
 		draw_rect(Rect2(p + Vector2(-24, ENEMY_R + 6), Vector2(48.0 * e.hp / maxi(1, e.max_hp), 6)), UiKit.BAD)

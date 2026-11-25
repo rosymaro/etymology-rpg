@@ -99,6 +99,7 @@ def build_town(g, tx, ty, tw, th, spots):
     out.append({'id': 'tree', 'rect': [tx + 16, ty + 2, 2, 2], 'door': px(tx + 16, ty + 4)})
     spots['tree'] = px(tx + 17, ty + 5)
     spots['notice'] = px(mx + 3, my - 3)
+    spots['gacha'] = px(mx - 4, my + 3)  # 말 뽑기 기계(07-fun 7절)
     return out
 
 def main(river_seed=1000):

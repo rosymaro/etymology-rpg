@@ -194,6 +194,12 @@ func _run() -> void:
 	await _shot("13_dex_detail")
 	main.flow.go_party()
 	await _shot("14_party")
+	s.wallet = 1200
+	main.flow.go_gacha()
+	await _shot("17_gacha")
+	(main.current() as GachaScreen).pull(10)
+	await get_tree().create_timer(2.4).timeout
+	await _shot("17_gacha_10")
 	main.flow.go_options(main.flow.go_field)
 	await _shot("15_options")
 	main.notice(TranslationServer.translate("ui.boss.gate").format({"need": 77, "have": 40}))
