@@ -1,0 +1,8 @@
+{
+  "_doc": "학습 수치(06-learning.md). 단계 A~E를 스테이지로 정하고, 익숙한 조각(familiar_right번 맞힘)은 한 단계 앞당겨 숨긴다",
+  "steps": { "A": [1, 1], "B": [2, 3], "C": [4, 6], "D": [7, 9], "E": [10, 10] },
+  "familiar_right": 3,
+  "learned_mix": 0.5,
+  "_learned_mix_doc": "필드 몹 단어 중 배운 조각이 든 단어를 이 비율쯤 섞어 낸다(유추 연습)",
+  "reveal_sec": { "right": 1.8, "wrong": 2.8 }
+}

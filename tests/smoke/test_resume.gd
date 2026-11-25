@@ -101,7 +101,7 @@ func test_quiz_resumes_at_the_same_question() -> void:
 	await wait_physics_frames(2)
 	var q := m.current() as QuizScreen
 	q._pick(q._qs[0].answer)
-	await wait_seconds(1.5)
+	await wait_seconds(float(GameData.learning["reveal_sec"]["right"]) + 0.5)  # 풀이를 본 뒤 다음 문제
 	assert_eq(q._i, 1)
 	await _kill(m)
 	var m2 := await _boot()

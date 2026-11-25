@@ -56,7 +56,7 @@ func _answer_all(right: bool) -> void:
 			continue
 		var ans := q._qs[q._i].answer
 		q._pick(ans if right else (ans + 1) % q._qs[q._i].options.size())
-		await wait_seconds(2.0)
+		await wait_seconds(float(GameData.learning["reveal_sec"]["right" if right else "wrong"]) + 0.3)
 
 
 func test_stage1_loop() -> void:
@@ -210,6 +210,7 @@ func test_losing_wakes_up_in_hospital_and_rests_in_town() -> void:
 			break
 	assert_ne(gate, Vector2i(-1, -1))
 	f._hero = (Vector2(gate - Vector2i(0, 1)) + Vector2(0.5, 0.5)) * f.map.tile
+	f._enemies.clear()  # 문 밖 몹과 부딪혀 퀴즈로 넘어가지 않게
 	for k in 60:
 		f._stick_on = true
 		f._stick_vec = Vector2(0, 1)
