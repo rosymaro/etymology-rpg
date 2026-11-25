@@ -29,7 +29,7 @@ func open(args: Dictionary) -> void:
 		var iq := InferenceQuiz.new(GameData.repo, GameData.curriculum, GameData.learning, GameData.rng)
 		var fam := InferenceQuiz.familiar_of(GameData.state.pieces)
 		for id in ids:
-			_qs.append(iq.question(id, GameFlow.STAGE, fam))
+			_qs.append(iq.question(id, GameFlow.STAGE, fam, int(args.get("step_bonus", 0))))
 	else:
 		_qs = QuizBuilder.new(GameData.repo, GameData.rng).build(ids)
 	# 이어 하기: 풀던 문제부터(앞에서 맞고 틀린 것은 그대로)

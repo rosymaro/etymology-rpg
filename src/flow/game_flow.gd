@@ -53,7 +53,7 @@ func _restore(r: Dictionary) -> void:
 		"evolve_quiz":
 			evolve_quiz(String(r.get("id", "")), int(r.get("i", 0)), r.get("right", []))
 		"quiz":
-			encounter(_ids(r.get("words", [])), int(r.get("i", 0)), r.get("right", []))
+			encounter(_ids(r.get("words", [])), int(r.get("i", 0)), r.get("right", []), r.get("enc", {}))
 		"battle":
 			var party: Array[int] = []
 			for u in r.get("party", []):
@@ -61,9 +61,11 @@ func _restore(r: Dictionary) -> void:
 			var roots := {}
 			for k in r.get("roots", {}):
 				roots[int(k)] = r["roots"][k]
+			enc = r.get("enc", {})
 			start_battle(party, roots, _ids(r.get("offer", [])), _ids(r.get("words", [])), bool(r.get("boss", false)),
 				int(r.get("seed", -1)), int(r.get("step", 0)), r.get("picks", []))
 		"prep":
+			enc = r.get("enc", {})
 			go_battle_prep(_ids(r.get("words", [])), bool(r.get("boss", false)))
 		"options":
 			var back: Dictionary = r.get("back", {"s": "field"})
@@ -271,16 +273,26 @@ func entered_field() -> void:
 		main.play_scene("s01_tut_battle", func() -> void: pass)
 
 
+## 지금 조우의 덧붙임(07-fun 1절): hurt = 필드 사냥으로 깎인 비율(전투에서 적 체력이 그만큼 줄어 나온다),
+## hard = 뿌리먹이(유추 문제 단계를 올리고, 다 맞히면 주머니에 큰 보상). 이어 하기를 위해 길(route)에도 적는다.
+var enc: Dictionary = {}
+
+
 ## 필드 적과 부딪힘: 단어 n개 조우 퀴즈.
-func encounter(word_ids: Array[String], resume_i: int = 0, resume_right: Array = []) -> void:
-	GameData.set_route({"s": "quiz", "words": word_ids, "i": resume_i, "right": resume_right})
+func encounter(word_ids: Array[String], resume_i: int = 0, resume_right: Array = [], opts: Dictionary = {}) -> void:
+	enc = opts
+	GameData.set_route({"s": "quiz", "words": word_ids, "i": resume_i, "right": resume_right, "enc": enc})
 	GameData.vibrate()
 	main.show_screen(QuizScreen.new(), {"words": word_ids, "mode": "encounter", "resume_i": resume_i, "resume_right": resume_right,
+		"step_bonus": int(GameData.hunt_cfg["eater"]["hard_step"]) if enc.get("hard", false) else 0,
 		"done": func(right: Array[bool]) -> void: _after_encounter(word_ids, right)})
 
 
 func _after_encounter(word_ids: Array[String], right: Array[bool]) -> void:
 	if not right.has(false):
+		if enc.get("hard", false):  # 뿌리먹이를 다 맞혔다: 주머니에 큰 보상
+			GameData.hunt_run().pick_orbs(int(GameData.hunt_cfg["eater"]["bonus_orbs"]))
+		enc = {}
 		_give_words(word_ids, "ui.result.caught_all")
 	else:
 		go_battle_prep(word_ids, false)
@@ -306,7 +318,7 @@ func board_quiz(word_ids: Array[String]) -> void:
 
 
 func go_battle_prep(word_ids: Array[String], boss: bool) -> void:
-	GameData.set_route({"s": "prep", "words": word_ids, "boss": boss})
+	GameData.set_route({"s": "prep", "words": word_ids, "boss": boss, "enc": enc})
 	main.show_screen(BattlePrepScreen.new(), {"words": word_ids, "boss": boss})
 
 
@@ -319,7 +331,7 @@ func start_battle(party: Array[int], roots: Dictionary, offer: Array[String], wo
 		seed = randi()
 	GameData.rng.seed = seed
 	GameData.set_route({"s": "battle", "party": party, "roots": roots, "offer": offer, "words": word_ids, "boss": boss,
-		"seed": seed, "step": step, "picks": picks})
+		"seed": seed, "step": step, "picks": picks, "enc": enc})
 	var s := GameData.state
 	for u in roots:
 		s.chosen_roots[u] = roots[u]
@@ -332,6 +344,10 @@ func start_battle(party: Array[int], roots: Dictionary, offer: Array[String], wo
 		ids = GameData.setup.boss_enemies(ctx, s, STAGE)
 	else:
 		GameData.setup.field_enemies(ctx, word_ids, STAGE)
+		var hurt := float(enc.get("hurt", 0.0))
+		if hurt > 0.0:  # 필드 사냥으로 깎아 둔 몹: 적 체력이 그만큼 줄어 나온다
+			for e in ctx.enemies:
+				e.pre_damage += int(floor(e.base.hp * hurt))
 	var engine := BattleEngine.new(ctx)
 	engine.begin()
 	main.show_screen(BattleScreen.new(), {"ctx": ctx, "engine": engine, "words": ids, "boss": boss,
@@ -410,6 +426,8 @@ var _lost := false  ## 방금 전투에서 졌다: 결과 뒤 병원에서 깨�
 ## 진 자리: 병원 문 앞으로 옮기고, 쉬기를 시작한다(진짜 시계).
 func _to_hospital() -> void:
 	_lost = true
+	enc = {}
+	GameData.hunt_run().lose()  # 주머니의 절반을 잃는다(07-fun 1절)
 	var s := GameData.state
 	s.pos = WorldMap.load_default().spot(STAGE, "hospital")
 	s.place = "town"
@@ -515,6 +533,9 @@ func _boss_won() -> void:
 	for m in ["sub", "re", "com"]:
 		if not m in s.magics:
 			s.magics.append(m)
+	var sk: String = GameData.hunt_cfg["boss_skills"].get(str(STAGE), "")  # 보스 1~4가 주는 어원 스킬(07-fun 2절)
+	if sk != "" and not sk in s.field_skills:
+		s.field_skills.append(sk)
 	s.stage = maxi(s.stage, STAGE + 1)
 	GameData.save()
 	EventBus.boss_defeated.emit(STAGE)

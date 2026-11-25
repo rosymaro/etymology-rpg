@@ -120,6 +120,9 @@ func grant_all(state: GameState, magics: Array[String]) -> void:
 	for m in magics:
 		if not m in state.magics:
 			state.magics.append(m)
+	for w in JsonFile.read("res://data/balance/field_hunt.json")["weapons"]:  # 어원 스킬(사냥 무기)도 모두
+		if not w in state.field_skills:
+			state.field_skills.append(w)
 
 
 ## 그 유닛이 장착할 수 있는 어근: 가진 어근 중 그 유닛 계열이고, 게임에 동작이 있는 것.

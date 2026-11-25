@@ -277,3 +277,15 @@ ui.party.pick_deck,전투 마법 고르기(전투마다 덱 4개 중 3개가 나
 ui.party.pick_root,"{name}의 어근 고르기"
 ui.field.magic_used,{magic}!
 ui.field.magic_soon,이 마법의 필드 효과는 아직 준비 중이에요
+ui.hunt.hud,"사냥 Lv {lv}  ·  주머니: 구슬 {orbs} · 코인 {coins} · 단어 {words}"
+ui.hunt.banked,"마을에서 주머니를 풀었어요: 구슬 {orbs}(경험치), 코인 {coins}, 단어 {words}"
+ui.hunt.word,"단어를 주웠어요: {word} (마을에 가면 내 것)"
+ui.hunt.eater,뿌리먹이가 나타났어요! 공격을 뚫고 다가와요
+ui.hunt.level_up,"사냥 레벨 {lv}! 하나를 고르세요"
+ui.hunt.pick_new,"새 어원 스킬: {w}"
+ui.hunt.pick_up,"강화: {w}"
+ui.hunt.pick_speed,이동 속도 +8%
+ui.hunt.pick_magnet,구슬 끌어당기기 넓게
+ui.hunt.weapon.hammer,망치 던지기(fac)
+ui.hunt.weapon.spin,도는 팽이(vertere)
+ui.hunt.weapon.shout,외침(dicere)

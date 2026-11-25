@@ -1,0 +1,26 @@
+{
+  "_doc": "필드 사냥(07-fun.md 1절). 폰에서 손맛을 보며 고친다",
+  "mob_hp": { "wander": 2, "chase": 3, "flee": 1, "eater": 60 },
+  "knockback": 60,
+  "orb": { "wander": 1, "chase": 2, "flee": 3 },
+  "coin": { "chance": 0.35, "min": 1, "max": 3 },
+  "word_chance": 0.05,
+  "magnet": 140,
+  "magnet_up": 60,
+  "speed_up": 0.08,
+  "level_exp": "3 + L*2",
+  "_level_exp_doc": "레벨 L에서 다음 레벨까지 구슬 수",
+  "max_level": 20,
+  "no_fire_near": 90,
+  "_no_fire_near_doc": "이 거리 안의 몹은 쏘지 않는다(붙어서 퀴즈를 하고 싶을 때)",
+  "bank": { "exp_per_orb": 6, "lose_ratio": 0.5 },
+  "eater": { "after_sec": 360, "again_sec": 180, "speed": 420, "hard_step": 1, "bonus_orbs": 40, "words": 3 },
+  "weapons": {
+    "hammer": { "root": "fac", "type": "boomerang", "cd": [1.4, 1.25, 1.1, 0.95, 0.8], "dmg": [1, 1, 2, 2, 3], "count": [1, 1, 1, 2, 2], "range": 420, "speed": 700 },
+    "spin":   { "root": "vertere", "type": "orbit", "cd": [0, 0, 0, 0, 0], "dmg": [1, 1, 1, 2, 2], "count": [1, 2, 2, 3, 3], "range": 110, "speed": 3.2, "hit_gap": 0.6 },
+    "shout":  { "root": "dicere", "type": "nova", "cd": [3.0, 2.6, 2.2, 1.9, 1.6], "dmg": [1, 1, 2, 2, 3], "count": [1, 1, 1, 1, 1], "range": 200 }
+  },
+  "start_skills": ["hammer"],
+  "boss_skills": { "1": "spin", "2": "shout" },
+  "_boss_skills_doc": "보스 1~4가 주는 어원 스킬(07-fun 2절). 그 뒤는 보물로"
+}

@@ -32,7 +32,8 @@ static func _next(step: String) -> String:
 
 
 ## 문제 하나. familiar: 조각 id -> 맞힌 수(GameState.pieces의 right).
-func question(id: String, stage: int, familiar: Dictionary = {}) -> InferenceQuestion:
+## step_bonus: 단계를 그만큼 올린다(뿌리먹이의 어려운 문제, 07-fun 1절).
+func question(id: String, stage: int, familiar: Dictionary = {}, step_bonus: int = 0) -> InferenceQuestion:
 	var base := builder.question(id)
 	var q := InferenceQuestion.new()
 	q.word_id = id
@@ -42,6 +43,8 @@ func question(id: String, stage: int, familiar: Dictionary = {}) -> InferenceQue
 	q.parts = PieceSplit.split(w.id, w.etym)
 	var learned := curriculum.learned(stage)
 	q.step = step_of(stage)
+	for k in step_bonus:
+		q.step = _next(q.step)
 	q.kind = "meaning"
 	for p in q.parts:
 		var pid := String(p["piece"])

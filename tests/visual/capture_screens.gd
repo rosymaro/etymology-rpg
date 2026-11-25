@@ -46,6 +46,21 @@ func _run() -> void:
 	s.pos = wm.start(1) + Vector2(260, 200)
 	main.flow.go_field()
 	await _shot("04_field_gate")
+	var fs := main.current() as FieldScreen
+	fs._hero = wm.random_field_spot(1, RandomNumberGenerator.new(), wm.start(1), 1200, 1600, 30)
+	fs._in_town_now = false
+	fs._run.apply({"type": "new", "id": "spin"})
+	fs._run.pick_coins(7)
+	for e in fs._enemies:
+		e.pos = fs._hero + Vector2.from_angle(randf() * TAU) * randf_range(150, 420)
+		e.stun = 99.0  # 찍는 동안 부딪혀 퀴즈로 넘어가지 않게
+	await get_tree().create_timer(1.4).timeout
+	await _shot("04_field_hunt")
+	fs._spawn_eater()
+	fs._open_level_up()
+	await _shot("04_field_levelup")
+	fs._choosing.queue_free()
+	fs._choosing = null
 	(main.current() as FieldScreen)._open_full()
 	await _shot("04_field_world_map")
 	(main.current() as FieldScreen)._close_full()
