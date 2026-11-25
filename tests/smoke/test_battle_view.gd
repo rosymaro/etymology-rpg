@@ -26,7 +26,10 @@ func _battle() -> BattleScreen:
 func test_turns_count_up_across_enemies() -> void:
 	var bs := await _battle()
 	bs.skip_all()
-	await wait_seconds(1.0)
+	for _k in 300:  # 빨리 보기: 끝날 때까지(느린 기계에서도)
+		if bs._ended:
+			break
+		await wait_physics_frames(1)
 	assert_true(bs._ended)
 	var rounds := bs._ctx.log.filter(func(e: Dictionary) -> bool: return e["t"] == "round").size()
 	assert_eq(bs._turn_n, rounds, "턴은 전투 처음부터 이어서 센다")

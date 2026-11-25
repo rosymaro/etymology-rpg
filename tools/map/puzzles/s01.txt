@@ -1,0 +1,63 @@
+# 스테이지 1 돌 밀기 퍼즐 판(07-fun.md 3·4절). tools/map/build_world.py가 지역 1 들판의 빈 풀밭에 박는다.
+# 글자: T 나무 벽  . 바닥  R 돌  H 무거운 돌(com- 필요)  P 발판  w 물  O 구멍  i 얼음  C 보물 상자  Q 돌 밑에 숨은 쪽지  L 조각 자물쇠 상자  E 입구(바깥과 이어짐)
+# 판 머리: == id | 종류 | 상자 내용 | (자물쇠면) 답 단어 | (쪽지면) 쪽지 조각
+# 상자 내용: coin:N | word:id | exp:N | skill:id
+
+== s01_p1 | plates | coin:80
+TTTTTTTT
+T......T
+T.R..P.T
+T......E
+T.R..P.T
+T......T
+TTTCTTTT
+
+== s01_p2 | water | word:formation
+TTTTTTTTTT
+T....wwC.T
+E.R.Rww..T
+T....wwTTT
+TTTTTTTTTT
+
+== s01_p3 | holes | exp:300
+TTTTTTTTT
+T.......T
+E.R.R.OOC
+T.......T
+TTTTTTTTT
+
+== s01_p4 | block | coin:120
+TTTTTTTTT
+E..R....T
+TTT.TTT.T
+TTT.R...T
+TTTTTCTTT
+
+== s01_p5 | secret | coin:50 | | in-
+TTTTTTT
+T.....T
+E..Q..T
+T.....T
+TTTTTTT
+
+== s01_p6 | ice | word:conform
+TTTTTTTTT
+Tiiiiii.E
+TiiiiiiiT
+TiRiiiiPT
+TiiiiiiiT
+TTTTCTTTT
+
+== s01_p7 | heavy | skill:shout
+TTTTTTT
+E.H...T
+TTTT.TT
+TTTTCTT
+
+== s01_p8 | lock | word:inform | inform | forma
+TTTTTTT
+T.....T
+E..Q..T
+T.....T
+T..L..T
+TTTTTTT

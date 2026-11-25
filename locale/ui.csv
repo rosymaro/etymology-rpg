@@ -298,3 +298,21 @@ ui.gacha.no_coins,코인이 모자라요. 들판에서 사냥하거나 보물을
 ui.gacha.new,새 단어!
 ui.gacha.new_word,새 단어!
 ui.gacha.news,"새 단어 {n}개를 얻었어요."
+ui.treasure.coin,"보물 상자: 코인 {n}개!"
+ui.treasure.word,"보물 상자: 단어 {word} ({meaning})!"
+ui.treasure.exp,"보물 상자: 모든 동료 경험치 +{n}!"
+ui.treasure.skill,"보물 상자: 어원 스킬 {skill}! 사냥 레벨업 때 고를 수 있어요"
+ui.puz.chest,보물 상자
+ui.puz.open,상자 열기
+ui.puz.opened,이미 연 상자예요
+ui.puz.plates,발판에 돌을 모두 올려야 열려요
+ui.puz.heavy,너무 무거워요. 함께 옮기는 마법(com-)이 있으면 밀 수 있어요
+ui.puz.note,"쪽지를 주웠어요: {piece} = {meaning}"
+ui.puz.lock_title,조각 자물쇠
+ui.puz.lock_clue,"자물쇠에 그림이 새겨져 있어요: ""{meaning}"". 주운 쪽지의 조각을 차례로 눌러 그 뜻의 단어를 만드세요."
+ui.puz.lock_none,아직 쪽지가 없어요. 둘레의 돌 밑을 찾아보세요.
+ui.puz.lock_wrong,덜컹! 열리지 않아요.
+ui.puz.lock_hint,"뚝딱: 첫 조각은 ""{piece}""일 것 같아!"
+ui.puz.lock_reset,다시
+ui.puz.lock_close,닫기
+ui.quest.notes,"가방(쪽지): {list}"

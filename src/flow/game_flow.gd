@@ -463,6 +463,34 @@ func _maybe_cheok() -> void:
 			main.notice(TranslationServer.translate("ui.join").format({"name": UiKit.unit_name(4)})))
 
 
+# ----- 보물(07-fun 6절) -----
+
+## 보물 상자 내용("coin:80" | "word:id" | "exp:300" | "skill:id")을 준다. 돌려주는 값: 알림 글.
+func give_treasure(reward: String) -> String:
+	var s := GameData.state
+	var kv := reward.split(":")
+	var v := kv[1] if kv.size() > 1 else ""
+	var text := ""
+	match kv[0]:
+		"coin":
+			s.wallet += int(v)
+			text = TranslationServer.translate("ui.treasure.coin").format({"n": v})
+		"word":
+			GameData.rules.gain_word(s, v)
+			text = TranslationServer.translate("ui.treasure.word").format({"word": v, "meaning": GameData.repo.get_word(v).meaning})
+		"exp":
+			for u in s.joined:
+				s.unit_exp[u - 1] += int(v)
+			text = TranslationServer.translate("ui.treasure.exp").format({"n": v})
+		"skill":
+			if not v in s.field_skills:
+				s.field_skills.append(v)
+			text = TranslationServer.translate("ui.treasure.skill").format({"skill": TranslationServer.translate("ui.hunt.weapon." + v)})
+	GameData.save()
+	GameData.vibrate(true)
+	return text
+
+
 # ----- 마을 -----
 
 ## 말 뽑기(07-fun 7절, 마을 광장).

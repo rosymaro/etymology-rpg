@@ -11,7 +11,7 @@ const ENEMY_R := 30.0
 const TOUCH_R := 110.0
 const MINI_SCALE := 0.9  ## 미니맵: 타일 하나당 픽셀
 const TILE_COL := {".": Color("d8eec9"), ",": Color("f3ead8"), "p": Color("d9c59a"), "b": Color("b98c5a"), "=": Color("e9876a"), "q": Color("8c6a4a"),
-	"s": Color("d9d2c3"), "F": Color("c9a874"), "h": Color("b7a48c"), "o": Color("8cc6e8"), "f": Color("b9d77e"),
+	"s": Color("d9d2c3"), "O": Color("3d3530"), "i": Color("cfe9f5"), "F": Color("c9a874"), "h": Color("b7a48c"), "o": Color("8cc6e8"), "f": Color("b9d77e"),
 	"^": Color("9a8f86"), "~": Color("6fa8dc"), "w": Color("8cc6e8"), "#": Color("6f6257"), "T": Color("6fae74"), "H": Color("a7a7b4")}
 
 var map: WorldMap
@@ -54,6 +54,12 @@ var _hunt_lbl: Label
 var _lvl_bar: ProgressBar
 var _choosing: Control  ## 레벨업 보기 창
 var _in_town_now := true
+# 돌 밀기 퍼즐(07-fun 3·4절)
+var _puz: Array[PushPuzzle] = []
+var _push_t := 0.0
+var _lock: Control  ## 조각 자물쇠 창
+var _lock_pick: Array[String] = []
+var _lock_fail := 0
 const BUILDING_ROOF := {"forge": Color("c0634a"), "board": Color("6f8fd0"), "hospital": Color("f2f2f2"), "tree": Color("4f8f57")}
 var _quests: Control
 
@@ -92,6 +98,11 @@ func open(args: Dictionary) -> void:
 		_villagers.append(v)
 	_was_resting = main.flow.rest_left() > 0
 	_fmagic = FieldMagicUse.new(_f["magic"])
+	for q in map.puzzles:  # 퍼즐 상태는 화면이 바뀌어도 남는다
+		if not GameData.puzzles.has(q["id"]):
+			GameData.puzzles[q["id"]] = PushPuzzle.from_dict(q)
+		_puz.append(GameData.puzzles[q["id"]])
+	_sync_blocks()
 	_in_town_now = map.is_town(_hero)
 	if _in_town_now and int(_run.bag()["orbs"]) + int(_run.bag()["coins"]) + (_run.bag()["words"] as Array).size() > 0:
 		_in_town_now = false  # 마을에서 시작(병원 등): 주머니를 바로 푼다
@@ -265,7 +276,7 @@ func _pick_words(rare := false) -> Array[String]:
 # ----- 움직임 -----
 
 func _process(delta: float) -> void:
-	if _busy or _full or _quests or _choosing:
+	if _busy or _full or _quests or _choosing or _lock:
 		return
 	var dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if _stick_on:
@@ -273,6 +284,7 @@ func _process(delta: float) -> void:
 	var was_town := map.is_town(_hero)
 	var before := _hero
 	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * _run.speed_mult() * delta, HERO_R, _gates)
+	_puzzle_step(dir, before, delta)
 	var left: int = main.flow.rest_left()
 	if left > 0 and was_town and not map.is_town(_hero):  # 병원에서 쉬는 중: 마을 밖으로 못 나간다
 		_hero = before
@@ -360,6 +372,12 @@ func _process(delta: float) -> void:
 		if (sp["pos"] as Vector2).distance_to(_hero) < TOUCH_R:
 			_near = sp
 	if _near.is_empty():
+		for pz in _puz:
+			for c in pz.chests:
+				var cp := (Vector2(c) + Vector2(0.5, 0.5)) * map.tile
+				if cp.distance_to(_hero) < TOUCH_R:
+					_near = {"id": "chest", "key": "ui.puz.chest", "puz": pz}
+	if _near.is_empty():
 		for v in _villagers:
 			if v.pos.distance_to(_hero) < TOUCH_R * 0.8:
 				_near = {"id": "villager", "key": "ui.field.villager", "line": v.words[0]}
@@ -402,6 +420,8 @@ func _act() -> void:
 			main.flow.town_minigame()
 		"gacha":
 			main.flow.go_gacha()
+		"chest":
+			_open_chest(_near["puz"])
 		"hospital":
 			var left: int = main.flow.rest_left()
 			main.notice(t("ui.field.nurse_rest").format({"left": _mmss(left)}) if left > 0 else t("ui.field.nurse"))
@@ -649,6 +669,187 @@ func _open_level_up() -> void:
 		v.add_child(b)
 
 
+# ----- 돌 밀기 퍼즐 -----
+
+## 돌·상자는 막고, 메운 물·구멍은 지나간다(WorldMap이 이 표를 본다).
+func _sync_blocks() -> void:
+	map.extra_block.clear()
+	map.extra_walk.clear()
+	for pz in _puz:
+		for c in pz.rocks:
+			map.extra_block[c] = true
+		for c in pz.chests:
+			map.extra_block[c] = true
+		for c in pz.filled:
+			map.extra_walk[c] = true
+
+
+## 밀기(돌에 붙어 0.3초), 숨은 쪽지 줍기, 구역을 벗어나면 되돌리기.
+func _puzzle_step(dir: Vector2, before: Vector2, delta: float) -> void:
+	var hc := map.cell(_hero)
+	var pushed := false
+	if dir.length() > 0.3 and _hero.distance_to(before) < 0.5:
+		var d := Vector2i(signi(roundi(dir.x)), 0) if absf(dir.x) >= absf(dir.y) else Vector2i(0, signi(roundi(dir.y)))
+		var front := map.cell(_hero + Vector2(d) * (HERO_R + 12))
+		for pz in _puz:
+			if pz.rocks.has(front):
+				pushed = true
+				_push_t += delta
+				if _push_t >= 0.3:
+					_push_t = 0.0
+					if pz.push(front, d, "com" in GameData.state.magics):
+						_sync_blocks()
+						GameData.vibrate()
+					elif pz.rocks[front] == "H" and not "com" in GameData.state.magics:
+						_show_toast(t("ui.puz.heavy"))
+	if not pushed:
+		_push_t = 0.0
+	for pz in _puz:
+		for sc in pz.secrets:  # 숨은 쪽지: 돌이 비킨 자리를 밟으면 줍는다
+			if sc == hc and not pz.rocks.has(sc) and pz.note != "" and not pz.note in GameData.state.notes:
+				GameData.state.notes.append(pz.note)
+				GameData.save()
+				var pc: Dictionary = GameData.curriculum.pieces.get(pz.note, {})
+				_show_toast(t("ui.puz.note").format({"piece": String(pc.get("name", pz.note)), "meaning": String(pc.get("meaning", ""))}))
+		var r := Rect2i(pz.origin - Vector2i(3, 3), pz.size + Vector2i(6, 6))
+		if not r.has_point(hc) and not GameData.state.flags.get("chest_" + pz.id, false) and (pz.rocks.hash() != pz._start_rocks.hash() or not pz.filled.is_empty()):
+			pz.reset()  # 구역을 벗어나면 처음으로(막혀서 못 푸는 일이 없게)
+			_sync_blocks()
+
+
+func _open_chest(pz: PushPuzzle) -> void:
+	var s := GameData.state
+	if s.flags.get("chest_" + pz.id, false):
+		_show_toast(t("ui.puz.opened"))
+		return
+	if not pz.chest_ready():
+		_show_toast(t("ui.puz.plates"))
+		return
+	if pz.kind == "lock":
+		_open_lock(pz)
+		return
+	s.flags["chest_" + pz.id] = true
+	_show_toast(main.flow.give_treasure(pz.reward))
+
+
+## 조각 자물쇠(07-fun 4절): 답 단어의 뜻이 그림으로 새겨져 있고, 주운 쪽지 조각을 차례로 눌러 그 단어를 만든다.
+func _open_lock(pz: PushPuzzle) -> void:
+	_stick_on = false
+	_lock_pick.clear()
+	_lock = Control.new()
+	_lock.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_lock.mouse_filter = Control.MOUSE_FILTER_STOP
+	_lock.z_index = 25
+	add_child(_lock)
+	var dim := ColorRect.new()
+	dim.color = Color(0.15, 0.13, 0.22, 0.6)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.offset_top = -UiKit.BG_BLEED
+	dim.offset_bottom = UiKit.BG_BLEED
+	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_lock.add_child(dim)
+	var card := UiKit.card()
+	card.custom_minimum_size = Vector2(640, 0)
+	card.position = Vector2(40, 300)
+	_lock.add_child(card)
+	var v := UiKit.vbox(12)
+	card.add_child(v)
+	v.add_child(UiKit.label(t("ui.puz.lock_title"), 30, UiKit.ACCENT.darkened(0.3)))
+	var w := GameData.repo.get_word(pz.answer)
+	v.add_child(UiKit.wrap(UiKit.label(t("ui.puz.lock_clue").format({"meaning": w.meaning}), 22), 600))
+	var slots := UiKit.label("", 34)
+	slots.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(slots)
+	var want := GameData.curriculum.pieces_of(w)
+	var show := func() -> void:
+		var bits: Array[String] = []
+		for k in want.size():
+			bits.append(_piece_form(_lock_pick[k]) if k < _lock_pick.size() else "＿")
+		slots.text = " + ".join(bits)
+	show.call()
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 8)
+	row.add_theme_constant_override("v_separation", 8)
+	v.add_child(row)
+	if GameData.state.notes.is_empty():
+		v.add_child(UiKit.label(t("ui.puz.lock_none"), 20, UiKit.BAD.darkened(0.2)))
+	for n in GameData.state.notes:
+		var pid := String(n)
+		row.add_child(UiKit.button(_piece_form(pid), func() -> void:
+			if _lock_pick.size() >= want.size():
+				return
+			_lock_pick.append(pid)
+			show.call()
+			if _lock_pick.size() == want.size():
+				if _lock_pick == want:
+					GameData.state.flags["chest_" + pz.id] = true
+					_close_lock()
+					_show_toast(main.flow.give_treasure(pz.reward))
+				else:
+					_lock_fail += 1
+					_lock_pick.clear()
+					show.call()
+					_show_toast(t("ui.puz.lock_wrong") + (("  " + t("ui.puz.lock_hint").format({"piece": _piece_form(want[0])})) if _lock_fail >= 3 else "")), UiKit.SKY, 26))
+	var nav := UiKit.hbox(10)
+	v.add_child(nav)
+	nav.add_child(UiKit.button(t("ui.puz.lock_reset"), func() -> void:
+		_lock_pick.clear()
+		show.call(), UiKit.PAPER, 22))
+	nav.add_child(UiKit.button(t("ui.puz.lock_close"), _close_lock, UiKit.PAPER, 22))
+
+
+func _close_lock() -> void:
+	if _lock:
+		_lock.queue_free()
+		_lock = null
+
+
+func _piece_form(pid: String) -> String:
+	var pc: Dictionary = GameData.curriculum.pieces.get(pid, {})
+	var fs: Array = pc.get("forms", [])
+	return "%s(%s)" % [String(fs[0]) if not fs.is_empty() else pid, String(pc.get("meaning", ""))]
+
+
+func _draw_puzzles(o: Vector2) -> void:
+	var ts := float(map.tile)
+	for pz in _puz:
+		var r := Rect2(o + Vector2(pz.origin) * ts, Vector2(pz.size) * ts)
+		if not r.grow(ts).intersects(Rect2(Vector2.ZERO, size)):
+			continue
+		for c in pz.plates:  # 발판
+			var pr := Rect2(o + Vector2(c) * ts, Vector2(ts, ts)).grow(-8)
+			draw_rect(pr, Color("c8c0b0"))
+			draw_rect(pr, Color("f5c542") if pz.rocks.has(c) else UiKit.INK, false, 4)
+		for c in pz.filled:  # 메운 물·구멍
+			draw_rect(Rect2(o + Vector2(c) * ts, Vector2(ts, ts)), Color("a89c8c"))
+		for c in pz.secrets:  # 드러난 쪽지
+			if not pz.rocks.has(c) and not pz.note in GameData.state.notes:
+				var sp := o + (Vector2(c) + Vector2(0.5, 0.5)) * ts
+				draw_rect(Rect2(sp - Vector2(12, 9), Vector2(24, 18)), Color("fff4dc"))
+				draw_circle(sp + Vector2(14, -14), 4 + 2 * sin(Time.get_ticks_msec() / 150.0), Color("f5c542"))
+		for c in pz.chests:  # 보물 상자(자물쇠 상자는 자물쇠 그림)
+			var cp := o + (Vector2(c) + Vector2(0.5, 0.5)) * ts
+			var opened: bool = GameData.state.flags.get("chest_" + pz.id, false)
+			draw_rect(Rect2(cp - Vector2(24, 16), Vector2(48, 34)), Color("a46a3a"))
+			draw_rect(Rect2(cp - Vector2(24, 16), Vector2(48, 34)), UiKit.INK, false, 3)
+			if opened:
+				draw_rect(Rect2(cp - Vector2(24, 28), Vector2(48, 10)), Color("7a4a2a"))
+			else:
+				draw_rect(Rect2(cp - Vector2(24, 18), Vector2(48, 8)), Color("c58a4a"))
+				draw_circle(cp + Vector2(0, -2), 6, Color("f5c542") if pz.chest_ready() else UiKit.GRAY)
+				if pz.kind == "lock":
+					draw_arc(cp + Vector2(0, -12), 9, PI, TAU, 10, UiKit.INK, 3)
+		for c in pz.rocks:  # 돌
+			var rp := o + (Vector2(c) + Vector2(0.5, 0.5)) * ts
+			var heavy: bool = pz.rocks[c] == "H"
+			draw_circle(rp, ts * 0.44, Color("6f6a66") if heavy else Color("9a948e"))
+			draw_arc(rp, ts * 0.44, 0, TAU, 24, UiKit.INK, 3)
+			draw_circle(rp + Vector2(-8, -8), 6, Color(1, 1, 1, 0.3))
+			if heavy:
+				draw_line(rp + Vector2(-18, 4), rp + Vector2(18, 4), UiKit.INK, 3)
+				draw_line(rp + Vector2(-14, 12), rp + Vector2(14, 12), UiKit.INK, 3)
+
+
 static func _mmss(sec: int) -> String:
 	return "%d:%02d" % [sec / 60, sec % 60]
 
@@ -713,6 +914,14 @@ func _open_quests() -> void:
 		d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		d.custom_minimum_size.x = 600
 		v.add_child(d)
+	if not GameData.state.notes.is_empty():  # 가방: 주운 쪽지(조각 사전)
+		var ns: Array[String] = []
+		for n in GameData.state.notes:
+			ns.append(_piece_form(String(n)))
+		var nl := UiKit.label(t("ui.quest.notes").format({"list": ", ".join(ns)}), 20, UiKit.ACCENT.darkened(0.3))
+		nl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		nl.custom_minimum_size.x = 600
+		v.add_child(nl)
 	var close := UiKit.button(t("ui.quest.close"), _close_quests, UiKit.PAPER, 24)
 	close.custom_minimum_size = Vector2(220, 70)
 	_quests.add_child(close)
@@ -737,6 +946,7 @@ func _draw() -> void:
 	_draw_tiles(o)
 	var font := ThemeDB.fallback_font
 	_draw_buildings(o)
+	_draw_puzzles(o)
 	for v in _villagers:
 		_draw_villager(o + v.pos)
 	for sp in _spots:
