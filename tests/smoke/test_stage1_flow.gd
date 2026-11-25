@@ -217,3 +217,41 @@ func test_losing_wakes_up_in_hospital_and_rests_in_town() -> void:
 	f._stick_on = false
 	assert_true(f.map.is_town(f._hero), "쉬는 동안 마을 밖으로 못 나간다")
 	GameData.state.rest_until = 0
+
+
+func test_field_hunt_hammer_kills_mob_and_bag_is_banked_in_town() -> void:
+	GameData.new_game("테스트")
+	GameData.state.flags["s01_tut_battle"] = true
+	var m := WorldMap.load_default()
+	GameData.state.pos = m.random_field_spot(1, RandomNumberGenerator.new(), m.start(1), 900, 1400, 30)
+	main.flow.go_field()
+	await wait_physics_frames(2)
+	var f := main.current() as FieldScreen
+	assert_false(f.map.is_town(f._hero))
+	# 몹 하나만 망치 사거리 안에 둔다
+	f._enemies.clear()
+	var e := FieldMob.new()
+	e.kind = "wander"
+	e.max_hp = 2
+	e.hp = 2
+	e.words = ["information"] as Array[String]
+	e.pos = f._hero + Vector2(250, 0)
+	e.stun = 99.0
+	f._enemies.append(e)
+	for k in 240:
+		await wait_physics_frames(1)
+		if not f._enemies.has(e):
+			break
+	assert_false(f._enemies.has(e), "망치가 저절로 날아가 몹을 쓰러뜨린다")
+	assert_false(f._drops.is_empty(), "구슬이 떨어진다")
+	f._hero = (f._drops[0]["pos"] as Vector2) + Vector2(60, 0)  # 끌어당기는 거리 안으로 다가간다
+	for k in 120:  # 구슬이 빨려 와 주머니에
+		await wait_physics_frames(1)
+		if int(f._run.bag()["orbs"]) > 0:
+			break
+	assert_gt(int(f._run.bag()["orbs"]), 0, "구슬은 주머니에")
+	var exp0 := GameData.state.unit_exp[0]
+	f._hero = f.map.start(1)
+	await wait_physics_frames(3)
+	assert_eq(int(f._run.bag()["orbs"]), 0, "마을에 들어가면 주머니를 푼다")
+	assert_gt(GameData.state.unit_exp[0], exp0, "구슬이 경험치가 된다")

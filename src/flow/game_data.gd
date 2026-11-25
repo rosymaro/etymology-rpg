@@ -13,6 +13,7 @@ var setup: BattleSetup
 var quests: QuestBook
 var curriculum: Curriculum
 var learning: Dictionary = {}  ## data/balance/learning.json
+var hunt_cfg: Dictionary = {}  ## data/balance/field_hunt.json
 var field: Dictionary = {}  ## data/balance/field.json
 var state: GameState
 var save_prefix := "user://"  ## 테스트는 다른 앞머리를 써서 진짜 저장을 건드리지 않는다
@@ -38,6 +39,7 @@ func _ready() -> void:
 	quests = QuestBook.load_default()
 	curriculum = Curriculum.load_default()
 	learning = JsonFile.read("res://data/balance/learning.json")
+	hunt_cfg = JsonFile.read("res://data/balance/field_hunt.json")
 	field = JsonFile.read("res://data/balance/field.json")
 	TranslationServer.set_locale("ko")
 
@@ -129,3 +131,8 @@ func vibrate(long: bool = false) -> void:
 ## 대사 안의 {hero}를 주인공 이름으로.
 func say(key: String) -> String:
 	return TranslationServer.translate(key).format({"hero": state.hero_name if state else ""})
+
+
+## 필드 사냥 나들이(상태는 state.hunt에 있어서 화면이 바뀌어도, 저장해도 남는다).
+func hunt_run() -> HuntRun:
+	return HuntRun.new(state.hunt, hunt_cfg)

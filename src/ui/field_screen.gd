@@ -42,6 +42,19 @@ var _was_resting := false
 var _villagers: Array[FieldMob] = []
 var _fmagic: FieldMagicUse  ## 필드 마법 버튼 2개(07-fun 2절)
 var _fbtns: Array[Button] = []
+# 필드 사냥(07-fun 1절)
+var _run: HuntRun
+var _hc: Dictionary  ## data/balance/field_hunt.json
+var _wt := {}  ## 무기 id -> 다음 쏘기까지 남은 시간
+var _shots: Array[Dictionary] = []  ## 날아가는 망치 {pos, to, back, dmg, hit: {}}
+var _novas: Array[Dictionary] = []  ## 퍼지는 외침 {r, max, t}
+var _orbit_a := 0.0
+var _orbit_hit := {}  ## 몹 -> 다음에 맞을 수 있는 시각
+var _drops: Array[Dictionary] = []  ## 떨어진 것 {pos, kind: orb|coin|word, v}
+var _hunt_lbl: Label
+var _lvl_bar: ProgressBar
+var _choosing: Control  ## 레벨업 보기 창
+var _in_town_now := true
 const BUILDING_ROOF := {"forge": Color("c0634a"), "board": Color("6f8fd0"), "hospital": Color("f2f2f2"), "tree": Color("4f8f57")}
 var _quests: Control
 
@@ -52,6 +65,8 @@ func open(args: Dictionary) -> void:
 	_rng.randomize()
 	map = WorldMap.load_default()
 	_f = GameData.field
+	_hc = GameData.hunt_cfg
+	_run = GameData.hunt_run()
 	_gates = main.flow.open_gates()
 	var s := GameData.state
 	_hero = s.pos
@@ -77,6 +92,10 @@ func open(args: Dictionary) -> void:
 		_villagers.append(v)
 	_was_resting = main.flow.rest_left() > 0
 	_fmagic = FieldMagicUse.new(_f["magic"])
+	_in_town_now = map.is_town(_hero)
+	if _in_town_now and int(_run.bag()["orbs"]) + int(_run.bag()["coins"]) + (_run.bag()["words"] as Array).size() > 0:
+		_in_town_now = false  # 마을에서 시작(병원 등): 주머니를 바로 푼다
+		_town_edge.call_deferred()
 	_build_hud()
 	_build_minimap()
 	if args.get("msg", "") != "":
@@ -116,6 +135,18 @@ func _build_hud() -> void:
 	rc.position = Vector2(16, 150 + map.h * MINI_SCALE + 10 + 48)
 	rc.visible = false
 	_rest.set_meta("card", rc)
+	var hc := UiKit.card(Color("f3ecff"))
+	var hv := UiKit.vbox(2)
+	hc.add_child(hv)
+	_hunt_lbl = UiKit.label("", 18)
+	hv.add_child(_hunt_lbl)
+	_lvl_bar = ProgressBar.new()
+	_lvl_bar.custom_minimum_size = Vector2(220, 10)
+	_lvl_bar.show_percentage = false
+	hv.add_child(_lvl_bar)
+	add_child(hc)
+	UiKit.pin(hc, 1, 0, -16, 150)
+	_hunt_lbl.set_meta("card", hc)
 	var home := UiKit.button(t("ui.field.home"), _go_home, UiKit.PAPER, 24)
 	home.custom_minimum_size = Vector2(150, 70)
 	add_child(home)
@@ -193,6 +224,8 @@ func _new_enemy() -> FieldMob:
 	m.pos = p
 	m.kind = FieldMob.pick_kind(_f["kinds"], _rng)
 	m.words = _pick_words(bool(_f["kinds"][m.kind].get("rare", false)))
+	m.max_hp = int(_hc["mob_hp"].get(m.kind, 2))
+	m.hp = m.max_hp
 	return m
 
 
@@ -229,14 +262,14 @@ func _pick_words(rare := false) -> Array[String]:
 # ----- 움직임 -----
 
 func _process(delta: float) -> void:
-	if _busy or _full or _quests:
+	if _busy or _full or _quests or _choosing:
 		return
 	var dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if _stick_on:
 		dir = _stick_vec
 	var was_town := map.is_town(_hero)
 	var before := _hero
-	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * delta, HERO_R, _gates)
+	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * _run.speed_mult() * delta, HERO_R, _gates)
 	var left: int = main.flow.rest_left()
 	if left > 0 and was_town and not map.is_town(_hero):  # 병원에서 쉬는 중: 마을 밖으로 못 나간다
 		_hero = before
@@ -266,6 +299,7 @@ func _process(delta: float) -> void:
 			v.pos = vp
 	if was_town and not map.is_town(_hero) and map.stage_at(_hero) == GameFlow.STAGE:
 		main.flow.entered_field()
+	_town_edge()
 	# 닫힌 스테이지 문에 막히면 알려 준다
 	_gate_t -= delta
 	if dir.length() > 0.1 and _hero.distance_to(before) < 1.0 and _gate_t <= 0.0:
@@ -283,15 +317,20 @@ func _process(delta: float) -> void:
 		if map.touching_gate(_hero, HERO_R, _gates) > 0:
 			_gate_t = 3.0
 			_show_toast(t("ui.field.gate_closed"))
+	(_hunt_lbl.get_meta("card") as Control).visible = not map.is_town(_hero)  # 사냥 칸은 마을 밖에서만
+	if not map.is_town(_hero):
+		_hunt(delta)
 	for i in _enemies.size():
 		var e := _enemies[i]
-		if e.pos.distance_to(_hero) > float(_f["spawn_far"]):  # 멀어진 적은 가까이에 다시
+		if e.pos.distance_to(_hero) > float(_f["spawn_far"]) and e.kind != "eater":  # 멀어진 적은 가까이에 다시
 			var ne := _new_enemy()
 			if ne:
 				_enemies[i] = ne
 			continue
 		e.ignore = _fmagic.sneak > 0.0
-		var v := e.steer(_hero, delta, _f["kinds"], _rng)
+		var kinds: Dictionary = _f["kinds"].duplicate()
+		kinds["eater"] = {"speed": _hc["eater"]["speed"]}
+		var v := e.steer(_hero, delta, kinds, _rng)
 		if e.has_meta("push"):  # ob-: 밀쳐진 몹은 0.3초 동안 날아간다
 			v = (e.get_meta("push") as Vector2) / 0.3
 			var pt := float(e.get_meta("push_t", 0.3)) - delta
@@ -300,12 +339,16 @@ func _process(delta: float) -> void:
 				e.remove_meta("push")
 				e.remove_meta("push_t")
 		var np: Vector2 = map.move(e.pos, v * delta, ENEMY_R)
-		if not map.is_town(np) and map.stage_at(np) == GameFlow.STAGE:
+		if e.kind == "eater":  # 뿌리먹이는 벽에 걸려도 미끄러지며 계속 온다(벽을 넘지는 않는다)
+			e.pos = np if np != e.pos else map.move(e.pos, v.rotated(0.8) * delta, ENEMY_R)
+		elif not map.is_town(np) and map.stage_at(np) == GameFlow.STAGE:
 			e.pos = np
 		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0:
 			_busy = true
 			_remember()
-			main.flow.encounter(e.words)
+			main.flow.encounter(e.words, 0, [], {"hurt": snappedf(e.hurt_ratio(), 0.01), "hard": e.kind == "eater"})
+			if e.kind == "eater":
+				_enemies.remove_at(i)
 			return
 	_near = {}
 	for sp in _spots:
@@ -407,9 +450,193 @@ func _cast(id: String) -> void:
 		_fmagic.use(id, _hero, [])
 		_go_home()
 		return
+	if id == "com":  # 떨어진 것을 모두 끌어온다
+		for dr in _drops:
+			dr["pos"] = _hero + Vector2.from_angle(_rng.randf() * TAU) * 20.0
 	_fmagic.use(id, _hero, _enemies)
 	_show_toast(t("ui.field.magic_used").format({"magic": GameText.field_magic_name(id)}))
 	queue_redraw()
+
+
+# ----- 필드 사냥(07-fun 1절) -----
+
+## 마을 경계를 넘을 때: 들어가면 주머니를 풀고(내 것이 된다), 나서면 새 나들이.
+func _town_edge() -> void:
+	var now := map.is_town(_hero)
+	if now == _in_town_now:
+		return
+	_in_town_now = now
+	if now:
+		var got := _run.bank(GameData.state, GameData.rules)
+		_shots.clear()
+		_drops.clear()
+		if int(got["orbs"]) + int(got["coins"]) + (got["words"] as Array).size() > 0:
+			GameData.save()
+			_show_toast(t("ui.hunt.banked").format({"orbs": got["orbs"], "coins": got["coins"], "words": (got["words"] as Array).size()}))
+		_enemies = _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater")
+	else:
+		_run.reset()
+		_wt.clear()
+
+
+func _hunt(delta: float) -> void:
+	# 뿌리먹이
+	if _run.tick(delta):
+		_spawn_eater()
+	# 무기
+	for id in _run.d["weapons"]:
+		var w := _run.weapon(String(id))
+		match String(w["type"]):
+			"boomerang", "nova":
+				_wt[id] = float(_wt.get(id, 0.5)) - delta
+				if _wt[id] <= 0.0:
+					_wt[id] = float(w["cd"])
+					_fire(String(id), w)
+			"orbit":
+				_orbit_a += float(w["speed"]) * delta
+				for k in int(w["count"]):
+					var p := _hero + Vector2.from_angle(_orbit_a + k * TAU / int(w["count"])) * float(w["range"])
+					for e in _enemies:
+						if e.pos.distance_to(p) < ENEMY_R + 18 and Time.get_ticks_msec() / 1000.0 >= float(_orbit_hit.get(e, 0.0)):
+							_orbit_hit[e] = Time.get_ticks_msec() / 1000.0 + float(w["hit_gap"])
+							_hit(e, int(w["dmg"]), p)
+	# 날아가는 망치: 목표까지 갔다가 돌아온다
+	for sh in _shots.duplicate():
+		var to: Vector2 = _hero if sh["back"] else sh["to"]
+		var d: Vector2 = to - (sh["pos"] as Vector2)
+		var step := float(_hc["weapons"]["hammer"]["speed"]) * delta
+		if d.length() <= step:
+			if sh["back"]:
+				_shots.erase(sh)
+				continue
+			sh["back"] = true
+		else:
+			sh["pos"] = (sh["pos"] as Vector2) + d.normalized() * step
+		for e in _enemies:
+			if not (sh["hit"] as Dictionary).has(e) and e.pos.distance_to(sh["pos"]) < ENEMY_R + 14:
+				sh["hit"][e] = true
+				_hit(e, int(sh["dmg"]), sh["pos"])
+	for nv in _novas.duplicate():
+		nv["t"] = float(nv["t"]) + delta
+		if nv["t"] > 0.35:
+			_novas.erase(nv)
+	# 떨어진 것: 가까우면 빨려 오고, 닿으면 줍는다
+	for dr in _drops.duplicate():
+		var dd: Vector2 = _hero - (dr["pos"] as Vector2)
+		if dd.length() < _run.magnet():
+			dr["pos"] = (dr["pos"] as Vector2) + dd.normalized() * minf(dd.length(), 640.0 * delta)
+		if dd.length() < HERO_R + 10:
+			_drops.erase(dr)
+			match String(dr["kind"]):
+				"orb":
+					if _run.pick_orbs(int(dr["v"])):
+						_open_level_up()
+				"coin":
+					_run.pick_coins(int(dr["v"]))
+				"word":
+					_run.pick_word(String(dr["v"]))
+					_show_toast(t("ui.hunt.word").format({"word": dr["v"]}))
+	var b := _run.bag()
+	_hunt_lbl.text = t("ui.hunt.hud").format({"lv": _run.level(), "orbs": b["orbs"], "coins": b["coins"], "words": (b["words"] as Array).size()})
+	_lvl_bar.max_value = _run.need()
+	_lvl_bar.value = int(_run.d["exp"])
+
+
+## 붙기 직전(no_fire_near 안)의 몹은 쏘지 않는다: 퀴즈를 하고 싶으면 다가가면 된다.
+func _targets(range_px: float) -> Array[FieldMob]:
+	var out: Array[FieldMob] = []
+	for e in _enemies:
+		var dist := e.pos.distance_to(_hero)
+		if dist <= range_px and dist > float(_hc["no_fire_near"]):
+			out.append(e)
+	out.sort_custom(func(a: FieldMob, b: FieldMob) -> bool: return a.pos.distance_to(_hero) < b.pos.distance_to(_hero))
+	return out
+
+
+func _fire(id: String, w: Dictionary) -> void:
+	var ts := _targets(float(w["range"]))
+	if ts.is_empty():
+		_wt[id] = 0.2
+		return
+	if w["type"] == "nova":
+		_novas.append({"r": float(w["range"]), "t": 0.0})
+		for e in ts:
+			_hit(e, int(w["dmg"]), e.pos)
+		return
+	for k in mini(int(w["count"]), ts.size()):
+		_shots.append({"pos": _hero, "to": ts[k].pos, "back": false, "dmg": int(w["dmg"]), "hit": {}})
+
+
+func _hit(e: FieldMob, dmg: int, from: Vector2) -> void:
+	if not _enemies.has(e):
+		return
+	var dead := e.take_hit(dmg)
+	if e.kind != "eater":
+		e.set_meta("push", (e.pos - from).normalized() * float(_hc["knockback"]))
+	if dead:
+		var got := _run.drops(e.kind, e.words, _rng)
+		_drops.append({"pos": e.pos, "kind": "orb", "v": got["orbs"]})
+		if int(got["coins"]) > 0:
+			_drops.append({"pos": e.pos + Vector2(14, 6), "kind": "coin", "v": got["coins"]})
+		if got["word"] != "":
+			_drops.append({"pos": e.pos + Vector2(-14, 6), "kind": "word", "v": got["word"]})
+		var i := _enemies.find(e)
+		var ne := _new_enemy()
+		if ne:
+			_enemies[i] = ne
+		else:
+			_enemies.remove_at(i)
+
+
+func _spawn_eater() -> void:
+	var m := FieldMob.new()
+	m.kind = "eater"
+	m.max_hp = int(_hc["mob_hp"]["eater"])
+	m.hp = m.max_hp
+	var p := map.random_field_spot(GameFlow.STAGE, _rng, _hero, 800, 1100, ENEMY_R)
+	m.pos = p if p != Vector2.INF else _hero + Vector2(900, 0)
+	var pool := GameData.repo.first_tier(GameFlow.STAGE, "field").filter(func(w: WordData) -> bool: return GameData.curriculum.has_learned(w, GameFlow.STAGE))
+	for k in int(_hc["eater"]["words"]):
+		if not pool.is_empty():
+			m.words.append((pool[_rng.randi_range(0, pool.size() - 1)] as WordData).id)
+	_enemies.append(m)
+	_show_toast(t("ui.hunt.eater"))
+	GameData.vibrate(true)
+
+
+## 레벨업: 보기 3개(무기 새로·강화, 이동 속도, 구슬 끌기) 중 하나. 고르는 동안 필드는 멈춘다.
+func _open_level_up() -> void:
+	var cs := _run.choices(GameData.state.field_skills, _rng)
+	_stick_on = false
+	_choosing = Control.new()
+	_choosing.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_choosing.mouse_filter = Control.MOUSE_FILTER_STOP
+	_choosing.z_index = 25
+	add_child(_choosing)
+	var dim := ColorRect.new()
+	dim.color = Color(0.15, 0.13, 0.22, 0.55)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.offset_top = -UiKit.BG_BLEED
+	dim.offset_bottom = UiKit.BG_BLEED
+	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_choosing.add_child(dim)
+	var v := UiKit.vbox(14)
+	v.position = Vector2(60, 360)
+	v.custom_minimum_size.x = 600
+	_choosing.add_child(v)
+	var title := UiKit.label(t("ui.hunt.level_up").format({"lv": _run.level()}), 34, Color.WHITE)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(title)
+	for c in cs:
+		var ch: Dictionary = c
+		var txt := t("ui.hunt.pick_" + String(ch["type"])).format({"w": t("ui.hunt.weapon." + String(ch["id"])) if ch["id"] != "" else ""})
+		var b := UiKit.button(txt, func() -> void:
+			_run.apply(ch)
+			_choosing.queue_free()
+			_choosing = null, UiKit.APRICOT.lightened(0.3), 26)
+		b.custom_minimum_size = Vector2(600, 96)
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		v.add_child(b)
 
 
 static func _mmss(sec: int) -> String:
@@ -531,8 +758,43 @@ func _draw() -> void:
 		draw_rect(Rect2(p - Vector2(tw / 2, 34), Vector2(tw, 34)), Color("7a5a3a"), false, 3)
 		draw_string(font, p + Vector2(-tw / 2, -10), title, HORIZONTAL_ALIGNMENT_CENTER, tw, 20, UiKit.INK)
 		draw_string(font, p + Vector2(-10, -40), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 30 + 4 * sin(Time.get_ticks_msec() / 200.0), UiKit.BAD)
+	for dr in _drops:
+		var dp: Vector2 = o + dr["pos"]
+		match String(dr["kind"]):
+			"orb":
+				draw_circle(dp, 8 + int(dr["v"]), Color("7cc4f0"))
+				draw_circle(dp - Vector2(2, 2), 3, Color.WHITE)
+			"coin":
+				draw_circle(dp, 9, Color("f5c542"))
+				draw_arc(dp, 9, 0, TAU, 16, Color("b8902a"), 2)
+			"word":
+				draw_rect(Rect2(dp - Vector2(12, 15), Vector2(24, 30)), Color("fff4dc"))
+				draw_rect(Rect2(dp - Vector2(12, 15), Vector2(24, 30)), UiKit.ACCENT, false, 3)
 	for e in _enemies:
 		_draw_mob(e, o + e.pos)
+	for sh in _shots:  # 망치
+		var sp: Vector2 = o + sh["pos"]
+		draw_set_transform(sp, Time.get_ticks_msec() / 60.0, Vector2.ONE)
+		draw_rect(Rect2(-14, -6, 28, 12), Color("8b6640"))
+		draw_rect(Rect2(6, -12, 12, 24), Color("6f6257"))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	if _run and _run.d["weapons"].has("spin") and not map.is_town(_hero):  # 도는 팽이
+		var w := _run.weapon("spin")
+		for k in int(w["count"]):
+			var p := o + _hero + Vector2.from_angle(_orbit_a + k * TAU / int(w["count"])) * float(w["range"])
+			draw_circle(p, 14, Color("e9a0b8"))
+			draw_arc(p, 14, _orbit_a * 3.0, _orbit_a * 3.0 + PI, 10, UiKit.INK, 3)
+	for nv in _novas:  # 외침
+		var k := float(nv["t"]) / 0.35
+		draw_arc(o + _hero, float(nv["r"]) * k, 0, TAU, 48, Color(UiKit.ACCENT, 1.0 - k), 8)
+	for e in _enemies:  # 화면 밖 뿌리먹이: 가장자리 빨간 화살표
+		if e.kind == "eater":
+			var sp := o + e.pos
+			if not Rect2(Vector2.ZERO, size).has_point(sp):
+				var c := size / 2.0
+				var dir := (sp - c).normalized()
+				var edge := c + dir * minf(size.x * 0.45, size.y * 0.4)
+				draw_colored_polygon(PackedVector2Array([edge + dir * 30, edge + dir.rotated(2.5) * 24, edge + dir.rotated(-2.5) * 24]), UiKit.BAD)
 	# 주인공과 칭호 리본(04-meta.md 5절). 몰래 걷는 동안은 흐리게
 	var h := o + _hero
 	if _fmagic and _fmagic.sneak > 0.0:
@@ -618,6 +880,17 @@ func _draw_villager(p: Vector2) -> void:
 ## 몹 모양: 배회(보라, 동그란 눈), 쫓기(주황, 뿔과 성난 눈썹, 쫓을 때 !), 도망(민트, 긴 귀와 땀방울, 도망칠 때 땀).
 func _draw_mob(e: FieldMob, p: Vector2) -> void:
 	var font := ThemeDB.fallback_font
+	if e.kind == "eater":  # 뿌리먹이: 크고 검붉은, 뿌리 같은 촉수
+		var t0 := Time.get_ticks_msec() / 300.0
+		for k in 6:
+			var a := k * TAU / 6.0 + t0
+			draw_line(p, p + Vector2.from_angle(a) * (ENEMY_R * 2.2 + sin(t0 * 2 + k) * 8), Color("5a2a3a"), 6)
+		draw_circle(p, ENEMY_R * 1.6, Color("7a2a3a"))
+		draw_circle(p + Vector2(-12, -6), 6, Color("f5c542"))
+		draw_circle(p + Vector2(12, -6), 6, Color("f5c542"))
+		return
+	if e.flash > 0.0:
+		draw_circle(p, ENEMY_R + 6, Color(1, 1, 1, 0.8))
 	var bob := sin(Time.get_ticks_msec() / 160.0 + p.x * 0.01) * 3.0
 	p += Vector2(0, bob)
 	if not Art.draw(self, "enemy", "field_" + e.kind, p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
@@ -638,6 +911,9 @@ func _draw_mob(e: FieldMob, p: Vector2) -> void:
 		if e.kind == "chase":
 			draw_line(p + Vector2(-15, -14), p + Vector2(-4, -9), UiKit.INK, 3)
 			draw_line(p + Vector2(15, -14), p + Vector2(4, -9), UiKit.INK, 3)
+	if e.hp < e.max_hp:  # 깎인 체력
+		draw_rect(Rect2(p + Vector2(-24, ENEMY_R + 6), Vector2(48, 6)), Color(0, 0, 0, 0.3))
+		draw_rect(Rect2(p + Vector2(-24, ENEMY_R + 6), Vector2(48.0 * e.hp / maxi(1, e.max_hp), 6)), UiKit.BAD)
 	if e.stun > 0.0:  # de-로 멈춘 몹: 머리 위 별
 		for k in 3:
 			var a := Time.get_ticks_msec() / 200.0 + k * TAU / 3.0

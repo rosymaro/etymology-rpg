@@ -10,6 +10,20 @@ var words: Array[String] = []
 var alert := false  ## 쫓는 중·도망가는 중
 var stun := 0.0  ## 남은 멈춤 시간(필드 마법 de- 등)
 var ignore := false  ## 주인공을 못 알아챔(필드 마법 sub- 몰래 걷기)
+var hp := 1  ## 필드 사냥 체력(07-fun 1절)
+var max_hp := 1
+var flash := 0.0  ## 맞고 깜빡이는 남은 시간
+
+
+## 필드 사냥 무기에 맞음. 쓰러지면 true. 뿌리먹이(eater)는 체력이 1 아래로 내려가지 않는다(공격을 뚫고 온다).
+func take_hit(dmg: int) -> bool:
+	flash = 0.15
+	hp = maxi(1 if kind == "eater" else 0, hp - dmg)
+	return hp <= 0
+
+
+func hurt_ratio() -> float:
+	return 1.0 - float(hp) / float(maxi(1, max_hp))
 var _t := 0.0
 
 
@@ -30,6 +44,12 @@ func steer(hero: Vector2, delta: float, kinds: Dictionary, rng: RandomNumberGene
 	if stun > 0.0:
 		stun -= delta
 		vel = Vector2.ZERO
+		return vel
+	flash = maxf(0.0, flash - delta)
+	if kind == "eater":  # 뿌리먹이: 곧장 주인공에게(밀리지 않고, 몰래 걷기도 안 통한다)
+		var dd := hero - pos
+		alert = true
+		vel = dd.normalized() * float(kinds.get("eater", {}).get("speed", 420)) if dd.length() > 1.0 else Vector2.ZERO
 		return vel
 	var k: Dictionary = kinds.get(kind, kinds["wander"])
 	if ignore:
