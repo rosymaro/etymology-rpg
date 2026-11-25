@@ -87,3 +87,26 @@ func test_factory_play_and_story_reward_goes_through_quiz() -> void:
 	await wait_seconds(1.5)
 	assert_true(main.current() is ResultScreen)
 	assert_true(GameData.state.has_word(first))
+
+func test_cave_mouth_switches_to_cave_map_and_back() -> void:
+	main.flow.dev_game()
+	await wait_physics_frames(3)
+	var fs := main.current() as FieldScreen
+	var wm := WorldMap.load_default()
+	var cv: Dictionary = wm.cave_info("s01_cave_pass")
+	var mo: Array = cv["mouths"][1]
+	fs._hero = (Vector2(float(mo[0]), float(mo[1])) + Vector2(0.5, 0.5)) * wm.tile
+	fs._cave_step()
+	assert_eq(fs._cave, "s01_cave_pass", "입구를 밟으면 동굴 지도로")
+	assert_true(fs.map.in_cave(), "동굴 지도")
+	assert_eq(GameData.state.cave, "s01_cave_pass", "저장된다")
+	assert_eq(fs.map.cell(fs._hero), fs.map.cell(fs.map.exit_inside(1)), "들어온 입구 쪽 안에서 시작")
+	var ex: Array = fs.map.exits[0]
+	fs._hero = (Vector2(float(ex[0]), float(ex[1])) + Vector2(0.5, 0.5)) * fs.map.tile
+	fs._cave_step()
+	assert_eq(fs._cave, "", "나가는 곳을 밟으면 큰 지도로")
+	assert_eq(fs.map, wm)
+	assert_eq(fs._hero, wm.cave_out("s01_cave_pass", 0), "반대편 입구 밖으로 나온다")
+	main.flow.go_field()
+	await wait_physics_frames(2)
+	assert_eq((main.current() as FieldScreen)._cave, "")

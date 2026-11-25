@@ -433,6 +433,7 @@ func _to_hospital() -> void:
 	var s := GameData.state
 	s.pos = WorldMap.load_default().spot(STAGE, "hospital")
 	s.place = "town"
+	s.cave = ""
 	GameData.rules.start_rest(s, int(Time.get_unix_time_from_system()), int(GameData.field["rest_sec"]))
 	GameData.save()
 

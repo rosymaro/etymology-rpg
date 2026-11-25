@@ -111,15 +111,20 @@ func _run() -> void:
 		(main.current() as FieldScreen)._enemies.clear()
 		await _shot("05_puzzle_" + kind)
 	var qc: Dictionary = wm.caves.filter(func(x: Dictionary) -> bool: return x["kind"] == "quest")[0]
-	var qitem: Dictionary = wm.items[0]
-	s.pos = (Vector2(int(qitem["cell"][0]), int(qitem["cell"][1])) + Vector2(0.5, 0.5)) * wm.tile
+	s.pos = wm.cave_out(qc["id"], 0)
 	main.flow.go_field()
 	(main.current() as FieldScreen)._enemies.clear()
-	await _shot("05_cave_dark")
-	s.pos = (Vector2(int(qc["mouths"][0][0]), int(qc["mouths"][0][1])) + Vector2(0.5, 0.5)) * wm.tile
+	await _shot("05_cave_mouth")  # 큰 지도의 동굴 입구 앞
+	var cm := WorldMap.load_cave(qc["id"])
+	var qitem: Dictionary = cm.items[0]
+	s.cave = qc["id"]
+	s.pos = (Vector2(int(qitem["cell"][0]), int(qitem["cell"][1])) + Vector2(-1.5, 0.5)) * cm.tile
 	main.flow.go_field()
 	(main.current() as FieldScreen)._enemies.clear()
-	await _shot("05_cave_mouth")
+	await _shot("05_cave_dark")  # 따로 된 동굴 지도
+	s.cave = ""
+	s.pos = wm.cave_out(qc["id"], 0)
+	main.flow.go_field()
 	s.notes = ["in-", "forma"]
 	var lq: Dictionary = wm.puzzles.filter(func(x: Dictionary) -> bool: return x["kind"] == "lock")[0]
 	(main.current() as FieldScreen)._open_lock(gd.puzzles[lq["id"]])

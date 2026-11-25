@@ -9,9 +9,11 @@ extends Screen
 const HERO_R := 26.0
 const ENEMY_R := 30.0
 const TOUCH_R := 110.0
-const MINI_SCALE := 0.9  ## 미니맵: 타일 하나당 픽셀
+const MINI_SCALE := 0.9  ## 미니맵: 타일 하나당 픽셀(큰 지도)
+const CAVE_WALL := Color("3f3934")  ## 동굴 지도의 바위벽
+const MINI_H := 144.0  ## 미니맵 높이(동굴 지도도 같은 높이로 크게 그린다)
 const TILE_COL := {".": Color("d8eec9"), ",": Color("f3ead8"), "p": Color("d9c59a"), "b": Color("b98c5a"), "=": Color("e9876a"), "q": Color("8c6a4a"),
-	"s": Color("d9d2c3"), "O": Color("3d3530"), "i": Color("cfe9f5"), "k": Color("5a5048"), "c": Color("9a8f86"), "F": Color("c9a874"), "h": Color("b7a48c"), "o": Color("8cc6e8"), "f": Color("b9d77e"),
+	"x": Color("f5e7a8"), "s": Color("d9d2c3"), "O": Color("3d3530"), "i": Color("cfe9f5"), "k": Color("8a7d6e"), "c": Color("9a8f86"), "F": Color("c9a874"), "h": Color("b7a48c"), "o": Color("8cc6e8"), "f": Color("b9d77e"),
 	"^": Color("9a8f86"), "~": Color("6fa8dc"), "w": Color("8cc6e8"), "#": Color("6f6257"), "T": Color("6fae74"), "H": Color("a7a7b4")}
 
 var map: WorldMap
@@ -68,21 +70,59 @@ var _home_btn: Button
 var _goal_card: Control
 var _tut: TutorialOverlay  ## 지금 보이는 튜토리얼(08-tutorial.md)
 var _tut_level_btn: Button
+var _cave := ""  ## 들어가 있는 동굴 지도 id(07-fun 5절). 비면 큰 지도
 
 static var _map_tex: ImageTexture
 
 
 func open(args: Dictionary) -> void:
 	_rng.randomize()
-	map = WorldMap.load_default()
 	_f = GameData.field
 	_hc = GameData.hunt_cfg
 	_run = GameData.hunt_run()
 	_gates = main.flow.open_gates()
+	_fmagic = FieldMagicUse.new(_f["magic"])
 	var s := GameData.state
+	_cave = s.cave
+	map = WorldMap.load_cave(_cave) if _cave != "" else null
+	if map == null:
+		_cave = ""
+		map = WorldMap.load_default()
 	_hero = s.pos
 	if _hero == Vector2.ZERO or not map.fits(_hero, HERO_R, _gates):
-		_hero = map.start(GameFlow.STAGE)  # 처음이거나 옛 지도 자리면 마을에서
+		_hero = map.exit_inside(0) if _cave != "" else map.start(GameFlow.STAGE)  # 처음이거나 옛 지도 자리면 마을에서
+	_setup_map()
+	_in_town_now = map.is_town(_hero)
+	if _in_town_now and int(_run.bag()["orbs"]) + int(_run.bag()["coins"]) + (_run.bag()["words"] as Array).size() > 0:
+		_in_town_now = false  # 마을에서 시작(병원 등): 주머니를 바로 푼다
+		_town_edge.call_deferred()
+	_build_hud()
+	_build_minimap()
+	if args.get("msg", "") != "":
+		_show_toast(args["msg"])
+	_tutorial.call_deferred("field")
+	set_process(true)
+
+
+## 지금 지도(큰 지도 또는 동굴 지도)에 맞춰 자리·몹·마을 사람·퍼즐을 채운다.
+func _setup_map() -> void:
+	_enemies.clear()
+	_villagers.clear()
+	_drops.clear()
+	_shots.clear()
+	_puz.clear()
+	_spots = []
+	if _cave != "":
+		for i in int(_f.get("cave_enemies", 5)):
+			var ce := _new_enemy()
+			if ce:
+				_enemies.append(ce)
+		for q in map.puzzles:
+			if not GameData.puzzles.has(q["id"]):
+				GameData.puzzles[q["id"]] = PushPuzzle.from_dict(q)
+			_puz.append(GameData.puzzles[q["id"]])
+		_sync_blocks()
+		return
 	_spots = [
 		{"id": "forge", "pos": map.spot(1, "forge"), "key": "ui.field.forge", "color": UiKit.APRICOT},
 		{"id": "tree", "pos": map.spot(1, "tree"), "key": "ui.field.tree", "color": UiKit.LEAF},
@@ -104,22 +144,51 @@ func open(args: Dictionary) -> void:
 		v.words = [str(_rng.randi_range(1, 6))] as Array[String]  # 말버릇 번호
 		_villagers.append(v)
 	_was_resting = main.flow.rest_left() > 0
-	_fmagic = FieldMagicUse.new(_f["magic"])
 	for q in map.puzzles:  # 퍼즐 상태는 화면이 바뀌어도 남는다
 		if not GameData.puzzles.has(q["id"]):
 			GameData.puzzles[q["id"]] = PushPuzzle.from_dict(q)
 		_puz.append(GameData.puzzles[q["id"]])
 	_sync_blocks()
-	_in_town_now = map.is_town(_hero)
-	if _in_town_now and int(_run.bag()["orbs"]) + int(_run.bag()["coins"]) + (_run.bag()["words"] as Array).size() > 0:
-		_in_town_now = false  # 마을에서 시작(병원 등): 주머니를 바로 푼다
-		_town_edge.call_deferred()
-	_build_hud()
-	_build_minimap()
-	if args.get("msg", "") != "":
-		_show_toast(args["msg"])
-	_tutorial.call_deferred("field")
-	set_process(true)
+
+
+## 동굴 입구(c)를 밟으면 동굴 지도로, 동굴의 나가는 곳(x)을 밟으면 큰 지도의 그 입구 밖으로.
+func _cave_step() -> void:
+	var c := map.cell(_hero)
+	if _cave == "":
+		var mo := map.mouth_at(c)
+		if not mo.is_empty():
+			_switch_map(String(mo[0]), int(mo[1]))
+	else:
+		var i := map.exit_at(c)
+		if i >= 0:
+			_leave_cave(i)
+
+
+func _leave_cave(i: int) -> void:
+	_switch_map("", i)
+
+
+## 지도를 바꾼다. cave = ""면 큰 지도(직전 동굴의 i번째 입구 밖), 아니면 그 동굴의 i번째 나가는 곳 안쪽.
+func _switch_map(cave: String, i: int) -> void:
+	var from := _cave
+	_cave = cave
+	if cave == "":
+		map = WorldMap.load_default()
+		_hero = map.cave_out(from, i)
+	else:
+		map = WorldMap.load_cave(cave)
+		_hero = map.exit_inside(i)
+	_stick_on = false
+	_setup_map()
+	_map_tex = null
+	_mini.texture = map_texture(map, _gates)
+	_mini.custom_minimum_size = Vector2(map.w, map.h) * _mini_k()
+	_mini.size = _mini.custom_minimum_size
+	_remember()
+	GameData.save()
+	_follow_cam()
+	_show_toast(t("ui.cave.enter") if cave != "" else t("ui.cave.leave"))
+	queue_redraw()
 
 
 func _build_hud() -> void:
@@ -148,13 +217,13 @@ func _build_hud() -> void:
 	var gc := UiKit.card()
 	gc.add_child(_goal)
 	add_child(gc)
-	gc.position = Vector2(16, 150 + map.h * MINI_SCALE + 10)
+	gc.position = Vector2(16, 150 + MINI_H + 10)
 	_goal_card = gc
 	_rest = UiKit.label("", 22, UiKit.BAD.darkened(0.2))
 	var rc := UiKit.card(Color("fff4dc"))
 	rc.add_child(_rest)
 	add_child(rc)
-	rc.position = Vector2(16, 150 + map.h * MINI_SCALE + 10 + 48)
+	rc.position = Vector2(16, 150 + MINI_H + 10 + 48)
 	rc.visible = false
 	_rest.set_meta("card", rc)
 	var hc := UiKit.card(Color("f3ecff"))
@@ -206,7 +275,7 @@ func _build_hud() -> void:
 	_toast.add_theme_stylebox_override("normal", tb)
 	_toast.visible = false
 	add_child(_toast)
-	UiKit.pin(_toast, 0.5, 0, 0, 150 + map.h * MINI_SCALE + 70)  # 미니맵·할 일 아래(가리지 않게)
+	UiKit.pin(_toast, 0.5, 0, 0, 150 + MINI_H + 70)  # 미니맵·할 일 아래(가리지 않게)
 	_update_top()
 
 
@@ -239,6 +308,7 @@ func _go(f: Callable) -> void:
 
 func _remember() -> void:
 	GameData.state.pos = _hero
+	GameData.state.cave = _cave
 	GameData.state.place = "town" if map.is_town(_hero) else "field"
 
 
@@ -310,6 +380,7 @@ func _process(delta: float) -> void:
 	var before := _hero
 	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * _run.speed_mult() * delta, HERO_R, _gates)
 	_puzzle_step(dir, before, delta)
+	_cave_step()
 	var left: int = main.flow.rest_left()
 	if left > 0 and was_town and not map.is_town(_hero):  # 병원에서 쉬는 중: 마을 밖으로 못 나간다
 		_hero = before
@@ -512,7 +583,7 @@ func _cast(id: String) -> void:
 	if id == "ex":  # 동굴에서 바로 밖으로
 		if map.in_cave(_hero):
 			_fmagic.use(id, _hero, [])
-			_hero = map.nearest_mouth(_hero)
+			_leave_cave(map.nearest_exit(_hero))
 		return
 	if id == "com":  # 떨어진 것을 모두 끌어온다
 		for dr in _drops:
@@ -978,6 +1049,8 @@ func _town_spot() -> Vector2:
 
 
 func _go_home() -> void:
+	if _cave != "":
+		_switch_map("", 0)
 	_hero = map.start(GameFlow.STAGE)
 	_stick_on = false
 	_remember()
@@ -1054,7 +1127,7 @@ func _close_quests() -> void:
 func _draw() -> void:
 	var o := -_cam
 	# 화면 위아래 여백(Main)까지 땅색으로
-	draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), TILE_COL["^"])
+	draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), CAVE_WALL if map.is_cave else TILE_COL["^"])
 	_draw_tiles(o)
 	var font := ThemeDB.fallback_font
 	_draw_buildings(o)
@@ -1316,8 +1389,12 @@ func _draw_tiles(o: Vector2) -> void:
 		for x in range(maxi(0, c0.x - 1), mini(map.w, c1.x + 2)):
 			var k := row[x]
 			var r := Rect2(o + Vector2(x, y) * ts, Vector2(ts, ts))
-			draw_rect(r, TILE_COL.get(k, Color.MAGENTA))
 			var hsh := (x * 73856093) ^ (y * 19349663)
+			if map.is_cave and k == "^":  # 동굴 벽: 울퉁불퉁한 바위
+				draw_rect(r, CAVE_WALL)
+				draw_circle(r.get_center() + Vector2((hsh % 16) - 8, ((hsh / 5) % 16) - 8), ts * 0.32, CAVE_WALL.lightened(0.12))
+				continue
+			draw_rect(r, TILE_COL.get(k, Color.MAGENTA))
 			var c := r.get_center()
 			match k:
 				".":
@@ -1431,11 +1508,11 @@ func _build_minimap() -> void:
 	_mini.texture = map_texture(map, _gates)
 	_mini.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_mini.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	_mini.custom_minimum_size = Vector2(map.w, map.h) * MINI_SCALE
+	_mini.custom_minimum_size = Vector2(map.w, map.h) * _mini_k()
 	_mini.size = _mini.custom_minimum_size
 	_mini.position = Vector2(16, 150)
 	_mini.mouse_filter = Control.MOUSE_FILTER_STOP
-	_mini.draw.connect(func() -> void: _draw_marks(_mini, MINI_SCALE, false))
+	_mini.draw.connect(func() -> void: _draw_marks(_mini, _mini_k(), false))
 	_mini.gui_input.connect(func(ev: InputEvent) -> void:
 		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
 			_open_full())
@@ -1443,6 +1520,10 @@ func _build_minimap() -> void:
 
 
 ## 지도 위 표시: 주인공(깜빡이는 점), 보이는 화면 테두리, 보스 자리, (전체 지도면) 지역 이름.
+func _mini_k() -> float:
+	return MINI_H / float(map.h)
+
+
 func _draw_marks(c: Control, k: float, names: bool) -> void:
 	var ts := float(map.tile)
 	c.draw_rect(Rect2(Vector2.ZERO, c.size), UiKit.INK, false, 2.0)

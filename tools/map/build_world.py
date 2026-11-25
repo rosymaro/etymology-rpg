@@ -10,8 +10,9 @@
 - 스테이지 1 퀘스트 길목(q): 강의 다리는 끊어져 있어 fac 퀘스트로 고치고, 보스 둘레 절벽은 de- 퀘스트로 내려간다.
 - 돌 밀기 퍼즐(07-fun 3·4절): tools/map/puzzles/s01.txt의 판을 지역 1 들판의 빈 풀밭에 박는다(풀 수 있는지 push_puzzle.py가 확인).
   O 구멍(돌로 메움)  i 얼음(돌이 미끄러짐). 돌·발판·상자·숨은 쪽지는 지도 글자가 아니라 puzzles 목록에 적는다.
-- 동굴(07-fun 5절): 지역 1의 산(^) 덩어리를 뚫는다. k 동굴 바닥(어둡다)  c 동굴 입구. 넘어가는 동굴(지름길), 보물 동굴(끝에 상자),
-  퀘스트 동굴(끝에 마을 아이의 장난감 망치). 보물 동굴은 상자 퍼즐(kind cave)로, 퀘스트 물건은 items에 적는다.
+- 동굴(07-fun 5절): 큰 지도에는 산(^) 가장자리에 입구(c)만 둔다. 들어가면 따로 된 동굴 지도(cave_maps)로 넘어간다.
+  동굴 지도 글자: ^ 바위벽  k 동굴 바닥  x 나가는 곳(입구 순서대로). 넘어가는 동굴(입구 둘, 지름길), 보물 동굴(끝에 상자),
+  퀘스트 동굴(끝에 마을 아이의 장난감 망치).
 - 스테이지 1 마을은 30 × 20(04-meta 9절): 울타리(F)와 문, 가운데 광장과 분수(o), 돌길(s), 건물(h, 지붕은 게임이 그린다), 밭(f).
 글자: . 풀  , 마을 바닥  s 마을 돌길  F 울타리  h 건물 벽  o 분수·우물  f 밭  p 길·고갯길  b 다리  = 스테이지 문  q 퀘스트 길목  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
 """
@@ -53,6 +54,69 @@ def px(x, y):
 # 스테이지 1 마을 배치(마을 왼쪽 위 기준 칸). 건물: (id, x, y, w, h). 문은 아래 가운데, 살펴보기 자리는 문 바로 아래.
 TOWN_BUILDINGS = [('forge', 3, 2, 6, 4), ('board', 21, 2, 6, 4), ('hospital', 3, 13, 6, 4),
                   ('house1', 10, 14, 3, 3), ('house2', 18, 14, 3, 3), ('house3', 10, 2, 3, 3), ('house4', 22, 13, 4, 3)]
+
+
+CAVE_W, CAVE_H = 30, 22
+
+
+def make_cave(r, kind, n_exits):
+    """동굴 지도 하나: 바위(^) 속에 굽은 굴(k)과 방을 판다. 나가는 곳(x)은 가장자리, 넘어가는 동굴은 둘(왼쪽·오른쪽).
+    보물 동굴은 끝 방에 상자(puzzles, kind cave), 퀘스트 동굴은 끝 방에 물건(items)."""
+    W2, H2 = CAVE_W, CAVE_H
+    cg = [['^'] * W2 for _ in range(H2)]
+    start = (1, r.randint(4, H2 - 5))
+    end = (W2 - 2, r.randint(4, H2 - 5)) if n_exits > 1 else (r.randint(W2 - 9, W2 - 6), r.randint(4, H2 - 5))
+    pts = [start] + [(r.randint(5 + 7 * k, 10 + 7 * k), r.randint(3, H2 - 4)) for k in range(3)] + [end]
+    def dig(x, y, rad=1):
+        for yy in range(y - rad, y + rad + 1):
+            for xx in range(x - rad, x + rad + 1):
+                if 1 <= xx < W2 - 1 and 1 <= yy < H2 - 1:
+                    cg[yy][xx] = 'k'
+    for (ax, ay), (bx, by) in zip(pts, pts[1:]):
+        x, y = ax, ay
+        while (x, y) != (bx, by):  # 굽은 굴
+            if x != bx and (y == by or r.random() < 0.6):
+                x += 1 if bx > x else -1
+            else:
+                y += 1 if by > y else -1
+            dig(x, y, 1 if r.random() < 0.8 else 0)
+    for (px_, py_) in pts[1:]:  # 방
+        dig(px_, py_, 2)
+    exits = [[0, start[1]]]
+    cg[start[1]][0] = 'x'
+    cg[start[1]][1] = 'k'
+    if n_exits > 1:
+        cg[end[1]][W2 - 1] = 'x'
+        cg[end[1]][W2 - 2] = 'k'
+        exits.append([W2 - 1, end[1]])
+    out = {'w': W2, 'h': H2, 'tile': TILE, 'exits': exits, 'items': [], 'puzzles': []}
+    if kind == 'quest':
+        out['items'].append({'id': 'toy_hammer', 'cell': list(end)})
+    if kind == 'treasure':
+        ex, ey = end
+        rows_b = []
+        for y in range(ey - 3, ey + 4):
+            rows_b.append(''.join('C' if (x, y) == (ex, ey) else ('E' if (x, y) == (ex - 2, ey) else ('.' if 0 <= x < W2 and 0 <= y < H2 and cg[y][x] == 'k' else 'T'))
+                                  for x in range(ex - 3, ex + 4)))
+        out['puzzles'].append({'id': 's01_cave_treasure', 'kind': 'cave', 'reward': 'exp:500', 'answer': '', 'note': '',
+                               'origin': [ex - 3, ey - 3], 'size': [7, 7], 'rows': rows_b, 'rocks': [], 'plates': [],
+                               'chest': [[ex, ey]], 'secret': [], 'entry': [ex - 2, ey], 'spot': px(ex - 2, ey)})
+    out['rows'] = [''.join(row) for row in cg]
+    out['zones'] = ['1' * W2 for _ in range(H2)]
+    out['regions'] = []
+    out['gates'] = []
+    out['quest_gates'] = []
+    out['walk'] = 'kx'
+    # 나가는 곳에서 끝 방(상자·물건)까지 이어졌는지
+    seen = {tuple(exits[0])}; q = collections.deque([tuple(exits[0])])
+    while q:
+        c = q.popleft()
+        for dx, dy in N4:
+            n = (c[0] + dx, c[1] + dy)
+            if 0 <= n[0] < W2 and 0 <= n[1] < H2 and n not in seen and cg[n[1]][n[0]] in 'kx':
+                seen.add(n); q.append(n)
+    assert end in seen and all(tuple(e) in seen for e in exits), '동굴 안이 끊겼다'
+    return out
 
 
 def build_town(g, tx, ty, tw, th, spots):
@@ -506,73 +570,56 @@ def main(river_seed=1000):
                 if n not in cs and g[n[1]][n[0]] == '.' and inside(1, *n) and not near_town(n):
                     out.append(((x, y), n))
         return out
-    # 1) 넘어가는 동굴: 산을 뚫는 굴이 걸어서 돌아가는 길보다 훨씬 짧은 곳
+    # 1) 넘어가는 동굴: 산 양쪽 입구가 걸어서 돌아가는 길보다 훨씬 가까운 곳(퀘스트 길목을 건너뛰지 않게 길목 없이 이어진 곳만)
+    walk_noq = set('.,pbsi')
+    def walk_dist_noq(a):
+        dist = {a: 0}; q = collections.deque([a])
+        while q:
+            c = q.popleft()
+            for dx, dy in N4:
+                n = (c[0] + dx, c[1] + dy)
+                if n not in dist and 0 <= n[0] < W and 0 <= n[1] < H and g[n[1]][n[0]] in walk_noq:
+                    dist[n] = dist[c] + 1; q.append(n)
+        return dist
     best = None
     for comp in comps[:10]:
         eg = edge_grass(comp)
         cs = set(comp)
         for (m1, a) in eg[::2]:
             dist, prev = bfs(m1, cs)
-            wd = walk_dist(a)
+            wd = walk_dist_noq(a)
             for (m2, b) in eg:
-                if m2 not in dist or dist[m2] < 5:
+                if m2 not in dist or dist[m2] < 5 or b not in wd:
                     continue
-                gain = wd.get(b, 999) - dist[m2]
+                gain = wd[b] - dist[m2]
                 if best is None or gain > best[0]:
-                    best = (gain, path_to(prev, m2), a, b, comp)
+                    best = (gain, m1, m2, a, b, comp)
     assert best and best[0] >= 20, ('넘어가는 동굴 자리가 없다', best and best[0])
-    _, tun, a, b, comp = best
-    for (x, y) in tun:
-        g[y][x] = 'k'
-    g[tun[0][1]][tun[0][0]] = 'c'; g[tun[-1][1]][tun[-1][0]] = 'c'
+    _, m1, m2, a, b, comp = best
     used.add(id(comp))
-    caves.append({'id': 's01_cave_pass', 'kind': 'pass', 'mouths': [list(tun[0]), list(tun[-1])]})
-    # 2) 보물 동굴, 3) 퀘스트 동굴: 입구에서 가장 먼 곳에 방을 판다
-    def dig_room(comp, cid):
-        cs = set(comp)
-        eg = edge_grass(comp)
-        assert eg, ('동굴 입구가 없다', cid)
-        m1, a = eg[len(eg) // 2]
-        dist, prev = bfs(m1, cs)
-        far = max(dist, key=dist.get)
-        if dist[far] < 4:
-            return None
-        carved = set(path_to(prev, far))
-        for c in comp:
-            if abs(c[0] - far[0]) + abs(c[1] - far[1]) <= 2 and c in dist:
-                carved.add(c)
-        for (x, y) in carved:
-            g[y][x] = 'k'
-        g[m1[1]][m1[0]] = 'c'
-        return m1, far, carved
-    rooms = []
-    for comp in comps:
-        if id(comp) in used or len(comp) < 22 or any(near_town(c) for c in comp):
-            continue
-        got = dig_room(comp, len(rooms))
-        if got:
-            used.add(id(comp)); rooms.append(got)
-        if len(rooms) == 2:
+    caves.append({'id': 's01_cave_pass', 'kind': 'pass', 'mouths': [list(m1), list(m2)], 'outs': [list(a), list(b)]})
+    # 2) 보물 동굴, 3) 퀘스트 동굴: 산 가장자리에 입구 하나
+    for kind in ['treasure', 'quest']:
+        for comp in comps:
+            if id(comp) in used or len(comp) < 12 or any(near_town(c) for c in comp):
+                continue
+            eg = edge_grass(comp)
+            if not eg:
+                continue
+            m, a = eg[len(eg) // 2]
+            used.add(id(comp))
+            caves.append({'id': 's01_cave_' + kind, 'kind': kind, 'mouths': [list(m)], 'outs': [list(a)]})
             break
-    assert len(rooms) == 2, '보물·퀘스트 동굴 자리가 없다'
-    (m1, far, carved) = rooms[0]
-    xs = [c[0] for c in carved] + [m1[0]]; ys = [c[1] for c in carved] + [m1[1]]
-    x0, y0 = min(xs) - 1, min(ys) - 1
-    rows_b = []
-    for y in range(y0, max(ys) + 2):
-        row = ''
-        for x in range(x0, max(xs) + 2):
-            row += 'C' if (x, y) == far else ('E' if (x, y) == m1 else ('.' if (x, y) in carved else 'T'))
-        rows_b.append(row)
-    puzzles.append({'id': 's01_cave_treasure', 'kind': 'cave', 'reward': 'exp:500', 'answer': '', 'note': '',
-                    'origin': [x0, y0], 'size': [len(rows_b[0]), len(rows_b)], 'rows': rows_b, 'rocks': [], 'plates': [],
-                    'chest': [list(far)], 'secret': [], 'entry': list(m1), 'spot': px(*m1)})
-    caves.append({'id': 's01_cave_treasure', 'kind': 'treasure', 'mouths': [list(m1)]})
-    (m2, far2, carved2) = rooms[1]
-    items.append({'id': 'toy_hammer', 'cell': list(far2)})
-    caves.append({'id': 's01_cave_quest', 'kind': 'quest', 'mouths': [list(m2)]})
-    # 지나갈 수 있는지 확인(문 없이 지역마다 마을 → 보스, 문을 다 열면 가운데 → 모든 지역)
-    walk = set('.,pbsikc')
+    assert len(caves) == 3, '보물·퀘스트 동굴 자리가 없다'
+    for cv in caves:
+        for (x, y) in cv['mouths']:
+            g[y][x] = 'c'
+    # 동굴 지도: 따로 된 작은 지도(사용자 의견: 입구에 들어가면 동굴 지도로 넘어간다)
+    cave_maps = {}
+    for k, cv in enumerate(caves):
+        cave_maps[cv['id']] = make_cave(random.Random(500 + k), cv['kind'], len(cv['mouths']))
+    # 지나갈 수 있는지 확인(문 없이 지역마다 마을 → 보스, 문을 다 열면 가운데 → 모든 지역)    # 지나갈 수 있는지 확인(문 없이 지역마다 마을 → 보스, 문을 다 열면 가운데 → 모든 지역)
+    walk = set('.,pbsic')
     def reach(a, allow):
         seen = {a}; q = collections.deque([a])
         while q:
@@ -646,12 +693,13 @@ def main(river_seed=1000):
     allq = reach(s1, walk | {'q'})
     for q in puzzles:
         assert tuple(q['entry']) in allq, ('퍼즐 입구에 못 간다', q['id'])
-    for it in items:
-        assert tuple(it['cell']) in allq, ('퀘스트 물건에 못 간다', it['id'])
+    for cv in caves:
+        for o in cv['outs']:
+            assert tuple(o) in allq, ('동굴 입구에 못 간다', cv['id'])
     zones = [''.join(str(zone[y][x] % 10) if not sea[y][x] else '-' for x in range(W)) for y in range(H)]
     out = {'_doc': 'tools/map/build_world.py가 만든다(손으로 고치지 않는다). 글자 뜻은 그 스크립트 머리말. zones = 칸마다 지역(스테이지 % 10, 바다 -).',
            'tile': TILE, 'w': W, 'h': H, 'rows': [''.join(r) for r in g], 'zones': zones, 'regions': regions, 'gates': gates, 'quest_gates': quest_gates,
-           'puzzles': puzzles, 'caves': caves, 'items': items, 'walk': '.,pbsikc', 'gate': '='}
+           'puzzles': puzzles, 'caves': caves, 'cave_maps': cave_maps, 'walk': '.,pbsic', 'gate': '='}
     json.dump(out, open(os.path.join(ROOT, 'data/map/world.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('world', W, 'x', H)
 

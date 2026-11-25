@@ -18,6 +18,7 @@ var flags: Dictionary = {}  ## 본 장면, 이긴 보스 등
 var recapture: Dictionary = {}  ## 진화 단어 id -> 다시 잡아야 하는 1차 단어 id
 var place := "town"  ## town | field
 var pos := Vector2.ZERO
+var cave := ""  ## 들어가 있는 동굴 지도 id(07-fun 5절). 비면 큰 지도
 var titles: Array[String] = []
 var exam_fail_date := ""
 var wallet := 0  ## 코인(07-fun 8절)
@@ -58,7 +59,7 @@ func to_dict() -> Dictionary:
 	return {
 		"version": VERSION, "hero_name": hero_name, "stage": stage, "dex": dex, "unit_exp": unit_exp,
 		"joined": joined, "equipment": eqs, "magics": magics, "chosen_roots": _str_keys(chosen_roots),
-		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y],
+		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y], "cave": cave,
 		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode,
 		"rest_until": rest_until, "pieces": pieces, "loadout": loadout,
 		"wallet": wallet, "hunt": hunt, "field_skills": field_skills, "notes": notes, "items": items,
@@ -88,6 +89,7 @@ static func from_dict(d: Dictionary) -> GameState:
 	g.flags = d.get("flags", {})
 	g.recapture = d.get("recapture", {})
 	g.place = d.get("place", "town")
+	g.cave = String(d.get("cave", ""))
 	g.rest_until = int(d.get("rest_until", 0))
 	g.pieces = d.get("pieces", {})
 	g.loadout = d.get("loadout", {})
