@@ -74,6 +74,8 @@ var _goal_card: Control
 var _tut: TutorialOverlay  ## 지금 보이는 튜토리얼(08-tutorial.md)
 var _tut_level_btn: Button
 var _cave := ""  ## 들어가 있는 동굴 지도 id(07-fun 5절). 비면 큰 지도
+var _painter: MapPainter  ## 큰 지도 그리기(풍경·바람·물·산맥, data/map/biomes.json). 동굴이면 null
+var _life: MapLife  ## 작은 동물과 날리는 것
 
 static var _map_tex: ImageTexture
 
@@ -114,6 +116,8 @@ func _setup_map() -> void:
 	_drops.clear()
 	_uw.clear()
 	_set_pals()
+	_painter = MapPainter.for_map(map) if not map.is_cave else null
+	_life = MapLife.new(_painter) if _painter else null
 	_puz.clear()
 	_spots = []
 	if _cave != "":
@@ -415,6 +419,8 @@ func _process(delta: float) -> void:
 	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * _run.speed_mult() * delta, HERO_R, _gates)
 	_puzzle_step(dir, before, delta)
 	_cave_step()
+	if _life:
+		_life.update(delta, _hero, _cam, size, Time.get_ticks_msec() / 1000.0)
 	_follow_pals(dir, delta)
 	var left: int = main.flow.rest_left()
 	if left > 0 and was_town and not map.is_town(_hero):  # 병원에서 쉬는 중: 마을 밖으로 못 나간다
@@ -1206,8 +1212,14 @@ func _close_quests() -> void:
 func _draw() -> void:
 	var o := -_cam
 	# 화면 위아래 여백(Main)까지 땅색으로
-	draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), CAVE_WALL if map.is_cave else TILE_COL["^"])
-	_draw_tiles(o)
+	draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), CAVE_WALL if map.is_cave else Color("7fb8e0"))
+	var tnow := Time.get_ticks_msec() / 1000.0
+	if _painter:
+		_painter.draw(self, o, _cam, size, tnow, _gates, UiKit.BG_BLEED)
+		_life.draw_critters(self, o, tnow)
+	else:
+		_draw_tiles(o)
+	_draw_region_labels(o)
 	var font := ThemeDB.fallback_font
 	_draw_buildings(o)
 	_draw_puzzles(o)
@@ -1306,6 +1318,8 @@ func _draw() -> void:
 		draw_arc(h, rad, 0, TAU, 64, Color(0.35, 0.35, 0.38, 0.25), 30)
 		if _fmagic.light <= 0.0 and _toast_t <= 0.0 and not "pro" in GameData.state.magics:
 			_show_toast(t("ui.cave.dark"))
+	if _life:  # 바람에 날리는 것(꽃잎·눈·불씨 …)은 맨 위
+		_life.draw_particles(self, tnow)
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))
@@ -1620,7 +1634,11 @@ func _draw_tiles(o: Vector2) -> void:
 					if not open:
 						for k2 in 4:
 							draw_line(r.position + Vector2(8 + k2 * 16, 0), r.position + Vector2(8 + k2 * 16, ts), UiKit.INK, 4)
-	# 지역 이름(마을 위)
+
+
+## 지역 이름(마을 위)과 다른 지역의 보스 자리.
+func _draw_region_labels(o: Vector2) -> void:
+	var ts := float(map.tile)
 	var font := ThemeDB.fallback_font
 	for rg in map.regions:
 		var tw: Array = rg["town"]
@@ -1641,9 +1659,13 @@ func _draw_tiles(o: Vector2) -> void:
 static func map_texture(m: WorldMap, gates: Dictionary = {}) -> ImageTexture:
 	if _map_tex == null:
 		var img := Image.create(m.w, m.h, false, Image.FORMAT_RGB8)
+		var mp: MapPainter = MapPainter.for_map(m) if not m.is_cave else null
 		for y in m.h:
 			var row := m.rows[y]
 			for x in m.w:
+				if mp:
+					img.set_pixel(x, y, mp.mini_color(x, y, gates))
+					continue
 				var k := row[x]
 				if k == "q":  # 열린 길목은 길 색, 닫힌 길목은 빨갛게(어디서 막혔는지 보이게)
 					k = "p" if m.walkable(Vector2i(x, y), gates) else "="

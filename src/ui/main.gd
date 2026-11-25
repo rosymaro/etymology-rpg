@@ -31,6 +31,8 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--capture="):
 			_start_capture(a.trim_prefix("--capture="))
+		if a.begins_with("--capture-map="):
+			_start_capture(a.trim_prefix("--capture-map="), "res://tests/visual/capture_map.gd")
 
 
 ## 안전 영역(노치·상태 표시줄·제스처 막대)을 뺀 곳에 여백을 더 두고 그 안에 화면을 놓는다.
@@ -51,8 +53,7 @@ func _fit_frame() -> void:
 
 
 ## 개발용 화면 캡처(tests/visual). APK에는 tests가 없어 이 인자를 줘도 아무 일도 없다.
-func _start_capture(dir: String) -> void:
-	var path := "res://tests/visual/capture_screens.gd"
+func _start_capture(dir: String, path := "res://tests/visual/capture_screens.gd") -> void:
 	if not ResourceLoader.exists(path):
 		return
 	var cap: Node = load(path).new()
