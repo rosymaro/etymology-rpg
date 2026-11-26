@@ -212,28 +212,31 @@ func test_caves_are_separate_maps() -> void:
 	var m := WorldMap.load_default()
 	var kinds := m.caves.map(func(c: Dictionary) -> String: return c["kind"])
 	kinds.sort()
-	assert_eq(kinds, ["pass", "quest", "treasure"], "넘어가는·보물·퀘스트 동굴")
+	assert_eq(kinds, ["castle", "pass", "quest", "treasure"], "넘어가는·보물·퀘스트 동굴, 마을의 성(사용자 의견: 성에도 들어간다)")
 	var open := {"s01_q_root": true, "s01_q_magic": true}
 	for cv in m.caves:
 		var id := String(cv["id"])
 		var cm := WorldMap.load_cave(id)
 		assert_not_null(cm, "동굴 지도 " + id)
-		assert_true(cm.in_cave(), "동굴 지도는 어둡다")
+		assert_eq(cm.in_cave(), cv["kind"] != "castle", "동굴 지도는 어둡고 성 안은 밝다")
 		assert_false(m.in_cave(), "큰 지도는 밝다")
 		assert_eq(cm.exits.size(), (cv["mouths"] as Array).size(), "입구마다 나가는 곳")
 		for i in cm.exits.size():
 			var mo: Array = cv["mouths"][i]
 			assert_eq(m.mouth_at(Vector2i(int(mo[0]), int(mo[1]))), [id, i], "큰 지도 입구 칸")
 			assert_gt(m.path_len(m.start(1), m.cave_out(id, i), open), -1, "입구 밖까지 걸어간다")
-			assert_eq(cm.exit_at(cm.cell(cm.exit_inside(i)) + (Vector2i(-1, 0) if i == 0 else Vector2i(1, 0))), i, "들어온 자리 옆이 나가는 곳")
+			var back := Vector2i(0, 1) if cv["kind"] == "castle" else (Vector2i(-1, 0) if i == 0 else Vector2i(1, 0))  # 성문은 아래
+			assert_eq(cm.exit_at(cm.cell(cm.exit_inside(i)) + back), i, "들어온 자리 옆이 나가는 곳")
 		for it in cm.items:
 			var p := (Vector2(float(it["cell"][0]), float(it["cell"][1])) + Vector2(0.5, 0.5)) * cm.tile
 			assert_gt(cm.path_len(cm.exit_inside(0), p), -1, "퀘스트 물건까지 걸어간다")
 		if cv["kind"] == "pass":
 			assert_gt(cm.path_len(cm.exit_inside(0), cm.exit_inside(1)), -1, "넘어가는 동굴은 두 나가는 곳이 이어진다")
 			assert_eq(cm.nearest_exit(cm.exit_inside(1)), 1, "ex-: 가장 가까운 나가는 곳으로")
-		if cv["kind"] == "treasure":
-			assert_eq(cm.puzzles.size(), 1, "끝에 상자")
+		if cv["kind"] == "treasure" or cv["kind"] == "castle":
+			assert_eq(cm.puzzles.size(), 1, "끝에 상자(성은 왕좌의 방)")
+			var ch: Array = cm.puzzles[0]["chest"][0]
+			assert_gt(cm.path_len(cm.exit_inside(0), (Vector2(float(ch[0]), float(ch[1]) + 2) + Vector2(0.5, 0.5)) * cm.tile), -1, "상자 앞까지 걸어간다")
 		if cv["kind"] == "quest":
 			assert_eq(cm.items.map(func(x: Dictionary) -> String: return x["id"]), ["toy_hammer"])
 

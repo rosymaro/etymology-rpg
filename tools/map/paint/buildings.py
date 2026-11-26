@@ -21,8 +21,8 @@ STYLE = {
 
 def paint(W, L, X, Y):
     for bd in W.buildings():
-        if bd["id"] == "tree":
-            continue  # 큰 나무는 나무 겹(trees.py)
+        if bd["id"] in ("tree", "castle"):
+            continue  # 큰 나무는 나무 겹(trees.py), 성은 산 겹(castle.py)
         rc = bd["rect"]
         px, py = rc[0] * TILE - L.x0, rc[1] * TILE - L.y0
         if px > L.w + 100 or py > L.h + 100 or px + rc[2] * TILE < -100 or py + rc[3] * TILE < -100:

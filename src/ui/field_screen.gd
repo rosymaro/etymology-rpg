@@ -255,7 +255,11 @@ func _switch_map(cave: String, i: int) -> void:
 	_remember()
 	GameData.save()
 	_follow_cam()
-	_show_toast(t("ui.cave.enter") if cave != "" else t("ui.cave.leave"))
+	var castle := map.cave_kind == "castle" or (cave == "" and from == "s01_castle")
+	if castle:
+		_show_toast(t("ui.castle.enter") if cave != "" else t("ui.castle.leave"))
+	else:
+		_show_toast(t("ui.cave.enter") if cave != "" else t("ui.cave.leave"))
 	queue_redraw()
 
 
@@ -1583,6 +1587,40 @@ func _draw_mob(e: FieldMob, p: Vector2) -> void:
 				draw_line(p + bk * (ENEMY_R + 4) + off, p + bk * (ENEMY_R + 34) + off, Color(1, 1, 1, 0.8), 4)
 
 
+## 성 안 한 칸(사용자 의견: 성에도 동굴처럼 들어간다). 바닥은 큰 돌판, 가운데 길은 붉은 융단, 벽은 윗면이 밝은 벽돌.
+func _draw_castle_cell(r: Rect2, k: String, x: int, y: int, hsh: int) -> void:
+	var ts := r.size.x
+	if k == "^":
+		draw_rect(r, Color("8d8494"))
+		for row in 4:
+			var off := 0.0 if row % 2 == 0 else ts / 4.0
+			var yy := r.position.y + row * ts / 4.0
+			draw_line(Vector2(r.position.x, yy), Vector2(r.end.x, yy), Color("6f6676"), 2)
+			for col in 3:
+				var xx := r.position.x + off + col * ts / 2.0
+				if xx < r.end.x:
+					draw_line(Vector2(xx, yy), Vector2(xx, yy + ts / 4.0), Color("6f6676"), 2)
+		if map.ch(Vector2i(x, y + 1)) != "^":  # 바닥 쪽 면: 그늘
+			draw_rect(Rect2(r.position + Vector2(0, ts - 10), Vector2(ts, 10)), Color(0.17, 0.16, 0.27, 0.35))
+		if map.ch(Vector2i(x, y - 1)) != "^":  # 윗면: 밝게
+			draw_rect(Rect2(r.position, Vector2(ts, 6)), Color("b4abbb"))
+		return
+	var light := (x + y) % 2 == 0
+	draw_rect(r, Color("e6dccb") if light else Color("dcd0bd"))
+	draw_rect(r, Color("c4b8a3"), false, 1.5)
+	if hsh % 9 == 0:
+		draw_line(r.position + Vector2(12, 20), r.position + Vector2(30, 34), Color("cdbfa8"), 1.5)
+	var mx := map.w / 2
+	if k == "x" or (absi(x - mx) <= 1 and y >= 2):  # 가운데 융단
+		draw_rect(Rect2(r.position.x + (4.0 if x == mx - 1 else 0.0), r.position.y, ts - (8.0 if x != mx else 0.0) + (4.0 if x == mx + 1 else 0.0), ts), Color("b8475a"))
+		if x == mx - 1:
+			draw_line(r.position + Vector2(8, 0), r.position + Vector2(8, ts), Color("f2cf4a"), 2)
+		if x == mx + 1:
+			draw_line(r.position + Vector2(ts - 8, 0), r.position + Vector2(ts - 8, ts), Color("f2cf4a"), 2)
+	if k == "x":  # 들어온 문: 밝은 빛
+		draw_rect(r, Color(1, 0.95, 0.8, 0.5))
+
+
 ## 보이는 타일만 그린다. 막는 타일은 모양을 조금씩 넣는다(산 ▲, 물결, 나무, 절벽 줄, 성벽 벽돌, 다리 널, 문 창살).
 func _draw_tiles(o: Vector2) -> void:
 	var ts := float(map.tile)
@@ -1595,6 +1633,9 @@ func _draw_tiles(o: Vector2) -> void:
 			var k := row[x]
 			var r := Rect2(o + Vector2(x, y) * ts, Vector2(ts, ts))
 			var hsh := (x * 73856093) ^ (y * 19349663)
+			if map.cave_kind == "castle":  # 성 안: 돌바닥(가운데 붉은 융단), 벽돌 벽
+				_draw_castle_cell(r, k, x, y, hsh)
+				continue
 			if map.is_cave and k == "^":  # 동굴 벽: 울퉁불퉁한 바위
 				draw_rect(r, CAVE_WALL)
 				draw_circle(r.get_center() + Vector2((hsh % 16) - 8, ((hsh / 5) % 16) - 8), ts * 0.32, CAVE_WALL.lightened(0.12))

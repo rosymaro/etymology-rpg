@@ -172,6 +172,8 @@ def _caves(W, L):
     """동굴 입구: 산자락의 어두운 굴, 둘레에 바위 테."""
     ys, xs = np.nonzero(W.rows == "c")
     for cy, cx in zip(ys, xs):
+        if (W.rows[max(cy - 1, 0), cx] == "K"):
+            continue  # 성문(성 그림에 있다)
         lx = int(cx * TILE + 32 - L.x0)
         ly = int(cy * TILE + 40 - L.y0)
         if lx < -80 or ly < -80 or lx > L.w + 80 or ly > L.h + 80:

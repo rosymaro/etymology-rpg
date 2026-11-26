@@ -22,6 +22,7 @@ var cave_maps: Dictionary = {}  ## 동굴 id -> 따로 된 동굴 지도 원본
 var items: Array = []  ## (동굴 지도) 퀘스트 물건 {id, cell}
 var exits: Array = []  ## (동굴 지도) 나가는 곳(x) [[x,y]]: 순서가 큰 지도 입구 순서
 var is_cave := false
+var cave_kind := ""  ## (동굴 지도) pass·treasure·quest·castle. castle(성 안)은 어둡지 않다
 var extra_block := {}  ## 지금 막힌 칸(퍼즐의 돌·상자): 화면이 채운다
 var extra_walk := {}  ## 지금 지나갈 수 있게 된 칸(돌로 메운 물·구멍)
 
@@ -66,6 +67,7 @@ static func from_dict(d: Dictionary) -> WorldMap:
 	m.items = d.get("items", [])
 	m.cave_maps = d.get("cave_maps", {})
 	m.exits = d.get("exits", [])
+	m.cave_kind = String(d.get("kind", ""))
 	m.quest_gates = d.get("quest_gates", [])
 	for qg in m.quest_gates:
 		for t in qg["tiles"]:
@@ -206,7 +208,7 @@ func stage_of(c: Vector2i) -> int:
 ## 마을 바닥(,)과 마을 돌길(s). 몹은 마을에 생기지 않고, 병원에서 쉬는 동안은 마을 밖으로 못 나간다.
 ## 어두운 동굴 안(동굴 지도 전체).
 func in_cave(_p: Vector2 = Vector2.ZERO) -> bool:
-	return is_cave
+	return is_cave and cave_kind != "castle"  # 어두운 동굴(성 안은 밝다)
 
 
 ## 큰 지도: 그 칸이 동굴 입구면 [동굴 id, 입구 번호], 아니면 [].
@@ -238,7 +240,12 @@ func cave_out(id: String, i: int) -> Vector2:
 func exit_inside(i: int) -> Vector2:
 	var e: Array = exits[i]
 	var c := Vector2i(int(e[0]), int(e[1]))
-	c.x += 1 if c.x == 0 else -1
+	if c.y == h - 1:  # 아래 가장자리(성문)
+		c.y -= 1
+	elif c.y == 0:
+		c.y += 1
+	else:
+		c.x += 1 if c.x == 0 else -1
 	return (Vector2(c) + Vector2(0.5, 0.5)) * tile
 
 

@@ -46,6 +46,7 @@ def paint_piece(args):
     import mountains
     import trees
     import buildings
+    import castle
     t0 = time.time()
     pw, ph = piece_size(W, cx, cy)
     x0, y0 = cx * PW - MARGIN, cy * PH - MARGIN
@@ -63,6 +64,7 @@ def paint_piece(args):
     if "mtn" in which:
         L = Layer(x0, y0, w, h)
         mountains.paint(W, L, X, Y)
+        castle.paint(W, L, X, Y)
         res["mtn"] = L.rgba8(crop)
     if "grass" in which:
         L = Layer(x0, y0, w, h)

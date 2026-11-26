@@ -351,6 +351,8 @@ ui.field.kid,마을 아이
 ui.cave.item,"장난감 망치를 주웠어요! 마을 아이에게 가져다주세요."
 ui.cave.enter,동굴로 들어왔어요. 밝은 곳(나가는 곳)으로 가면 밖으로 나가요
 ui.cave.leave,동굴 밖으로 나왔어요
+ui.castle.enter,성 안으로 들어왔어요. 왕좌의 방에 무언가 있대요. 들어온 문으로 가면 밖으로 나가요
+ui.castle.leave,성 밖으로 나왔어요
 ui.cave.dark,어두워요… 필드 마법 pro-(앞길 비추기)가 있으면 밝힐 수 있어요
 ui.quest.s01_q_hammer.title,잃어버린 장난감 망치
 ui.quest.s01_q_hammer.desc,"마을 아이가 산속 동굴에서 장난감 망치를 잃어버렸대요. 어두운 동굴 끝을 찾아보세요."
