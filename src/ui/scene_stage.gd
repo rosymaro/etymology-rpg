@@ -109,7 +109,6 @@ func _draw_actor(a: Dictionary, k: float) -> void:
 	var id := String(a.get("id", ""))
 	var foot := Vector2(float(a.get("x", 50)) / 100.0 * size.x, float(a.get("y", 70)) / 100.0 * size.y * 0.9)  # 대화 상자(아래 1/3) 위에 서게
 	var h := ACTOR_H * k
-	draw_circle(foot + Vector2(0, -4), h * 0.18, Color(0, 0, 0, 0.18))  # 발밑 그림자
 	var drawn := false
 	match id:
 		"hero":
@@ -121,7 +120,8 @@ func _draw_actor(a: Dictionary, k: float) -> void:
 				drawn = Art.draw_anim(self, "pal", "%02d" % (u + 1), "joy" if String(a.get("pose", "")) == "joy" else "idle", foot, h * 0.62)
 			else:
 				drawn = Art.draw_anim(self, "npc", id, "idle", foot, h * 1.05)
-	if not drawn:  # 그림이 아직 없는 사람: 둥근 몸과 얼굴
+	if not drawn:  # 그림이 아직 없는 사람: 발밑 그림자, 둥근 몸과 얼굴(그림 파일에는 그림자가 들어 있다)
+		draw_circle(foot + Vector2(0, -4), h * 0.18, Color(0, 0, 0, 0.18))
 		var body := foot + Vector2(0, -h * 0.3)
 		draw_circle(body, h * 0.22, Color("8a6a52"))
 		draw_arc(body, h * 0.22, 0, TAU, 32, UiKit.INK, 3)
