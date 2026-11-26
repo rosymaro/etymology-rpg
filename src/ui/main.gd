@@ -16,6 +16,9 @@ const MAX_H := 1440.0  ## 이보다 길면 남는 만큼 위아래에 나눠 비
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var f := load(UiKit.FONT_PATH) as Font
+	if f:  # 둥근 글꼴(사용자 의견: 레퍼런스처럼). 화면에 직접 그리는 글씨(draw_string)도 같은 글꼴로
+		ThemeDB.fallback_font = f
 	RenderingServer.set_default_clear_color(UiKit.PAPER)  # 여백에 바탕이 없는 화면(필드)도 비어 보이지 않게
 	_fit_frame()
 	get_viewport().size_changed.connect(_fit_frame)

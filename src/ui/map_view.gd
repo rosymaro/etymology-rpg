@@ -19,7 +19,6 @@ var gates := {}
 var cam := Vector2.ZERO
 var view := Vector2(720, 1280)
 var t := 0.0
-var on_grass := true
 var on_water := true
 var baked := 0  ## 지금까지 그린 조각 수(테스트·시간 재기용)
 var art_dir := "res://assets/map"  ## 사람이 그린 그림 파일 폴더(테스트는 user://)
@@ -70,9 +69,6 @@ func update(cam_px: Vector2, view_px: Vector2, now: float, gates_now: Dictionary
 	var b := Vector2i(floori((cam.x + view.x) / ts), floori((cam.y + view.y + bleed) / ts))
 	var prefetch := 1
 	for layer in MapPainter.LAYERS:
-		(_roots[layer] as Node2D).visible = layer != "grass" or on_grass
-		if layer == "grass" and not on_grass:
-			continue
 		for cy in range(a.y - 1, b.y + 2):
 			for cx in range(a.x - 1, b.x + 2):
 				var inside := cx >= a.x and cx <= b.x and cy >= a.y and cy <= b.y

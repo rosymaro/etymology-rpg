@@ -12,6 +12,7 @@ const TOUCH_R := 110.0
 const MINI_SCALE := 0.9  ## 미니맵: 타일 하나당 픽셀(큰 지도)
 const CAVE_WALL := Color("3f3934")  ## 동굴 지도의 바위벽
 const MINI_H := 144.0  ## 미니맵 높이(동굴 지도도 같은 높이로 크게 그린다)
+const HUD_Y := 170.0  ## 미니맵·코인 카드 윗줄(위 메뉴 줄과 위치 카드 아래)
 const TILE_COL := {".": Color("d8eec9"), ",": Color("f3ead8"), "p": Color("d9c59a"), "b": Color("b98c5a"), "=": Color("e9876a"), "q": Color("8c6a4a"),
 	"x": Color("f5e7a8"), "s": Color("d9d2c3"), "O": Color("3d3530"), "i": Color("cfe9f5"), "k": Color("8a7d6e"), "c": Color("9a8f86"), "F": Color("c9a874"), "h": Color("b7a48c"), "o": Color("8cc6e8"), "f": Color("b9d77e"),
 	"^": Color("9a8f86"), "~": Color("6fa8dc"), "w": Color("8cc6e8"), "#": Color("6f6257"), "T": Color("6fae74"), "H": Color("a7a7b4")}
@@ -73,6 +74,10 @@ var _quest_btn: Button
 var _party_btn: Button
 var _home_btn: Button
 var _goal_card: Control
+var _mini_fr: Panel  ## 미니맵 액자
+var _mini_fold: Button  ## 미니맵 접기(−/+)
+var _fps_box := UiKit.box(Color(UiKit.PAPER, 0.92), 19, 2)
+var _paw := UiKit.icon_tex("paw")
 var _tut: TutorialOverlay  ## 지금 보이는 튜토리얼(08-tutorial.md)
 var _tut_level_btn: Button
 var _cave := ""  ## 들어가 있는 동굴 지도 id(07-fun 5절). 비면 큰 지도
@@ -256,6 +261,7 @@ func _switch_map(cave: String, i: int) -> void:
 	_mini.texture = map_texture(map, _gates)
 	_mini.custom_minimum_size = Vector2(map.w, map.h) * _mini_k()
 	_mini.size = _mini.custom_minimum_size
+	_fit_mini_frame()
 	_remember()
 	GameData.save()
 	_follow_cam()
@@ -268,54 +274,58 @@ func _switch_map(cave: String, i: int) -> void:
 
 
 func _build_hud() -> void:
-	var bar := UiKit.hbox(10)
-	bar.position = Vector2(16, 84)  # 세로 화면: 메뉴 버튼 줄 아래
-	add_child(bar)
-	_top = UiKit.label("", 22)
-	var tc := UiKit.card()
-	tc.add_child(_top)
-	bar.add_child(tc)
+	# 사용자 의견(레퍼런스 그림): 위 메뉴는 아이콘 달린 크림색 알약, 위치·할 일·코인은 아이콘 카드
 	var right := UiKit.hbox(8)
 	add_child(right)
-	UiKit.pin(right, 1, 0, -16, 12)
-	_quest_btn = UiKit.button(t("ui.menu.quest"), _open_quests, UiKit.APRICOT, 22)
+	UiKit.pin(right, 1, 0, -16, 10)
+	var cream := UiKit.PAPER
+	_quest_btn = _menu_btn(t("ui.menu.quest"), "flag", _open_quests, cream)
 	right.add_child(_quest_btn)
-	right.add_child(UiKit.button(t("ui.menu.dex"), func() -> void: _go(main.flow.go_dex), UiKit.LEAF, 22))
-	_party_btn = UiKit.button(t("ui.menu.party"), func() -> void: _go(main.flow.go_party), UiKit.SKY, 22)
+	right.add_child(_menu_btn(t("ui.menu.dex"), "bag", func() -> void: _go(main.flow.go_dex), cream))
+	_party_btn = _menu_btn(t("ui.menu.party"), "star", func() -> void: _go(main.flow.go_party), cream)
 	right.add_child(_party_btn)
-	right.add_child(UiKit.button(t("ui.menu.save"), func() -> void:
+	right.add_child(_menu_btn(t("ui.menu.save"), "heart", func() -> void:
 		_remember()
 		GameData.save()
-		_show_toast(t("ui.menu.saved")), UiKit.PINK, 22))
-	right.add_child(UiKit.button(t("ui.menu.option"), func() -> void:
-		_go(func() -> void: main.flow.go_options(main.flow.go_field)), UiKit.PAPER, 22))
-	_goal = UiKit.label("", 20, UiKit.INK)
-	var gc := UiKit.card()
-	gc.add_child(_goal)
+		_show_toast(t("ui.menu.saved")), cream))
+	right.add_child(_menu_btn(t("ui.menu.option"), "gear", func() -> void:
+		_go(func() -> void: main.flow.go_options(main.flow.go_field)), cream))
+	var tc := UiKit.chip("pin", "", 21)
+	_top = tc.get_meta("label")
+	add_child(tc)
+	tc.position = Vector2(16, HUD_Y - 62)
+	var gc := UiKit.chip("alert", "", 20)
+	_goal = gc.get_meta("label")
 	add_child(gc)
-	gc.position = Vector2(16, 150 + MINI_H + 10)
+	gc.position = Vector2(16, HUD_Y + MINI_H + 18)
 	_goal_card = gc
 	_rest = UiKit.label("", 22, UiKit.BAD.darkened(0.2))
-	var rc := UiKit.card(Color("fff4dc"))
+	var rc := UiKit.card(Color("fff1d6"))
 	rc.add_child(_rest)
 	add_child(rc)
-	rc.position = Vector2(16, 150 + MINI_H + 10 + 48)
+	rc.position = Vector2(16, HUD_Y + MINI_H + 18 + 54)
 	rc.visible = false
 	_rest.set_meta("card", rc)
-	var hc := UiKit.card(Color("f3ecff"))
-	var hv := UiKit.vbox(2)
-	hc.add_child(hv)
-	_hunt_lbl = UiKit.label("", 18)
+	var hc := UiKit.chip("coin", "", 18, Color("fff3c9"), 38)
+	var hl: Label = hc.get_meta("label")
+	var hv := UiKit.vbox(3)
+	hl.get_parent().remove_child(hl)
+	hc.get_child(0).add_child(hv)
+	_hunt_lbl = hl
 	hv.add_child(_hunt_lbl)
 	_lvl_bar = ProgressBar.new()
-	_lvl_bar.custom_minimum_size = Vector2(220, 10)
+	_lvl_bar.custom_minimum_size = Vector2(220, 12)
 	_lvl_bar.show_percentage = false
+	_lvl_bar.add_theme_stylebox_override("background", UiKit.box(Color("f1e2c4"), 6, 2))
+	var fill := UiKit.box(Color("ffc94d"), 6, 0)
+	fill.set_content_margin_all(0)
+	_lvl_bar.add_theme_stylebox_override("fill", fill)
 	hv.add_child(_lvl_bar)
 	add_child(hc)
-	UiKit.pin(hc, 1, 0, -16, 150)
+	UiKit.pin(hc, 1, 0, -16, HUD_Y)
 	_hunt_lbl.set_meta("card", hc)
 	_update_hunt_hud()
-	var home := UiKit.button(t("ui.field.home"), _go_home, UiKit.PAPER, 24)
+	var home := UiKit.button(t("ui.field.home"), _go_home, UiKit.PAPER, 24, "house")
 	_home_btn = home
 	home.custom_minimum_size = Vector2(150, 70)
 	add_child(home)
@@ -326,7 +336,7 @@ func _build_hud() -> void:
 	var slots := Loadout.field(GameData.state)
 	for i in slots.size():
 		var id := slots[i]
-		var b := UiKit.button(GameText.field_magic_name(id).split(" ")[0] if id != "" else "", func() -> void: _cast(id), UiKit.SKY.lightened(0.2), 20)
+		var b := UiKit.button(GameText.field_magic_name(id).split(" ")[0] if id != "" else "", func() -> void: _cast(id), Color("ece4ff"), 20, "magic")
 		b.custom_minimum_size = Vector2(150, 64)
 		b.visible = id != ""
 		b.set_meta("id", id)
@@ -351,8 +361,15 @@ func _build_hud() -> void:
 	_toast.add_theme_stylebox_override("normal", tb)
 	_toast.visible = false
 	add_child(_toast)
-	UiKit.pin(_toast, 0.5, 0, 0, 150 + MINI_H + 70)  # 미니맵·할 일 아래(가리지 않게)
+	UiKit.pin(_toast, 0.5, 0, 0, HUD_Y + MINI_H + 80)  # 미니맵·할 일 아래(가리지 않게)
 	_update_top()
+
+
+## 위 메뉴 버튼: 아이콘 위, 글씨 아래(레퍼런스 그림)
+func _menu_btn(text: String, icon_name: String, f: Callable, bg: Color) -> Button:
+	var b := UiKit.button(text, f, bg, 19, icon_name, true)
+	b.custom_minimum_size = Vector2(122, 84)
+	return b
 
 
 func _update_top() -> void:
@@ -450,7 +467,6 @@ func _process(delta: float) -> void:
 	_step(delta)
 	if _mv:
 		var st := GameData.settings  # 옵션에서 지도 효과를 하나씩 끈다(04-meta.md 2절)
-		_mv.on_grass = st.map_grass
 		_mv.on_water = st.map_water
 		_mv.update(_cam, size, Time.get_ticks_msec() / 1000.0, _gates)
 	_perf("tick", t0)
@@ -1348,7 +1364,8 @@ func _draw() -> void:
 		if sp["id"] == "boss" and main.flow.seen("boss_s01"):
 			col = UiKit.LEAF
 		var art_id: String = "boss_gate_open" if sp["id"] == "boss" and main.flow.seen("boss_s01") else str(sp["id"])
-		if not Art.draw(self, "building", art_id, p, Vector2(160, 160)):
+		var baked: bool = _mv != null and _mv.painter.painted and sp["id"] in ["notice", "gacha"]  # 그린 배경에 알림판·뽑기 구슬이 있다
+		if not baked and not Art.draw(self, "building", art_id, p, Vector2(160, 160)):
 			draw_circle(p, 54, col)
 			draw_arc(p, 54, 0, TAU, 40, UiKit.INK, 4)
 		draw_string(font, p + Vector2(-80, 86), t(sp["key"]), HORIZONTAL_ALIGNMENT_CENTER, 160, 22, UiKit.INK)
@@ -1423,8 +1440,11 @@ func _draw() -> void:
 	_perf("rest", p0)
 	if GameData.settings.show_fps:  # 프레임 확인용(옵션): 초당 그림 수, 지도 그리기·나머지 그리기·계산(ms)
 		var line := t("ui.field.fps").format({"fps": Engine.get_frames_per_second(), "draw": "%.1f" % (float(perf.get("map", 0.0)) + float(perf.get("rest", 0.0))), "tick": "%.1f" % perf.get("tick", 0.0)})
-		draw_rect(Rect2(6, size.y - 40, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x + 12, 34), Color(1, 1, 1, 0.75))
-		draw_string(font, Vector2(12, size.y - 15), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, UiKit.INK)
+		var fw := font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+		draw_style_box(_fps_box, Rect2(8, size.y - 46, fw + 56, 38))  # 크림 알약 + 발바닥(레퍼런스 그림)
+		if _paw:
+			draw_texture_rect(_paw, Rect2(14, size.y - 43, 32, 32), false)
+		draw_string(font, Vector2(48, size.y - 20), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, UiKit.INK)
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))
@@ -1800,13 +1820,46 @@ func _build_minimap() -> void:
 	_mini.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_mini.custom_minimum_size = Vector2(map.w, map.h) * _mini_k()
 	_mini.size = _mini.custom_minimum_size
-	_mini.position = Vector2(16, 150)
+	_mini.position = Vector2(16, HUD_Y)
 	_mini.mouse_filter = Control.MOUSE_FILTER_STOP
 	_mini.draw.connect(func() -> void: _draw_marks(_mini, _mini_k(), false))
 	_mini.gui_input.connect(func(ev: InputEvent) -> void:
 		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
 			_open_full())
+	# 액자(사용자 의견: 레퍼런스처럼): 크림 테두리 + 갈색 선, 왼쪽 위 잎 장식, 오른쪽 위 접기(−/+)
+	var fr := Panel.new()
+	_mini_fr = fr
+	var st := UiKit.box(Color("ffe9bf"), 16, 3)
+	fr.add_theme_stylebox_override("panel", st)
+	fr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(fr)
 	add_child(_mini)
+	var leaf := UiKit.icon("leaf", 40)
+	leaf.position = _mini.position + Vector2(-22, -24)
+	add_child(leaf)
+	var fold := Button.new()
+	_mini_fold = fold
+	fold.flat = true
+	fold.icon = UiKit.icon_tex("minus")
+	fold.expand_icon = true
+	fold.custom_minimum_size = Vector2(40, 40)
+	fold.size = Vector2(40, 40)
+	fold.focus_mode = Control.FOCUS_NONE
+	fold.pressed.connect(func() -> void:
+		_mini.visible = not _mini.visible
+		fr.visible = _mini.visible
+		leaf.visible = _mini.visible
+		fold.icon = UiKit.icon_tex("minus" if _mini.visible else "plus"))
+	add_child(fold)
+	_fit_mini_frame()
+
+
+func _fit_mini_frame() -> void:
+	if not _mini_fr:
+		return
+	_mini_fr.position = _mini.position - Vector2(8, 8)
+	_mini_fr.size = _mini.size + Vector2(16, 16)
+	_mini_fold.position = _mini.position + Vector2(_mini.size.x - 22, -20)
 
 
 ## 지도 위 표시: 주인공(깜빡이는 점), 보이는 화면 테두리, 보스 자리, (전체 지도면) 지역 이름.

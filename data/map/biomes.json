@@ -1,8 +1,8 @@
 {
   "_doc": "지역(스테이지)마다 지도 풍경(사용자 의견: 영역마다 특색, 파스텔 동화풍). src/ui/map_painter.gd가 그린다. ground는 바닥 두 색(얼룩), grass는 풀잎(없으면 풀이 안 난다), deco는 바닥 장식, tree는 숲(T) 모양과 색, mountain은 산(^) 밝은 면·그늘 면과 꼭대기(snow 눈, lava 불, none), water는 물(~ w) 색(lava면 용암), critters는 뛰어다니는 작은 동물, particle은 날리는 것",
   "biomes": {
-    "1": { "name": "meadow", "label": "꽃 들판(공방 마을)", "ground": ["#d8eec9", "#cbe6b8"], "grass": "#8fbf7a", "flowers": ["#f6b3c0", "#fff1a8", "#ffffff"], "deco": "flowers",
-           "tree": { "kind": "round", "colors": ["#7fb77e", "#6aa86f", "#93c58f"] }, "mountain": ["#c9bdb2", "#a3968b", "snow"], "water": ["#8cc6e8", "#6fb0dc"],
+    "1": { "name": "meadow", "label": "꽃 들판(공방 마을)", "ground": ["#bfe3a2", "#acd98e"], "grass": "#6fae52", "flowers": ["#f6b3c0", "#fff1a8", "#ffffff"], "deco": "flowers",
+           "tree": { "kind": "round", "colors": ["#62ad5c", "#4f9c52", "#7cbf68"] }, "mountain": ["#c9bdb2", "#a3968b", "snow"], "water": ["#8cc6e8", "#6fb0dc"],
            "critters": ["rabbit", "butterfly", "bird"], "particle": "petal" },
     "2": { "name": "prairie", "label": "금빛 초원(사냥꾼 초원)", "ground": ["#ebe3b0", "#e2d69a"], "grass": "#c4ad5e", "flowers": ["#fff1a8", "#f7c59f"], "deco": "tallgrass",
            "tree": { "kind": "acacia", "colors": ["#a8c070", "#94b060"] }, "mountain": ["#d6c4a4", "#b29f80", "snow"], "water": ["#8cc6e8", "#6fb0dc"],

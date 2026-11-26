@@ -3,7 +3,7 @@
 
 칸(data/map/world.json)은 게임 판정 그대로 두고, 그림만 그 위에서 불규칙하고 부드럽게 그린다.
 결과는 게임이 읽는 그림 파일: assets/map/<겹>/<열>_<행>.webp (1024×1536, 지도 끝 장은 더 작다)
-  ground 바닥(땅·길·물·건물), grass 풀·꽃·자갈(바람에 흔들림), mtn 산·바위, trees 나무(바람에 흔들림)
+  한 장(ground): 바닥·길·물·건물 + 풀·꽃·자갈 + 산·성벽·성 + 마을 소품 + 나무(사용자 의견: 모두 배경에 함께)
 
 쓰는 법(저장소 루트에서):
   python3 tools/map/paint/paint_map.py                 # 지도 전체(몇 분)
@@ -35,6 +35,16 @@ def piece_size(W, cx, cy):
     return min(PW, w - cx * PW), min(PH, h - cy * PH)
 
 
+def grade(L):
+    """색 보정(사용자 의견: 레퍼런스처럼 선명하고 따뜻하게): 채도 +22%, 대비 +6%, 살짝 따뜻하게."""
+    rgb = L.rgb
+    lum = (rgb * np.array([0.299, 0.587, 0.114], np.float32)).sum(-1, keepdims=True)
+    rgb = lum + (rgb - lum) * 1.22
+    rgb = (rgb - 0.5) * 1.06 + 0.5
+    rgb *= np.array([1.02, 1.0, 0.975], np.float32)
+    L.rgb = np.clip(rgb, 0, 1)
+
+
 def paint_piece(args):
     cx, cy, out, which = args
     global _W
@@ -47,6 +57,7 @@ def paint_piece(args):
     import trees
     import buildings
     import castle
+    import props
     t0 = time.time()
     pw, ph = piece_size(W, cx, cy)
     x0, y0 = cx * PW - MARGIN, cy * PH - MARGIN
@@ -56,24 +67,27 @@ def paint_piece(args):
     Y = yy + y0
     crop = (MARGIN, MARGIN, pw, ph)
     res = {}
-    if "ground" in which:
-        L = Layer(x0, y0, w, h)
-        ground.paint(W, L, X, Y)
-        buildings.paint(W, L, X, Y)
-        res["ground"] = L.rgba8(crop)
-    if "mtn" in which:
-        L = Layer(x0, y0, w, h)
-        mountains.paint(W, L, X, Y)
-        castle.paint(W, L, X, Y)
-        res["mtn"] = L.rgba8(crop)
-    if "grass" in which:
-        L = Layer(x0, y0, w, h)
-        grass.paint(W, L, X, Y)
-        res["grass"] = L.rgba8(crop)
-    if "trees" in which:
-        L = Layer(x0, y0, w, h)
-        trees.paint(W, L, X, Y)
-        res["trees"] = L.rgba8(crop)
+    # 사용자 의견: 나무·산 같은 것도 배경에 함께(겹을 나누지 않고 한 장으로). 바닥 → 풀 → 산·성벽·성 → 마을 소품 → 나무
+    L = Layer(x0, y0, w, h)
+    ground.paint(W, L, X, Y)
+    buildings.paint(W, L, X, Y)
+    for mod in (grass, mountains, castle):
+        T = Layer(x0, y0, w, h)
+        mod.paint(W, T, X, Y)
+        L.over(T.rgb, T.a)
+    T = Layer(x0, y0, w, h)
+    props.paint(W, T)
+    L.over(T.rgb, T.a)
+    T = Layer(x0, y0, w, h)
+    trees.paint(W, T, X, Y)
+    L.over(T.rgb, T.a)
+    grade(L)
+    res["ground"] = L.rgba8(crop)
+    for k in LAYERS[1:]:  # 예전 겹 파일은 지운다(이제 한 장)
+        for ext in (".webp", ".webp.import"):
+            old = os.path.join(out, k, "%d_%d%s" % (cx, cy, ext))
+            if os.path.exists(old):
+                os.remove(old)
     for k, a in res.items():
         d = os.path.join(out, k)
         os.makedirs(d, exist_ok=True)

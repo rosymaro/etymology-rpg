@@ -18,6 +18,11 @@ func open(_args: Dictionary) -> void:
 	_edit.placeholder_text = t("ui.name.placeholder")
 	_edit.add_theme_font_size_override("font_size", 34)
 	_edit.custom_minimum_size = Vector2(420, 72)
+	_edit.add_theme_stylebox_override("normal", UiKit.box(Color.WHITE, 20))
+	_edit.add_theme_stylebox_override("focus", UiKit.box(Color.WHITE, 20, 4))
+	_edit.add_theme_color_override("font_color", UiKit.INK)
+	_edit.add_theme_color_override("font_placeholder_color", Color(UiKit.INK, 0.4))
+	_edit.add_theme_color_override("caret_color", UiKit.INK)
 	v.add_child(_edit)
 	v.add_child(UiKit.button(t("ui.common.ok"), _done, UiKit.LEAF))
 

@@ -46,7 +46,7 @@ func _run() -> void:
 		var fs := main.current() as FieldScreen
 		await get_tree().create_timer(0.5).timeout
 		for on in [true, false]:
-			for k in ["map_grass", "map_water", "map_critters", "map_particles"]:
+			for k in ["map_water", "map_critters", "map_particles"]:
 				st.set(k, on)
 			await _measure("stage %d effects %s" % [stage, "on" if on else "off"], fs)
 		fs._enemies.clear()
