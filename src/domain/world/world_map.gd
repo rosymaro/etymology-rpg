@@ -174,6 +174,20 @@ func clear_line(a: Vector2, b: Vector2) -> bool:
 	return true
 
 
+## 무기가 지나가는 칸: 걸을 수 있는 칸과 마을 성벽(M) 위(사용자 의견: 마을 안에서 바깥으로 쏜다).
+func shot_passes(c: Vector2i) -> bool:
+	return walkable(c, {}, true) or ch(c) == "M"
+
+
+## a에서 b까지 무기가 막히지 않는가(성벽 위로는 넘어간다).
+func shot_line(a: Vector2, b: Vector2) -> bool:
+	var n := int(ceil(a.distance_to(b) / (tile * 0.4)))
+	for k in range(1, n):
+		if not shot_passes(cell(a.lerp(b, float(k) / n))):
+			return false
+	return true
+
+
 ## 원이 닿는 닫힌 문의 스테이지(없으면 0). 막혔을 때 "아직 못 가는 길" 알림용.
 func touching_gate(p: Vector2, r: float, open_gates: Dictionary = {}) -> int:
 	for v in _probe(r + 6.0):
