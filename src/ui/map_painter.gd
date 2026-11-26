@@ -193,8 +193,10 @@ func mini_color(x: int, y: int, gates: Dictionary) -> Color:
 			return Color("d9c59a") if k == "p" else Color("b98c5a")
 		"#":
 			return Color("6f6257")
-		"H":
+		"H", "M":
 			return Color("a7a7b4")
+		"K":
+			return Color("e4ddee")
 		"=":
 			return Color("e9876a")
 		"q":
@@ -365,7 +367,7 @@ func _ground_cell(ci: CanvasItem, o: Vector2, x: int, y: int, k: String, ts: flo
 				ci.draw_line(Vector2(r.position.x, yy), Vector2(r.end.x, yy + 3), (b["m1"] as Color).darkened(0.22), 3)
 				ci.draw_line(Vector2(r.position.x, yy - 3), Vector2(r.end.x, yy), (b["m0"] as Color).lightened(0.05), 1.5)
 			ci.draw_line(r.position + Vector2(0, 2), Vector2(r.end.x, r.position.y + 2), (b["m0"] as Color), 4)
-		"H":
+		"H", "M":
 			ci.draw_rect(r, Color("b4b4c2"))
 			for k2 in 3:
 				ci.draw_line(r.position + Vector2(0, 16 + k2 * 16), r.position + Vector2(ts, 16 + k2 * 16), Color("9090a0"), 2)

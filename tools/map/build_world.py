@@ -13,8 +13,8 @@
 - 동굴(07-fun 5절): 큰 지도에는 산(^) 가장자리에 입구(c)만 둔다. 들어가면 따로 된 동굴 지도(cave_maps)로 넘어간다.
   동굴 지도 글자: ^ 바위벽  k 동굴 바닥  x 나가는 곳(입구 순서대로). 넘어가는 동굴(입구 둘, 지름길), 보물 동굴(끝에 상자),
   퀘스트 동굴(끝에 마을 아이의 장난감 망치).
-- 스테이지 1 마을은 30 × 20(04-meta 9절): 울타리(F)와 문, 가운데 광장과 분수(o), 돌길(s), 건물(h, 지붕은 게임이 그린다), 밭(f).
-글자: . 풀  , 마을 바닥  s 마을 돌길  F 울타리  h 건물 벽  o 분수·우물  f 밭  p 길·고갯길  b 다리  = 스테이지 문  q 퀘스트 길목  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
+- 스테이지 1 마을은 30 × 20(04-meta 9절): 성벽(M)과 성문, 뒤(북쪽)에 성(K, 성문 c로 들어간다), 가운데 광장과 분수(o), 돌길(s), 건물(h), 밭(f).
+글자: . 풀  , 마을 바닥  s 마을 돌길  F 울타리  M 마을 성벽  K 성  h 건물 벽  o 분수·우물  f 밭  p 길·고갯길  b 다리  = 스테이지 문  q 퀘스트 길목  ^ 산  ~ 바다  w 호수·강  # 절벽  T 숲  H 성벽·생울타리
 """
 import json, os, random, heapq, collections, math, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -52,8 +52,10 @@ def px(x, y):
 
 
 # 스테이지 1 마을 배치(마을 왼쪽 위 기준 칸). 건물: (id, x, y, w, h). 문은 아래 가운데, 살펴보기 자리는 문 바로 아래.
+# 사용자 의견: 판타지 시대상에 맞게 성벽 안의 마을, 뒤(북쪽)에는 성. 성(K, 마을 안 위쪽 가운데)은 들어갈 수 있다(동굴처럼 따로 된 지도).
 TOWN_BUILDINGS = [('forge', 3, 2, 6, 4), ('board', 21, 2, 6, 4), ('hospital', 3, 13, 6, 4),
-                  ('house1', 10, 14, 3, 3), ('house2', 18, 14, 3, 3), ('house3', 10, 2, 3, 3), ('house4', 22, 13, 4, 3)]
+                  ('house1', 10, 14, 3, 3), ('house2', 18, 14, 3, 3), ('house3', 3, 7, 3, 3), ('house4', 22, 13, 4, 3)]
+CASTLE = (10, 1, 10, 6)  # 마을 왼쪽 위 기준 (x, y, w, h). 성문은 아래 가운데
 
 
 CAVE_W, CAVE_H = 30, 22
@@ -119,6 +121,45 @@ def make_cave(r, kind, n_exits):
     return out
 
 
+def make_castle(r):
+    """성 안 지도: 아래 가운데 들어오는 곳(x) → 들어오는 홀 → 긴 복도 → 위의 왕좌의 방(끝에 상자). 옆에 서고·무기고 방.
+    글자는 동굴 지도와 같다(^ 벽, k 바닥, x 나가는 곳). kind castle: 어둡지 않고 돌바닥·벽돌로 그린다."""
+    W2, H2 = CAVE_W, CAVE_H
+    cg = [['^'] * W2 for _ in range(H2)]
+    def room(x0, y0, x1, y1):
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                cg[y][x] = 'k'
+    mx = W2 // 2
+    room(mx - 4, 16, mx + 4, 20)  # 들어오는 홀
+    room(mx - 1, 7, mx + 1, 16)  # 복도
+    room(mx - 7, 1, mx + 7, 7)  # 왕좌의 방
+    room(3, 9, 10, 15)  # 서쪽 방(서고)
+    room(10, 11, mx - 1, 12)
+    room(W2 - 11, 9, W2 - 4, 15)  # 동쪽 방(무기고)
+    room(mx + 1, 11, W2 - 11, 12)
+    for (x, y) in ((mx - 3, 3), (mx + 3, 3), (mx - 3, 5), (mx + 3, 5)):  # 왕좌의 방 기둥
+        cg[y][x] = '^'
+    cg[H2 - 1][mx] = 'x'
+    exits = [[mx, H2 - 1]]
+    out = {'w': W2, 'h': H2, 'tile': TILE, 'kind': 'castle', 'exits': exits, 'items': [], 'puzzles': []}
+    ex, ey = mx, 2
+    rows_b = []
+    for y in range(ey - 3, ey + 4):
+        rows_b.append(''.join('C' if (x, y) == (ex, ey) else ('E' if (x, y) == (ex, ey + 2) else ('.' if 0 <= x < W2 and 0 <= y < H2 and cg[y][x] == 'k' else 'T'))
+                              for x in range(ex - 3, ex + 4)))
+    out['puzzles'].append({'id': 's01_castle_treasure', 'kind': 'cave', 'reward': 'coin:200', 'answer': '', 'note': '',
+                           'origin': [ex - 3, ey - 3], 'size': [7, 7], 'rows': rows_b, 'rocks': [], 'plates': [],
+                           'chest': [[ex, ey]], 'secret': [], 'entry': [ex, ey + 2], 'spot': px(ex, ey + 2)})
+    out['rows'] = [''.join(row) for row in cg]
+    out['zones'] = ['1' * W2 for _ in range(H2)]
+    out['regions'] = []
+    out['gates'] = []
+    out['quest_gates'] = []
+    out['walk'] = 'kx'
+    return out
+
+
 def build_town(g, tx, ty, tw, th, spots):
     """마을을 꾸민다: 바닥을 고르고, 울타리(문은 바깥 길과 이어진 곳·네 변 가운데), 돌길, 광장 분수, 건물, 우물, 밭, 말뿌리 나무."""
     for y in range(ty, ty + th):
@@ -135,7 +176,8 @@ def build_town(g, tx, ty, tw, th, spots):
             outside = g[oy][ox]
             mid = abs(x - mx) <= 1 or abs(y - my) <= 1
             road = outside in 'pb'
-            g[y][x] = 's' if (road or (mid and outside in walk_out)) else 'F'
+            in_castle_side = y == ty and CASTLE[0] - 1 <= x - tx <= CASTLE[0] + CASTLE[2]
+            g[y][x] = 's' if ((road or (mid and outside in walk_out)) and not in_castle_side) else 'M'  # 성벽(M), 길과 만나는 곳은 성문
     for x in range(tx + 1, tx + tw - 1):  # 가로 돌길
         g[my][x] = 's'
     for y in range(ty + 1, ty + th - 1):  # 세로 돌길
@@ -163,11 +205,23 @@ def build_town(g, tx, ty, tw, th, spots):
     for y in range(ty + 15, ty + 18):  # 밭
         for x in range(tx + 26, tx + 28):
             g[y][x] = 'f'
-    # 말뿌리 나무: 북쪽 울타리 안 언덕(2 × 2, 지나갈 수 없음)
-    for (x, y) in ((tx + 16, ty + 2), (tx + 17, ty + 2), (tx + 16, ty + 3), (tx + 17, ty + 3)):
+    # 말뿌리 나무: 주문판 옆 언덕(2 × 2, 지나갈 수 없음)
+    for (x, y) in ((tx + 22, ty + 6), (tx + 23, ty + 6), (tx + 22, ty + 7), (tx + 23, ty + 7)):
         g[y][x] = 'h'
-    out.append({'id': 'tree', 'rect': [tx + 16, ty + 2, 2, 2], 'door': px(tx + 16, ty + 4)})
-    spots['tree'] = px(tx + 17, ty + 5)
+    out.append({'id': 'tree', 'rect': [tx + 22, ty + 6, 2, 2], 'door': px(tx + 22, ty + 8)})
+    spots['tree'] = px(tx + 23, ty + 8)
+    # 성: 마을 안 위쪽 가운데(지나갈 수 없음), 아래 가운데 성문(c)은 동굴처럼 들어가는 곳
+    cx0, cy0, cw, chh = CASTLE
+    for y in range(ty + cy0, ty + cy0 + chh):
+        for x in range(tx + cx0, tx + cx0 + cw):
+            g[y][x] = 'K'
+    gate = (tx + cx0 + cw // 2, ty + cy0 + chh - 1)
+    g[gate[1]][gate[0]] = 'c'
+    g[gate[1] + 1][gate[0]] = 's'
+    for y in range(gate[1] + 1, my):  # 성문에서 광장까지 돌길
+        if g[y][gate[0]] == ',':
+            g[y][gate[0]] = 's'
+    out.append({'id': 'castle', 'rect': [tx + cx0, ty + cy0, cw, chh], 'door': px(*gate)})
     spots['notice'] = px(mx + 3, my - 3)
     spots['gacha'] = px(mx - 4, my + 3)  # 말 뽑기 기계(07-fun 7절)
     spots['kid'] = px(mx + 5, my + 1)  # 장난감 망치를 잃은 마을 아이(퀘스트 동굴, 07-fun 5절)
@@ -618,6 +672,11 @@ def main(river_seed=1000):
     cave_maps = {}
     for k, cv in enumerate(caves):
         cave_maps[cv['id']] = make_cave(random.Random(500 + k), cv['kind'], len(cv['mouths']))
+    # 성: 마을 안 성문(c)으로 들어간다
+    cb = [b for b in regions[0]['buildings'] if b['id'] == 'castle'][0]
+    gx, gy = cb['rect'][0] + cb['rect'][2] // 2, cb['rect'][1] + cb['rect'][3] - 1
+    caves.append({'id': 's01_castle', 'kind': 'castle', 'mouths': [[gx, gy]], 'outs': [[gx, gy + 1]]})
+    cave_maps['s01_castle'] = make_castle(random.Random(600))
     # 지나갈 수 있는지 확인(문 없이 지역마다 마을 → 보스, 문을 다 열면 가운데 → 모든 지역)    # 지나갈 수 있는지 확인(문 없이 지역마다 마을 → 보스, 문을 다 열면 가운데 → 모든 지역)
     walk = set('.,pbsic')
     def reach(a, allow):

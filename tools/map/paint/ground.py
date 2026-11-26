@@ -110,7 +110,7 @@ def paint(W, L, X, Y):
         L.over(path, av, bb[0].start, bb[1].start)
     # ---- 마을 광장·건물 터: 손으로 깐 둥근 돌
     _cobble(L, W, X, Y, "plaza", 0.55, 15, "#ebe1cc", "#ddd0b6", 111)
-    _cobble(L, W, X, Y, "stone", 0.5, 12, "#cfc8bb", "#b7ae9f", 121)
+    _cobble(L, W, X, Y, "stone", 0.5, 12, "#ddd5c6", "#c9c0b0", 121)
 
     # ---- 얼음: 옅은 파랑, 흰 금과 반짝이는 결
     ia, iv = organic(sample(W.field("ice", 0.5), X, Y), X, Y, 131, amp=0.15, scale=24)

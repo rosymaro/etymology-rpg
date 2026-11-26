@@ -82,7 +82,7 @@ class World:
             "water": self.is_("~wb") | q_bridge,
             "sea": self.is_("~"),
             "path": self.is_("p=") | q_path,
-            "plaza": self.is_(",hos"),
+            "plaza": self.is_(",hosKM"),
             "stone": self.is_("s"),
             "farm": self.is_("f"),
             "ice": self.is_("i"),

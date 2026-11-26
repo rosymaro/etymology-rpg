@@ -67,4 +67,18 @@ func _run() -> void:
 		await get_tree().create_timer(1.6).timeout
 		fs._enemies.clear()
 		await _shot("map_%02d" % st)
+	# 성벽 마을과 성(사용자 의견), 성 안
+	var cb := (wm.region(1)["buildings"] as Array).filter(func(b: Dictionary) -> bool: return b["id"] == "castle")[0] as Dictionary
+	s.pos = Vector2(float(cb["door"][0]), float(cb["door"][1]) + 300)
+	main.flow.go_field()
+	await get_tree().create_timer(1.0).timeout
+	(main.current() as FieldScreen)._enemies.clear()
+	await _shot("map_town")
+	s.cave = "s01_castle"
+	s.pos = Vector2(15.5, 12.5) * wm.tile
+	main.flow.go_field()
+	await get_tree().create_timer(1.0).timeout
+	(main.current() as FieldScreen)._enemies.clear()
+	await _shot("map_castle_inside")
+	s.cave = ""
 	get_tree().quit()
