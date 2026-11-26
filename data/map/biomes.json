@@ -20,7 +20,7 @@
            "tree": { "kind": "round", "colors": ["#f2b5d4", "#f6c6dc", "#ecaac8"] }, "mountain": ["#cfc3d6", "#a99cb4", "snow"], "water": ["#9ccfea", "#7ab8de"],
            "critters": ["butterfly", "rabbit"], "particle": "petal" },
     "7": { "name": "jungle", "label": "밀림(소용돌이 호수)", "ground": ["#bfe2a8", "#acd896"], "grass": "#5f9f50", "flowers": ["#ef8a5e", "#f2cf4a", "#f29bb8"], "deco": "ferns",
-           "tree": { "kind": "jungle", "colors": ["#4f9a5a", "#3f8a52", "#6fb86a"] }, "mountain": ["#9fb89a", "#7a9a78", "none"], "water": ["#7cc6b8", "#5aaea0"],
+           "tree": { "kind": "jungle", "colors": ["#4f9a5a", "#3f8a52", "#6fb86a"] }, "mountain": ["#b3c79c", "#6f8f7c", "none"], "water": ["#7cc6b8", "#5aaea0"],
            "critters": ["parrot", "frog", "butterfly"], "particle": "firefly" },
     "8": { "name": "snow", "label": "눈 덮인 땅(성벽 요새)", "ground": ["#f5f8fc", "#e6eef7"], "grass": "", "flowers": ["#cfe9f5"], "deco": "snow",
            "tree": { "kind": "pine", "colors": ["#7fa89a", "#6a9688"] }, "mountain": ["#eef2f7", "#bcc8d8", "snow"], "water": ["#b4dcef", "#94c8e4"],
