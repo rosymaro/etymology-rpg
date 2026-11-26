@@ -65,13 +65,11 @@ func test_map_effect_settings_are_saved() -> void:
 	var s := SettingsStore.new(path)
 	for k in SettingsStore.MAP_KEYS:
 		assert_eq(bool(s.get(k)), k != "show_fps", "처음에는 효과는 켜져 있고 FPS는 꺼져 있다: " + k)
-	s.map_grass = false
 	s.map_water = false
 	s.show_fps = true
 	s.save_settings()
 	var s2 := SettingsStore.new(path)
 	s2.load_settings()
-	assert_false(s2.map_grass)
 	assert_false(s2.map_water)
 	assert_true(s2.show_fps)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

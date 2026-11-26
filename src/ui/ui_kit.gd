@@ -1,13 +1,17 @@
 class_name UiKit
 extends RefCounted
-## 화면 공통 모양(art-direction.md): 둥근 카드, 종이 바탕, 통통한 알약 버튼, 남보라 외곽선, 파스텔.
+## 화면 공통 모양(art-direction.md): 둥근 카드, 크림 바탕, 통통하게 솟은 알약 버튼, 따뜻한 갈색 외곽선, 파스텔.
+## 사용자 의견(레퍼런스 그림): 갈색 선, 크림색, 아이콘 달린 버튼, 둥근 글꼴(Jua).
 
-const INK := Color("4b3f72")  ## 남보라 선
-const PAPER := Color("fbf6ec")
-const SKY := Color("cfe8f3")
-const LEAF := Color("cfe9c4")
-const APRICOT := Color("f8d9c0")
-const PINK := Color("f6d3dc")
+const INK := Color("5c3a24")  ## 따뜻한 갈색 선·글씨
+const PAPER := Color("fff6e3")  ## 크림
+const SKY := Color("d4ecf5")
+const LEAF := Color("d9f0bf")
+const APRICOT := Color("ffdcae")
+const PINK := Color("ffd6de")
+const SHADOW := Color(0.36, 0.22, 0.12, 0.3)  ## 카드·버튼 아래 그림자
+const FONT_PATH := "res://assets/fonts/Jua-Regular.ttf"
+const ICON_DIR := "res://assets/ui/icons/"
 const ACCENT := Color("f29e4c")  ## 주황: 효과·강조에만
 const GRAY := Color("c9c4cf")
 const GOOD := Color("6fbf73")
@@ -29,8 +33,59 @@ static func box(bg: Color, radius: int = 18, border: int = 3) -> StyleBoxFlat:
 	s.content_margin_right = 16
 	s.content_margin_top = 10
 	s.content_margin_bottom = 10
+	if border > 0:  # 아래로 살짝 그림자(떠 있는 카드)
+		s.shadow_color = SHADOW
+		s.shadow_size = 2
+		s.shadow_offset = Vector2(0, 4)
+	s.anti_aliasing = true
 	return s
 
+
+## 솟은 알약: 아래 테두리를 두껍게 해서 눌리는 버튼처럼 보인다. 눌린 모양은 아래 테두리가 얇아지고 글씨가 내려간다.
+static func pill(bg: Color, radius: int = 30, pressed: bool = false) -> StyleBoxFlat:
+	var s := box(bg, radius)
+	s.border_width_bottom = 3 if pressed else 7
+	s.content_margin_top = 13 if pressed else 9
+	s.content_margin_bottom = 7 if pressed else 11
+	s.shadow_offset = Vector2(0, 1 if pressed else 4)
+	return s
+
+
+## 아이콘 그림(assets/ui/icons/<이름>.png, tools/ui/make_icons.py). 없으면 null.
+static func icon_tex(name: String) -> Texture2D:
+	var p := ICON_DIR + name + ".png"
+	return load(p) as Texture2D if ResourceLoader.exists(p) else null
+
+
+static func icon(name: String, px: float = 36.0) -> TextureRect:
+	var r := TextureRect.new()
+	r.texture = icon_tex(name)
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	r.custom_minimum_size = Vector2(px, px)
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r
+
+
+## 아이콘 + 글씨 카드(위치, 할 일, 코인 …). 글씨 Label을 meta "label"에 둔다.
+static func chip(icon_name: String, text: String, size: int = 22, bg: Color = PAPER, px: float = 34.0) -> PanelContainer:
+	var c := card(bg)
+	var st := box(bg, 22)
+	st.content_margin_left = 10
+	st.content_margin_right = 16
+	st.content_margin_top = 6
+	st.content_margin_bottom = 6
+	c.add_theme_stylebox_override("panel", st)
+	var h := hbox(8)
+	c.add_child(h)
+	var ic := icon(icon_name, px)
+	h.add_child(ic)
+	var l := label(text, size)
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	h.add_child(l)
+	c.set_meta("label", l)
+	c.set_meta("icon", ic)
+	return c
 
 static func label(text: String, size: int = 26, color: Color = INK) -> Label:
 	var l := Label.new()
@@ -56,18 +111,26 @@ static func thumb(c: Control, ax: float = 0.5, ox: float = 0.0) -> void:
 	pin(c, ax, 1, side + ox, -(THUMB_ROW - THUMB_H / 2.0))
 
 
-static func button(text: String, on_press: Callable, bg: Color = APRICOT, size: int = 26) -> Button:
+## icon_name: 글씨 앞(또는 icon_top이면 위)에 붙는 아이콘(assets/ui/icons).
+static func button(text: String, on_press: Callable, bg: Color = APRICOT, size: int = 26, icon_name: String = "", icon_top: bool = false) -> Button:
 	var b := Button.new()
 	b.text = text
+	if icon_name != "":
+		b.icon = icon_tex(icon_name)
+		b.add_theme_constant_override("icon_max_width", int(size * (2.0 if icon_top else 1.45)))
+		b.add_theme_constant_override("h_separation", 6)
+		if icon_top:
+			b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+			b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.add_theme_font_size_override("font_size", size)
 	b.add_theme_color_override("font_color", INK)
 	b.add_theme_color_override("font_hover_color", INK)
 	b.add_theme_color_override("font_pressed_color", INK)
 	b.add_theme_color_override("font_disabled_color", GRAY)
-	b.add_theme_stylebox_override("normal", box(bg, 30))
-	b.add_theme_stylebox_override("hover", box(bg.lightened(0.15), 30))
-	b.add_theme_stylebox_override("pressed", box(bg.darkened(0.1), 30))
-	b.add_theme_stylebox_override("disabled", box(PAPER, 30))
+	b.add_theme_stylebox_override("normal", pill(bg))
+	b.add_theme_stylebox_override("hover", pill(bg.lightened(0.15)))
+	b.add_theme_stylebox_override("pressed", pill(bg.darkened(0.08), 30, true))
+	b.add_theme_stylebox_override("disabled", pill(PAPER.darkened(0.04)))
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	b.custom_minimum_size = Vector2(120, 64)
 	b.pressed.connect(on_press)

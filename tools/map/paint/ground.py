@@ -109,8 +109,8 @@ def paint(W, L, X, Y):
         path = np.where(peb[..., None], pebc, path)
         L.over(path, av, bb[0].start, bb[1].start)
     # ---- 마을 광장·건물 터: 손으로 깐 둥근 돌
-    _cobble(L, W, X, Y, "plaza", 0.55, 15, "#ebe1cc", "#ddd0b6", 111)
-    _cobble(L, W, X, Y, "stone", 0.5, 12, "#ddd5c6", "#c9c0b0", 121)
+    _cobble(L, W, X, Y, "plaza", 0.55, 30, "#f1e4c9", "#e2cfac", 111)
+    _cobble(L, W, X, Y, "stone", 0.5, 24, "#e6dccb", "#d2c6b2", 121)
 
     # ---- 얼음: 옅은 파랑, 흰 금과 반짝이는 결
     ia, iv = organic(sample(W.field("ice", 0.5), X, Y), X, Y, 131, amp=0.15, scale=24)
@@ -148,12 +148,24 @@ def _cobble(L, W, X, Y, name, sigma, cell, c1, c2, seed):
     if not bb:
         return
     X, Y, a, v, oy, ox = X[bb], Y[bb], a[bb], v[bb], bb[0].start, bb[1].start
-    Xw, Yw = warp(X, Y, 40, 3.5, seed + 1)
-    d1, gap, sid = voronoi(Xw, Yw, cell, seed + 2)
+    # 둥근 돌(사용자 의견: 레퍼런스처럼): 돌마다 색이 조금 다르고, 왼쪽 위 모서리는 밝고 오른쪽 아래는 그늘, 굵은 줄눈
+    Xw, Yw = warp(X, Y, 40, 3.0, seed + 1)
+    d1, gap, sid = voronoi(Xw, Yw * 1.08, cell, seed + 2, jitter=0.8)
+    from core import _hash, LIGHT
+    tone = _hash(np.floor(sid * 9973).astype(np.int64), np.zeros_like(X, np.int64), seed + 4)
     stone = mix(hexc(c1), hexc(c2), sid)
-    stone = shade(stone, (fbm(X, Y, 9, seed + 3, 2) - 0.5) * 0.12 - smooth(3.0, 0.0, gap) * 0.14)
-    mortar = shade(mix(hexc(c2), hexc("#a39d8c"), 0.4), -0.08)
-    col = mix(mortar, stone, smooth(0.4, 1.6, gap))
+    stone = mix(stone, stone * np.array([1.03, 1.0, 0.92], np.float32), smooth(0.6, 0.9, tone)[..., None])
+    from scipy import ndimage
+    gap = ndimage.gaussian_filter(gap, 2.6)  # 이음매 값을 흐려 돌 모서리를 둥글게
+    gap = gap + (vnoise(X, Y, 4, seed + 5) - 0.5) * 1.2
+    # 돌 높이: 가장자리에서 둥글게 솟는 베개 모양 → 왼쪽 위는 빛, 오른쪽 아래는 그늘
+    hgt = np.sqrt(smooth(3.4, cell * 0.45, gap)) * 6.0
+    gy, gx = np.gradient(hgt)
+    lit = -(gx * LIGHT[0] + gy * LIGHT[1])
+    stone = shade(stone, np.clip(lit * 0.55, -0.3, 0.3) + (fbm(X, Y, 7, seed + 3, 2) - 0.5) * 0.08)
+    stone = mix(stone, hexc("#fff8e6"), smooth(0.25, 0.6, lit) * smooth(cell * 0.2, 3.0, gap) * 0.35)
+    mortar = shade(mix(hexc(c2), hexc("#9a7f62"), 0.6), -0.08)
+    col = mix(mortar, stone, smooth(2.4, 3.5, gap))
     # 가장자리는 돌이 듬성듬성해지며 흙·풀과 섞인다
     keep = smooth(0.5, 0.62, v + (sid - 0.5) * 0.12)
     L.over(col, a * np.maximum(keep, smooth(0.62, 0.7, v)), oy, ox)
