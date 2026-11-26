@@ -439,3 +439,14 @@ story.s01.hospital.title,병원
 story.s01.hospital.001,"정신이 드세요? 들판에서 쓰러져서 실려 왔어요."
 story.s01.hospital.002,"많이 다쳤어요. 3분은 꼭 쉬어야 해요. 마을 안에서는 돌아다녀도 괜찮아요."
 story.s01.hospital.003,"그동안 대장간이나 공방에 들러 보자!"
+story.s01.castle.title,유니콘 근위대
+story.s01.castle.001,"아이고, 손님! 큰일 났어요. 영주님이 '오늘부터 모두 uniform을 입어라!' 하셨는데…"
+story.s01.castle.002_pun,히힝! 유니폼이니까 유니콘 옷이죠! 뿔도 달았습니다!
+story.s01.castle.003,"…다들 저 모양이에요. 성 서고에 옛날 '모양 도장'이 있었는데, 그걸 보면 무슨 뜻인지 알 텐데요."
+story.s01.castle.004,"도장이라면 어원이 새겨져 있을 거야. 성 안 서고, 왼쪽 방으로 가 보자!"
+story.s01.castle.005,성문은 열려 있어요. 부디 찾아 주세요!
+story.s01.castle_done.title,같은 모양 옷
+story.s01.castle_done.001,"도장에 두 조각이 새겨져 있어. uni, 그리고 form!"
+story.s01.castle_done.002_etym,"uni는 '하나', form은 '모양'… uniform은 '하나의 모양', 모두 같은 옷!"
+story.s01.castle_done.003,유니콘이 아니었어?! …그럼 이 뿔은 떼야겠네. 히…힝.
+story.s01.castle_done.004,덕분에 근위대가 제 모양을 찾았어요! 약소하지만 받아 주세요.

@@ -44,6 +44,17 @@
       "after": "s01_skit_cheok",
       "reward": "coin:150",
       "boss": false
+    },
+    {
+      "id": "s01_q_castle",
+      "stage": 1,
+      "kind": "item",
+      "item": "form_stamp",
+      "giver": "steward",
+      "after": "s01_skit_cheok",
+      "reward": "coin:150",
+      "boss": false,
+      "scene": "s01_castle_done"
     }
   ]
 }

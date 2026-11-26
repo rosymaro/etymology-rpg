@@ -142,7 +142,7 @@ def make_castle(r):
         cg[y][x] = '^'
     cg[H2 - 1][mx] = 'x'
     exits = [[mx, H2 - 1]]
-    out = {'w': W2, 'h': H2, 'tile': TILE, 'kind': 'castle', 'exits': exits, 'items': [], 'puzzles': []}
+    out = {'w': W2, 'h': H2, 'tile': TILE, 'kind': 'castle', 'exits': exits, 'items': [{'id': 'form_stamp', 'cell': [5, 10]}], 'puzzles': []}  # 서고 구석의 모양 도장(성 퀘스트)
     ex, ey = mx, 2
     rows_b = []
     for y in range(ey - 3, ey + 4):
@@ -177,7 +177,7 @@ def build_town(g, tx, ty, tw, th, spots):
             mid = abs(x - mx) <= 1 or abs(y - my) <= 1
             road = outside in 'pb'
             in_castle_side = y == ty and CASTLE[0] - 1 <= x - tx <= CASTLE[0] + CASTLE[2]
-            g[y][x] = 's' if ((road or (mid and outside in walk_out)) and not in_castle_side) else 'M'  # 성벽(M), 길과 만나는 곳은 성문
+            g[y][x] = 's' if (road and not in_castle_side) else 'M'  # 성벽(M), 바깥 길과 만나는 곳만 성문(사용자 의견: 끊어진 성벽이 없게)
     for x in range(tx + 1, tx + tw - 1):  # 가로 돌길
         g[my][x] = 's'
     for y in range(ty + 1, ty + th - 1):  # 세로 돌길
@@ -222,6 +222,7 @@ def build_town(g, tx, ty, tw, th, spots):
         if g[y][gate[0]] == ',':
             g[y][gate[0]] = 's'
     out.append({'id': 'castle', 'rect': [tx + cx0, ty + cy0, cw, chh], 'door': px(*gate)})
+    spots['steward'] = px(gate[0] - 3, gate[1] + 2)  # 성 집사(성 퀘스트: 유니콘 근위대)
     spots['notice'] = px(mx + 3, my - 3)
     spots['gacha'] = px(mx - 4, my + 3)  # 말 뽑기 기계(07-fun 7절)
     spots['kid'] = px(mx + 5, my + 1)  # 장난감 망치를 잃은 마을 아이(퀘스트 동굴, 07-fun 5절)

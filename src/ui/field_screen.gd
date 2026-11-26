@@ -78,6 +78,7 @@ var _tut_level_btn: Button
 var _cave := ""  ## 들어가 있는 동굴 지도 id(07-fun 5절). 비면 큰 지도
 var _painter: MapPainter  ## 큰 지도 그리기(풍경·바람·물·산맥, data/map/biomes.json). 동굴이면 null
 var _life: MapLife  ## 작은 동물과 날리는 것
+var _cave_art: Texture2D  ## 동굴·성 안 지도 그림(assets/map/caves/<id>.webp, tools/map/paint/interior.py). 없으면 칸으로 그린다
 var _mv: MapView  ## 지도 그림 조각(한 번 그려 두고 붙인다, 그림 파일이 있으면 그것). 동굴이면 null
 
 static var _map_tex: ImageTexture
@@ -121,6 +122,8 @@ func _setup_map() -> void:
 	_set_pals()
 	_painter = MapPainter.for_map(map) if not map.is_cave else null
 	_life = MapLife.new(_painter) if _painter else null
+	var art := "res://assets/map/caves/%s.webp" % _cave
+	_cave_art = load(art) as Texture2D if _cave != "" and ResourceLoader.exists(art) else null
 	if _mv:
 		_mv.queue_free()
 		_mv = null
@@ -149,6 +152,7 @@ func _setup_map() -> void:
 		{"id": "notice", "pos": map.spot(1, "notice"), "key": "ui.field.notice", "color": UiKit.SKY},
 		{"id": "gacha", "pos": map.spot(1, "gacha"), "key": "ui.field.gacha", "color": Color("f6a5c0")},
 		{"id": "kid", "pos": map.spot(1, "kid"), "key": "ui.field.kid", "color": Color("ffe3c4")},
+		{"id": "steward", "pos": map.spot(1, "steward"), "key": "ui.field.steward", "color": Color("6f7fb8")},
 		{"id": "boss", "pos": map.spot(1, "boss"), "key": "ui.field.boss", "color": UiKit.GRAY},
 	]
 	for i in int(_f["enemy_count"]):
@@ -620,6 +624,12 @@ func _act() -> void:
 			main.flow.kid_talk(func() -> void:
 				_busy = false
 				_update_top())
+		"steward":
+			_busy = true
+			_stick_on = false
+			main.flow.steward_talk(func() -> void:
+				_busy = false
+				_update_top())
 		"chest":
 			_open_chest(_near["puz"])
 		"hospital":
@@ -921,7 +931,8 @@ func _puzzle_step(dir: Vector2, before: Vector2, delta: float) -> void:
 		if Vector2i(int(it["cell"][0]), int(it["cell"][1])) == hc and not it["id"] in GameData.state.items:
 			GameData.state.items.append(it["id"])
 			GameData.save()
-			_show_toast(t("ui.cave.item"))
+			var ik := "ui.cave.item." + String(it["id"])
+			_show_toast(t(ik) if TranslationServer.translate(ik) != ik else t("ui.cave.item"))
 	for pz in _puz:
 		for sc in pz.secrets:  # 숨은 쪽지: 돌이 비킨 자리를 밟으면 줍는다
 			if sc == hc and not pz.rocks.has(sc) and pz.note != "" and not pz.note in GameData.state.notes:
@@ -1281,7 +1292,10 @@ func _draw() -> void:
 		_life.draw_critters(self, o, tnow)
 	else:
 		draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), CAVE_WALL)
-		_draw_tiles(o)
+		if _cave_art:
+			draw_texture(_cave_art, o)
+		else:
+			_draw_tiles(o)
 		p0 = _perf("map", p0)
 	_draw_region_labels(o)
 	var font := ThemeDB.fallback_font
@@ -1298,6 +1312,19 @@ func _draw() -> void:
 	for sp in _spots:
 		var p: Vector2 = o + sp["pos"]
 		var col: Color = sp["color"]
+		if sp["id"] == "steward":  # 성 집사: 남색 옷, 둥근 모자
+			draw_circle(p + Vector2(0, 14), 17, Color("4f5f9a"))
+			draw_rect(Rect2(p + Vector2(-3, 2), Vector2(6, 22)), Color("f2cf4a"))
+			draw_circle(p - Vector2(0, 8), 13, Color("ffe3c4"))
+			draw_arc(p - Vector2(0, 8), 13, 0, TAU, 20, UiKit.INK, 2)
+			draw_rect(Rect2(p + Vector2(-14, -26), Vector2(28, 7)), Color("3b3049"))
+			draw_rect(Rect2(p + Vector2(-9, -34), Vector2(18, 9)), Color("3b3049"))
+			draw_string(font, p + Vector2(-80, 50), t(sp["key"]), HORIZONTAL_ALIGNMENT_CENTER, 160, 20, UiKit.INK)
+			var qc := GameData.quests.get_quest("s01_q_castle")
+			if not qc.is_empty() and GameData.quests.visible(GameData.state, qc) and not GameData.quests.done(GameData.state, qc["id"]) \
+					and (not main.flow.seen("s01_q_castle_got") or "form_stamp" in GameData.state.items):
+				draw_string(font, p + Vector2(-10, -40), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 30 + 4 * sin(Time.get_ticks_msec() / 200.0), UiKit.BAD)
+			continue
 		if sp["id"] == "kid":  # 마을 아이(작은 마을 사람)
 			draw_circle(p + Vector2(0, 10), 13, Color("9fd8c8"))
 			draw_circle(p - Vector2(0, 8), 12, Color("ffe3c4"))

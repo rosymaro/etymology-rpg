@@ -502,6 +502,32 @@ func kid_talk(done: Callable) -> void:
 	main.notice(tr.call("ui.kid.wait"), done)
 
 
+## 성 집사(성 퀘스트 s01_q_castle, 사용자 의견: 성의 이야기와 퀘스트): 처음엔 '유니콘 근위대' 장면,
+## 성 안 서고의 모양 도장을 가져오면 '같은 모양 옷' 장면 뒤 마친다.
+func steward_talk(done: Callable) -> void:
+	var st := GameData.state
+	var q := GameData.quests.get_quest("s01_q_castle")
+	var tr := func(k: String) -> String: return TranslationServer.translate(k)
+	if q.is_empty() or not GameData.quests.visible(st, q):
+		main.notice(tr.call("ui.steward.hello"), done)
+		return
+	if GameData.quests.done(st, q["id"]):
+		main.notice(tr.call("ui.steward.done"), done)
+		return
+	if not seen(q["id"] + "_got"):
+		_flag(q["id"] + "_got")
+		GameData.save()
+		main.play_scene("s01_castle", done)
+		return
+	if GameData.quests.finish(st, q["id"], []):
+		give_treasure(String(q.get("reward", "")))
+		GameData.save()
+		main.play_scene(String(q.get("scene", "s01_castle_done")), func() -> void:
+			main.notice(_done_text(q["id"]), done))
+		return
+	main.notice(tr.call("ui.steward.wait"), done)
+
+
 # ----- 보물(07-fun 6절) -----
 
 ## 보물 상자 내용("coin:80" | "word:id" | "exp:300")을 준다. 돌려주는 값: 알림 글.
