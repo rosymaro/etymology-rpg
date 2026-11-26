@@ -362,6 +362,15 @@ ui.kid.ask,"마을 아이: 동굴에서 놀다가 장난감 망치를 잃어버�
 ui.kid.wait,"마을 아이: 망치는 아직이에요? 어두운 동굴 맨 끝일 거예요."
 ui.kid.thanks,"마을 아이: 와, 내 망치! 고마워요! (코인 150)"
 ui.kid.done,"마을 아이: 뚝딱뚝딱! 나도 커서 대장장이가 될 거예요."
+ui.quest.s01_q_castle.title,유니콘 근위대
+ui.quest.s01_q_castle.desc,병사들이 uniform을 유니콘 옷으로 알고 있어요. 성 안 서고에서 옛 모양 도장을 찾아 성 집사에게 가져가세요.
+ui.quest.s01_q_castle.hint,성은 마을 뒤쪽이에요. 성문으로 들어가 왼쪽 방(서고)을 찾아보세요.
+ui.quest.s01_q_castle.locked,…
+ui.field.steward,성 집사
+ui.steward.wait,성 집사: 도장은 서고 어딘가에 있을 거예요. 성문으로 들어가 왼쪽 방이에요.
+ui.steward.done,성 집사: 근위대가 이제 제 모양이에요. 영주님도 기뻐하셨답니다.
+ui.steward.hello,성 집사: 어서 오세요. 영주님의 성이랍니다.
+ui.cave.item.form_stamp,모양 도장을 찾았어요! uni와 form이 새겨져 있어요. 성 집사에게 가져가세요.
 tut.skip,건너뛰기
 tut.tap_next,(아무 곳이나 누르면 다음)
 tut.tap_target,(빛나는 곳을 눌러 봐!)

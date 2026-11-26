@@ -14,7 +14,7 @@ func before_each() -> void:
 
 func test_stage1_has_word_root_and_magic_quests() -> void:
 	var ids := book.of_stage(1).map(func(q: Dictionary) -> String: return q["id"])
-	assert_eq(ids, ["s01_q_word", "s01_q_root", "s01_q_magic", "s01_q_hammer"])
+	assert_eq(ids, ["s01_q_word", "s01_q_root", "s01_q_magic", "s01_q_hammer", "s01_q_castle"])
 
 
 func test_quest_gates_match_the_map() -> void:
@@ -29,12 +29,12 @@ func test_quests_open_one_by_one_with_the_story() -> void:
 	assert_eq(book.shown(s, 1).size(), 0, "이야기 전에는 퀘스트가 없다")
 	assert_true(book.next_quest(s, 1).is_empty())
 	s.flags["s01_skit_cheok"] = true
-	assert_eq(book.shown(s, 1).map(func(q: Dictionary) -> String: return q["id"]), ["s01_q_word", "s01_q_hammer"], "알림판과 마을 아이(동굴)")
+	assert_eq(book.shown(s, 1).map(func(q: Dictionary) -> String: return q["id"]), ["s01_q_word", "s01_q_hammer", "s01_q_castle"], "알림판, 마을 아이(동굴), 성 집사(성)")
 	assert_false(book.finish(s, "s01_q_root", ["fac"]), "보이지 않는 퀘스트는 못 마친다")
 	s.flags["s01_q_word"] = true
-	assert_eq(book.shown(s, 1).size(), 3, "알림판을 마치면 다리 퀘스트가 열린다")
+	assert_eq(book.shown(s, 1).size(), 4, "알림판을 마치면 다리 퀘스트가 열린다")
 	assert_true(book.finish(s, "s01_q_root", ["fac"]))
-	assert_eq(book.shown(s, 1).size(), 4, "다리를 고치면 절벽 퀘스트가 열린다")
+	assert_eq(book.shown(s, 1).size(), 5, "다리를 고치면 절벽 퀘스트가 열린다")
 
 
 func test_word_quest_needs_all_three_words() -> void:
@@ -253,3 +253,20 @@ func test_weapons_do_not_see_through_walls() -> void:
 	assert_false(m.clear_line(a, Vector2(32 + 64 * 3, 32)), "벽 너머")
 	var m2 := WorldMap.from_dict({"w": 5, "h": 1, "tile": 64, "rows": ["....."], "walk": "."})
 	assert_true(m2.clear_line(a, Vector2(32 + 64 * 3, 32)))
+
+
+## 사용자 의견: 성의 이야기와 퀘스트. 성 안 서고의 모양 도장을 성 집사에게.
+func test_castle_quest_needs_the_stamp_from_the_castle_library() -> void:
+	var s := GameState.new()
+	s.flags["s01_skit_cheok"] = true
+	assert_false(book.finish(s, "s01_q_castle", []), "도장이 없으면 못 마친다")
+	var cm := WorldMap.load_cave("s01_castle")
+	var stamp: Array = cm.items.filter(func(x: Dictionary) -> bool: return x["id"] == "form_stamp")
+	assert_eq(stamp.size(), 1, "성 안에 모양 도장")
+	var p := (Vector2(float(stamp[0]["cell"][0]), float(stamp[0]["cell"][1])) + Vector2(0.5, 0.5)) * cm.tile
+	assert_gt(cm.path_len(cm.exit_inside(0), p), -1, "성문에서 도장까지 걸어간다")
+	s.items.append("form_stamp")
+	assert_true(book.finish(s, "s01_q_castle", []))
+	assert_eq(book.boss_blockers(s, 1).filter(func(q: Dictionary) -> bool: return q["id"] == "s01_q_castle").size(), 0, "보스와는 상관없다")
+	var m := WorldMap.load_default()
+	assert_true(m.walkable(m.cell(m.spot(1, "steward"))), "성 집사 앞에 설 수 있다")
