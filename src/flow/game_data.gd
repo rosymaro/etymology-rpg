@@ -48,7 +48,12 @@ func _ready() -> void:
 
 ## 개발자 모드는 따로 저장해서 스토리 저장을 건드리지 않는다.
 func use_dev_save(dev: bool) -> void:
-	save_store = SaveStore.new(save_prefix + ("dev_save.json" if dev else "save.json"))
+	use_save("dev" if dev else "story")
+
+
+## 저장 칸: "story" | "dev"(개발자 스토리) | "free"(개발자 자유 탐험). 서로 건드리지 않는다.
+func use_save(slot: String) -> void:
+	save_store = SaveStore.new(save_prefix + {"dev": "dev_save.json", "free": "free_save.json"}.get(slot, "save.json"))
 
 
 func new_game(hero_name: String) -> void:
@@ -76,7 +81,7 @@ static func _resume_allowed() -> bool:
 	return true
 
 
-## 지금 하던 곳을 적어 둔다. mode: "story" | "dev" | "mini" | ""(타이틀). 앱이 다시 켜지면 여기로 돌아간다.
+## 지금 하던 곳을 적어 둔다. mode: "story" | "dev" | "free" | "mini" | ""(타이틀). 앱이 다시 켜지면 여기로 돌아간다.
 ## 빈 mode는 이어 하기를 지운다(타이틀로 돌아갔거나 앱을 제대로 끝냈을 때).
 func set_resume(mode: String) -> void:
 	if not resume_enabled:

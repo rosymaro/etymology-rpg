@@ -158,6 +158,11 @@ func move(p: Vector2, d: Vector2, r: float, open_gates: Dictionary = {}) -> Vect
 	return n
 
 
+## 자유 탐험(개발자 모드): 벽·물·산·길목을 무시하고 지도 안이면 어디든 간다.
+func move_free(p: Vector2, d: Vector2, r: float) -> Vector2:
+	return (p + d).clamp(Vector2(r, r), size_px() - Vector2(r, r))
+
+
 ## a에서 b까지 벽(지나갈 수 없는 칸) 없이 곧게 보이는가. 무기가 벽 너머를 맞히지 않게(07-fun 1절).
 func clear_line(a: Vector2, b: Vector2) -> bool:
 	var n := int(ceil(a.distance_to(b) / (tile * 0.4)))

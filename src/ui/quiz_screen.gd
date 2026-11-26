@@ -113,7 +113,7 @@ func _show() -> void:
 		_opts.add_child(b)
 
 
-## 조각 칩: 나눠 보여 줄 때(단계 A·B)나 풀이 때. 칩마다 위에 단어 조각, 아래에 조각 뜻(숨기면 "?").
+## 조각 칩: 나눠 보여 줄 때(단계 A·B)나 풀이 때. 그 위에 원래 단어, 칩마다 위에 단어 조각, 아래에 조각 뜻(숨기면 "?").
 ## 나누지 않을 때(단계 C 이후, 뜻 문제)는 안 배운 조각의 뜻만 힌트로 적는다.
 func _show_parts(q: QuizQuestion, reveal: bool) -> void:
 	for c in _parts_row.get_children():
@@ -123,7 +123,9 @@ func _show_parts(q: QuizQuestion, reveal: bool) -> void:
 		return
 	var iq := q as InferenceQuestion
 	var split := reveal or iq.show_split
-	_word_lbl.visible = not split
+	# 나눠 보일 때도 위에 원래 단어를 보인다(사용자 의견: 조각만 있으면 무슨 단어였는지 모른다). 조각이 주인공이니 조금 작게
+	_word_lbl.visible = true
+	_word_lbl.add_theme_font_size_override("font_size", 40 if split else 54)
 	if not split:
 		var hints: Array[String] = []
 		for p in iq.parts:

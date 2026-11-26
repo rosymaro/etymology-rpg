@@ -31,5 +31,9 @@ func open(_args: Dictionary) -> void:
 	var note := UiKit.wrap(UiKit.label(t("ui.title.dev_note"), 18, UiKit.INK.lightened(0.3)), 520)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(note)
+	v.add_child(UiKit.button(t("ui.title.free"), func() -> void: main.flow.dev_game(true), UiKit.PINK))
+	var note2 := UiKit.wrap(UiKit.label(t("ui.title.free_note"), 18, UiKit.INK.lightened(0.3)), 520)
+	note2.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(note2)
 	v.add_child(UiKit.button(t("ui.title.minigames"), func() -> void: main.flow.go_minigames(), UiKit.APRICOT))
 	v.add_child(UiKit.button(t("ui.option.title"), func() -> void: main.flow.go_options(main.flow.go_title), UiKit.PAPER))

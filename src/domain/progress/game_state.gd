@@ -29,6 +29,7 @@ var loadout: Dictionary = {}  ## 장착(07-fun.md 2절): {"field": [필드 마�
 var pieces: Dictionary = {}  ## 어원 조각 id -> {seen, right}: 유추 문제에서 본·맞힌 수(06-learning.md)
 var rest_until := 0  ## 병원에서 쉬기가 끝나는 시각(유닉스 초). 그때까지 마을 밖으로 못 나간다(04-meta 9절)
 var dev_mode := false  ## 개발자 모드(모든 단어를 갖고 평가용으로 시작). 저장 파일도 따로
+var free_roam := false  ## 개발자 모드(자유 탐험): 보스 말고는 단어 전투에 안 들어가고, 지도의 벽·길목에 안 막힌다
 var roots_cache: Dictionary = {}  ## 가진 스킬 어근(저장하지 않음, ProgressRules가 채운다)
 
 
@@ -59,7 +60,7 @@ func to_dict() -> Dictionary:
 		"version": VERSION, "hero_name": hero_name, "stage": stage, "dex": dex, "unit_exp": unit_exp,
 		"joined": joined, "equipment": eqs, "magics": magics, "chosen_roots": _str_keys(chosen_roots),
 		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y], "cave": cave,
-		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode,
+		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode, "free_roam": free_roam,
 		"rest_until": rest_until, "pieces": pieces, "loadout": loadout,
 		"wallet": wallet, "hunt": hunt, "notes": notes, "items": items,
 	}
@@ -102,6 +103,7 @@ static func from_dict(d: Dictionary) -> GameState:
 		g.titles.append(str(t))
 	g.exam_fail_date = d.get("exam_fail_date", "")
 	g.dev_mode = d.get("dev_mode", false)
+	g.free_roam = d.get("free_roam", false)
 	return g
 
 
