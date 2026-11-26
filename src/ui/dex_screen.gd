@@ -3,6 +3,7 @@ extends Screen
 ## 도감: 얻은 단어를 얻은 곳(필드·마을·진화·보스)별로 보여 준다. 누르면 뜻·어원·예문(01-rpg-base '도감').
 
 var _detail: Label
+var _art: WordArt  ## 그림 자리(단어를 누르면 위에 나온다)
 
 
 func open(_args: Dictionary) -> void:
@@ -50,12 +51,21 @@ func open(_args: Dictionary) -> void:
 	var right := UiKit.card()
 	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(right)
+	var rv := UiKit.vbox(10)
+	_art = WordArt.new()
+	_art.custom_minimum_size = Vector2(220, 220)
+	_art.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_art.visible = false
+	rv.add_child(_art)
 	_detail = UiKit.wrap(UiKit.label(t("ui.dex.pick"), 24))
 	_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right.add_child(UiKit.scroll(_detail))
+	rv.add_child(_detail)
+	right.add_child(UiKit.scroll(rv))
 
 
 func _show(w: WordData) -> void:
+	_art.visible = true
+	_art.set_word(w)
 	var parts: Array[String] = []
 	for e in w.etym:
 		parts.append("%s = %s" % [e.get("root", ""), e.get("meaning", "")])

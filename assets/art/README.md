@@ -300,6 +300,7 @@
   - 유닛 펭귄: 뚝딱 `pal/01_*`, 척척 `pal/04_*`, 조잘 `pal/05_*`. 전투·도감 그림은 `unit/uNN`(정사각형), 대화 얼굴은 `face/<인물>_normal`.
   - 움직이는 그림은 `<id>_<동작>_1.png, _2.png …`를 차례로 보여 준다(`Art.draw_anim`). 그 동작이 없으면 idle.
   - 이 그림들은 시트의 화풍(도트, 진한 외곽선)을 따른다. 1절의 남보라 선 규칙보다 사용자 그림이 먼저다.
+- **단어 카드 그림 자리**(전투 카드 위쪽, 누르고 있을 때 창, 도감 상세): `word/<단어 id>.png`(정사각형, 512×512 권장) → 없으면 `root/<어원 형태>.png`(예: `root/dict.png`, 같은 어원 단어가 함께 쓴다) → 없으면 뜻으로 고른 임시 도형(`docs/art/word_pictures.png`).
 - 지금 코드가 찾는 이름: `hero/look0`, `unit/uNN`, `pal/NN`, `face/<인물>_<표정>`, `npc/villager`, `building/<id>`, `enemy/attr_NN`, `fx/magic_<id>`, `fx/impact`, `slot/<부위>`.
 - 이 문서의 새 이름에 맞춰 바꿀 것:
   - 주인공 남·여와 유닛 펭귄·병아리 고르기: 새 게임 화면, `GameState`에 저장.

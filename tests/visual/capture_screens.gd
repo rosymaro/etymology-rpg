@@ -169,9 +169,9 @@ func _run() -> void:
 			break
 	await _shot("09_battle")
 	if bs and bs._b_box.combatant:
-		bs._show_popup(bs._info(bs._b_box.combatant, bs._b_box.base_lines()), bs._b_box.card_center())
+		bs._show_popup(bs._info(bs._b_box.combatant, bs._b_box.base_lines()), bs._b_box.card_center(), bs._b_box.combatant)
 		await _shot("09_battle_enemy_info")
-		bs._show_popup(bs._info(bs._a_box.combatant, bs._a_box.base_lines()), bs._a_box.card_center())
+		bs._show_popup(bs._info(bs._a_box.combatant, bs._a_box.base_lines()), bs._a_box.card_center(), bs._a_box.combatant)
 		await _shot("09_battle_ally_info")
 		bs._show_popup([] as Array[String], Vector2.ZERO)
 		var q := ComboQuiz.make(gd.repo, "sub-", ["fac", "form"], RandomNumberGenerator.new())

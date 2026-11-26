@@ -41,6 +41,7 @@ var _next_btn: Button
 var _tapped := false
 var _popup: PanelContainer
 var _popup_text: Label
+var _popup_art: WordArt  ## 누르고 있을 때 창의 그림 자리
 var _end_btn: Button
 var _skip := false
 var _ended := false
@@ -111,7 +112,7 @@ func open(args: Dictionary) -> void:
 	_banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_banner)
-	UiKit.pin(_banner, 0.5, 0, 0, MID_Y + 270)
+	UiKit.pin(_banner, 0.5, 0, 0, MID_Y + 270 + BattleCard.ART_H)  # 카드 위쪽 그림 자리만큼 아래
 	_next_btn = UiKit.button(t("ui.battle.next_turn"), func() -> void: _tapped = true, UiKit.ACCENT.lightened(0.35), 26)
 	_next_btn.custom_minimum_size = Vector2(260, UiKit.THUMB_H)
 	_next_btn.visible = false
@@ -122,13 +123,20 @@ func open(args: Dictionary) -> void:
 	_popup.visible = false
 	_popup.z_index = 20
 	_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_popup_text = UiKit.wrap(UiKit.label("", 20), 460)
-	_popup.add_child(_popup_text)
+	var prow := UiKit.hbox(12)
+	prow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_popup.add_child(prow)
+	_popup_art = WordArt.new()
+	_popup_art.custom_minimum_size = Vector2(140, 140)
+	_popup_art.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	prow.add_child(_popup_art)
+	_popup_text = UiKit.wrap(UiKit.label("", 20), 400)
+	prow.add_child(_popup_text)
 	add_child(_popup)
 	for box in [_a_box, _b_box]:
 		var bx: BattleCard = box
 		bx.held.connect(func(on: bool, at: Vector2) -> void:
-			_show_popup(_info(bx.combatant, bx.base_lines()) if on and bx.combatant else [] as Array[String], at))
+			_show_popup(_info(bx.combatant, bx.base_lines()) if on and bx.combatant else [] as Array[String], at, bx.combatant))
 	# 이번 전투의 마법: 왼쪽 아래. 턴 앞에서 누르면 쓰고, 길게 누르면 설명
 	_tray = UiKit.hbox(8)
 	add_child(_tray)
@@ -261,10 +269,17 @@ func _float(text: String, from: Vector2, dir: Vector2, col: Color, size: int = 3
 	tw.chain().tween_callback(l.queue_free)
 
 
-func _show_popup(text_lines: Array[String], at: Vector2) -> void:
+func _show_popup(text_lines: Array[String], at: Vector2, c: Combatant = null) -> void:
 	if text_lines.is_empty():
 		_popup.visible = false
 		return
+	_popup_art.visible = c != null
+	if c:
+		var w := GameData.repo.get_word(c.word_id) if c.side == Combatant.ENEMY else null
+		if w:
+			_popup_art.set_word(w)
+		else:
+			_popup_art.set_unit(c.unit_no)
 	_popup_text.text = "\n".join(text_lines)
 	_popup.visible = true
 	_popup.reset_size()
@@ -810,7 +825,7 @@ func _hold_side(card: Control, side: int, idx: int) -> void:
 			var c: Combatant = _side_list(side)[idx]
 			var tmp := BattleCard.new()
 			tmp.show_now(c, _who(side, idx), c.atk, c.def, maxi(0, c.hp), _ctx.formula)
-			_show_popup(_info(c, tmp.base_lines()), card.get_global_transform_with_canvas() * ev.position)
+			_show_popup(_info(c, tmp.base_lines()), card.get_global_transform_with_canvas() * ev.position, c)
 			tmp.free()
 		else:
 			_show_popup([] as Array[String], Vector2.ZERO))
