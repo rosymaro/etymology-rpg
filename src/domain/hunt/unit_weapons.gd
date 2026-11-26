@@ -37,7 +37,7 @@ func tick(delta: float, weapons: Dictionary, origins: Dictionary, hero: Vector2,
 			for k in int(w["count"]):
 				var p := orbit_pos(hero, w, k)
 				for e in enemies:
-					if (e as FieldMob).pos.distance_to(p) < 48.0 and _now >= float(_orbit_hit.get(e, 0.0)) and map.clear_line(hero, e.pos):
+					if (e as FieldMob).pos.distance_to(p) < 48.0 and _now >= float(_orbit_hit.get(e, 0.0)) and map.shot_line(hero, e.pos):
 						_orbit_hit[e] = _now + float(w["hit_gap"])
 						hits.append({"mob": e, "dmg": int(w["dmg"]), "from": hero})
 			continue
@@ -64,7 +64,7 @@ func targets(o: Vector2, hero: Vector2, range_px: float, enemies: Array, map: Wo
 	var out: Array[FieldMob] = []
 	for e in enemies:
 		var m := e as FieldMob
-		if m.pos.distance_to(o) <= range_px and m.pos.distance_to(hero) > no_fire_near and map.clear_line(o, m.pos):
+		if m.pos.distance_to(o) <= range_px and m.pos.distance_to(hero) > no_fire_near and map.shot_line(o, m.pos):
 			out.append(m)
 	out.sort_custom(func(a: FieldMob, b: FieldMob) -> bool: return a.pos.distance_to(o) < b.pos.distance_to(o))
 	return out
@@ -101,7 +101,7 @@ func _fire(id: String, w: Dictionary, o: Vector2, hero: Vector2, facing: Vector2
 			for e in enemies:
 				var m := e as FieldMob
 				var along := (m.pos - o).dot(dir)
-				if along > 0.0 and along <= rng_px and absf((m.pos - o).cross(dir)) <= float(w["width"]) and map.clear_line(o, m.pos):
+				if along > 0.0 and along <= rng_px and absf((m.pos - o).cross(dir)) <= float(w["width"]) and map.shot_line(o, m.pos):
 					hits.append({"mob": m, "dmg": dmg, "from": o})
 			fx.append({"type": "beam", "a": o, "b": end, "r": float(w["width"]), "t": 0.0, "max": 0.3, "unit": unit})
 		"snipe":  # 가장 약한(체력이 적은) 몹부터
@@ -125,7 +125,7 @@ func _fire(id: String, w: Dictionary, o: Vector2, hero: Vector2, facing: Vector2
 		"slam":
 			var c := ts[0].pos
 			for e in enemies:
-				if (e as FieldMob).pos.distance_to(c) <= float(w["radius"]) and map.clear_line(o, e.pos):
+				if (e as FieldMob).pos.distance_to(c) <= float(w["radius"]) and map.shot_line(o, e.pos):
 					hits.append({"mob": e, "dmg": dmg, "from": c})
 			fx.append({"type": "slam", "a": c, "r": float(w["radius"]), "t": 0.0, "max": 0.4, "unit": unit})
 	return true
@@ -163,7 +163,7 @@ func _move_shots(delta: float, enemies: Array, map: WorldMap, origins: Dictionar
 					fx.append({"type": "slam", "a": sh["to"], "r": float(sh["r"]), "t": 0.0, "max": 0.35, "unit": sh["unit"]})
 					shots.erase(sh)
 				continue
-		if not map.walkable(map.cell(sh["pos"]), {}):  # 벽을 뚫지 못한다: 부딪히면 떨어진다
+		if not map.shot_passes(map.cell(sh["pos"])):  # 벽을 뚫지 못한다: 부딪히면 떨어진다(마을 성벽 위로는 넘어간다)
 			shots.erase(sh)
 			continue
 		for e in enemies:

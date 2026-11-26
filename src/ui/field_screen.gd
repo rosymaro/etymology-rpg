@@ -451,14 +451,13 @@ func _process(delta: float) -> void:
 	if _mv:
 		var st := GameData.settings  # 옵션에서 지도 효과를 하나씩 끈다(04-meta.md 2절)
 		_mv.on_grass = st.map_grass
-		_mv.on_sway = st.map_sway
 		_mv.on_water = st.map_water
 		_mv.update(_cam, size, Time.get_ticks_msec() / 1000.0, _gates)
 	_perf("tick", t0)
 
 
 func _step(delta: float) -> void:
-	if _busy or _full or _quests or _choosing or _lock or (_tut and is_instance_valid(_tut)):
+	if _busy or _full or _quests or _choosing or _lock or (_tut and is_instance_valid(_tut)) or main._overlay.get_child_count() > 0:
 		_follow_cam()  # 멈춰 있어도 화면은 주인공을 비춘다(튜토리얼이 가리킬 자리가 맞게)
 		return
 	var dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
@@ -531,6 +530,9 @@ func _step(delta: float) -> void:
 	_update_hunt_hud()
 	if not map.is_town(_hero):
 		_hunt(delta)
+	else:
+		_fire(delta)  # 마을 안에서도 동행이 성벽 너머 몹을 쏜다(사용자 의견)
+	var hero_in_town := map.is_town(_hero)
 	for i in _enemies.size():
 		var e := _enemies[i]
 		if e.pos.distance_to(_hero) > float(_f["spawn_far"]) and e.kind != "eater":  # 멀어진 적은 가까이에 다시
@@ -538,7 +540,10 @@ func _step(delta: float) -> void:
 			if ne:
 				_enemies[i] = ne
 			continue
-		e.ignore = _fmagic.sneak > 0.0
+		e.ignore = _fmagic.sneak > 0.0 and e.kind != "eater"
+		# 사용자 의견: 마을 안의 주인공, 벽에 가려진 주인공은 몹이 알아채지 못한다
+		if hero_in_town or (e.pos.distance_squared_to(_hero) < 700.0 * 700.0 and not map.clear_line(e.pos, _hero)):
+			e.ignore = true
 		var kinds: Dictionary = _f["kinds"].duplicate()
 		kinds["eater"] = {"speed": _hc["eater"]["speed"]}
 		var v := e.steer(_hero, delta, kinds, _rng)
@@ -723,17 +728,21 @@ func _town_edge() -> void:
 		_tutorial("hunt")
 
 
-func _hunt(delta: float) -> void:
-	# 뿌리먹이
-	if _run.tick(delta):
-		_spawn_eater()
-	# 무기: 데리고 다니는 유닛이 저마다 쏜다. 몹은 주인공에게 온다
+## 무기: 데리고 다니는 유닛이 저마다 쏜다(마을 안에서도, 성벽 위로). 몹은 주인공에게 온다.
+func _fire(delta: float) -> void:
 	var origins := {}
 	for pal in _pals:
 		origins[_run.weapon_of(int(pal["unit"]))] = pal["pos"]
 	_uw.no_fire_near = float(_hc["no_fire_near"])
 	for h in _uw.tick(delta, _run.weapons_now(), origins, _hero, _facing, _enemies, map):
 		_hit(h["mob"], int(h["dmg"]), h["from"], float(h.get("push", 0.0)), float(h.get("stun", 0.0)))
+
+
+func _hunt(delta: float) -> void:
+	# 뿌리먹이
+	if _run.tick(delta):
+		_spawn_eater()
+	_fire(delta)
 	# 떨어진 것: 가까우면 빨려 오고, 닿으면 줍는다
 	for dr in _drops.duplicate():
 		var dd: Vector2 = _hero - (dr["pos"] as Vector2)

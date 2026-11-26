@@ -3,7 +3,7 @@ extends Node2D
 ## 큰 지도 그림(표현 층). 사용자 의견: 효과를 다 꺼도 FPS가 20 아래였다(매 프레임 칸마다 다시 그렸다).
 ## 그래서 지도를 조각(CHUNK칸 = 512px)으로 한 번만 그려 두고 매 프레임 붙이기만 한다. 겹(아래부터):
 ##   ground 바닥(땅·물 바탕·바닷가·길·다리), grass 풀·꽃, 물 움직임(매 프레임 그림), mtn 산, trees 나무
-## 풀·나무 겹은 화면 크기 한 장으로 모은 뒤 셰이더로 바람에 흔든다(GPU가 하므로 가볍다).
+## 바람 흔들림은 없앴다(사용자 의견). 모든 겹은 조각을 그대로 붙인다.
 ## 그림 파일(사용자 의견: 배경을 직접 그려 넣는다)이 있으면 그 조각은 파일을 쓴다:
 ##   res://assets/map/<겹>/<열>_<행>.webp(.png), 한 장 FILE_CELLS칸 = 1024×1536px (사용자 의견: 픽셀 기준 1024×1536, assets/map/README.md)
 ## 부모(FieldScreen)보다 먼저 그려진다(show_behind_parent). 몹·주인공·작은 동물은 부모가 그 위에 그린다.
@@ -12,22 +12,6 @@ const CHUNK := 8
 const FILE_CELLS := Vector2i(16, 24)  ## 그림 파일 한 장(가로×세로 칸)
 const MARGIN := {"ground": [1, 1, 1], "grass": [1, 1, 1], "mtn": [3, 1, 6], "trees": [2, 1, 3]}  ## 옆, 위, 아래(높은 것은 아래 칸에서 솟는다)
 const KEEP := 36  ## 겹마다 남겨 둘 조각 수
-const SWAY_SHADER := """
-shader_type canvas_item;
-render_mode blend_premul_alpha;
-uniform vec2 cam_px;
-uniform float t;
-uniform float speed = 0.9;
-uniform float wave = 0.0025;
-uniform vec2 amp = vec2(2.0, 7.0);
-uniform float strength = 1.0;
-void fragment() {
-	vec2 wp = UV / TEXTURE_PIXEL_SIZE + cam_px;
-	float w = 0.5 + 0.5 * sin(t * speed - (wp.x + wp.y * 0.4) * wave + sin(t * 0.37) * 1.5);
-	float sw = sin(t * 2.6 + wp.x * 0.012 + wp.y * 0.03) * mix(amp.x, amp.y, w) + w * amp.y * 0.6;
-	COLOR = texture(TEXTURE, UV - vec2(sw * strength, 0.0) * TEXTURE_PIXEL_SIZE);
-}
-"""
 
 var painter: MapPainter
 var bleed := 0.0
@@ -36,15 +20,12 @@ var cam := Vector2.ZERO
 var view := Vector2(720, 1280)
 var t := 0.0
 var on_grass := true
-var on_sway := true
 var on_water := true
 var baked := 0  ## 지금까지 그린 조각 수(테스트·시간 재기용)
 var art_dir := "res://assets/map"  ## 사람이 그린 그림 파일 폴더(테스트는 user://)
 var from_files := 0  ## 그림 파일을 쓴 조각 수
 
 var _roots := {}  ## 겹 -> 조각 Sprite2D를 담는 Node2D
-var _comp := {}  ## 흔들리는 겹 -> 화면 크기로 모으는 SubViewport
-var _show := {}  ## 흔들리는 겹 -> 모은 그림을 셰이더로 보여 주는 Sprite2D
 var _water: Node2D
 var _bake: Node
 var _chunks := {}  ## "겹:열:행" -> {sprite, vp(없으면 파일), used}
@@ -64,35 +45,10 @@ func _init(p: MapPainter, bleed_px: float) -> void:
 	_premul.blend_mode = CanvasItemMaterial.BLEND_MODE_PREMULT_ALPHA
 	_bake = Node.new()
 	add_child(_bake)
-	var shader := Shader.new()
-	shader.code = SWAY_SHADER
-	var wcfg: Dictionary = p.cfg.get("wind", {})
-	var sw: Array = wcfg.get("sway", [2.0, 7.0])
 	for layer in MapPainter.LAYERS:
 		var root := Node2D.new()
 		_roots[layer] = root
-		if layer == "grass" or layer == "trees":
-			var vp := SubViewport.new()
-			vp.transparent_bg = true
-			vp.disable_3d = true
-			vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-			vp.add_child(root)
-			_bake.add_child(vp)
-			_comp[layer] = vp
-			var spr := Sprite2D.new()
-			spr.centered = false
-			spr.texture = vp.get_texture()
-			var mat := ShaderMaterial.new()
-			mat.shader = shader
-			mat.set_shader_parameter("speed", float(wcfg.get("speed", 0.9)))
-			mat.set_shader_parameter("wave", float(wcfg.get("wave", 0.0025)))
-			mat.set_shader_parameter("amp", Vector2(float(sw[0]), float(sw[1])))
-			mat.set_shader_parameter("strength", 0.5 if layer == "grass" else 0.8)
-			spr.material = mat
-			_show[layer] = spr
-			add_child(spr)
-		else:
-			add_child(root)
+		add_child(root)
 		if layer == "grass":  # 물 움직임은 풀 위, 산 아래
 			_water = Node2D.new()
 			_water.draw.connect(func() -> void:
@@ -128,22 +84,7 @@ func update(cam_px: Vector2, view_px: Vector2, now: float, gates_now: Dictionary
 						prefetch -= 1
 					_make(layer, cx, cy, id)
 	for layer in MapPainter.LAYERS:
-		var root: Node2D = _roots[layer]
-		if _comp.has(layer):
-			var vp: SubViewport = _comp[layer]
-			var sz := Vector2i(int(ceil(view.x)), int(ceil(view.y + bleed * 2)))
-			if vp.size != sz:
-				vp.size = sz
-			root.position = -cam + Vector2(0, bleed)
-			var spr: Sprite2D = _show[layer]
-			spr.position = Vector2(0, -bleed)
-			spr.visible = root.visible
-			var mat: ShaderMaterial = spr.material
-			mat.set_shader_parameter("cam_px", cam - Vector2(0, bleed))
-			mat.set_shader_parameter("t", t)
-			mat.set_shader_parameter("strength", (0.5 if layer == "grass" else 0.8) if on_sway else 0.0)
-		else:
-			root.position = -cam
+		(_roots[layer] as Node2D).position = -cam
 	_water.queue_redraw()
 	_evict()
 

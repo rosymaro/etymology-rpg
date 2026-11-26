@@ -21,7 +21,6 @@ ui.option.touch_marker,누른 자리 표시(터치 확인)
 ui.option.map_fx,지도 효과
 ui.option.map_fx_hint,필드가 버벅이면 하나씩 꺼 보세요. FPS를 켜면 필드 왼쪽 아래에 초당 그림 수와 한 번 그리는 데 걸린 시간이 나와요.
 ui.option.map_grass,풀·꽃
-ui.option.map_sway,바람에 흔들림
 ui.option.map_water,물결·물가 거품
 ui.option.map_critters,뛰어다니는 동물
 ui.option.map_particles,날리는 꽃잎·눈·불씨

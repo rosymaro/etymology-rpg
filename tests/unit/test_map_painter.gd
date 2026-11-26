@@ -73,7 +73,6 @@ func test_map_effect_settings_are_saved() -> void:
 	s2.load_settings()
 	assert_false(s2.map_grass)
 	assert_false(s2.map_water)
-	assert_true(s2.map_sway)
 	assert_true(s2.show_fps)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 

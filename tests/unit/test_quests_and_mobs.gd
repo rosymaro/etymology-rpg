@@ -270,3 +270,30 @@ func test_castle_quest_needs_the_stamp_from_the_castle_library() -> void:
 	assert_eq(book.boss_blockers(s, 1).filter(func(q: Dictionary) -> bool: return q["id"] == "s01_q_castle").size(), 0, "보스와는 상관없다")
 	var m := WorldMap.load_default()
 	assert_true(m.walkable(m.cell(m.spot(1, "steward"))), "성 집사 앞에 설 수 있다")
+
+
+## 사용자 의견: 벽에 가려지거나 마을 안이면 몹이 알아채지 못한다(필드 화면이 ignore를 켠다). 뿌리먹이는 멈춘다.
+func test_unaware_mobs_do_not_chase_and_eater_waits() -> void:
+	var m := FieldMob.new()
+	m.kind = "chase"
+	m.ignore = true
+	m.steer(Vector2(200, 0), 0.016, kinds, rng)
+	assert_false(m.alert, "알아채지 못하면 쫓지 않는다")
+	var e := FieldMob.new()
+	e.kind = "eater"
+	e.ignore = true
+	assert_eq(e.steer(Vector2(200, 0), 0.016, kinds, rng), Vector2.ZERO, "뿌리먹이는 멈춰 기다린다")
+	e.ignore = false
+	assert_gt(e.steer(Vector2(200, 0), 0.016, kinds, rng).x, 0.0, "알아채면 곧장 온다")
+
+
+## 사용자 의견: 마을 안에서 바깥으로 쏜다(무기는 성벽 위로 넘어간다), 몹의 눈은 성벽에 막힌다.
+func test_weapons_fly_over_town_wall_but_mobs_cannot_see_through_it() -> void:
+	var m := WorldMap.load_default()
+	var t: Array = m.region(1)["town"]
+	var wall := Vector2i(int(t[0]) + 8, int(t[1]) + int(t[3]) - 1)  # 남쪽 성벽
+	assert_eq(m.ch(wall), "M")
+	var inside := (Vector2(wall) + Vector2(0.5, -1.5)) * m.tile
+	var outside := (Vector2(wall) + Vector2(0.5, 2.5)) * m.tile
+	assert_true(m.shot_line(inside, outside), "무기는 성벽 위로")
+	assert_false(m.clear_line(outside, inside), "몹은 성벽 너머를 못 본다")

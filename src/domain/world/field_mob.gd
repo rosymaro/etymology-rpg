@@ -52,6 +52,10 @@ func steer(hero: Vector2, delta: float, kinds: Dictionary, rng: RandomNumberGene
 		vel = Vector2.ZERO
 		return vel
 	flash = maxf(0.0, flash - delta)
+	if kind == "eater" and ignore:  # 주인공을 알아채지 못하면(마을 안, 벽 너머) 멈춰 기다린다
+		alert = false
+		vel = Vector2.ZERO
+		return vel
 	if kind == "eater":  # 뿌리먹이: 곧장 주인공에게(밀리지 않고, 몰래 걷기도 안 통한다)
 		var dd := hero - pos
 		alert = true
