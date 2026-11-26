@@ -8,7 +8,7 @@
 4) 같은 캐릭터의 그림은 한 크기 캔버스에 발끝(아래 가운데)을 맞춰 넣는다(움직일 때 흔들리지 않게)
 
 결과(assets/art, src/ui/art.gd가 읽는다):
-  hero/<m|f>_<동작>_<n>.png    필드 주인공(동작: idle, walk, joy, action, think)
+  hero/<m|f>_<동작>_<n>.png    필드 주인공(동작: idle, walk, joy, action, think). 발밑 그림자를 함께 그린다(그림 아래쪽 여백)
   pal/<NN>_<동작>_<n>.png      필드 동행 유닛
   unit/uNN.png                 전투·도감 유닛 그림(정사각형)
   face/<인물>_normal.png       대화 얼굴(머리와 어깨)
@@ -18,7 +18,7 @@
 import os
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter
 from scipy import ndimage
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -40,6 +40,7 @@ FRAMES = {
 FACES = {"hero/m": "hero_m", "hero/f": "hero_f", "pal/01": "ttukttak", "pal/04": "cheokcheok", "pal/05": "jojal"}
 UNITS = {"pal/01": "u01", "pal/04": "u04", "pal/05": "u05"}
 PAD = 6
+SHADOW = (30, 26, 60, 135)  ## 발밑 그림자 색(남색, 반투명). 사용자 의견: 캐릭터·동행 유닛에 그림자
 
 
 def sprites(path):
@@ -88,15 +89,28 @@ def main():
             used = sorted({k for v in anims.values() for k in v})
             w = max(sp[k].width for k in used) + PAD * 2
             h = max(sp[k].height for k in used) + PAD * 2
+            # 그림자: 가만히 그림 폭의 6할 타원, 발끝 높이에. 모든 동작에 같은 크기(걸을 때 그림자가 흔들리지 않게)
+            sw = int(sp[anims["idle"][0]].width * 0.68)
+            sh = max(8, int(sw * 0.22))
+            sh_pad = sh // 2 + 4
 
-            def canvas(k):
-                c = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+            def canvas(k, shadow=False):
+                hh = h + (sh_pad if shadow else 0)
+                c = Image.new("RGBA", (w, hh), (0, 0, 0, 0))
                 s = sp[k]
-                c.alpha_composite(s, ((w - s.width) // 2, h - PAD - s.height))
+                foot = h - PAD
+                if shadow:
+                    m = Image.new("L", (w * 2, hh * 2), 0)
+                    ImageDraw.Draw(m).ellipse([w - sw, (foot - sh // 2) * 2, w + sw, (foot + sh // 2) * 2], fill=255)
+                    m = m.filter(ImageFilter.GaussianBlur(6)).resize((w, hh), Image.LANCZOS)
+                    sl = Image.new("RGBA", (w, hh), SHADOW[:3] + (0,))
+                    sl.putalpha(m.point(lambda v: v * SHADOW[3] // 255))
+                    c.alpha_composite(sl)
+                c.alpha_composite(s, ((w - s.width) // 2, foot - s.height))
                 return c
             for anim, ks in anims.items():
                 for j, k in enumerate(ks):
-                    save(canvas(k), "%s_%s_%d" % (cid, anim, j + 1))
+                    save(canvas(k, shadow=True), "%s_%s_%d" % (cid, anim, j + 1))
                     n += 1
             idle = canvas(anims["idle"][0])
             side = max(w, h)
