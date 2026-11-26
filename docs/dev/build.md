@@ -48,3 +48,18 @@ CI나 어느 PC에서 빌드해도 서명이 같아야, 폰에 깔린 앱 위에
 
 - 게임 단어 데이터 `data/game/words.json`은 `tools/data/build_game_data.py`로 만든다. 단어장 앱 저장소(`etymology-english-vocabulary`)의 `words.json`·`roots.json`을 **읽기만** 한다. 결과 파일은 이 저장소에 커밋해서, 빌드 때 단어장 저장소가 없어도 된다.
 - 밸런스 값은 `data/balance/`. 고친 뒤에는 `python3 tools/balance/sim10.py`로 승률을 다시 본다.
+
+## 지도 배경 그림, 화면 캡처, 시간 재기
+
+화면이 있어야 해서 리눅스에서는 `xvfb-run`으로 돌린다. 예: `xvfb-run -a godot --path . --rendering-driver opengl3 --resolution 720x1280 -- --capture-map=/tmp/maps`. APK에는 `tests/`가 없어서 이 인자들은 개발 때만 듣는다.
+
+| 인자 / 도구 | 하는 일 |
+|---|---|
+| `--capture=<폴더>` | 화면 캡처 전부(`tests/visual/capture_screens.gd`) |
+| `--capture-map=<폴더>` | 지역마다 지도 한 장 |
+| `--perf-field` | 필드에서 지역·효과마다 FPS와 그리기·계산 시간(ms)을 찍는다 |
+| `--export-map=<폴더>` | 지도 배경을 겹마다 1024×1536 조각 PNG로(아래 도구가 부른다) |
+| `python3 tools/map/export_map.py <폴더>` | 지도 배경을 장마다 겹 PSD로, 전체 미리보기 포함. 사람이 그릴 때 준다 |
+| `python3 tools/map/import_map.py <폴더>` | 그린 PSD(또는 PNG)를 `assets/map/<겹>/`에 넣는다 |
+
+지도 그림 규칙은 `assets/map/README.md`.

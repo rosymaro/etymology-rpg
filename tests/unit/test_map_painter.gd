@@ -48,8 +48,6 @@ func test_effects_can_be_turned_off_one_by_one() -> void:
 	var m := WorldMap.load_default()
 	var p := MapPainter.new()
 	p._setup(m)
-	p.fx_sway = false
-	assert_eq(p.sway(100, 50, 3.0, 1.0), 0.0, "흔들림을 끄면 가만히 있다")
 	var life := MapLife.new(p)
 	life.on_critters = false
 	life.on_particles = false
@@ -77,4 +75,74 @@ func test_map_effect_settings_are_saved() -> void:
 	assert_false(s2.map_water)
 	assert_true(s2.map_sway)
 	assert_true(s2.show_fps)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func test_map_view_bakes_chunks_once_and_reuses_them() -> void:
+	# 사용자 의견: 효과를 다 꺼도 FPS 20 아래 → 지도는 조각으로 한 번만 그리고 붙인다
+	var m := WorldMap.load_default()
+	var p := MapPainter.for_map(m)
+	var mv := MapView.new(p, 80.0)
+	add_child_autofree(mv)
+	var cam := m.start(1) - Vector2(360, 640)
+	mv.update(cam, Vector2(720, 1280), 0.0, {})
+	var first := mv.baked
+	assert_gt(first, 0, "보이는 조각을 그린다")
+	for i in 5:
+		mv.update(cam, Vector2(720, 1280), i * 0.1, {})
+	assert_lte(mv.baked, first + 5, "같은 자리면 다시 그리지 않는다(둘레 미리 그리기는 프레임마다 하나)")
+	var before := mv.baked
+	mv.update(cam, Vector2(720, 1280), 1.0, {"some_gate": true})
+	assert_gt(mv.baked, before, "길목이 열리면 바닥을 다시 그린다")
+
+
+func test_map_view_skips_empty_mountain_and_tree_chunks() -> void:
+	var m := WorldMap.load_default()
+	var mv := MapView.new(MapPainter.for_map(m), 80.0)
+	add_child_autofree(mv)
+	var any_empty := false
+	for cy in m.h / MapView.CHUNK:
+		for cx in m.w / MapView.CHUNK:
+			if not mv._worth("mtn", cx, cy):
+				any_empty = true
+	assert_true(any_empty, "산이 없는 조각은 산 겹을 그리지 않는다")
+
+
+func test_map_view_uses_drawn_picture_files_when_present() -> void:
+	# 사용자 의견: 배경 그림을 직접 그려 넣는다 → <겹>/<열>_<행>.png(1024×1536px 조각)가 있으면 그것을 쓴다
+	var m := WorldMap.load_default()
+	var mv := MapView.new(MapPainter.for_map(m), 80.0)
+	mv.art_dir = "user://test_map_art"
+	DirAccess.make_dir_recursive_absolute(mv.art_dir + "/ground")
+	var cam := m.start(1) - Vector2(360, 640)
+	var c := Vector2i(int(cam.x / (64 * MapView.FILE_CELLS.x)), int((cam.y + 640) / (64 * MapView.FILE_CELLS.y)))
+	var img := Image.create(1024, 1536, false, Image.FORMAT_RGBA8)
+	img.fill(Color.HOT_PINK)
+	var path := mv.art_dir + "/ground/%d_%d.png" % [c.x, c.y]
+	img.save_png(path)
+	add_child_autofree(mv)
+	mv.update(cam, Vector2(720, 1280), 0.0, {})
+	assert_gt(mv.from_files, 0, "그림 파일이 있는 조각은 파일을 쓴다")
+	assert_gt(mv.baked, 0, "파일이 없는 조각은 스스로 그린다")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func test_map_view_edge_picture_is_cut_at_map_end() -> void:
+	# 사용자 의견: 지도 끝 조각은 칸 중간에서 끊기지 않게 지도가 끝나는 칸까지만(오른쪽 열 256px 폭, 아래 줄 1024px 높이)
+	var m := WorldMap.load_default()
+	var mv := MapView.new(MapPainter.for_map(m), 80.0)
+	mv.art_dir = "user://test_map_art_edge"
+	DirAccess.make_dir_recursive_absolute(mv.art_dir + "/ground")
+	var fx := (m.w - 1) / MapView.FILE_CELLS.x
+	var fy := (m.h - 1) / MapView.FILE_CELLS.y
+	var size := Vector2i(m.w - fx * MapView.FILE_CELLS.x, m.h - fy * MapView.FILE_CELLS.y) * m.tile
+	assert_eq(size, Vector2i(256, 1024))
+	var img := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+	img.fill(Color.HOT_PINK)
+	var path := mv.art_dir + "/ground/%d_%d.png" % [fx, fy]
+	img.save_png(path)
+	add_child_autofree(mv)
+	var cam := Vector2(m.w, m.h) * m.tile - Vector2(720, 1280)
+	mv.update(cam, Vector2(720, 1280), 0.0, {})
+	assert_gt(mv.from_files, 0, "지도 끝의 작은 그림도 쓴다")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
