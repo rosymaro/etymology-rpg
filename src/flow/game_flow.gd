@@ -20,8 +20,8 @@ func start() -> void:
 	var mode := GameData.resume_mode()
 	var r := GameData.resume_route()
 	match mode:
-		"story", "dev":
-			GameData.use_dev_save(mode == "dev")
+		"story", "dev", "free":
+			GameData.use_save(mode)
 			if GameData.continue_game():
 				_restore(r)
 				return
@@ -95,11 +95,13 @@ func new_game() -> void:
 
 
 ## 개발자 모드(스토리): 모든 단어·유닛·마법·장비를 갖추고 평가를 위해 바로 필드에서 시작한다. 저장은 따로.
-func dev_game() -> void:
-	GameData.use_dev_save(true)
+## free(자유 탐험, 사용자 의견: 테스트 자유도): 그 위에 보스 말고는 단어 전투에 안 들어가고, 지도의 벽·길목에 안 막힌다.
+func dev_game(free := false) -> void:
+	GameData.use_save("free" if free else "dev")
 	GameData.new_game(TranslationServer.translate("ui.dev.name"))
 	var s := GameData.state
 	s.dev_mode = true
+	s.free_roam = free
 	var all: Array[String] = []
 	for m in GameData.bal.magic["magics"]:
 		all.append(str(m["id"]))
@@ -108,8 +110,8 @@ func dev_game() -> void:
 		_flag(k)
 	s.pos = WorldMap.load_default().start(1)
 	GameData.save()
-	GameData.set_resume("dev")
-	go_field(TranslationServer.translate("ui.dev.started").format({"count": s.dex_count()}))
+	GameData.set_resume("free" if free else "dev")
+	go_field(TranslationServer.translate("ui.dev.free_started" if free else "ui.dev.started").format({"count": s.dex_count()}))
 
 
 # ----- 미니게임 -----

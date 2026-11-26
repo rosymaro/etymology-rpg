@@ -407,3 +407,44 @@ func test_new_companion_appears_on_field_without_restart() -> void:
 	await wait_seconds(0.7)
 	assert_eq(f._pal_units(), Loadout.companions(GameData.state), "보이는 동행과 공격하는 동행이 같다")
 	assert_eq(f._pal_units().size(), 2, "새 동행이 주인공 옆에 보인다")
+
+
+## 사용자 의견: 개발자 모드(자유 탐험)는 보스 말고 단어 전투에 안 들어가고, 벽에 안 막힌다.
+func test_free_roam_mode_walks_through_walls_and_skips_word_battles() -> void:
+	main.flow.dev_game(true)
+	await wait_physics_frames(2)
+	_finish_overlays()
+	var f := main.current() as FieldScreen
+	assert_not_null(f)
+	assert_true(GameData.state.free_roam)
+	var m := f.map
+	# 벽(산) 칸 위로 걸어갈 수 있다
+	var wall := Vector2i(-1, -1)
+	for y in m.h:
+		for x in m.w:
+			if m.rows[y][x] == "^":
+				wall = Vector2i(x, y)
+				break
+		if wall.x >= 0:
+			break
+	var target := (Vector2(wall) + Vector2(0.5, 0.5)) * m.tile
+	assert_eq(m.move_free(target - Vector2(40, 0), Vector2(40, 0), 22.0), target, "벽 칸으로 들어간다")
+	# 몹에 닿아도 퀴즈(단어 전투)로 가지 않는다
+	GameData.state.pos = _open_field_spot(m)
+	main.flow.go_field()
+	await wait_physics_frames(2)
+	f = main.current() as FieldScreen
+	f._spawn_t = 1e9
+	f._enemies.clear()
+	var e := FieldMob.new()
+	e.kind = "wander"
+	e.max_hp = 999
+	e.hp = 999
+	e.words = ["information"] as Array[String]
+	e.pos = f._hero
+	f._enemies.append(e)
+	await wait_physics_frames(10)
+	assert_true(main.current() is FieldScreen, "닿아도 필드 그대로")
+	GameData.use_save("free")
+	GameData.save_store.erase()
+	GameData.use_save("story")

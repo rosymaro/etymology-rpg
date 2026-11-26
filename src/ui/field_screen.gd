@@ -351,7 +351,7 @@ func _update_top() -> void:
 	var g := GameData.rules.boss_gate(GameData.state, GameFlow.STAGE)
 	_top.text = t("ui.field.top").format({"stage": t("name.stage.s01"), "have": g["have"],
 		"total": GameData.repo.first_tier(GameFlow.STAGE).size(), "need": g["need"],
-		"title": t("ui.dev.badge") if GameData.state.dev_mode else t("name.title.none")})
+		"title": t("ui.dev.free_badge") if GameData.state.free_roam else (t("ui.dev.badge") if GameData.state.dev_mode else t("name.title.none"))})
 	_goal.text = t("ui.field.goal").format({"title": _goal_text()})
 
 
@@ -458,7 +458,8 @@ func _step(delta: float) -> void:
 		dir = _stick_vec
 	var was_town := map.is_town(_hero)
 	var before := _hero
-	_hero = map.move(_hero, dir * float(_f["hero_speed"]) * _run.speed_mult() * delta, HERO_R, _gates)
+	var step: Vector2 = dir * float(_f["hero_speed"]) * _run.speed_mult() * delta
+	_hero = map.move_free(_hero, step, HERO_R) if GameData.state.free_roam else map.move(_hero, step, HERO_R, _gates)
 	_puzzle_step(dir, before, delta)
 	_cave_step()
 	if _life:
@@ -504,7 +505,7 @@ func _step(delta: float) -> void:
 	_town_edge()
 	# 닫힌 스테이지 문에 막히면 알려 준다
 	_gate_t -= delta
-	if dir.length() > 0.1 and _hero.distance_to(before) < 1.0 and _gate_t <= 0.0:
+	if dir.length() > 0.1 and _hero.distance_to(before) < 1.0 and _gate_t <= 0.0 and not GameData.state.free_roam:
 		var qg := map.touching_quest(_hero, HERO_R, _gates)
 		if qg != "":  # 퀘스트 길목(무너진 다리·절벽): 할 수 있으면 장면 뒤 길이 열린다
 			_gate_t = 3.0
@@ -547,7 +548,8 @@ func _step(delta: float) -> void:
 				e.pos = ep
 		elif not map.is_town(np) and map.stage_at(np) == GameFlow.STAGE:
 			e.pos = np
-		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0 and not map.is_town(_hero):
+		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0 and not map.is_town(_hero) \
+				and not GameData.state.free_roam:  # 자유 탐험: 몹에 닿아도 단어 전투에 안 들어간다(보스는 그대로)
 			_busy = true
 			_remember()
 			main.flow.encounter(e.words, 0, [], {"hurt": snappedf(e.hurt_ratio(), 0.01), "hard": e.kind == "eater"})
