@@ -7,11 +7,13 @@ extends VBoxContainer
 signal held(on: bool, at: Vector2)
 
 const SPIN_SEC := 1.0  ## 코인이 도는 시간(그 뒤 앞뒤가 정해진다)
+const ART_H := 176.0  ## 카드 위쪽 그림 자리 높이(사용자 의견: 카드를 세로로 키워 위 절반에 단어 그림)
 
 var coins: CoinRow
 var _card: PanelContainer
 var _bg: ColorRect
 var _title: Label
+var art: WordArt  ## 그림 자리: 적은 단어 그림, 아군은 유닛 그림
 var _icon: SlotIcon
 var _atk: Label
 var _def: Label
@@ -31,7 +33,7 @@ func _init() -> void:
 	add_child(coins)
 	_card = PanelContainer.new()
 	_card.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	_card.custom_minimum_size = Vector2(326, 200)
+	_card.custom_minimum_size = Vector2(326, 200 + ART_H)
 	_card.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_card)
 	_bg = WordCard.make_bg([UiKit.PAPER] as Array[Color])
@@ -44,6 +46,9 @@ func _init() -> void:
 	var v := UiKit.vbox(6)
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pad.add_child(v)
+	art = WordArt.new()
+	art.custom_minimum_size = Vector2(0, ART_H - 6)
+	v.add_child(art)
 	var head := UiKit.hbox(8)
 	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(head)
@@ -84,6 +89,10 @@ func _set_look(c: Combatant) -> void:
 	mat.set_shader_parameter("n", cs.size())
 	for i in 3:
 		mat.set_shader_parameter("c%d" % i, cs[mini(i, cs.size() - 1)])
+	if w:
+		art.set_word(w)
+	else:
+		art.set_unit(c.unit_no)
 	_icon.visible = w != null and w.slot != ""
 	if _icon.visible:
 		_icon.slot = w.slot
