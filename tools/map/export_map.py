@@ -26,7 +26,7 @@ from PIL import Image, ImageDraw
 Image.MAX_IMAGE_PIXELS = None
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LAYERS = ["ground", "grass", "mtn", "trees"]
-LAYER_NAMES = {"ground": "ground", "grass": "grass", "mtn": "mtn", "trees": "trees"}  ## PSD 겹 이름은 영어만 된다(바닥, 풀·꽃, 산, 나무)
+LAYER_NAMES = {"ground": "ground", "grass": "grass", "mtn": "mtn (mountains, town wall, castle)", "trees": "trees"}  ## PSD 겹 이름은 영어만 된다(바닥, 풀·꽃, 산·성벽·성, 나무). 되돌려 넣을 때는 첫 낱말만 본다
 PW, PH = 1024, 1536
 
 
