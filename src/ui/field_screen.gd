@@ -53,6 +53,7 @@ var perf := {}  ## 시간 재기(FPS 표시 옵션): 이름 -> 최근 평균 ms
 var _pal_check := 0.0  ## 동행이 바뀌었는지 가끔 본다(유닛 합류·동행 바꾸기가 여러 곳에서 일어난다)
 var _trail: Array[Vector2] = []  ## 주인공이 지나온 자리(앞이 최근). 유닛이 이 길을 따라온다
 var _facing := Vector2.RIGHT  ## 주인공이 걷는 쪽
+var _moving := false  ## 지금 걷는 중(걷는 그림)
 var _drops: Array[Dictionary] = []  ## 떨어진 것 {pos, kind: orb|coin|word, v}
 var _hunt_lbl: Label
 var _lvl_bar: ProgressBar
@@ -209,7 +210,8 @@ func _sync_pals() -> void:
 
 ## 유닛은 주인공이 지나온 길을 따라 줄지어 온다(겹치지 않게 간격을 둔다).
 func _follow_pals(dir: Vector2, delta: float) -> void:
-	if dir.length() > 0.2:
+	_moving = dir.length() > 0.2
+	if _moving:
 		_facing = dir.normalized()
 	if _trail.is_empty() or _trail[0].distance_to(_hero) > 12.0:
 		_trail.push_front(_hero)
@@ -1403,7 +1405,7 @@ func _draw() -> void:
 		_draw_weapons(o)
 	for pal in _pals:  # 동행 유닛과 이름
 		var pp: Vector2 = o + pal["pos"]
-		PalArt.draw(self, int(pal["unit"]), pp, _facing)
+		PalArt.draw(self, int(pal["unit"]), pp, _facing, _moving)
 		draw_string(ThemeDB.fallback_font, pp + Vector2(-40, 38), t("name.char." + GameData.UNIT_CHARS[int(pal["unit"]) - 1]), HORIZONTAL_ALIGNMENT_CENTER, 80, 14, UiKit.INK)
 	for e in _enemies:  # 화면 밖 뿌리먹이: 가장자리 빨간 화살표
 		if e.kind == "eater":
@@ -1417,7 +1419,9 @@ func _draw() -> void:
 	var h := o + _hero
 	if _fmagic and _fmagic.sneak > 0.0:
 		draw_circle(h, HERO_R + 14, Color(UiKit.SKY, 0.35))
-	if not Art.draw(self, "hero", "look0", h + Vector2(0, -12), Vector2(HERO_R * 3.2, HERO_R * 3.6)):
+	var look := GameData.state.hero_look  # 사용자가 준 주인공 그림(hero/<m|f>_<동작>_N)
+	var drawn := Art.draw_anim(self, "hero", look, "walk" if _moving else "idle", h + Vector2(0, HERO_R * 1.1), HERO_R * 4.2, _facing.x < 0.0, 5.0)
+	if not drawn and not Art.draw(self, "hero", "look0", h + Vector2(0, -12), Vector2(HERO_R * 3.2, HERO_R * 3.6)):
 		draw_circle(h, HERO_R, Color("fff3c4"))
 		draw_arc(h, HERO_R, 0, TAU, 32, UiKit.INK, 4)
 		draw_circle(h + Vector2(-9, -3), 3.5, UiKit.INK)
@@ -1425,8 +1429,9 @@ func _draw() -> void:
 		draw_circle(h + Vector2(-15, 6), 5, UiKit.PINK)
 		draw_circle(h + Vector2(15, 6), 5, UiKit.PINK)
 	var tag := t("name.title.none")
-	draw_rect(Rect2(h + Vector2(-60, -64), Vector2(120, 26)), UiKit.PINK)
-	draw_string(font, h + Vector2(-60, -45), tag, HORIZONTAL_ALIGNMENT_CENTER, 120, 18, UiKit.INK)
+	var ty := -100.0 if drawn else -64.0  # 그림이 있으면 머리 위로
+	draw_rect(Rect2(h + Vector2(-60, ty), Vector2(120, 26)), UiKit.PINK)
+	draw_string(font, h + Vector2(-60, ty + 19), tag, HORIZONTAL_ALIGNMENT_CENTER, 120, 18, UiKit.INK)
 	if map.in_cave(_hero):  # 어두운 동굴: 둘레만 보인다(pro-로 밝힌다)
 		var lr: Array = _f["cave_light"]
 		var rad := float(lr[1]) if _fmagic.light > 0.0 else float(lr[0])

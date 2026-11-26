@@ -32,9 +32,15 @@ func _run() -> void:
 	await _shot("01_title")
 	main.flow.new_game()
 	await _shot("02_name")
-	gd.new_game("하늘")
-	main.play_scene("s01_intro", func() -> void: pass)
+	gd.new_game("하늘", "f")
+	main.play_scene("s01_intro", func() -> void: pass, true)
 	await _shot("03_dialogue")
+	var dl: DialogueOverlay = main._overlay.get_child(main._overlay.get_child_count() - 1)
+	dl._i = 4  # 낭독 다음: 대장간으로 장면이 바뀐다
+	dl._show()
+	await get_tree().create_timer(0.8).timeout
+	await _shot("03_dialogue_forge")
+	gd.state.hero_look = "m"
 	for c in main._overlay.get_children():
 		c.queue_free()
 	var s: GameState = gd.state

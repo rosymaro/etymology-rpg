@@ -24,7 +24,11 @@ static func color(unit: int) -> Color:
 	return COLORS.get(unit, Color("cccccc"))
 
 
-static func draw(ci: CanvasItem, unit: int, p: Vector2, facing: Vector2) -> void:
+static func draw(ci: CanvasItem, unit: int, p: Vector2, facing: Vector2, moving: bool = false) -> void:
+	# 사용자가 준 그림(pal/NN_idle_1 …): 걸을 때는 walk, 왼쪽으로 가면 뒤집는다. 걸을 때 살짝 통통 튄다
+	var hop := absf(sin(Time.get_ticks_msec() / 1000.0 * 10.0 + unit)) * 4.0 if moving else 0.0
+	if Art.draw_anim(ci, "pal", "%02d" % unit, "walk" if moving else "idle", p + Vector2(0, R * 1.2 - hop), R * 3.4, facing.x < 0.0, 4.0):
+		return
 	if Art.draw(ci, "pal", "%02d" % unit, p + Vector2(0, -6), Vector2(R * 3, R * 3.2)):
 		return
 	var c := color(unit)

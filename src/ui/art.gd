@@ -25,6 +25,41 @@ static func draw(ci: CanvasItem, kind: String, id: String, center: Vector2, size
 	return true
 
 
+## 움직이는 그림: <id>_<동작>_1.png, _2.png … 를 차례로(초당 fps장). 그 동작이 없으면 idle, 그것도 없으면 <id>.png.
+## 사용자가 준 캐릭터 시트를 tools/art/cut_sprites.py가 잘라 넣는다.
+static func frames(kind: String, id: String, anim: String) -> Array:
+	var key := "%s/%s:%s" % [kind, id, anim]
+	if _cache.has(key):
+		return _cache[key]
+	var out: Array = []
+	var n := 1
+	while true:
+		var t := tex(kind, "%s_%s_%d" % [id, anim, n])
+		if t == null:
+			break
+		out.append(t)
+		n += 1
+	if out.is_empty() and anim != "idle":
+		out = frames(kind, id, "idle")
+	if out.is_empty() and tex(kind, id) != null:
+		out = [tex(kind, id)]
+	_cache[key] = out
+	return out
+
+
+## 발끝 foot(아래 가운데)에 높이 h로 그린다(비율 유지). flip이면 좌우를 뒤집는다. 그림이 없으면 false.
+static func draw_anim(ci: CanvasItem, kind: String, id: String, anim: String, foot: Vector2, h: float, flip: bool = false, fps: float = 6.0, modulate: Color = Color.WHITE) -> bool:
+	var fr := frames(kind, id, anim)
+	if fr.is_empty():
+		return false
+	var t: Texture2D = fr[int(Time.get_ticks_msec() / 1000.0 * fps) % fr.size()]
+	var sz := Vector2(h * float(t.get_width()) / float(t.get_height()), h)
+	ci.draw_set_transform(foot, 0.0, Vector2(-1.0 if flip else 1.0, 1.0))
+	ci.draw_texture_rect(t, Rect2(Vector2(-sz.x / 2.0, -sz.y), sz), false, modulate)
+	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	return true
+
+
 ## 카드·버튼 안에 넣는 그림(없으면 빈 노드 대신 null).
 static func rect(kind: String, id: String, size: Vector2) -> TextureRect:
 	var t := tex(kind, id)

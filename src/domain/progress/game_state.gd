@@ -7,6 +7,7 @@ const VERSION := 1
 const UNIT_COUNT := 12
 
 var hero_name := ""
+var hero_look := "m"  ## 주인공 모습: m(남) / f(여). 이름 짓는 화면에서 고른다
 var stage := 1  ## 열린 가장 높은 스테이지
 var dex: Dictionary = {}  ## 단어 id -> 얻은 순서 번호(1부터). 한 번 얻으면 줄지 않는다(04-meta.md 5절)
 var unit_exp: Array[int] = []
@@ -57,7 +58,7 @@ func to_dict() -> Dictionary:
 	for u in equipment:
 		eqs[str(u)] = equipment[u].to_dict()
 	return {
-		"version": VERSION, "hero_name": hero_name, "stage": stage, "dex": dex, "unit_exp": unit_exp,
+		"version": VERSION, "hero_name": hero_name, "hero_look": hero_look, "stage": stage, "dex": dex, "unit_exp": unit_exp,
 		"joined": joined, "equipment": eqs, "magics": magics, "chosen_roots": _str_keys(chosen_roots),
 		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y], "cave": cave,
 		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode, "free_roam": free_roam,
@@ -69,6 +70,7 @@ func to_dict() -> Dictionary:
 static func from_dict(d: Dictionary) -> GameState:
 	var g := GameState.new()
 	g.hero_name = d.get("hero_name", "")
+	g.hero_look = String(d.get("hero_look", "m"))
 	g.stage = int(d.get("stage", 1))
 	for k in d.get("dex", {}):
 		g.dex[k] = int(d["dex"][k])

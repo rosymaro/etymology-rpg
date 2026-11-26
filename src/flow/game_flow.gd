@@ -176,14 +176,15 @@ func minigame_finished(_id: String, earned: Array[String]) -> void:
 			else:
 				_give_words(got, "ui.result.minigame")})
 
-func name_entered(hero_name: String) -> void:
-	GameData.new_game(hero_name)
+func name_entered(hero_name: String, look: String = "m") -> void:
+	GameData.new_game(hero_name, look)
 	GameData.set_resume("story")
+	# 사용자 의견: 이름·성별을 고르면 장면이 바뀌어(말뿌리 나무 → 대장간) 대화가 시작된다
 	main.play_scene("s01_intro", func() -> void:
 		main.play_scene("s01_ki", func() -> void:
 			_flag("s01_ki")
 			GameData.save()
-			go_field()))
+			go_field(), true), true)
 
 
 func continue_game() -> void:

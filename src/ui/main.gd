@@ -99,10 +99,10 @@ func current() -> Screen:
 
 
 ## 대화 장면을 겹쳐 틀고, 끝나면 done을 부른다.
-func play_scene(scene_id: String, done: Callable) -> void:
+func play_scene(scene_id: String, done: Callable, staged: bool = false) -> void:
 	var d := DialogueOverlay.new()
 	_overlay.add_child(d)
-	d.play(scene_id, done)
+	d.play(scene_id, done, staged)
 
 
 ## 짧은 알림 창. 확인을 누르면 닫힌다.
