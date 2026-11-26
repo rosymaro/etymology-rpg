@@ -67,13 +67,17 @@ func open(args: Dictionary) -> void:
 	_boss = args["boss"]
 	_party = args["party"]
 	_resume_to = int(args.get("resume_step", 0))
-	UiKit.fill_bg(self, Color("e9e2f3"))
+	if not BattleSkin.fill_bg(self):  # 밤의 마법 서재(사용자 레퍼런스)
+		UiKit.fill_bg(self, Color("e9e2f3"))
 	var left := UiKit.vbox(8)
 	left.position = Vector2(20, 20)
 	add_child(left)
 	for i in _party.size():
 		var l := UiKit.label(UiKit.unit_name(_party[i]), 18)
 		var c := UiKit.card(UiKit.LEAF)
+		var pb := BattleSkin.pill_box()
+		if pb:
+			c.add_theme_stylebox_override("panel", pb)
 		var row := UiKit.hbox(6)
 		var face := Art.rect("unit", "u%02d" % _party[i], Vector2(48, 48))
 		if face:
@@ -98,6 +102,7 @@ func open(args: Dictionary) -> void:
 	_turn = UiKit.label("", 40, UiKit.ACCENT.darkened(0.3))
 	_turn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_turn.custom_minimum_size = Vector2(300, 0)
+	BattleSkin.glow_label(_turn)
 	add_child(_turn)
 	UiKit.pin(_turn, 0.5, 0, 0, MID_Y - 64)
 	var mid := UiKit.hbox(28)  # 세로 화면: 양쪽 목록 아래에 두 카드
@@ -111,15 +116,25 @@ func open(args: Dictionary) -> void:
 	_banner.custom_minimum_size = Vector2(680, 0)
 	_banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var band := UiKit.box(Color(0.08, 0.06, 0.2, 0.72), 12, 0)  # 어두운 띠 위 크림 글씨
+	band.border_color = Color("c9a04a")
+	band.border_width_top = 2
+	band.border_width_bottom = 2
+	_banner.add_theme_stylebox_override("normal", band)
+	_banner.add_theme_color_override("font_color", BattleSkin.CREAM)
 	add_child(_banner)
 	UiKit.pin(_banner, 0.5, 0, 0, MID_Y + 270 + BattleCard.ART_H)  # 카드 위쪽 그림 자리만큼 아래
 	_next_btn = UiKit.button(t("ui.battle.next_turn"), func() -> void: _tapped = true, UiKit.ACCENT.lightened(0.35), 26)
 	_next_btn.custom_minimum_size = Vector2(260, UiKit.THUMB_H)
+	BattleSkin.style_button(_next_btn)
 	_next_btn.visible = false
 	add_child(_next_btn)
 	UiKit.thumb(_next_btn)  # 엄지 자리
 	# 카드를 누르고 있으면 누른 자리에 처음 모습 창
 	_popup = UiKit.card(UiKit.SKY.lightened(0.35))
+	var cb := BattleSkin.card_box()
+	if cb:
+		_popup.add_theme_stylebox_override("panel", cb)
 	_popup.visible = false
 	_popup.z_index = 20
 	_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -146,12 +161,14 @@ func open(args: Dictionary) -> void:
 	_magic_btn = _tray_btns.get(_ctx.offer[0]) if not _ctx.offer.is_empty() else null
 	_refresh_tray()
 	var skip := UiKit.button(t("ui.battle.skip"), skip_all, UiKit.PAPER, 22)
+	BattleSkin.style_button(skip, true)
 	add_child(skip)
 	UiKit.pin(skip, 0, 1, 20, -20)
 	_end_btn = UiKit.button(t("ui.battle.to_result"), func() -> void:
 		main.flow.battle_finished(_result, _words, _boss, entries), UiKit.LEAF)
 	_end_btn.visible = false
 	_end_btn.custom_minimum_size.x = 260
+	BattleSkin.style_button(_end_btn)
 	add_child(_end_btn)
 	UiKit.thumb(_end_btn)  # 엄지 자리
 	_play()
@@ -638,6 +655,7 @@ func _tutorial(id: String) -> void:
 
 func _tray_button(id: String) -> Button:
 	var b := UiKit.button("✦ " + GameText.magic_name(id), func() -> void: pass, Color(String(MagicFx.def_of(id)["color"])).lightened(0.55), 18)
+	BattleSkin.style_button(b, false, Color(String(MagicFx.def_of(id)["color"])).lightened(0.6))  # 금테, 안쪽은 마법 색
 	b.custom_minimum_size = Vector2(0, 54)
 	b.add_theme_color_override("font_disabled_color", UiKit.INK.lightened(0.5))
 	b.button_down.connect(func() -> void:

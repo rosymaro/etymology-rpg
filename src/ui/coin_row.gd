@@ -2,7 +2,9 @@ class_name CoinRow
 extends Control
 ## 카드 바깥에 놓는 코인 줄. 새 코인을 받으면 잠깐 빙글빙글 돈 뒤 앞면(금색)·뒷면(은색)으로 멈춘다.
 
-const R := 18.0
+const R := 22.0
+## 고풍스러운 코인 그림(tools/ui/battle_art.py): 앞면 금화(해), 뒷면 은화(달과 별), 아직 안 던짐 청동(?)
+static var _tex := {}
 
 var flips: Array[bool] = []
 var dim := false
@@ -45,6 +47,16 @@ func _draw() -> void:
 			var ph := (BattleCard.SPIN_SEC - _spin) * 22.0 + i * 0.9
 			sx = absf(cos(ph))
 			heads = cos(ph * 0.5) > 0.0
+		var tk := "pending" if pending else ("heads" if heads else "tails")
+		if not _tex.has(tk):
+			_tex[tk] = BattleSkin.tex("coin_%s.png" % tk)
+		var ct: Texture2D = _tex[tk]
+		if ct:
+			var w := R * 2.0 * maxf(0.12, sx)
+			var mod := Color(0.55, 0.55, 0.6) if dim else Color.WHITE
+			draw_circle(c + Vector2(0, 3), R * 0.95, Color(0, 0, 0, 0.25))  # 그림자
+			draw_texture_rect(ct, Rect2(c - Vector2(w / 2.0, R), Vector2(w, R * 2.0)), false, mod)
+			continue
 		var col := Color("f2c14e") if heads else Color("c9c9d6")
 		if pending:
 			col = Color("e4e1ea")

@@ -14,6 +14,7 @@ var _card: PanelContainer
 var _bg: ColorRect
 var _title: Label
 var art: WordArt  ## 그림 자리: 적은 단어 그림, 아군은 유닛 그림
+var _gem: TextureRect  ## 금테 위 가운데 보석
 var _icon: SlotIcon
 var _atk: Label
 var _def: Label
@@ -38,6 +39,16 @@ func _init() -> void:
 	add_child(_card)
 	_bg = WordCard.make_bg([UiKit.PAPER] as Array[Color])
 	_card.add_child(_bg)
+	var frame := BattleSkin.card_box()  # 금테 양피지(사용자 레퍼런스). 속성 색은 그림 자리 바탕이 보여 준다
+	if frame:
+		_card.add_theme_stylebox_override("panel", frame)
+		_bg.visible = false
+		var g := TextureRect.new()
+		g.texture = BattleSkin.tex("gem.png")
+		g.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		g.custom_minimum_size = Vector2(40, 40)
+		g.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_gem = g
 	var pad := MarginContainer.new()
 	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
@@ -65,6 +76,17 @@ func _init() -> void:
 	for l in [_atk, _def, _hp]:
 		v.add_child(l)
 	_card.gui_input.connect(_on_card_input)
+	if _gem:  # 보석은 틀 위 가운데에 걸친다(컨테이너 배치를 피해 빈 Control 안에)
+		var holder := Control.new()
+		holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_card.add_child(holder)
+		holder.add_child(_gem)
+		_gem.anchor_left = 0.5
+		_gem.anchor_right = 0.5
+		_gem.offset_left = -20
+		_gem.offset_right = 20
+		_gem.offset_top = -22
+		_gem.offset_bottom = 18
 
 
 ## c: 전투원, 지금 값 a/d/h.
