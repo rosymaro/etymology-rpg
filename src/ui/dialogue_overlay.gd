@@ -9,15 +9,21 @@ var _name: Label
 var _text: Label
 var _title: Label
 var _face: TextureRect
+var _stage: SceneStage  ## 무대(staged로 열었을 때만): 컷마다 배경과 인물
 
 
-func play(scene_id: String, done: Callable) -> void:
+## staged: 화면을 덮는 무대를 깔고 conti대로 배경·인물을 보여 준다(새 게임 첫 장면).
+func play(scene_id: String, done: Callable, staged: bool = false) -> void:
 	_done = done
 	var stage_file := "res://data/scenes/%s.json" % scene_id.split("_")[0]
 	var data: Dictionary = JsonFile.read(stage_file)
 	for s in data["scenes"]:
 		if s["id"] == scene_id:
 			_lines = s["lines"]
+			if staged:
+				_stage = SceneStage.new()
+				add_child(_stage)
+				_stage.setup(s)
 			_build(s)
 			break
 	_show()
@@ -69,12 +75,17 @@ func _show() -> void:
 		if _done.is_valid():
 			_done.call()
 		return
+	if _stage:
+		_stage.show_line(_i)
 	var ln: Dictionary = _lines[_i]
 	var sp: String = ln.get("speaker", "narr")
 	_name.text = "" if sp == "narr" else GameData.say("name.char." + sp)
-	var face := Art.tex("face", sp + "_" + str(ln.get("face", "normal")))
+	var fid := sp
+	if sp == "hero" and GameData.state:  # 주인공 얼굴은 고른 모습(남·여)
+		fid = "hero_" + GameData.state.hero_look
+	var face := Art.tex("face", fid + "_" + str(ln.get("face", "normal")))
 	if face == null:
-		face = Art.tex("face", sp + "_normal")
+		face = Art.tex("face", fid + "_normal")
 	_face.texture = face
 	_face.visible = face != null
 	_text.text = GameData.say(ln["text"])

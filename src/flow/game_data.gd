@@ -56,9 +56,10 @@ func use_save(slot: String) -> void:
 	save_store = SaveStore.new(save_prefix + {"dev": "dev_save.json", "free": "free_save.json"}.get(slot, "save.json"))
 
 
-func new_game(hero_name: String) -> void:
+func new_game(hero_name: String, look: String = "m") -> void:
 	state = GameState.new()
 	state.hero_name = hero_name
+	state.hero_look = look
 
 
 func continue_game() -> bool:
