@@ -31,6 +31,10 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--capture="):
 			_start_capture(a.trim_prefix("--capture="))
+		if a.begins_with("--export-map="):
+			_start_capture(a.trim_prefix("--export-map="), "res://tests/visual/export_map.gd")
+		if a == "--perf-field":
+			_start_capture("", "res://tests/visual/perf_field.gd")
 		if a.begins_with("--capture-map="):
 			_start_capture(a.trim_prefix("--capture-map="), "res://tests/visual/capture_map.gd")
 

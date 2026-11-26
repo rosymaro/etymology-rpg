@@ -388,3 +388,22 @@ func test_right_words_are_caught_and_only_wrong_ones_fight() -> void:
 	assert_eq((main.current() as BattlePrepScreen)._words, [ids[1]] as Array[String], "틀린 단어만 싸운다")
 	assert_true(GameData.state.has_word(ids[0]), "맞힌 단어는 싸우지 않고 잡았다")
 	assert_false(GameData.state.has_word(ids[1]))
+
+
+## 사용자 버그: 뚝딱이만 데리고 있을 때 척척이가 합류하면 척척이가 안 보이고 공격만 주인공에게서 나갔다.
+func test_new_companion_appears_on_field_without_restart() -> void:
+	GameData.new_game("하늘")
+	GameData.tutorials_enabled = false
+	GameData.state.flags["s01_tut_battle"] = true
+	var m := WorldMap.load_default()
+	GameData.state.pos = _open_field_spot(m)
+	main.flow.go_field()
+	await wait_physics_frames(2)
+	var f := main.current() as FieldScreen
+	assert_eq(f._pal_units().size(), 1, "처음에는 하나")
+	var second := 2 if not 2 in GameData.state.joined else 3
+	GameData.state.joined.append(second)  # 필드에 있는 동안 합류
+	GameData.state.loadout.erase("units")
+	await wait_seconds(0.7)
+	assert_eq(f._pal_units(), Loadout.companions(GameData.state), "보이는 동행과 공격하는 동행이 같다")
+	assert_eq(f._pal_units().size(), 2, "새 동행이 주인공 옆에 보인다")

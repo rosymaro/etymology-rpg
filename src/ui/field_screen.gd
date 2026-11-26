@@ -48,6 +48,8 @@ var _run: HuntRun
 var _hc: Dictionary  ## data/balance/field_hunt.json
 var _uw := UnitWeapons.new()  ## 데리고 다니는 유닛의 무기(07-fun 1절)
 var _pals: Array[Dictionary] = []  ## 주인공을 따라다니는 유닛 {unit, pos}
+var perf := {}  ## 시간 재기(FPS 표시 옵션): 이름 -> 최근 평균 ms
+var _pal_check := 0.0  ## 동행이 바뀌었는지 가끔 본다(유닛 합류·동행 바꾸기가 여러 곳에서 일어난다)
 var _trail: Array[Vector2] = []  ## 주인공이 지나온 자리(앞이 최근). 유닛이 이 길을 따라온다
 var _facing := Vector2.RIGHT  ## 주인공이 걷는 쪽
 var _drops: Array[Dictionary] = []  ## 떨어진 것 {pos, kind: orb|coin|word, v}
@@ -76,6 +78,7 @@ var _tut_level_btn: Button
 var _cave := ""  ## 들어가 있는 동굴 지도 id(07-fun 5절). 비면 큰 지도
 var _painter: MapPainter  ## 큰 지도 그리기(풍경·바람·물·산맥, data/map/biomes.json). 동굴이면 null
 var _life: MapLife  ## 작은 동물과 날리는 것
+var _mv: MapView  ## 지도 그림 조각(한 번 그려 두고 붙인다, 그림 파일이 있으면 그것). 동굴이면 null
 
 static var _map_tex: ImageTexture
 
@@ -118,6 +121,13 @@ func _setup_map() -> void:
 	_set_pals()
 	_painter = MapPainter.for_map(map) if not map.is_cave else null
 	_life = MapLife.new(_painter) if _painter else null
+	if _mv:
+		_mv.queue_free()
+		_mv = null
+	if _painter:
+		_mv = MapView.new(_painter, UiKit.BG_BLEED)
+		add_child(_mv)
+		move_child(_mv, 0)
 	_puz.clear()
 	_spots = []
 	if _cave != "":
@@ -166,6 +176,26 @@ func _set_pals() -> void:
 	_trail.clear()
 	for u in _run.d["units"]:
 		_pals.append({"unit": int(u), "pos": _hero})
+
+
+func _pal_units() -> Array[int]:
+	var out: Array[int] = []
+	for pal in _pals:
+		out.append(int(pal["unit"]))
+	return out
+
+
+## 동행이 바뀌었을 때: 남은 동행은 자리 그대로, 새로 온 동행은 주인공 자리에서 나온다.
+func _sync_pals() -> void:
+	_run.set_units(Loadout.companions(GameData.state))
+	var old := {}
+	for pal in _pals:
+		old[int(pal["unit"])] = pal
+	_pals.clear()
+	for u in _run.d["units"]:
+		_pals.append(old.get(int(u), {"unit": int(u), "pos": _hero}))
+	if _pals.size() != old.size():
+		_trail.clear()
 
 
 ## 유닛은 주인공이 지나온 길을 따라 줄지어 온다(겹치지 않게 간격을 둔다).
@@ -408,6 +438,18 @@ func _pick_words(rare := false) -> Array[String]:
 # ----- 움직임 -----
 
 func _process(delta: float) -> void:
+	var t0 := Time.get_ticks_usec()
+	_step(delta)
+	if _mv:
+		var st := GameData.settings  # 옵션에서 지도 효과를 하나씩 끈다(04-meta.md 2절)
+		_mv.on_grass = st.map_grass
+		_mv.on_sway = st.map_sway
+		_mv.on_water = st.map_water
+		_mv.update(_cam, size, Time.get_ticks_msec() / 1000.0, _gates)
+	_perf("tick", t0)
+
+
+func _step(delta: float) -> void:
 	if _busy or _full or _quests or _choosing or _lock or (_tut and is_instance_valid(_tut)):
 		_follow_cam()  # 멈춰 있어도 화면은 주인공을 비춘다(튜토리얼이 가리킬 자리가 맞게)
 		return
@@ -424,6 +466,11 @@ func _process(delta: float) -> void:
 		_life.on_critters = st.map_critters
 		_life.on_particles = st.map_particles
 		_life.update(delta, _hero, _cam, size, Time.get_ticks_msec() / 1000.0)
+	_pal_check -= delta
+	if _pal_check <= 0.0:
+		_pal_check = 0.5
+		if _pal_units() != Loadout.companions(GameData.state):
+			_sync_pals()
 	_follow_pals(dir, delta)
 	var left: int = main.flow.rest_left()
 	if left > 0 and was_town and not map.is_town(_hero):  # 병원에서 쉬는 중: 마을 밖으로 못 나간다
@@ -654,7 +701,7 @@ func _town_edge() -> void:
 			_show_toast(t("ui.hunt.banked").format({"orbs": got["orbs"], "coins": got["coins"], "words": (got["words"] as Array).size(), "wallet": GameData.state.wallet}))
 		_enemies = _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater")
 	else:
-		_run.set_units(Loadout.companions(GameData.state))
+		_sync_pals()  # 마을에서 유닛이 새로 들어왔거나 동행을 바꿨으면 보이는 동행도 같이 바꾼다(공격만 바뀌던 버그)
 		_run.reset()
 		_uw.clear()
 		_tutorial("hunt")
@@ -1212,20 +1259,24 @@ func _close_quests() -> void:
 
 # ----- 그리기 -----
 
+func _perf(key: String, t0: int) -> int:
+	var now := Time.get_ticks_usec()
+	perf[key] = lerpf(float(perf.get(key, 0.0)), (now - t0) / 1000.0, 0.1)
+	return now
+
+
 func _draw() -> void:
+	var p0 := Time.get_ticks_usec()
 	var o := -_cam
 	# 화면 위아래 여백(Main)까지 땅색으로
-	draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), CAVE_WALL if map.is_cave else Color("7fb8e0"))
 	var tnow := Time.get_ticks_msec() / 1000.0
-	if _painter:
-		var st := GameData.settings  # 옵션에서 지도 효과를 하나씩 끈다(04-meta.md 2절)
-		_painter.fx_grass = st.map_grass
-		_painter.fx_sway = st.map_sway
-		_painter.fx_water = st.map_water
-		_painter.draw(self, o, _cam, size, tnow, _gates, UiKit.BG_BLEED)
+	if _mv:  # 지도는 MapView(뒤에 먼저 그려진다)
+		p0 = _perf("map", p0)
 		_life.draw_critters(self, o, tnow)
 	else:
+		draw_rect(Rect2(-20, -UiKit.BG_BLEED, size.x + 40, size.y + UiKit.BG_BLEED * 2), CAVE_WALL)
 		_draw_tiles(o)
+		p0 = _perf("map", p0)
 	_draw_region_labels(o)
 	var font := ThemeDB.fallback_font
 	_draw_buildings(o)
@@ -1327,8 +1378,11 @@ func _draw() -> void:
 			_show_toast(t("ui.cave.dark"))
 	if _life:  # 바람에 날리는 것(꽃잎·눈·불씨 …)은 맨 위
 		_life.draw_particles(self, tnow)
-	if GameData.settings.show_fps:  # 프레임 확인용(옵션)
-		draw_string(font, Vector2(12, size.y - 12), "FPS %d" % Engine.get_frames_per_second(), HORIZONTAL_ALIGNMENT_LEFT, -1, 24, UiKit.INK)
+	_perf("rest", p0)
+	if GameData.settings.show_fps:  # 프레임 확인용(옵션): 초당 그림 수, 지도 그리기·나머지 그리기·계산(ms)
+		var line := t("ui.field.fps").format({"fps": Engine.get_frames_per_second(), "draw": "%.1f" % (float(perf.get("map", 0.0)) + float(perf.get("rest", 0.0))), "tick": "%.1f" % perf.get("tick", 0.0)})
+		draw_rect(Rect2(6, size.y - 40, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x + 12, 34), Color(1, 1, 1, 0.75))
+		draw_string(font, Vector2(12, size.y - 15), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, UiKit.INK)
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))
@@ -1405,6 +1459,7 @@ func _pal_pos(unit: int) -> Vector2:
 
 
 ## 마을 건물: 벽(타일) 위에 지붕, 문, 창, 간판. 말뿌리 나무는 큰 나무로.
+## 마을 건물의 움직이거나 글씨인 것만(건물 그림은 지도 배경 MapPainter._building): 이름표, 굴뚝 연기. 동굴은 건물이 없다.
 func _draw_buildings(o: Vector2) -> void:
 	var ts := float(map.tile)
 	var font := ThemeDB.fallback_font
@@ -1415,35 +1470,10 @@ func _draw_buildings(o: Vector2) -> void:
 			continue
 		var id := String(b["id"])
 		if id == "tree":
-			var c := r.get_center()
-			draw_rect(Rect2(c + Vector2(-14, 0), Vector2(28, ts)), Color("7a5a3a"))
-			draw_circle(c + Vector2(0, -20), ts * 1.1, Color("4f8f57"))
-			draw_circle(c + Vector2(-40, 0), ts * 0.7, Color("5f9f67"))
-			draw_circle(c + Vector2(40, 0), ts * 0.7, Color("5f9f67"))
-			draw_string(font, c + Vector2(-90, ts * 1.6), t("ui.field.tree"), HORIZONTAL_ALIGNMENT_CENTER, 180, 22, UiKit.INK)
+			draw_string(font, r.get_center() + Vector2(-90, ts * 1.6), t("ui.field.tree"), HORIZONTAL_ALIGNMENT_CENTER, 180, 22, UiKit.INK)
 			continue
-		var roof: Color = BUILDING_ROOF.get(id, Color("a46a4a") if id.ends_with("1") or id.ends_with("3") else Color("8a6aa4"))
-		draw_rect(r, Color("efe3cf"))
-		draw_rect(r, UiKit.INK, false, 3)
-		var top := Rect2(r.position - Vector2(10, 0), Vector2(r.size.x + 20, r.size.y * 0.45))
-		draw_colored_polygon(PackedVector2Array([top.position + Vector2(0, top.size.y), top.position + Vector2(top.size.x / 2, -ts * 0.5),
-			top.end]), roof)
-		draw_polyline(PackedVector2Array([top.position + Vector2(0, top.size.y), top.position + Vector2(top.size.x / 2, -ts * 0.5),
-			top.end]), UiKit.INK, 3)
-		var dp: Array = b["door"]
-		var door := o + Vector2(float(dp[0]), float(dp[1])) - Vector2(ts * 0.3, ts * 0.9)
-		draw_rect(Rect2(door, Vector2(ts * 0.6, ts * 0.8)), Color("8b6640"))
-		for k in 2:  # 창
-			var wx := r.position.x + (k + 0.5) * r.size.x / 2.0 - ts * 0.25
-			if absf(wx + ts * 0.25 - (door.x + ts * 0.3)) > ts * 0.6:
-				draw_rect(Rect2(Vector2(wx, r.position.y + r.size.y * 0.55), Vector2(ts * 0.5, ts * 0.4)), Color("bfe3f5"))
-		if id == "hospital":
-			var c := Vector2(r.get_center().x, r.position.y + r.size.y * 0.2)
-			draw_rect(Rect2(c - Vector2(8, 22), Vector2(16, 44)), UiKit.BAD)
-			draw_rect(Rect2(c - Vector2(22, 8), Vector2(44, 16)), UiKit.BAD)
 		if id == "forge":  # 굴뚝 연기
 			var ch0 := r.position + Vector2(r.size.x * 0.8, -ts * 0.2)
-			draw_rect(Rect2(ch0, Vector2(18, 30)), Color("6f6257"))
 			for k in 3:
 				var ph := fmod(Time.get_ticks_msec() / 900.0 + k / 3.0, 1.0)
 				draw_circle(ch0 + Vector2(9 + sin(ph * 6.0) * 6, -ph * 70), 8 + ph * 8, Color(0.9, 0.9, 0.9, 0.7 * (1.0 - ph)))

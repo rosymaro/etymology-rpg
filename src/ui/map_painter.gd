@@ -1,12 +1,14 @@
 class_name MapPainter
 extends RefCounted
 ## 큰 지도 그리기(표현 층, 사용자 의견: 영역마다 특색 있는 파스텔 동화풍, 살아 있는 지도). 풍경은 data/map/biomes.json.
-## 1) 바닥: 지역 색(경계는 섞는다), 얼룩, 바람에 나부끼는 풀·꽃, 사막 물결, 눈 반짝임, 용암 금, 수정 반짝임, 바닷가 모래
-## 2) 물: 깊이에 따라 진하게, 찰랑이는 물결과 반짝임, 물가 거품(용암 지대는 끓는 용암)
-## 3) 높은 것(아래 줄이 앞): 산은 칸마다 같은 세모가 아니라 산줄기 안쪽일수록 크고 높게 겹쳐 하나의 산맥처럼, 숲은 바람에 흔들린다
+## 겹(draw_layer, MapView가 조각마다 한 번만 그린다):
+## ground 바닥: 지역 색(경계는 섞는다), 얼룩, 사막 물결, 눈, 용암 금, 수정 반짝임, 물 바탕(깊을수록 진하게), 바닷가 모래, 길·다리
+## grass 풀·꽃 / mtn 산: 칸마다 같은 세모가 아니라 산줄기 안쪽일수록 크고 높게 겹쳐 하나의 산맥처럼 / trees 숲
+## 움직이는 물(draw_water_live)만 매 프레임: 찰랑이는 물결과 반짝임, 물가 거품, 끓는 용암
 ## 미리 계산(산·숲·물의 안쪽 깊이, 지역 색)은 지도마다 한 번만 한다.
 
 const SEA := 0
+const BUILDING_ROOF := {"forge": Color("c0634a"), "board": Color("6f8fd0"), "hospital": Color("f2f2f2"), "tree": Color("4f8f57")}
 var map: WorldMap
 var cfg: Dictionary
 var bio := {}  ## 스테이지 -> 풍경 사전(색은 Color로 바꿔 둔다)
@@ -18,10 +20,9 @@ var _deep: PackedByteArray  ## 물 깊이(물가에서 떨어진 칸 수)
 var _wind_speed := 0.9
 var _wind_wave := 0.0025
 var _sway := Vector2(2, 7)
-## 효과 스위치(옵션에서 하나씩 끈다, 04-meta.md 2절). 그리는 쪽이 매번 설정에서 넣는다
-var fx_grass := true  ## 풀·꽃·바닥 장식
-var fx_sway := true  ## 바람 흔들림
-var fx_water := true  ## 물결·거품·끓는 용암
+var _open := {}  ## 모든 길목이 열린 상태(배경 그림은 사라지지 않는 모습만: 닫힌 길목은 그 위에 따로 그린다)
+var _static := false  ## 조각 그림(MapView가 한 번만 그려 둔다)을 그리는 중: 흔들림·물결 없이
+const LAYERS := ["ground", "grass", "mtn", "trees"]  ## 바닥, 풀·꽃, 산, 나무(아래부터)
 
 static var _cache := {}
 
@@ -65,6 +66,8 @@ func _setup(m: WorldMap) -> void:
 	_wind_wave = float(w.get("wave", 0.0025))
 	var sw: Array = w.get("sway", [2.0, 7.0])
 	_sway = Vector2(float(sw[0]), float(sw[1]))
+	for gid in m._gate.values():
+		_open[gid] = true
 	var n := m.w * m.h
 	_stage.resize(n)
 	for y in m.h:
@@ -166,7 +169,7 @@ func wind(px: float, py: float, t: float) -> float:
 
 
 func sway(px: float, py: float, t: float, phase: float) -> float:
-	if not fx_sway:
+	if _static:  # 조각 그림은 멈춘 모습(흔들림은 MapView 셰이더가 한다)
 		return 0.0
 	var w := wind(px, py, t)
 	return sin(t * 2.6 + phase) * lerpf(_sway.x, _sway.y, w) + w * _sway.y * 0.6
@@ -200,31 +203,110 @@ func mini_color(x: int, y: int, gates: Dictionary) -> Color:
 
 # ---------- 그리기 ----------
 
-func draw(ci: CanvasItem, o: Vector2, cam: Vector2, view: Vector2, t: float, gates: Dictionary, bleed: float) -> void:
+## 한 겹을 칸 범위(x0..x1, y0..y1, 끝 제외)만 움직임 없이 그린다(MapView 조각, 지도 그림 내보내기).
+## 산·나무는 아래 칸에서 위로 솟으니 부르는 쪽이 범위를 넉넉히(MARGIN) 잡는다.
+## 사라지지 않고 움직이지 않는 것만 그린다(사용자 의견): 길목은 열린 모습, 마을 건물은 그린다.
+## 닫힌 길목·상자·퍼즐 돌·몹·사람·글씨는 게임이 위에 따로 그린다.
+func draw_layer(ci: CanvasItem, layer: String, o: Vector2, x0: int, y0: int, x1: int, y1: int) -> void:
+	var gates := _open
+	_static = true
 	var ts := float(map.tile)
-	var c0 := map.cell(cam - Vector2(0, bleed)) - Vector2i(2, 2)
-	var c1 := map.cell(cam + view + Vector2(0, bleed)) + Vector2i(2, 4)
-	var x0 := maxi(0, c0.x)
-	var x1 := mini(map.w, c1.x + 1)
-	var y0 := maxi(0, c0.y)
-	var y1 := mini(map.h, c1.y + 1)
+	x0 = maxi(0, x0)
+	y0 = maxi(0, y0)
+	x1 = mini(map.w, x1)
+	y1 = mini(map.h, y1)
 	for y in range(y0, y1):
 		var row := map.rows[y]
 		for x in range(x0, x1):
-			_ground_cell(ci, o, x, y, row[x], ts, t, gates)
-	for y in range(y0, y1):  # 바닷가(물 칸을 다 그린 뒤: 거품이 물 위에 남게)
-		var row := map.rows[y]
-		for x in range(x0, x1):
-			if row[x] == ".":
-				_beach(ci, Rect2(o + Vector2(x, y) * ts, Vector2(ts, ts)), x, y, biome_at(Vector2i(x, y)), t)
-	for y in range(y0, y1):  # 높은 것: 위 줄부터(아래 줄이 앞)
-		var row := map.rows[y]
-		for x in range(x0, x1):
 			var k := row[x]
-			if k == "^" or k == "c":
-				_mountain(ci, o, x, y, ts, t, k == "c")
-			elif k == "T":
-				_trees(ci, o, x, y, ts, t)
+			match layer:
+				"ground":
+					_ground_cell(ci, o, x, y, k, ts, 0.0, gates)
+				"grass":
+					if k == ".":
+						_grass(ci, Rect2(o + Vector2(x, y) * ts, Vector2(ts, ts)), x, y, biome_at(Vector2i(x, y)), 0.0, _h(x, y))
+				"mtn":
+					if k == "^" or k == "c":
+						_mountain(ci, o, x, y, ts, 0.0, k == "c")
+				"trees":
+					if k == "T":
+						_trees(ci, o, x, y, ts, 0.0)
+	if layer == "ground":
+		for y in range(y0, y1):
+			var row := map.rows[y]
+			for x in range(x0, x1):
+				if row[x] == ".":
+					_beach(ci, Rect2(o + Vector2(x, y) * ts, Vector2(ts, ts)), x, y, biome_at(Vector2i(x, y)), 0.0)
+		var area := Rect2(Vector2(x0, y0) * ts, Vector2(x1 - x0, y1 - y0) * ts).grow(ts * 2)
+		for rg in map.regions:
+			for bd in rg.get("buildings", []):
+				var rc: Array = bd["rect"]
+				if area.intersects(Rect2(Vector2(float(rc[0]), float(rc[1])) * ts, Vector2(float(rc[2]), float(rc[3])) * ts)):
+					_building(ci, o, bd, ts)
+	_static = false
+
+
+## 마을 건물(사라지지 않는 것). 이름표·굴뚝 연기는 FieldScreen이 위에 그린다.
+func _building(ci: CanvasItem, o: Vector2, b: Dictionary, ts: float) -> void:
+	var rc: Array = b["rect"]
+	var r := Rect2(o + Vector2(float(rc[0]), float(rc[1])) * ts, Vector2(float(rc[2]), float(rc[3])) * ts)
+	var id := String(b["id"])
+	if id == "tree":
+		var c := r.get_center()
+		ci.draw_rect(Rect2(c + Vector2(-14, 0), Vector2(28, ts)), Color("7a5a3a"))
+		ci.draw_circle(c + Vector2(0, -20), ts * 1.1, Color("4f8f57"))
+		ci.draw_circle(c + Vector2(-40, 0), ts * 0.7, Color("5f9f67"))
+		ci.draw_circle(c + Vector2(40, 0), ts * 0.7, Color("5f9f67"))
+		return
+	var roof: Color = BUILDING_ROOF.get(id, Color("a46a4a") if id.ends_with("1") or id.ends_with("3") else Color("8a6aa4"))
+	ci.draw_rect(r, Color("efe3cf"))
+	ci.draw_rect(r, UiKit.INK, false, 3)
+	var top := Rect2(r.position - Vector2(10, 0), Vector2(r.size.x + 20, r.size.y * 0.45))
+	var roof_pts := PackedVector2Array([top.position + Vector2(0, top.size.y), top.position + Vector2(top.size.x / 2, -ts * 0.5), top.end])
+	ci.draw_colored_polygon(roof_pts, roof)
+	ci.draw_polyline(roof_pts, UiKit.INK, 3)
+	var dp: Array = b["door"]
+	var door := o + Vector2(float(dp[0]), float(dp[1])) - Vector2(ts * 0.3, ts * 0.9)
+	ci.draw_rect(Rect2(door, Vector2(ts * 0.6, ts * 0.8)), Color("8b6640"))
+	for k in 2:  # 창
+		var wx := r.position.x + (k + 0.5) * r.size.x / 2.0 - ts * 0.25
+		if absf(wx + ts * 0.25 - (door.x + ts * 0.3)) > ts * 0.6:
+			ci.draw_rect(Rect2(Vector2(wx, r.position.y + r.size.y * 0.55), Vector2(ts * 0.5, ts * 0.4)), Color("bfe3f5"))
+	if id == "hospital":
+		var c := Vector2(r.get_center().x, r.position.y + r.size.y * 0.2)
+		ci.draw_rect(Rect2(c - Vector2(8, 22), Vector2(16, 44)), UiKit.BAD)
+		ci.draw_rect(Rect2(c - Vector2(22, 8), Vector2(44, 16)), UiKit.BAD)
+	if id == "forge":  # 굴뚝(연기는 움직이니 게임이 그린다)
+		ci.draw_rect(Rect2(r.position + Vector2(r.size.x * 0.8, -ts * 0.2), Vector2(18, 30)), Color("6f6257"))
+
+
+## 사라지는 지형(배경 그림에는 없다): 닫힌 길목(열리면 사라진다), 구멍(돌로 메우면 사라진다). 매 프레임 덮어 그린다.
+func draw_changing(ci: CanvasItem, o: Vector2, cam: Vector2, view: Vector2, bleed: float, gates: Dictionary) -> void:
+	var ts := float(map.tile)
+	var c0 := map.cell(cam - Vector2(0, bleed)) - Vector2i(1, 1)
+	var c1 := map.cell(cam + view + Vector2(0, bleed)) + Vector2i(1, 1)
+	for y in range(maxi(0, c0.y), mini(map.h, c1.y + 1)):
+		var row := map.rows[y]
+		for x in range(maxi(0, c0.x), mini(map.w, c1.x + 1)):
+			var k := row[x]
+			if k == "O" or ((k == "=" or k == "q") and not map.walkable(Vector2i(x, y), gates, false)):
+				_ground_cell(ci, o, x, y, k, ts, 0.0, gates)
+
+
+## 움직이는 물만(조각 그림 위에 매 프레임): 물결·반짝임·물가 거품, 용암은 숨 쉬는 빛·떠다니는 껍질·거품.
+func draw_water_live(ci: CanvasItem, o: Vector2, cam: Vector2, view: Vector2, t: float, bleed: float) -> void:
+	var ts := float(map.tile)
+	var c0 := map.cell(cam - Vector2(0, bleed)) - Vector2i(1, 1)
+	var c1 := map.cell(cam + view + Vector2(0, bleed)) + Vector2i(1, 1)
+	for y in range(maxi(0, c0.y), mini(map.h, c1.y + 1)):
+		var row := map.rows[y]
+		for x in range(maxi(0, c0.x), mini(map.w, c1.x + 1)):
+			var k := row[x]
+			var r := Rect2(o + Vector2(x, y) * ts, Vector2(ts, ts))
+			if k == "~" or k == "w":
+				_water_live(ci, r, x, y, biome_at(Vector2i(x, y)), t, _h(x, y))
+			elif k == ".":
+				_foam(ci, r, x, y, biome_at(Vector2i(x, y)), t)
 
 
 func _ground_cell(ci: CanvasItem, o: Vector2, x: int, y: int, k: String, ts: float, t: float, gates: Dictionary) -> void:
@@ -317,7 +399,9 @@ func _ground_cell(ci: CanvasItem, o: Vector2, x: int, y: int, k: String, ts: flo
 			ci.draw_rect(r, Color("d6eef8"))
 			ci.draw_line(r.position + Vector2(10, ts - 14), r.position + Vector2(26, ts - 30), Color(1, 1, 1, 0.9), 3)
 			ci.draw_line(r.position + Vector2(34, 28), r.position + Vector2(48, 14), Color(1, 1, 1, 0.9), 3)
-		"O":
+		"O":  # 구멍(돌로 메우면 사라진다): 배경에는 안 넣고 draw_changing이 그린다
+			if _static:
+				return
 			ci.draw_circle(c, ts * 0.42, Color("3d3530"))
 			ci.draw_circle(c + Vector2(0, 3), ts * 0.34, Color("221d1a"))
 		"h":
@@ -335,55 +419,40 @@ func _beach(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float) -
 	for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 		var k := map.ch(Vector2i(x, y) + d)
 		if k == "~" or k == "w":
-			# 물 쪽 변을 따라 물결진 모래 띠와, 그 바깥(물 위)에 밀려왔다 가는 거품
 			var n := Vector2(d)
 			var along := Vector2(-n.y, n.x)
 			var edge := r.get_center() + n * ts * 0.5
-			var band := PackedVector2Array()
-			var foam := PackedVector2Array()
-			var tide := 2.0 + 2.0 * sin(t * 1.6 + x * 0.6 + y * 0.4)
-			for i in 9:
+			var poly := PackedVector2Array([edge + along * -0.5 * ts, edge + along * 0.5 * ts])
+			for i in range(8, -1, -1):
 				var f := i / 8.0 - 0.5
 				var wv := sin(f * 7.0 + x * 1.3 + y * 0.7) * 3.0
-				band.append(edge + along * f * ts - n * (ts * 0.2 + wv))
-				foam.append(edge + along * f * ts + n * (tide + wv * 0.5))
-			var poly := PackedVector2Array([edge + along * -0.5 * ts, edge + along * 0.5 * ts])
-			for i in range(band.size() - 1, -1, -1):
-				poly.append(band[i])
+				poly.append(edge + along * f * ts - n * (ts * 0.2 + wv))
 			ci.draw_colored_polygon(poly, col)
-			if fx_water:
-				ci.draw_polyline(foam, Color(1, 1, 1, 0.55 if not b.get("lava", false) else 0.25), 3)
 
 
-## 바닥 장식: 지역마다(풀, 꽃, 사막 물결, 눈, 용암 금, 양치식물, 수정 반짝임).
+## 물가 거품(움직임): 모래 띠 바깥(물 위)에 밀려왔다 간다.
+func _foam(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float) -> void:
+	for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+		var k := map.ch(Vector2i(x, y) + d)
+		if k == "~" or k == "w":
+			var n := Vector2(d)
+			_foam_side(ci, r.get_center() + n * r.size.x * 0.5, n, Vector2(-n.y, n.x), r.size.x, x, y, b, t)
+
+
+func _foam_side(ci: CanvasItem, edge: Vector2, n: Vector2, along: Vector2, ts: float, x: int, y: int, b: Dictionary, t: float) -> void:
+	var foam := PackedVector2Array()
+	var tide := 2.0 + 2.0 * sin(t * 1.6 + x * 0.6 + y * 0.4)
+	for i in 9:
+		var f := i / 8.0 - 0.5
+		var wv := sin(f * 7.0 + x * 1.3 + y * 0.7) * 3.0
+		foam.append(edge + along * f * ts + n * (tide + wv * 0.5))
+	ci.draw_polyline(foam, Color(1, 1, 1, 0.55 if not b.get("lava", false) else 0.25), 3)
+
+## 바닥 장식(풀·꽃은 _grass): 지역마다(사막 물결, 눈, 용암 금, 양치식물, 수정 반짝임).
 func _deco(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, hsh: int) -> void:
 	var ts := r.size.x
-	var gc: Color = b["grass_c"]
-	var deco := String(b.get("deco", ""))
-	if not fx_grass:
-		return
-	if gc.a > 0.0:  # 바람에 나부끼는 풀잎
-		var n := 3 if deco == "tallgrass" or deco == "ferns" else 2
-		var hgt := 16.0 if deco == "tallgrass" else 10.0
-		for k in n:
-			var hh := _h(x * 7 + k, y * 3 + k)
-			var bp := r.position + Vector2(6 + hh % 52, 14 + (hh / 53) % 44)
-			var sw := sway(bp.x, bp.y, t, float(hh % 7))
-			var tip := bp + Vector2(sw, -hgt - hh % 6)
-			ci.draw_line(bp, tip, gc, 2.2)
-			ci.draw_line(bp + Vector2(4, 0), tip + Vector2(5, 4), gc.lightened(0.15), 1.8)
-			if deco == "ferns" and k == 0:
-				for j in 3:
-					ci.draw_line(bp.lerp(tip, 0.3 + j * 0.25), bp.lerp(tip, 0.3 + j * 0.25) + Vector2(-6 + sw * 0.3, -3), gc.darkened(0.1), 1.6)
 	var fl: Array = b["fl"]
-	if not fl.is_empty() and hsh % 9 == 0 and deco != "cracks" and deco != "snow" and deco != "dunes":
-		var fp := r.position + Vector2(10 + hsh % 40, 12 + (hsh / 41) % 36)
-		var sw2 := sway(fp.x, fp.y, t, 1.0) * 0.35
-		var fc: Color = fl[hsh % fl.size()]
-		ci.draw_line(fp + Vector2(0, 8), fp + Vector2(sw2, 0), (gc if gc.a > 0 else Color("8fbf7a")).darkened(0.1), 1.6)
-		for a in 5:
-			ci.draw_circle(fp + Vector2(sw2, 0) + Vector2.from_angle(a * TAU / 5 + t * 0.2) * 3.2, 2.4, fc)
-		ci.draw_circle(fp + Vector2(sw2, 0), 1.8, Color("f2cf4a"))
+	var deco := String(b.get("deco", ""))
 	match deco:
 		"dunes":  # 사막: 바람 결 모래 물결, 작은 돌
 			for k in 2:
@@ -423,16 +492,47 @@ func _deco(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, hs
 				ci.draw_circle(r.position + Vector2(36, 24), 7, (b["g1"] as Color).darkened(0.06))
 
 
-## 물: 깊을수록 진하게, 찰랑이는 물결과 반짝임, 물가 거품. 용암은 끓으며 빛난다.
+## 풀잎·꽃(바람에 나부낀다). 조각 그림에서는 따로 한 겹(grass)으로 그리고, 흔들림은 셰이더가 한다.
+func _grass(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, hsh: int) -> void:
+	var gc: Color = b["grass_c"]
+	var deco := String(b.get("deco", ""))
+	if gc.a > 0.0:  # 바람에 나부끼는 풀잎
+		var n := 3 if deco == "tallgrass" or deco == "ferns" else 2
+		var hgt := 16.0 if deco == "tallgrass" else 10.0
+		for k in n:
+			var hh := _h(x * 7 + k, y * 3 + k)
+			var bp := r.position + Vector2(6 + hh % 52, 14 + (hh / 53) % 44)
+			var sw := sway(bp.x, bp.y, t, float(hh % 7))
+			var tip := bp + Vector2(sw, -hgt - hh % 6)
+			ci.draw_line(bp, tip, gc, 2.2)
+			ci.draw_line(bp + Vector2(4, 0), tip + Vector2(5, 4), gc.lightened(0.15), 1.8)
+			if deco == "ferns" and k == 0:
+				for j in 3:
+					ci.draw_line(bp.lerp(tip, 0.3 + j * 0.25), bp.lerp(tip, 0.3 + j * 0.25) + Vector2(-6 + sw * 0.3, -3), gc.darkened(0.1), 1.6)
+	var fl: Array = b["fl"]
+	if not fl.is_empty() and hsh % 9 == 0 and deco != "cracks" and deco != "snow" and deco != "dunes":
+		var fp := r.position + Vector2(10 + hsh % 40, 12 + (hsh / 41) % 36)
+		var sw2 := sway(fp.x, fp.y, t, 1.0) * 0.35
+		var fc: Color = fl[hsh % fl.size()]
+		ci.draw_line(fp + Vector2(0, 8), fp + Vector2(sw2, 0), (gc if gc.a > 0 else Color("8fbf7a")).darkened(0.1), 1.6)
+		for a in 5:
+			ci.draw_circle(fp + Vector2(sw2, 0) + Vector2.from_angle(a * TAU / 5 + t * 0.2) * 3.2, 2.4, fc)
+		ci.draw_circle(fp + Vector2(sw2, 0), 1.8, Color("f2cf4a"))
+
+## 물(멈춘 부분): 깊을수록 진하게. 용암은 주황빛. 움직이는 부분은 _water_live.
 func _water(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, hsh: int) -> void:
-	var ts := r.size.x
 	var dp := float(_deep[y * map.w + x]) if map.ch(Vector2i(x, y)) in ["~", "w"] else 1.0
 	var col := (b["w0"] as Color).lerp(b["w1"], minf(0.75, (dp - 1.0) / 5.0) + (hsh % 10) / 200.0)
 	if b.get("lava", false):
-		col = col.lerp(Color("ffc27a"), 0.25 + 0.25 * sin(t * 1.6 + x * 0.4 + y * 0.3))
-		ci.draw_rect(r, col)
-		if not fx_water:
-			return
+		col = col.lerp(Color("ffc27a"), 0.25)
+	ci.draw_rect(r, col)
+
+
+## 물(움직이는 부분, 매 프레임): 찰랑이는 물결과 반짝임. 용암은 숨 쉬는 빛, 떠다니는 껍질, 부글부글.
+func _water_live(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, hsh: int) -> void:
+	var ts := r.size.x
+	if b.get("lava", false):
+		ci.draw_rect(r, Color(1.0, 0.76, 0.48, 0.25 * (0.5 + 0.5 * sin(t * 1.6 + x * 0.4 + y * 0.3))))
 		if hsh % 3 == 0:  # 식은 껍질이 떠다닌다
 			var cp := r.position + Vector2(fposmod(hsh % 40 + t * 6.0, ts), 20 + (hsh / 7) % 30)
 			ci.draw_circle(cp, 9, Color("b06a4a"))
@@ -440,18 +540,13 @@ func _water(ci: CanvasItem, r: Rect2, x: int, y: int, b: Dictionary, t: float, h
 		if hsh % 4 == 0:
 			ci.draw_arc(r.position + Vector2(16 + hsh % 30, 16 + (hsh / 31) % 30), 2 + ph * 7, 0, TAU, 12, Color(1, 0.95, 0.7, 1.0 - ph), 2)
 		return
-	ci.draw_rect(r, col)
-	if not fx_water:
-		return
-	# 찰랑이는 물결(두 줄, 옆으로 흐른다)
-	for k in 2:
+	for k in 2:  # 찰랑이는 물결(두 줄, 옆으로 흐른다)
 		var hh := _h(x + k * 31, y * 2 + k)
 		var px := fposmod(hh % 64 + t * (10.0 + k * 6.0), ts + 30.0) - 15.0
 		var py := r.position.y + 14 + k * 26 + hh % 8
 		var wy := sin(t * 2.0 + hh) * 2.0
 		ci.draw_arc(Vector2(r.position.x + px, py + wy + 8), 9, PI * 1.15, PI * 1.85, 8, Color(1, 1, 1, 0.45), 2)
-	# 반짝임
-	if (hsh + int(t * 1.5)) % 11 == 0:
+	if (hsh + int(t * 1.5)) % 11 == 0:  # 반짝임
 		var sp := r.position + Vector2(10 + hsh % 44, 10 + (hsh / 45) % 44)
 		var a := 1.0 - fposmod(t * 1.5, 1.0)
 		ci.draw_line(sp - Vector2(4, 0), sp + Vector2(4, 0), Color(1, 1, 1, a), 2)
