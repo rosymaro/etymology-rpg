@@ -5,7 +5,7 @@ extends Node2D
 ##   ground 바닥(땅·물 바탕·바닷가·길·다리), grass 풀·꽃, 물 움직임(매 프레임 그림), mtn 산, trees 나무
 ## 풀·나무 겹은 화면 크기 한 장으로 모은 뒤 셰이더로 바람에 흔든다(GPU가 하므로 가볍다).
 ## 그림 파일(사용자 의견: 배경을 직접 그려 넣는다)이 있으면 그 조각은 파일을 쓴다:
-##   res://assets/map/<겹>/<열>_<행>.png, 한 장 FILE_CELLS칸 = 1024×1536px (사용자 의견: 픽셀 기준 1024×1536, assets/map/README.md)
+##   res://assets/map/<겹>/<열>_<행>.webp(.png), 한 장 FILE_CELLS칸 = 1024×1536px (사용자 의견: 픽셀 기준 1024×1536, assets/map/README.md)
 ## 부모(FieldScreen)보다 먼저 그려진다(show_behind_parent). 몹·주인공·작은 동물은 부모가 그 위에 그린다.
 
 const CHUNK := 8
@@ -49,6 +49,8 @@ var _water: Node2D
 var _bake: Node
 var _chunks := {}  ## "겹:열:행" -> {sprite, vp(없으면 파일), used}
 var _files := {}  ## 파일 경로 -> Texture2D 또는 null
+var _paths := {}  ## "겹/열_행" -> 파일 경로("" 없음)
+var _refs := {}  ## 파일 경로 -> 그 파일을 쓰는 조각 수
 var _has := {}  ## "겹:열:행" -> 그릴 것이 있나(산·나무 없는 조각은 건너뛴다)
 var _premul := CanvasItemMaterial.new()
 var _frame := 0
@@ -57,6 +59,7 @@ var _frame := 0
 func _init(p: MapPainter, bleed_px: float) -> void:
 	painter = p
 	bleed = bleed_px
+	painter.painted = ResourceLoader.exists("res://assets/map/ground/0_0.webp") or ResourceLoader.exists("res://assets/map/ground/0_0.png")
 	show_behind_parent = true
 	_premul.blend_mode = CanvasItemMaterial.BLEND_MODE_PREMULT_ALPHA
 	_bake = Node.new()
@@ -153,17 +156,26 @@ func _make(layer: String, cx: int, cy: int, id: String) -> void:
 	var spr := Sprite2D.new()
 	spr.centered = false
 	spr.position = Vector2(cx, cy) * CHUNK * ts
-	var entry := {"sprite": spr, "vp": null, "used": _frame}
-	var path := art_dir + "/%s/%d_%d.png" % [layer, cx * CHUNK / FILE_CELLS.x, cy * CHUNK / FILE_CELLS.y]
-	var tex := _file(path)
-	if tex:  # 사람이 그린 그림
+	var entry := {"sprite": spr, "vp": null, "used": _frame, "path": ""}
+	var name := "%d_%d" % [cx * CHUNK / FILE_CELLS.x, cy * CHUNK / FILE_CELLS.y]
+	var path := _find(layer, name)
+	var tex := _file(path) if path != "" else null
+	if tex == null and _find("ground", name) != "":
+		# 그린 그림이 있는 장은 모든 겹을 그림 파일로만(없는 겹은 비어 있는 것): 코드 그림과 섞지 않는다
+		_chunks[id] = {"sprite": null, "vp": null, "used": _frame, "path": ""}
+		spr.free()
+		return
+	if tex:  # 그린 그림(사람이 그렸거나 tools/map/paint가 그린 것)
+		entry["path"] = path
+		_refs[path] = int(_refs.get(path, 0)) + 1
 		var per := FILE_CELLS / CHUNK
 		spr.texture = tex
 		spr.region_enabled = true
 		var pos := Vector2((cx % per.x) * CHUNK, (cy % per.y) * CHUNK) * ts
 		var tsz := Vector2(tex.get_size())  # 지도 끝 조각은 지도가 끝나는 칸까지만이라 더 작다
 		if pos.x >= tsz.x or pos.y >= tsz.y:
-			_chunks[id] = {"sprite": null, "vp": null, "used": _frame}
+			_chunks[id] = entry
+			entry["sprite"] = null
 			spr.free()
 			return
 		spr.region_rect = Rect2(pos, (Vector2(CHUNK, CHUNK) * ts).min(tsz - pos))
@@ -216,6 +228,20 @@ func _worth(layer: String, cx: int, cy: int) -> bool:
 	return found
 
 
+## 그림 파일 경로(.webp 또는 .png). 없으면 "".
+func _find(layer: String, name: String) -> String:
+	var key := layer + "/" + name
+	if not _paths.has(key):
+		var found := ""
+		for ext in [".png", ".webp"]:  # 사람이 그린 .png가 지도 그리개(tools/map/paint)의 .webp보다 먼저
+			var p: String = art_dir + "/" + key + ext
+			if (p.begins_with("res://") and ResourceLoader.exists(p)) or (not p.begins_with("res://") and FileAccess.file_exists(p)):
+				found = p
+				break
+		_paths[key] = found
+	return _paths[key]
+
+
 func _file(path: String) -> Texture2D:
 	if not _files.has(path):
 		if path.begins_with("res://"):
@@ -228,6 +254,12 @@ func _file(path: String) -> Texture2D:
 
 func _free(id: String) -> void:
 	var e: Dictionary = _chunks[id]
+	var p := String(e.get("path", ""))
+	if p != "":  # 그림 파일도 더 쓰는 조각이 없으면 내려놓는다(폰 메모리)
+		_refs[p] = int(_refs.get(p, 1)) - 1
+		if int(_refs[p]) <= 0:
+			_refs.erase(p)
+			_files.erase(p)
 	if e["sprite"]:
 		(e["sprite"] as Node).queue_free()
 	if e["vp"]:

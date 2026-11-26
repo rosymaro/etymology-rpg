@@ -46,10 +46,14 @@ def size_of(world, cx, cy):
 def piece(pieces, layer, cx, cy, pw, ph):
     """조각 하나. 투명 겹은 Godot가 준 '알파만큼 곱한 색'을 바로잡는다. 없으면(빈 조각) 투명."""
     p = os.path.join(pieces, layer, "%d_%d.png" % (cx, cy))
+    premul = True
+    if not os.path.exists(p):  # 지도 그리개(tools/map/paint)가 그린 그림: 곧은 알파라 바로잡지 않는다
+        p = os.path.join(pieces, layer, "%d_%d.webp" % (cx, cy))
+        premul = False
     if not os.path.exists(p):
         return np.zeros((ph, pw, 4), np.uint8)
     a = np.asarray(Image.open(p).convert("RGBA"))[:ph, :pw].copy()
-    if layer != "ground":
+    if layer != "ground" and premul and not pieces.rstrip("/").endswith("assets/map"):
         al = a[..., 3:4].astype(np.uint16)
         part = (al > 0) & (al < 255)
         fixed = np.minimum(255, a[..., :3].astype(np.uint16) * 255 // np.maximum(al, 1)).astype(np.uint8)
@@ -89,11 +93,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("out", help="나갈 폴더")
     ap.add_argument("--godot", default=shutil.which("godot") or "godot")
-    ap.add_argument("--pieces", help="이미 찍은 조각 폴더(주면 Godot를 다시 돌리지 않는다)")
+    ap.add_argument("--pieces", help="이미 있는 조각 폴더(주면 Godot를 다시 돌리지 않는다). 지금 게임 그림은 assets/map")
     a = ap.parse_args()
     world = json.load(open(os.path.join(ROOT, "data/map/world.json"), encoding="utf-8"))
     w, h = world["w"] * world["tile"], world["h"] * world["tile"]
     cols, rows = -(-w // PW), -(-h // PH)
+    painted = os.path.join(ROOT, "assets/map")
+    if not a.pieces and os.path.exists(os.path.join(painted, "ground", "0_0.webp")):
+        a.pieces = painted  # 지금 게임이 쓰는 그린 지도
     pieces = a.pieces or tempfile.mkdtemp(prefix="map_pieces_")
     if not a.pieces:
         run_godot(a.godot, pieces)

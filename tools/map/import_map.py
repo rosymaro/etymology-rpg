@@ -67,6 +67,9 @@ def main():
             d = os.path.join(ROOT, "assets/map", k)
             os.makedirs(d, exist_ok=True)
             img.save(os.path.join(d, "%d_%d.png" % (cx, cy)), optimize=True)
+            for old in ("%d_%d.webp" % (cx, cy), "%d_%d.webp.import" % (cx, cy)):  # 그린 그림이 지도 그리개 그림을 대신한다
+                if os.path.exists(os.path.join(d, old)):
+                    os.remove(os.path.join(d, old))
         n += 1
     print("넣은 조각 %d장 → assets/map/<겹>/" % n)
 

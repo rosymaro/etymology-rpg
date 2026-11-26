@@ -21,6 +21,7 @@ var _wind_speed := 0.9
 var _wind_wave := 0.0025
 var _sway := Vector2(2, 7)
 var _open := {}  ## 모든 길목이 열린 상태(배경 그림은 사라지지 않는 모습만: 닫힌 길목은 그 위에 따로 그린다)
+var painted := false  ## 그린 지도 그림(assets/map)을 쓰는 중: 물가 거품은 그림에 있으니 그리지 않고, 물결은 깊은 물에만
 var _static := false  ## 조각 그림(MapView가 한 번만 그려 둔다)을 그리는 중: 흔들림·물결 없이
 const LAYERS := ["ground", "grass", "mtn", "trees"]  ## 바닥, 풀·꽃, 산, 나무(아래부터)
 
@@ -304,8 +305,10 @@ func draw_water_live(ci: CanvasItem, o: Vector2, cam: Vector2, view: Vector2, t:
 			var k := row[x]
 			var r := Rect2(o + Vector2(x, y) * ts, Vector2(ts, ts))
 			if k == "~" or k == "w":
+				if painted and _deep[y * map.w + x] < 2:
+					continue
 				_water_live(ci, r, x, y, biome_at(Vector2i(x, y)), t, _h(x, y))
-			elif k == ".":
+			elif k == "." and not painted:
 				_foam(ci, r, x, y, biome_at(Vector2i(x, y)), t)
 
 

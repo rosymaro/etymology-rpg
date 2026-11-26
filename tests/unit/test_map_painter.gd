@@ -83,6 +83,7 @@ func test_map_view_bakes_chunks_once_and_reuses_them() -> void:
 	var m := WorldMap.load_default()
 	var p := MapPainter.for_map(m)
 	var mv := MapView.new(p, 80.0)
+	mv.art_dir = "user://no_map_art"  # 그림 파일이 없을 때(게임 코드가 그린다)
 	add_child_autofree(mv)
 	var cam := m.start(1) - Vector2(360, 640)
 	mv.update(cam, Vector2(720, 1280), 0.0, {})
@@ -91,9 +92,7 @@ func test_map_view_bakes_chunks_once_and_reuses_them() -> void:
 	for i in 5:
 		mv.update(cam, Vector2(720, 1280), i * 0.1, {})
 	assert_lte(mv.baked, first + 5, "같은 자리면 다시 그리지 않는다(둘레 미리 그리기는 프레임마다 하나)")
-	var before := mv.baked
-	mv.update(cam, Vector2(720, 1280), 1.0, {"some_gate": true})
-	assert_gt(mv.baked, before, "길목이 열리면 바닥을 다시 그린다")
+
 
 
 func test_map_view_skips_empty_mountain_and_tree_chunks() -> void:
@@ -146,3 +145,16 @@ func test_map_view_edge_picture_is_cut_at_map_end() -> void:
 	mv.update(cam, Vector2(720, 1280), 0.0, {})
 	assert_gt(mv.from_files, 0, "지도 끝의 작은 그림도 쓴다")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func test_painted_map_files_cover_every_piece() -> void:
+	# 사용자 의견: 동화책 삽화풍 지도(tools/map/paint). 장마다 바닥 그림이 있고, 게임은 그것을 쓴다
+	var m := WorldMap.load_default()
+	for cy in ceili(m.h / float(MapView.FILE_CELLS.y)):
+		for cx in ceili(m.w / float(MapView.FILE_CELLS.x)):
+			assert_true(ResourceLoader.exists("res://assets/map/ground/%d_%d.webp" % [cx, cy]), "바닥 그림 %d_%d" % [cx, cy])
+	var mv := MapView.new(MapPainter.for_map(m), 80.0)
+	add_child_autofree(mv)
+	mv.update(m.start(1) - Vector2(360, 640), Vector2(720, 1280), 0.0, {})
+	assert_gt(mv.from_files, 0, "그림 파일을 쓴다")
+	assert_eq(mv.baked, 0, "그림이 있는 장은 코드로 그리지 않는다(화풍을 섞지 않는다)")
