@@ -101,3 +101,10 @@ func test_stage2_boss_rewards() -> void:
 	assert_true("ad" in s.magics and "ob" in s.magics, "ad-·ob- 마법")
 	assert_eq(s.stage, 3)
 	assert_true(s.has_word("predator"))
+
+
+func test_stage2_boss_gate_needs_more_than_half_no_cap() -> void:
+	# 단어 수를 줄이지 않는다: 1차 단어의 절반보다 많이
+	var all: int = GameData.rules.repo.first_tier(2).size()
+	var g: Dictionary = GameData.rules.boss_gate(GameState.new(), 2)
+	assert_eq(g["need"], all / 2 + 1)

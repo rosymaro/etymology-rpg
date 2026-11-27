@@ -183,5 +183,4 @@ func boss_gate(state: GameState, stage: int) -> Dictionary:
 		if state.has_word(w.id):
 			have += 1
 	var need := int(floor(all.size() * float(p["boss_gate_ratio"]))) + 1
-	need = mini(need, int(p.get("boss_gate_cap", need)))  # 스테이지 2부터 단어가 많아(576개) 절반이면 너무 많다
 	return {"have": have, "need": need, "open": have >= need}

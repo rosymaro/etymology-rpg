@@ -7,8 +7,6 @@
   "exp_per_level_squared": 200,
   "max_level": 60,
   "boss_gate_ratio": 0.5,
-  "boss_gate_cap": 120,
-  "_boss_gate_cap_doc": "보스 길을 여는 단어 수의 상한(스테이지 2는 1차 단어가 576개라 절반 289개는 너무 많다). 스테이지 1(77개)은 그대로",
   "_boss_gate_doc": "보스 길 막기: 그 스테이지 1차 단어를 이 비율보다 많이 가져야 보스와 싸울 수 있다",
   "team_max": 4
 }
