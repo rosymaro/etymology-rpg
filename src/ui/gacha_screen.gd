@@ -8,6 +8,7 @@ var _coins: Label
 var _result: HFlowContainer
 var _info: Label
 var _btns: Array[Button] = []
+var _free_btn: Button  ## 무료 뽑기(사냥 레벨 5마다 받는다)
 var _busy := false
 var last: Array[Dictionary] = []  ## 마지막에 뽑은 것(테스트용)
 
@@ -50,6 +51,9 @@ func open(_args: Dictionary) -> void:
 		b.custom_minimum_size = Vector2(220, UiKit.THUMB_H)
 		row.add_child(b)
 		_btns.append(b)
+	_free_btn = UiKit.button("", func() -> void: pull(GameData.state.free_pulls, true), UiKit.LEAF, 24)
+	_free_btn.custom_minimum_size = Vector2(0, UiKit.THUMB_H)
+	v.add_child(_free_btn)
 	var back := UiKit.button(t("ui.common.back"), func() -> void: main.flow.go_field(), UiKit.PAPER, 24)
 	back.custom_minimum_size = Vector2(160, UiKit.THUMB_H)
 	row.add_child(back)
@@ -63,13 +67,15 @@ func open(_args: Dictionary) -> void:
 
 func _refresh() -> void:
 	_coins.text = t("ui.gacha.coins").format({"n": GameData.state.wallet})
+	_free_btn.visible = GameData.state.free_pulls > 0
+	_free_btn.text = t("ui.gacha.free").format({"n": GameData.state.free_pulls})
 
 
 ## n번 뽑기(버튼·테스트). 코인이 모자라면 알린다.
-func pull(n: int) -> void:
+func pull(n: int, free := false) -> void:
 	if _busy:
 		return
-	var got := _gacha.pull(GameData.state, n, GameData.rng)
+	var got := _gacha.pull_free(GameData.state, n, GameData.rng) if free else _gacha.pull(GameData.state, n, GameData.rng)
 	if got.is_empty():
 		_info.text = t("ui.gacha.no_coins")
 		return

@@ -139,3 +139,21 @@ func test_more_companions_make_mobs_tougher() -> void:
 	var three := HuntRun.new({}, cfg)
 	three.set_units([1, 5, 10])
 	assert_gt(three.mob_hp("chase"), one.mob_hp("chase"), "동행이 많으면 몹이 단단하다(막는 비율을 80%쯤으로)")
+
+
+func test_free_pulls_every_five_levels() -> void:
+	var s := GameState.new()
+	var run := HuntRun.new(s.hunt, cfg)
+	assert_eq(run.free_pulls_for(4), 0, "5를 넘지 않으면 없다")
+	assert_eq(run.free_pulls_for(5), 1)
+	assert_eq(run.free_pulls_for(12), 2)
+	run.d["level"] = 11
+	var got := run.bank(s, GameData.rules)
+	assert_eq(int(got["free_pulls"]), 2)
+	assert_eq(s.free_pulls, 2, "마을에 들어오면 무료 뽑기를 받는다")
+	var g := Gacha.new(GameData.repo, GameData.rules, JsonFile.read("res://data/balance/gacha.json"))
+	var w0 := s.wallet
+	assert_eq(g.pull_free(s, 2, GameData.rng).size(), 2)
+	assert_eq(s.free_pulls, 0)
+	assert_eq(s.wallet, w0, "코인이 들지 않는다")
+	assert_true(g.pull_free(s, 1, GameData.rng).is_empty(), "무료가 없으면 못 뽑는다")

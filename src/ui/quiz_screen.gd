@@ -38,11 +38,26 @@ func open(args: Dictionary) -> void:
 	_i = mini(int(args.get("resume_i", 0)), _qs.size())
 	for x in args.get("resume_right", []):
 		_right.append(bool(x))
-	UiKit.fill_bg(self, UiKit.SKY if _mode == "encounter" else UiKit.PAPER)
+	var popup: bool = args.get("popup", false)
+	if popup:  # 사용자 의견: 필드 위 아래쪽 반 화면 창(몹 자리가 그대로, 끊기지 않게)
+		mouse_filter = Control.MOUSE_FILTER_STOP
+		var panel := Panel.new()
+		var st := UiKit.box(UiKit.SKY, 28, 3)
+		st.corner_radius_bottom_left = 0
+		st.corner_radius_bottom_right = 0
+		st.shadow_size = 10
+		st.shadow_offset = Vector2(0, -4)
+		panel.add_theme_stylebox_override("panel", st)
+		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		panel.offset_bottom = UiKit.BG_BLEED  # 화면 아래 여백까지
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(panel)
+	else:
+		UiKit.fill_bg(self, UiKit.SKY if _mode == "encounter" else UiKit.PAPER)
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 32)
+		margin.add_theme_constant_override("margin_" + side, 20 if popup and side == "top" else 32)
 	add_child(margin)
 	var v := UiKit.vbox(14)
 	margin.add_child(v)
@@ -57,7 +72,7 @@ func open(args: Dictionary) -> void:
 	gap.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	gap.size_flags_stretch_ratio = 0.6
 	v.add_child(gap)
-	_word_lbl = UiKit.label("", 54)
+	_word_lbl = UiKit.label("", 46 if popup else 54)
 	_word_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(_word_lbl)
 	_parts_row = UiKit.hbox(6)

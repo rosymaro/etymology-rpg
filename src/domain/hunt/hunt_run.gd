@@ -216,6 +216,9 @@ func tick(delta: float) -> bool:
 ## 돌려주는 값 {orbs, coins, words: [단어 id]} (풀 게 없었으면 orbs·coins 0, words 빈 배열)
 func bank(state: GameState, rules: ProgressRules) -> Dictionary:
 	var b := bag().duplicate(true)
+	# 사용자 의견: 들어오기 전 사냥 레벨 5마다 무료 뽑기 1번(코인이 들지 않는다). 5를 넘지 않으면 없다
+	b["free_pulls"] = free_pulls_for(level())
+	state.free_pulls += int(b["free_pulls"])
 	var exp := int(b["orbs"]) * int(cfg["bank"]["exp_per_orb"])
 	if exp > 0:
 		for u in state.joined:
@@ -226,6 +229,11 @@ func bank(state: GameState, rules: ProgressRules) -> Dictionary:
 	d["bag"] = {"orbs": 0, "coins": 0, "words": []}
 	reset()
 	return b
+
+
+## 사냥 레벨 L에서 마을에 들어오면 받는 무료 뽑기 수(field_hunt.json free_pull_every 레벨마다 1번).
+func free_pulls_for(lv: int) -> int:
+	return lv / maxi(1, int(cfg.get("free_pull_every", 5)))
 
 
 ## 전투에서 졌다: 주머니의 절반(lose_ratio)을 잃고 나들이는 끝.

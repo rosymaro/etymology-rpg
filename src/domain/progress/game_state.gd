@@ -23,6 +23,7 @@ var cave := ""  ## 들어가 있는 동굴 지도 id(07-fun 5절). 비면 큰 �
 var titles: Array[String] = []
 var exam_fail_date := ""
 var wallet := 0  ## 코인(07-fun 8절)
+var free_pulls := 0  ## 무료 뽑기(사냥 레벨 5마다 1번, 마을에 들어올 때 받는다)
 var items: Array = []  ## 주운 퀘스트 물건(07-fun 5절)
 var notes: Array = []  ## 주운 조각 쪽지(조각 id, 07-fun 4절). 가방에 남아 조각 사전이 된다
 var hunt: Dictionary = {}  ## 필드 사냥 한 번의 나들이(HuntRun, 주머니 포함)
@@ -63,7 +64,7 @@ func to_dict() -> Dictionary:
 		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y], "cave": cave,
 		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode, "free_roam": free_roam,
 		"rest_until": rest_until, "pieces": pieces, "loadout": loadout,
-		"wallet": wallet, "hunt": hunt, "notes": notes, "items": items,
+		"wallet": wallet, "free_pulls": free_pulls, "hunt": hunt, "notes": notes, "items": items,
 	}
 
 
@@ -96,6 +97,7 @@ static func from_dict(d: Dictionary) -> GameState:
 	g.pieces = d.get("pieces", {})
 	g.loadout = d.get("loadout", {})
 	g.wallet = int(d.get("wallet", 0))
+	g.free_pulls = int(d.get("free_pulls", 0))
 	g.notes = d.get("notes", [])
 	g.items = d.get("items", [])
 	g.hunt = d.get("hunt", {})

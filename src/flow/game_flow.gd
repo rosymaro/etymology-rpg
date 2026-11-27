@@ -266,6 +266,11 @@ func notice_board(done: Callable) -> void:
 	main.notice(TranslationServer.translate("ui.quest.s01_q_word.hint").format(pr), done)
 
 
+## 보스 앞에서 단어가 모자라다는 말을 들었다(이 스테이지): 몹 단어가 처음 보는 단어 쪽으로 기운다.
+static func boss_short_flag() -> String:
+	return "boss_short_s%02d" % STAGE
+
+
 func seen(k: String) -> bool:
 	return GameData.state.flags.get(k, false)
 
@@ -291,6 +296,63 @@ func encounter(word_ids: Array[String], resume_i: int = 0, resume_right: Array =
 	main.show_screen(QuizScreen.new(), {"words": word_ids, "mode": "encounter", "resume_i": resume_i, "resume_right": resume_right,
 		"step_bonus": int(GameData.hunt_cfg["eater"]["hard_step"]) if enc.get("hard", false) else 0,
 		"done": func(right: Array[bool]) -> void: _after_encounter(word_ids, right)})
+
+
+## 필드에서 몹에 닿았을 때: 화면을 바꾸지 않고 필드 위 아래쪽 반 화면 창으로 퀴즈를 낸다(사용자 의견: 몹 자리를 그대로).
+## 다 맞히면 창만 닫고 짧은 알림으로 얻은 것을 보여 준 뒤 caught()를 부른다(필드는 그대로 이어진다).
+## 틀린 단어가 있으면 지금처럼 전투로 간다(화면이 바뀐다).
+const POPUP_TOP := 0.4  ## 창이 시작하는 높이(화면 위에서 비율)
+
+
+func encounter_popup(word_ids: Array[String], opts: Dictionary, caught: Callable) -> void:
+	enc = opts
+	GameData.set_route({"s": "quiz", "words": word_ids, "i": 0, "right": [], "enc": enc})
+	GameData.vibrate()
+	var q := QuizScreen.new()
+	q.main = main
+	q.anchor_top = POPUP_TOP
+	q.anchor_bottom = 1.0
+	q.anchor_right = 1.0
+	main._overlay.add_child(q)
+	q.offset_top = 0
+	q.offset_bottom = 0
+	q.offset_left = 0
+	q.offset_right = 0
+	q.open({"words": word_ids, "mode": "encounter", "popup": true,
+		"step_bonus": int(GameData.hunt_cfg["eater"]["hard_step"]) if enc.get("hard", false) else 0,
+		"done": func(right: Array[bool]) -> void:
+			q.queue_free()
+			if right.has(false):
+				_after_encounter(word_ids, right)
+				return
+			if enc.get("hard", false):
+				GameData.hunt_run().pick_orbs(int(GameData.hunt_cfg["eater"]["bonus_orbs"]))
+			enc = {}
+			var lines: Array[String] = [TranslationServer.translate("ui.result.caught_all")]
+			for id in word_ids:
+				var ev := GameData.rules.gain_word(GameData.state, id)
+				EventBus.word_captured.emit(id)
+				lines.append(_event_line(ev))
+			GameData.save()
+			GameData.set_route({"s": "field"})
+			caught.call()
+			main.notice("\n".join(lines), _maybe_cheok)})
+
+
+## 얻은 단어 한 줄: 단어 = 뜻 (새 단어 / 이미 가진 단어, 장착, 레벨 업, 새 어근)
+func _event_line(ev: Dictionary) -> String:
+	var w := GameData.repo.get_word(ev["word"])
+	var tr := func(k: String) -> String: return TranslationServer.translate(k)
+	var line := "%s = %s  %s" % [w.id, w.meaning, tr.call("ui.result.new") if ev["new"] else tr.call("ui.result.dup")]
+	if int(ev["equipped"]) > 0:
+		line += "  " + tr.call("ui.result.equipped").format({"name": UiKit.unit_name(ev["equipped"])})
+	for u in ev["level_ups"]:
+		EventBus.level_up.emit(u[0], u[2])
+		if u[0] in GameData.state.joined:
+			line += "\n  " + tr.call("ui.result.level_up").format({"name": UiKit.unit_name(u[0]), "level": u[2]})
+	for r in ev["roots"]:
+		line += "\n  " + tr.call("ui.result.new_root").format({"root": r})
+	return line
 
 
 func _after_encounter(word_ids: Array[String], right: Array[bool]) -> void:
@@ -612,7 +674,9 @@ func boss_gate() -> void:
 		main.notice(TranslationServer.translate("ui.boss.already"))
 		return
 	if not g["open"]:
-		main.notice(TranslationServer.translate("ui.boss.gate").format(g))
+		_flag(boss_short_flag())  # 사용자 의견: 이때부터 이 스테이지에서 처음 보는 단어가 더 자주 나온다
+		GameData.save()
+		main.notice(TranslationServer.translate("ui.boss.gate").format(g) + "\n" + TranslationServer.translate("ui.boss.fresh_up"))
 		return
 	var left := GameData.quests.boss_blockers(GameData.state, STAGE)
 	if not left.is_empty():
