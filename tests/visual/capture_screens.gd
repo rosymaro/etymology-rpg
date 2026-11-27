@@ -76,6 +76,12 @@ func _run() -> void:
 		e.stun = 99.0  # 찍는 동안 부딪혀 퀴즈로 넘어가지 않게
 	await get_tree().create_timer(1.4).timeout
 	await _shot("04_field_hunt")
+	main.flow.encounter_popup([gd.repo.first_tier(1, "field")[0].id, gd.repo.first_tier(1, "field")[1].id] as Array[String], {}, func() -> void: pass)
+	await get_tree().create_timer(0.9).timeout
+	await _shot("04_field_quiz_popup")  # 필드 위 반 화면 퀴즈(몹 자리 그대로)
+	for c in main._overlay.get_children():
+		c.queue_free()
+	await get_tree().process_frame
 	s.joined = [1, 4] as Array[int]
 	s.loadout.erase("units")
 	fs._spawn_eater()

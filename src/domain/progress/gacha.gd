@@ -44,6 +44,20 @@ func _draw_one(p: Array[WordData], rng: RandomNumberGenerator, rare_only := fals
 	return cand[-1]
 
 
+## 무료 뽑기 n번(state.free_pulls에서 뺀다, 코인은 들지 않는다). 무료가 모자라면 빈 배열.
+func pull_free(state: GameState, n: int, rng: RandomNumberGenerator) -> Array[Dictionary]:
+	if n <= 0 or state.free_pulls < n:
+		return []
+	state.free_pulls -= n
+	var p := pool(state)
+	var out: Array[Dictionary] = []
+	for k in n:
+		var w := _draw_one(p, rng)
+		var is_new := not state.has_word(w.id)
+		out.append({"id": w.id, "new": is_new, "rare": is_rare(w), "event": rules.gain_word(state, w.id)})
+	return out
+
+
 ## n번(1 또는 10) 뽑는다. 코인이 모자라면 빈 배열. 돌려주는 값: [{id, new, rare, event}](event = gain_word 결과)
 func pull(state: GameState, n: int, rng: RandomNumberGenerator) -> Array[Dictionary]:
 	var price := int(cfg["price10"]) if n >= 10 else int(cfg["price"]) * n

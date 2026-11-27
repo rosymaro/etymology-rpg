@@ -51,6 +51,9 @@ var _shield_max := 0
 var _shield_t: Array[float] = []  ## 깨진 방어막마다 다시 차기까지 남은 초
 var _shield_safe := 0.0  ## 방어막이 막은 뒤 잠깐 무적(연달아 닿아도 하나만 깨지게)
 var _shield_fx := 0.0
+var _dex_btn: Button  ## 단어 카드가 날아 들어가는 곳
+var _descend := {}  ## de-로 절벽을 내려가는 중 {a, b, t}(사용자 의견: 오르는 모습이 아니라 내려가는 모습)
+const DESCEND_SEC := 1.6
 var _hc: Dictionary  ## data/balance/field_hunt.json
 var _uw := UnitWeapons.new()  ## 데리고 다니는 유닛의 무기(07-fun 1절)
 var _pals: Array[Dictionary] = []  ## 주인공을 따라다니는 유닛 {unit, pos}
@@ -333,7 +336,8 @@ func _build_hud() -> void:
 	var cream := UiKit.PAPER
 	_quest_btn = _menu_btn(t("ui.menu.quest"), "flag", _open_quests, cream)
 	right.add_child(_quest_btn)
-	right.add_child(_menu_btn(t("ui.menu.dex"), "bag", func() -> void: _go(main.flow.go_dex), cream))
+	_dex_btn = _menu_btn(t("ui.menu.dex"), "bag", func() -> void: _go(main.flow.go_dex), cream)
+	right.add_child(_dex_btn)
 	_party_btn = _menu_btn(t("ui.menu.party"), "star", func() -> void: _go(main.flow.go_party), cream)
 	right.add_child(_party_btn)
 	right.add_child(_menu_btn(t("ui.menu.save"), "heart", func() -> void:
@@ -342,14 +346,21 @@ func _build_hud() -> void:
 		_show_toast(t("ui.menu.saved")), cream))
 	right.add_child(_menu_btn(t("ui.menu.option"), "gear", func() -> void:
 		_go(func() -> void: main.flow.go_options(main.flow.go_field)), cream))
-	var tc := UiKit.chip("pin", "", 21)
+	var tc := UiKit.chip("pin", "", 18, UiKit.PAPER, 28)
 	_top = tc.get_meta("label")
+	_top.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART  # 필드·마을 수까지 길어지면 두 줄
+	_top.custom_minimum_size.x = 610
 	add_child(tc)
-	tc.position = Vector2(16, HUD_Y - 62)
+	tc.position = Vector2(16, HUD_Y - 66)
 	var gc := UiKit.chip("alert", "", 20)
 	_goal = gc.get_meta("label")
 	add_child(gc)
 	gc.position = Vector2(16, HUD_Y + MINI_H + 18)
+	gc.mouse_filter = Control.MOUSE_FILTER_STOP
+	gc.gui_input.connect(func(ev: InputEvent) -> void:  # 사용자 의견: 할 일을 누르면 얼마나 모였는지
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			_show_toast(_goal_progress())
+			gc.accept_event())
 	_goal_card = gc
 	_rest = UiKit.label("", 22, UiKit.BAD.darkened(0.2))
 	var rc := UiKit.card(Color("fff1d6"))
@@ -426,8 +437,13 @@ func _menu_btn(text: String, icon_name: String, f: Callable, bg: Color) -> Butto
 
 func _update_top() -> void:
 	var g := GameData.rules.boss_gate(GameData.state, GameFlow.STAGE)
+	var by := {}  # 사용자 의견: 필드·마을에서 각각 얼마나 모았는지(얼마 남았는지 알게)
+	for where in ["field", "town"]:
+		var ws := GameData.repo.first_tier(GameFlow.STAGE, where)
+		by[where] = [ws.filter(func(w: WordData) -> bool: return GameData.state.has_word(w.id)).size(), ws.size()]
 	_top.text = t("ui.field.top").format({"stage": t("name.stage.s01"), "have": g["have"],
 		"total": GameData.repo.first_tier(GameFlow.STAGE).size(), "need": g["need"],
+		"fh": by["field"][0], "ft": by["field"][1], "th": by["town"][0], "tt": by["town"][1],
 		"title": t("ui.dev.free_badge") if GameData.state.free_roam else (t("ui.dev.badge") if GameData.state.dev_mode else t("name.title.none"))})
 	_goal.text = t("ui.field.goal").format({"title": _goal_text()})
 
@@ -444,6 +460,25 @@ func _goal_text() -> String:
 	if q["kind"] == "words" and not main.flow.seen(String(q["id"]) + "_got"):
 		return t("ui.quest.goal_board")
 	return t("ui.quest.%s.title" % q["id"])
+
+
+## 할 일을 눌렀을 때: 단어 모으기 퀘스트면 모은 수와 남은 단어, 아니면 이 스테이지 단어 수.
+func _goal_progress() -> String:
+	var s := GameData.state
+	var q := GameData.quests.next_quest(s, GameFlow.STAGE)
+	if not q.is_empty() and (String(q["kind"]) != "words" or main.flow.seen(String(q["id"]) + "_got")):
+		var pr := GameData.quests.progress(s, q, GameData.rules.owned_roots(s))
+		var line := t("ui.quest.tap_progress").format({"title": t("ui.quest.%s.title" % q["id"]), "have": pr["have"], "need": pr["need"]})
+		if String(q["kind"]) == "words":
+			var left: Array[String] = []
+			for w in q["words"]:
+				if not s.has_word(String(w)):
+					left.append(String(w))
+			if not left.is_empty():
+				line += "\n" + t("ui.quest.tap_left").format({"words": ", ".join(left)})
+		return line
+	var g := GameData.rules.boss_gate(s, GameFlow.STAGE)
+	return t("ui.quest.tap_stage").format(g)
 
 
 func _go(f: Callable) -> void:
@@ -501,6 +536,11 @@ func _pick_words(rare := false) -> Array[String]:
 	var targets: Array = GameData.state.recapture.values()
 	if not targets.is_empty() and _rng.randf() < 0.5:
 		out.append(str(targets[_rng.randi_range(0, targets.size() - 1)]))
+	# 사용자 의견: 보스 앞에서 단어가 모자라다는 말을 들은 뒤로는 처음 보는 단어가 더 자주(field_hunt.json boss_short_fresh)
+	if main.flow.seen(GameFlow.boss_short_flag()) and _rng.randf() < float(_hc.get("boss_short_fresh", 0.0)):
+		var fresh := pool.filter(func(w: WordData) -> bool: return not GameData.state.has_word(w.id))
+		if fresh.size() >= n:
+			pool.assign(fresh)
 	var total := 0
 	var wt := func(w: WordData) -> int: return maxi(1, 100 / maxi(1, w.freq)) if rare else w.freq
 	for w in pool:
@@ -522,6 +562,7 @@ func _pick_words(rare := false) -> Array[String]:
 
 func _process(delta: float) -> void:
 	var t0 := Time.get_ticks_usec()
+	_tick_descend(delta)
 	_step(delta)
 	if _mv:
 		var st := GameData.settings  # 옵션에서 지도 효과를 하나씩 끈다(04-meta.md 2절)
@@ -644,10 +685,11 @@ func _step(delta: float) -> void:
 			if _shield_block(e):
 				continue
 			_busy = true
+			_stick_on = false
 			_remember()
-			main.flow.encounter(e.words, 0, [], {"hurt": snappedf(e.hurt_ratio(), 0.01), "hard": e.kind == "eater"})
-			if e.kind == "eater":
-				_enemies.remove_at(i)
+			var mob := e
+			main.flow.encounter_popup(e.words, {"hurt": snappedf(e.hurt_ratio(), 0.01), "hard": e.kind == "eater"}, func() -> void:
+				_caught(mob))  # 다 맞히면 필드가 그대로 이어진다(그 몹만 잡혀 사라진다)
 			return
 	_near = {}
 	for sp in _spots:
@@ -740,6 +782,48 @@ func _board_calls() -> bool:
 
 
 ## 퀘스트를 마치면(장면이 끝나면) 길목을 다시 읽는다.
+## 절벽 길목 건너편(북쪽, 낮은 땅)으로 일행이 천천히 내려앉는다.
+func _start_descend(qg_id: String) -> void:
+	for qg in map.quest_gates:
+		if qg["id"] != qg_id:
+			continue
+		var top := 1 << 30
+		for c in qg["tiles"]:
+			if absf((float(c[0]) + 0.5) * map.tile - _hero.x) < map.tile * 3:
+				top = mini(top, int(c[1]))
+		if top == 1 << 30:
+			return
+		var to := Vector2(_hero.x, (top - 1 + 0.5) * map.tile)
+		if to.y >= _hero.y:
+			return  # 이미 아래쪽(북쪽)에 있다
+		_descend = {"a": _hero, "b": to, "t": 0.0}
+		_busy = true
+		_show_toast(t("ui.field.descend"))
+		return
+
+
+func _tick_descend(delta: float) -> void:
+	if _descend.is_empty():
+		return
+	_descend["t"] = float(_descend["t"]) + delta
+	var k := clampf(float(_descend["t"]) / DESCEND_SEC, 0.0, 1.0)
+	var e := k * k * (3.0 - 2.0 * k)
+	_hero = (_descend["a"] as Vector2).lerp(_descend["b"], e)
+	_moving = k < 1.0
+	_facing = Vector2.UP
+	for i in _pals.size():  # 동행도 뒤따라 내려간다(조금씩 늦게)
+		var kk := clampf(k * 1.15 - 0.12 * (i + 1), 0.0, 1.0)
+		_pals[i]["pos"] = (_descend["a"] as Vector2).lerp(_descend["b"], kk * kk * (3.0 - 2.0 * kk)) + Vector2(-30 + 30 * i, 30)
+	_follow_cam()
+	queue_redraw()
+	if k >= 1.0:
+		_descend = {}
+		_trail.clear()
+		_busy = false
+		_remember()
+		GameData.save()
+
+
 func _quest_done() -> void:
 	_gates = main.flow.open_gates()
 	_busy = false
@@ -763,7 +847,9 @@ func _cast(id: String) -> void:
 			_fmagic.use(id, _hero, [])
 			_busy = true
 			_remember()
-			var hint: String = main.flow.quest_gate(qg, _quest_done)
+			var hint: String = main.flow.quest_gate(qg, func() -> void:
+				_quest_done()
+				_start_descend(qg))
 			if hint != "":
 				_busy = false
 				_show_toast(hint)
@@ -797,15 +883,78 @@ func _town_edge() -> void:
 		var got := _run.bank(GameData.state, GameData.rules)
 		_uw.clear()
 		_drops.clear()
-		if int(got["orbs"]) + int(got["coins"]) + (got["words"] as Array).size() > 0:
+		if int(got["orbs"]) + int(got["coins"]) + (got["words"] as Array).size() + int(got["free_pulls"]) > 0:
 			GameData.save()
 			_show_toast(t("ui.hunt.banked").format({"orbs": got["orbs"], "coins": got["coins"], "words": (got["words"] as Array).size(), "wallet": GameData.state.wallet}))
+			_fly_bank(got)
 		_enemies = _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater")
 	else:
 		_sync_pals()  # 마을에서 유닛이 새로 들어왔거나 동행을 바꿨으면 보이는 동행도 같이 바꾼다(공격만 바뀌던 버그)
 		_run.reset()
 		_uw.clear()
 		_tutorial("hunt")
+
+
+## 마을에 들어왔을 때(사용자 의견): 코인이 주인공에게서 코인 칸으로 날아가고, 단어 카드는 도감으로 들어간다.
+## 사냥 레벨 5마다 받은 무료 뽑기가 있으면 다 날아간 뒤 뽑기로 간다.
+func _fly_bank(got: Dictionary) -> void:
+	var from := _hero - _cam + Vector2(0, -30)
+	var coin_card: Control = _hunt_lbl.get_meta("card")
+	var coin_to := _local_center(coin_card.get_meta("icon") if coin_card.has_meta("icon") else coin_card)
+	var n := clampi(int(got["coins"]), 0, 14)
+	var tex := UiKit.icon_tex("coin")
+	for i in n:
+		var c := TextureRect.new()
+		c.texture = tex
+		c.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		c.size = Vector2(34, 34)
+		c.position = from - c.size / 2.0 + Vector2(randf_range(-30, 30), randf_range(-20, 20))
+		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		c.z_index = 30
+		add_child(c)
+		var tw := create_tween()
+		tw.tween_interval(i * 0.06)
+		tw.tween_property(c, "position", c.position + Vector2(randf_range(-60, 60), -70), 0.22).set_ease(Tween.EASE_OUT)
+		tw.tween_property(c, "position", coin_to - c.size / 2.0, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw.tween_callback(func() -> void:
+			coin_card.pivot_offset = coin_card.size / 2.0
+			var pop := create_tween()
+			pop.tween_property(coin_card, "scale", Vector2(1.08, 1.08), 0.05)
+			pop.tween_property(coin_card, "scale", Vector2.ONE, 0.08)
+			c.queue_free())
+	var words: Array = got["words"]
+	var dex_to := _local_center(_dex_btn)
+	for i in mini(words.size(), 8):
+		var w := GameData.repo.get_word(String(words[i]))
+		if w == null:
+			continue
+		var card := WordCard.make(w, "", 18)
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.z_index = 31
+		add_child(card)
+		card.position = from - Vector2(60, 20)
+		card.pivot_offset = Vector2(60, 20)
+		var tw := create_tween()
+		tw.tween_interval(0.3 + i * 0.18)
+		tw.tween_property(card, "position", from - Vector2(60, 110), 0.3).set_ease(Tween.EASE_OUT)
+		tw.tween_interval(0.25)
+		tw.set_parallel(true)
+		tw.tween_property(card, "position", dex_to - Vector2(60, 20), 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw.tween_property(card, "scale", Vector2(0.25, 0.25), 0.5)
+		tw.set_parallel(false)
+		tw.tween_callback(card.queue_free)
+	var free := int(got.get("free_pulls", 0))
+	if free > 0:
+		var wait := 0.9 + mini(words.size(), 8) * 0.18
+		get_tree().create_timer(wait).timeout.connect(func() -> void:
+			if not is_instance_valid(self):
+				return
+			main.notice(t("ui.hunt.free_pulls").format({"lv": free * int(_hc.get("free_pull_every", 5)), "n": free}), func() -> void:
+				_go(main.flow.go_gacha)))
+
+
+func _local_center(c: Control) -> Vector2:
+	return c.get_global_rect().get_center() - get_global_rect().position
 
 
 ## 무기: 데리고 다니는 유닛이 저마다 쏜다(마을 안에서도, 성벽 위로). 몹은 주인공에게 온다.
@@ -904,6 +1053,21 @@ func _hit(e: FieldMob, dmg: int, from: Vector2, push := 0.0, stun := 0.0) -> voi
 			_enemies[i] = ne
 		else:
 			_enemies.remove_at(i)
+
+
+## 팝업 퀴즈를 다 맞혀 잡았다: 그 몹 자리에 새 몹, 필드는 그대로.
+func _caught(e: FieldMob) -> void:
+	var i := _enemies.find(e)
+	if i >= 0:
+		var ne := _new_enemy() if e.kind != "eater" else null
+		if ne:
+			_enemies[i] = ne
+		else:
+			_enemies.remove_at(i)
+	_busy = false
+	_update_top()
+	_update_hunt_hud()
+	queue_redraw()
 
 
 func _spawn_eater() -> void:
