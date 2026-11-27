@@ -316,8 +316,6 @@ ui.npc.s01_4,"마을 사람: 공방 사람들이 단어를 두드려서 만든�
 ui.npc.s01_5,"마을 사람: 병원 간호사님은 3분은 꼭 쉬라고 해요. 엄청 단호하죠."
 ui.npc.s01_6,"마을 사람: 말뿌리 나무가 시들어서 다들 말을 잊어버렸대요."
 ui.quiz.infer_hint,조각 뜻을 이어서 단어 뜻을 짐작해 보세요
-ui.quiz.hint,"힌트: {h}"
-ui.quiz.find_piece,아는 조각이 숨어 있어요. 찾아서 뜻을 짐작해 보세요
 ui.prep.roots,"장착 어근(유닛 창에서 바꿔요): {list}"
 ui.party.loadout,장착
 ui.party.town_only,마법과 어근은 마을에서만 바꿀 수 있어요

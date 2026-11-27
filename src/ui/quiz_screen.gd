@@ -2,7 +2,7 @@ class_name QuizScreen
 extends Screen
 ## 뜻 고르기 4지선다를 차례로 낸다. 조우·게시판·진화가 함께 쓴다. 다 풀면 done(맞음 목록)을 부른다.
 ## 조우는 맞힌 단어는 잡고, 틀린 단어만 전투로 간다(01-rpg-base '조우'). 진화는 문제 전에 어원 풀이를 보여 준다(02-rpg-v2).
-## 조우는 유추 문제다(06-learning.md): 배운 조각이 든 단어면 스테이지 단계대로 조각을 나눠 보여 주거나 뜻을 숨기고,
+## 조우는 유추 문제다(06-learning.md): 이긴 보스에 따라 조각을 뜻과 함께 / 뜻은 ?로 / 나누지 않고 보여 주고,
 ## 고른 뒤에는 언제나 풀이(조각 뜻 → 단어 뜻)를 보여 준다. 조각마다 맞힌 수를 남긴다.
 
 var _qs: Array[QuizQuestion] = []
@@ -29,9 +29,8 @@ func open(args: Dictionary) -> void:
 	var ids: Array[String] = args["words"]
 	if _mode == "encounter":  # 유추 문제
 		var iq := InferenceQuiz.new(GameData.repo, GameData.curriculum, GameData.learning, GameData.rng)
-		var fam := InferenceQuiz.familiar_of(GameData.state.pieces)
 		for id in ids:
-			_qs.append(iq.question(id, GameFlow.cur(), fam, int(args.get("step_bonus", 0))))
+			_qs.append(iq.question(id, GameFlow.cur(), GameData.state.flags, int(args.get("step_bonus", 0))))
 	else:
 		_qs = QuizBuilder.new(GameData.repo, GameData.rng).build(ids)
 	# 이어 하기: 풀던 문제부터(앞에서 맞고 틀린 것은 그대로)
@@ -145,8 +144,8 @@ func _show() -> void:
 				(c as Button).disabled = false)
 
 
-## 조각 칩: 나눠 보여 줄 때(단계 A·B)나 풀이 때. 그 위에 원래 단어, 칩마다 위에 단어 조각, 아래에 조각 뜻(숨기면 "?").
-## 나누지 않을 때(단계 C 이후, 뜻 문제)는 안 배운 조각의 뜻만 힌트로 적는다.
+## 조각 칩: 나눠 보여 줄 때(단계 A·B)나 풀이 때. 그 위에 원래 단어, 칩마다 위에 단어 조각, 아래에 조각 뜻(B는 "?").
+## 단계 C는 영어 단어만 보인다.
 func _show_parts(q: QuizQuestion, reveal: bool) -> void:
 	for c in _parts_row.get_children():
 		c.queue_free()
@@ -158,15 +157,7 @@ func _show_parts(q: QuizQuestion, reveal: bool) -> void:
 	# 나눠 보일 때도 위에 원래 단어를 보인다(사용자 의견: 조각만 있으면 무슨 단어였는지 모른다). 조각이 주인공이니 조금 작게
 	_word_lbl.visible = true
 	_word_lbl.add_theme_font_size_override("font_size", 40 if split else 54)
-	if not split:
-		var hints: Array[String] = []
-		for p in iq.parts:
-			if p["piece"] != "" and p["shown"] and iq.kind == "infer":
-				hints.append("%s = %s" % [p["text"], p["meaning"]])
-		if not hints.is_empty():
-			_hint_lbl.text = t("ui.quiz.hint").format({"h": ", ".join(hints)})
-		elif iq.kind == "infer":
-			_hint_lbl.text = t("ui.quiz.find_piece")
+	if not split:  # 단계 C: 영어 단어만(사용자 의견)
 		return
 	for p in iq.parts:
 		var piece := String(p["piece"]) != ""
@@ -194,7 +185,7 @@ func _show_parts(q: QuizQuestion, reveal: bool) -> void:
 			create_tween().tween_property(card, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK)
 	if reveal:
 		_hint_lbl.text = iq.explain(GameData.repo.get_word(iq.word_id).meaning)
-	elif iq.kind == "infer":
+	else:
 		_hint_lbl.text = t("ui.quiz.infer_hint")
 
 
