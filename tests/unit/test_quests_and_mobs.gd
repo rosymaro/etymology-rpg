@@ -158,17 +158,34 @@ func test_field_magic_cooldown_and_effects() -> void:
 	var far := FieldMob.new()
 	far.pos = Vector2(2000, 0)
 	assert_true(fm.use("de", Vector2.ZERO, [near, far]))
-	assert_gt(near.stun, 0.0, "de-: 가까운 몹이 멈춘다")
-	assert_eq(far.stun, 0.0)
+	assert_true(fm.under, "de-: 땅속에 숨는다")
+	assert_false(fm.can_attack(), "땅속에서는 공격하지 않는다")
+	var eater := FieldMob.new()
+	eater.kind = "eater"
+	assert_false(fm.sees(near) or fm.sees(eater), "땅속이면 어떤 몹도 알아채지 못한다")
 	assert_false(fm.use("de", Vector2.ZERO, [near]), "쉬는 동안은 못 쓴다")
-	fm.tick(float(cfg["de"]["cd"]) + 0.1)
+	fm.tick(600.0)
+	assert_true(fm.under, "시간 제한이 없다")
 	assert_true(fm.ready("de"))
+	fm.surface()
+	assert_false(fm.under, "움직이면 나온다")
+	assert_true(fm.sees(near) and fm.can_attack())
+	near.stun = 1.0
 	var v := near.steer(Vector2.ZERO, 0.1, kinds, rng)
 	assert_eq(v, Vector2.ZERO, "멈춘 몹은 움직이지 않는다")
 	fm.use("ob", Vector2.ZERO, [near])
 	assert_gt((near.get_meta("push") as Vector2).x, 0.0, "ob-: 바깥으로 밀친다")
 	fm.use("sub", Vector2.ZERO, [])
 	assert_gt(fm.sneak, 0.0, "sub-: 몰래 걷기")
+	assert_almost_eq(fm.sneak, 3.3, 0.01, "예전(10초)의 1/3")
+	var seen := 0
+	for at in range(1, 21):
+		var m := FieldMob.new()
+		m.attr = at
+		if fm.sees(m):
+			seen += 1
+	assert_eq(seen, 4, "4속성은 몰래 걷기를 알아챈다")
+	assert_true(fm.sees(eater), "뿌리먹이도 알아챈다")
 	var ch := FieldMob.new()
 	ch.kind = "chase"
 	ch.ignore = true

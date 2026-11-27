@@ -71,6 +71,7 @@ var _lvl_bar: ProgressBar
 var _choosing: Control  ## 레벨업 보기 창
 var _in_town_now := true
 var _spawn_t := 0.0
+var _sink := 0.0  ## de- 땅속 숨기: 0 땅 위 ~ 1 다 들어감(그림자만 남는다)
 var _full_t := 0.0
 # 돌 밀기 퍼즐(07-fun 3·4절)
 var _puz: Array[PushPuzzle] = []
@@ -152,8 +153,8 @@ func _setup_map() -> void:
 	_puz.clear()
 	_spots = []
 	if _cave != "":
-		for i in int(_f.get("cave_enemies", 5)):
-			var ce := _new_enemy()
+		for i in int(_f.get("cave_enemies", 5)):  # 닫힌 곳: 들어갈 때 한 번만
+			var ce := _new_enemy(false)
 			if ce:
 				_enemies.append(ce)
 		for q in map.puzzles:
@@ -543,9 +544,10 @@ func _show_toast(text: String) -> void:
 
 # ----- 적 -----
 
-func _new_enemy() -> FieldMob:
+## offscreen: 보이는 화면 밖에서만(사용자 의견). 동굴에 처음 들어갈 때만 false(좁아서 화면 안에도 둔다).
+func _new_enemy(offscreen := true) -> FieldMob:
 	var near: Array = _f["spawn_near"]
-	var p := map.random_field_spot(GameFlow.cur(), _rng, _hero, float(near[0]), float(near[1]), ENEMY_R)
+	var p := map.random_field_spot(GameFlow.cur(), _rng, _hero, float(near[0]), float(near[1]), ENEMY_R, _view_rect() if offscreen else Rect2())
 	if p == Vector2.INF:
 		return null
 	var m := FieldMob.new()
@@ -565,6 +567,17 @@ func _new_enemy() -> FieldMob:
 	m.max_hp = _run.mob_hp(m.kind)  # 레벨이 올라도 한 방에 죽지 않는다
 	m.hp = m.max_hp
 	return m
+
+
+## 지금 보이는 화면(주인공 둘레 + 카메라 자리). 몹은 이 밖에서만 새로 나온다.
+func _view_rect() -> Rect2:
+	var v := size if size.x > 0.0 else Vector2(720, 1280)
+	return Rect2(_hero - v / 2.0, v).merge(Rect2(_cam, v))
+
+
+## 다시 나오기(잡힘·쓰러짐·멀어짐): 닫힌 곳(동굴·성)에서는 처음 들어갈 때만 나오고 더는 안 나온다(사용자 의견).
+func _respawn() -> FieldMob:
+	return null if _cave != "" else _new_enemy()
 
 
 ## 조우 단어: 그 스테이지 필드 1차, 빈도가 높을수록 자주(01-rpg-base '희귀도'). 다시 잡을 단어가 있으면 섞는다.
@@ -640,6 +653,10 @@ func _step(delta: float) -> void:
 		dir = Vector2.ZERO  # 끌려가는 동안은 못 움직인다
 	if _stick_on:
 		dir = _stick_vec
+	if _fmagic.under and dir.length() > 0.2:  # de-: 움직이면 땅 위로 나온다
+		_fmagic.surface()
+	if _fmagic.under or _sink > 0.0:  # 들어가는 데 0.45초, 나오는 데 0.3초
+		_sink = move_toward(_sink, 1.0 if _fmagic.under else 0.0, delta / (0.45 if _fmagic.under else 0.3))
 	var was_town := map.is_town(_hero)
 	var before := _hero
 	var step: Vector2 = dir * float(_f["hero_speed"]) * _run.speed_mult() * delta
@@ -713,12 +730,12 @@ func _step(delta: float) -> void:
 	var hero_in_town := map.is_town(_hero)
 	for i in _enemies.size():
 		var e := _enemies[i]
-		if e.pos.distance_to(_hero) > float(_f["spawn_far"]) and e.kind != "eater":  # 멀어진 적은 가까이에 다시
-			var ne := _new_enemy()
+		if e.pos.distance_to(_hero) > float(_f["spawn_far"]) and e.kind != "eater" and _cave == "":  # 멀어진 적은 가까이에 다시(화면 밖)
+			var ne := _respawn()
 			if ne:
 				_enemies[i] = ne
 			continue
-		e.ignore = _fmagic.sneak > 0.0 and e.kind != "eater"
+		e.ignore = not _fmagic.sees(e)  # sub-: 몇 속성만 알아챈다 / de-: 아무도 못 알아챈다
 		# 사용자 의견: 마을 안의 주인공, 벽에 가려진 주인공은 몹이 알아채지 못한다
 		if hero_in_town or (e.pos.distance_squared_to(_hero) < 700.0 * 700.0 and not map.clear_line(e.pos, _hero)):
 			e.ignore = true
@@ -749,7 +766,7 @@ func _step(delta: float) -> void:
 				e.pos = ep
 		elif not map.is_town(np) and map.stage_at(np) == GameFlow.cur():
 			e.pos = np
-		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0 and not map.is_town(_hero) \
+		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sees(e) and e.stun <= 0.0 and not map.is_town(_hero) \
 				and not GameData.state.free_roam and not e.hidden:  # 자유 탐험: 몹에 닿아도 단어 전투에 안 들어간다(보스는 그대로)
 			if e.fake:  # 창조의 가짜: 닿으면 펑 사라질 뿐 전투가 없다
 				_puffs.append({"pos": e.pos, "t": 0.0})
@@ -771,6 +788,8 @@ func _step(delta: float) -> void:
 			_near = sp
 	if _near.is_empty():
 		for pz in _puz:
+			if not Rect2i(pz.origin, pz.size).has_point(map.cell(_hero)):
+				continue  # 보물 상자는 퍼즐 안쪽에서만 연다(사용자 의견: 바깥 벽 너머로 집지 않게)
 			for c in pz.chests:
 				var cp := (Vector2(c) + Vector2(0.5, 0.5)) * map.tile
 				if cp.distance_to(_hero) < TOUCH_R:
@@ -939,6 +958,12 @@ func _cast(id: String) -> void:
 			_fmagic.use(id, _hero, [])
 			_leave_cave(map.nearest_exit(_hero))
 		return
+	if id == "de":  # 땅속으로(움직이면 풀린다)
+		_fmagic.use(id, _hero, [])
+		_ropes.clear()
+		_show_toast(t("ui.field.burrow"))
+		queue_redraw()
+		return
 	if id == "com":  # 떨어진 것을 모두 끌어온다
 		for dr in _drops:
 			dr["pos"] = _hero + Vector2.from_angle(_rng.randf() * TAU) * 20.0
@@ -1038,6 +1063,8 @@ func _local_center(c: Control) -> Vector2:
 
 ## 무기: 데리고 다니는 유닛이 저마다 쏜다(마을 안에서도, 성벽 위로). 몹은 주인공에게 온다.
 func _fire(delta: float) -> void:
+	if not _fmagic.can_attack():  # de- 땅속: 일행도 공격하지 않는다
+		return
 	var origins := {}
 	for pal in _pals:
 		origins[_run.weapon_of(int(pal["unit"]))] = pal["pos"]
@@ -1073,7 +1100,7 @@ func _hunt(delta: float) -> void:
 					_show_toast(t("ui.hunt.word").format({"word": dr["v"]}))
 	# 레벨이 오르면 몹이 더 많이 나온다
 	_spawn_t -= delta
-	if _spawn_t <= 0.0 and _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater").size() < _run.mob_count(_base_count()):
+	if _spawn_t <= 0.0 and _cave == "" and _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater").size() < _run.mob_count(_base_count()):
 		_spawn_t = 0.4
 		var ne := _new_enemy()
 		if ne:
@@ -1142,7 +1169,7 @@ func _hit(e: FieldMob, dmg: int, from: Vector2, push := 0.0, stun := 0.0) -> voi
 		if got["word"] != "":
 			_drops.append({"pos": e.pos + Vector2(-14, 6), "kind": "word", "v": got["word"]})
 		var i := _enemies.find(e)
-		var ne := _new_enemy()
+		var ne := _respawn()
 		if ne:
 			_enemies[i] = ne
 		else:
@@ -1161,7 +1188,7 @@ func _trait_requests(e: FieldMob) -> void:
 			_puffs.append({"pos": p, "t": 0.0})
 	if e.want_rope:
 		e.want_rope = false
-		if map.clear_line(e.pos, _hero) and not map.is_town(_hero):
+		if map.clear_line(e.pos, _hero) and not map.is_town(_hero) and _fmagic.sees(e):
 			var rc: Dictionary = e.traits.get("rope", {})
 			_ropes.append({"mob": e, "tip": e.pos, "dir": (_hero - e.pos).normalized(), "left": float(rc.get("range", 460)), "speed": float(rc.get("speed", 900)), "pull": float(rc.get("pull_sec", 0.55))})
 	if e.quirk == "pack" and e.rage <= 0.0:  # 번영: 도망가다 여럿 모이면 한꺼번에
@@ -1184,7 +1211,7 @@ func _tick_ropes(delta: float) -> void:
 		var step := float(r["speed"]) * delta
 		r["tip"] = (r["tip"] as Vector2) + (r["dir"] as Vector2) * step
 		r["left"] = float(r["left"]) - step
-		if (r["tip"] as Vector2).distance_to(_hero) < HERO_R + 10.0 and _shield_safe <= 0.0:
+		if (r["tip"] as Vector2).distance_to(_hero) < HERO_R + 10.0 and _shield_safe <= 0.0 and not _fmagic.under:
 			_pull = {"from": _hero, "to": e.pos + (_hero - e.pos).normalized() * (HERO_R + ENEMY_R - 6.0), "t": 0.0, "dur": float(r["pull"])}
 			_show_toast(t("ui.hunt.rope"))
 			_ropes.remove_at(k)
@@ -1202,7 +1229,7 @@ func _tick_ropes(delta: float) -> void:
 func _caught(e: FieldMob) -> void:
 	var i := _enemies.find(e)
 	if i >= 0:
-		var ne := _new_enemy() if e.kind != "eater" else null
+		var ne := _respawn() if e.kind != "eater" else null
 		if ne:
 			_enemies[i] = ne
 		else:
@@ -1794,7 +1821,11 @@ func _draw() -> void:
 	_draw_weapons(o)  # 마을 안에서 성벽 너머로 쏠 때도 날아가는 모습이 보이게(사용자 의견)
 	for pal in _pals:  # 동행 유닛과 이름
 		var pp: Vector2 = o + pal["pos"]
-		PalArt.draw(self, int(pal["unit"]), pp, _facing, _moving)
+		if _sink > 0.0:
+			_draw_ground_shadow(pp + Vector2(0, PalArt.R * 1.1), 26.0)
+		PalArt.draw(self, int(pal["unit"]), pp, _facing, _moving, _sink)
+		if _sink >= 1.0:
+			continue
 		draw_string(ThemeDB.fallback_font, pp + Vector2(-40, 38), t("name.char." + GameData.UNIT_CHARS[int(pal["unit"]) - 1]), HORIZONTAL_ALIGNMENT_CENTER, 80, 14, UiKit.INK)
 	for e in _enemies:  # 화면 밖 뿌리먹이: 가장자리 빨간 화살표
 		if e.kind == "eater":
@@ -1806,7 +1837,7 @@ func _draw() -> void:
 				draw_colored_polygon(PackedVector2Array([edge + dir * 30, edge + dir.rotated(2.5) * 24, edge + dir.rotated(-2.5) * 24]), UiKit.BAD)
 	# 주인공과 칭호 리본(04-meta.md 5절). 몰래 걷는 동안은 흐리게
 	var h := o + _hero
-	if _shield_max > 0:  # 방어막: 남은 만큼 둥근 막(여러 겹), 깨질 때 번쩍
+	if _shield_max > 0 and _sink < 1.0:  # 방어막: 남은 만큼 둥근 막(여러 겹), 깨질 때 번쩍
 		for k in _shields:
 			draw_arc(h + Vector2(0, -10), HERO_R + 22 + k * 6, 0, TAU, 48, Color(0.55, 0.85, 1.0, 0.55), 3.0, true)
 		if _shields > 0:
@@ -1816,7 +1847,14 @@ func _draw() -> void:
 	if _fmagic and _fmagic.sneak > 0.0:
 		draw_circle(h, HERO_R + 14, Color(UiKit.SKY, 0.35))
 	var look := GameData.state.hero_look  # 사용자가 준 주인공 그림(hero/<m|f>_<동작>_N)
-	var drawn := Art.draw_anim(self, "hero", look, "walk" if _moving else "idle", h + Vector2(0, HERO_R * 1.1), HERO_R * 4.2, _facing.x < 0.0, 5.0)
+	if _sink > 0.0:  # de- 땅속: 바닥으로 가라앉고 그림자만 남는다
+		_draw_ground_shadow(h + Vector2(0, HERO_R * 1.05), 34.0)
+	var drawn := Art.draw_anim(self, "hero", look, "walk" if _moving else "idle", h + Vector2(0, HERO_R * 1.1), HERO_R * 4.2, _facing.x < 0.0, 5.0, Color.WHITE, _sink)
+	if _sink > 0.0 and not drawn and _sink < 0.5:
+		drawn = true
+		draw_circle(h + Vector2(0, HERO_R * _sink * 2.0), HERO_R * (1.0 - _sink), Color("fff3c4"))
+	elif _sink > 0.0 and not drawn:
+		drawn = true
 	if not drawn and not Art.draw(self, "hero", "look0", h + Vector2(0, -12), Vector2(HERO_R * 3.2, HERO_R * 3.6)):
 		draw_circle(h, HERO_R, Color("fff3c4"))
 		draw_arc(h, HERO_R, 0, TAU, 32, UiKit.INK, 4)
@@ -1825,9 +1863,12 @@ func _draw() -> void:
 		draw_circle(h + Vector2(-15, 6), 5, UiKit.PINK)
 		draw_circle(h + Vector2(15, 6), 5, UiKit.PINK)
 	var tag := t("name.title.none")
-	var ty := -100.0 if drawn else -64.0  # 그림이 있으면 머리 위로
-	draw_rect(Rect2(h + Vector2(-60, ty), Vector2(120, 26)), UiKit.PINK)
-	draw_string(font, h + Vector2(-60, ty + 19), tag, HORIZONTAL_ALIGNMENT_CENTER, 120, 18, UiKit.INK)
+	if _sink >= 1.0:
+		tag = ""
+	if tag != "":
+		var ty := -100.0 if drawn else -64.0  # 그림이 있으면 머리 위로
+		draw_rect(Rect2(h + Vector2(-60, ty), Vector2(120, 26)), UiKit.PINK)
+		draw_string(font, h + Vector2(-60, ty + 19), tag, HORIZONTAL_ALIGNMENT_CENTER, 120, 18, UiKit.INK)
 	if map.in_cave(_hero):  # 어두운 동굴: 둘레만 보인다(pro-로 밝힌다)
 		var lr: Array = _f["cave_light"]
 		var rad := float(lr[1]) if _fmagic.light > 0.0 else float(lr[0])
@@ -1849,6 +1890,20 @@ func _draw() -> void:
 	if _stick_on:
 		draw_arc(_stick_base, 90, 0, TAU, 40, Color(UiKit.INK, 0.4), 4)
 		draw_circle(_stick_base + _stick_vec * 90, 28, Color(UiKit.INK, 0.3))
+
+
+## 땅속 숨기(de-)의 그림자: 바닥에 납작한 타원과, 들어가고 나오는 동안 튀는 흙.
+func _draw_ground_shadow(foot: Vector2, rx: float) -> void:
+	draw_set_transform(foot, 0.0, Vector2(1.0, 0.38))
+	draw_circle(Vector2.ZERO, rx, Color(0.12, 0.09, 0.06, 0.38))
+	draw_circle(Vector2.ZERO, rx * 0.62, Color(0.12, 0.09, 0.06, 0.22))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	if _sink < 1.0:
+		var k := _sink
+		for j in 6:
+			var a := TAU * j / 6.0 + 0.4
+			var p := foot + Vector2(cos(a) * rx * (0.7 + 0.5 * k), sin(a) * rx * 0.3 - 10.0 * sin(k * PI))
+			draw_circle(p, 4.0, Color("8b6a45", 0.8 * (1.0 - absf(k - 0.5) * 1.4)))
 
 
 ## 유닛 무기 그리기: 날아가는 것(shots), 도는 것(orbit), 잠깐 효과(fx).

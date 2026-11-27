@@ -52,6 +52,7 @@ ui.menu.party,파티
 ui.menu.save,저장
 ui.menu.saved,저장했어요
 ui.menu.option,옵션
+ui.field.burrow,"de-! 땅속에 숨었어요. 움직이면 나와요"
 ui.field.descend,de-! 일행이 절벽 아래로 천천히 내려가요
 ui.field.enter_stage,"스테이지 {n}: {name}"
 ui.field.board_locked_s02,"발자국 글자 공방은 아직 닫혀 있어요. 초원에서 단어를 {n}개 잡으면 사냥꾼이 알려 줄 거예요."

@@ -300,7 +300,8 @@ func spot(stage: int, id: String) -> Vector2:
 
 
 ## 그 스테이지 들판(마을 아님)에서 near로부터 거리 lo~hi 안의 서 있을 수 있는 자리(못 찾으면 Vector2.INF).
-func random_field_spot(stage: int, rng: RandomNumberGenerator, near: Vector2, lo: float, hi: float, r: float) -> Vector2:
+## avoid: 이 사각형 안(보이는 화면)은 피한다(사용자 의견: 몹은 화면 밖에서만 나온다).
+func random_field_spot(stage: int, rng: RandomNumberGenerator, near: Vector2, lo: float, hi: float, r: float, avoid := Rect2()) -> Vector2:
 	for k in 60:
 		var a := rng.randf() * TAU
 		var p := near + Vector2.from_angle(a) * rng.randf_range(lo, hi)
@@ -308,6 +309,8 @@ func random_field_spot(stage: int, rng: RandomNumberGenerator, near: Vector2, lo
 		if stage_of(c) != stage:
 			continue
 		var snapped := (Vector2(c) + Vector2(0.5, 0.5)) * tile
+		if avoid.has_area() and avoid.grow(r).has_point(snapped):
+			continue
 		if not is_town(snapped) and fits(snapped, r):
 			return snapped
 	return Vector2.INF

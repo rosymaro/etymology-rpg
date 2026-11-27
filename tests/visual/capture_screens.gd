@@ -96,6 +96,17 @@ func _run() -> void:
 	await get_tree().create_timer(0.3).timeout
 	await _shot("04_mob_shapes")
 	fs._enemies.clear()
+	fs._fmagic.under = true  # de- 땅속 숨기: 가라앉는 중 / 그림자만
+	fs._sink = 0.5
+	fs.set_process(false)  # 가라앉는 한가운데를 멈춰 찍는다
+	fs.queue_redraw()
+	await get_tree().process_frame
+	await _shot("04_field_burrowing")
+	fs.set_process(true)
+	await get_tree().create_timer(0.7).timeout
+	await _shot("04_field_burrowed")
+	fs._fmagic.surface()
+	fs._sink = 0.0
 	s.joined = [1, 4] as Array[int]
 	s.loadout.erase("units")
 	fs._spawn_eater()

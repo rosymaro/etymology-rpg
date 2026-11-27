@@ -7,6 +7,7 @@ var cfg: Dictionary
 var cool := {}  ## 마법 id -> 남은 쉬는 시간
 var sneak := 0.0  ## sub-: 남은 몰래 걷기 시간
 var light := 0.0  ## pro-: 남은 앞길 비추기 시간(어두운 동굴)
+var under := false  ## de-: 땅속에 숨음(시간 제한 없음, 움직이면 풀린다. 사용자 의견)
 
 
 func _init(field_magic_cfg: Dictionary) -> void:
@@ -34,10 +35,8 @@ func use(id: String, hero: Vector2, mobs: Array) -> bool:
 		return false
 	var c: Dictionary = cfg[id]
 	match id:
-		"de":  # 둘레 몹을 내리쳐 멈춘다
-			for m in mobs:
-				if (m as FieldMob).pos.distance_to(hero) <= float(c["r"]):
-					(m as FieldMob).stun = float(c["stun"])
+		"de":  # 땅속으로 들어간다: 공격도 못 하고 받지도 않으며, 어떤 몹도 알아채지 못한다
+			under = true
 		"ob":  # 둘레 몹을 멀리 밀친다(벽은 화면이 WorldMap.move로 막는다: 여기서는 갈 곳만 정한다)
 			for m in mobs:
 				var fm := m as FieldMob
@@ -50,3 +49,25 @@ func use(id: String, hero: Vector2, mobs: Array) -> bool:
 			light = float(c["sec"])
 	cool[id] = float(c["cd"])
 	return true
+
+
+## de-: 움직이면 땅 위로 나온다.
+func surface() -> void:
+	under = false
+
+
+## 몹이 주인공을 알아채는가. 땅속(de-)이면 아무도, 몰래 걷기(sub-)면 see_attrs 속성과 뿌리먹이만.
+func sees(m: FieldMob) -> bool:
+	if under:
+		return false
+	if sneak > 0.0 and m.kind != "eater":
+		for a in cfg.get("sub", {}).get("see_attrs", []):  # json 숫자는 float
+			if int(a) == m.attr:
+				return true
+		return false
+	return true
+
+
+## 일행이 공격할 수 있는가(땅속이면 못 한다).
+func can_attack() -> bool:
+	return not under

@@ -136,3 +136,17 @@ func test_field_spot_for_encounters_is_in_the_stage_field() -> void:
 			assert_false(m.is_town(p))
 			assert_true(m.fits(p, 30))
 	assert_gt(got, 10)
+
+
+func test_field_spot_avoids_the_visible_screen() -> void:
+	# 사용자 의견: 몹은 화면 밖에서만 다시 나온다
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var view := Rect2(m.start(1) - Vector2(360, 640), Vector2(720, 1280))
+	var got := 0
+	for k in 30:
+		var p := m.random_field_spot(1, rng, m.start(1), 300, 1500, 30, view)
+		if p != Vector2.INF:
+			got += 1
+			assert_false(view.grow(30).has_point(p))
+	assert_gt(got, 10)
