@@ -454,7 +454,10 @@ func _goal_text() -> String:
 	var book := GameData.quests
 	var q := book.next_quest(s, GameFlow.STAGE)
 	if book.boss_blockers(s, GameFlow.STAGE).is_empty():
-		return t("ui.quest.all_done")  # 보스 앞 퀘스트를 다 마쳤다(마을 아이 같은 곁 퀘스트는 목록에 남는다)
+		# 보스 앞 퀘스트를 다 마쳤다. 곁 퀘스트(마을 아이의 장난감 망치 …)가 남았으면 그것도 알린다(사용자 의견: 다 마쳤다고 하면 헷갈린다)
+		if not q.is_empty():
+			return t("ui.quest.boss_ready_side").format({"title": t("ui.quest.%s.title" % q["id"])})
+		return t("ui.quest.all_done")
 	if q.is_empty():
 		return t("ui.quest.goal_none")
 	if q["kind"] == "words" and not main.flow.seen(String(q["id"]) + "_got"):
