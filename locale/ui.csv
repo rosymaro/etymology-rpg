@@ -300,6 +300,30 @@ ui.field.magic_used,{magic}!
 ui.field.magic_soon,이 마법의 필드 효과는 아직 준비 중이에요
 ui.hunt.hud,"사냥 Lv {lv}  ·  내 코인 {wallet}\n주머니: 구슬 {orbs} · 코인 {coins}/{cap} · 단어 {words}"
 ui.quiz.caught_some,"맞힌 단어 {words}는 싸우지 않고 잡았어요! 틀린 단어 {n}개만 싸워요"
+ui.trait.shield_regen,"방어막 다시 차는 시간 -{v}%"
+ui.trait.extra_orb,"구슬 하나 더 떨어질 확률 {v}%"
+ui.trait.fresh_word,"처음 보는 단어 카드 확률 {v}%"
+ui.trait.knockback,"넉백 +{v}%"
+ui.trait.magnet,"줍는 거리 +{v}%"
+ui.trait.attack,"공격력 +{v}%"
+ui.trait.coin_cap,"주머니 코인 한도 +{v}%"
+ui.trait.word_drop,"단어 카드 나올 확률 +{v}%"
+ui.trait.range,"사정거리 +{v}%"
+ui.trait.cooldown,"공격 간격 -{v}%"
+ui.trait.move,"이동 속도 +{v}%"
+ui.trait.stun,"멈추게 하는 시간 +{v}%"
+ui.trait.slow_aura,"둘레 몹 느리게 {v}%"
+ui.trait.crit,"두 배 피해 확률 {v}%"
+ui.trait.coin_gain,"떨어지는 코인 +{v}%"
+ui.trait.orb_exp,"구슬 하나당 경험치 +{v}%"
+ui.trait.eater_late,"뿌리먹이가 늦게 +{v}%"
+ui.trait.rare_mob,"희귀 몹 확률 +{v}%"
+ui.trait.execute,"약한 몹에게 피해 +{v}"
+ui.trait.keep_bag,"지면 잃는 주머니 -{v}%"
+ui.trait.title,필드 특성(데리고 다니는 유닛의 장비 속성)
+ui.trait.none,아직 없어요. 장비를 걸치면 속성마다 특성이 생겨요
+ui.trait.shields,"방어막 {n}개 (한 유닛이 같은 속성 장비 5개)"
+ui.hunt.shield_block,"방어막이 막았어요! (남은 방어막 {n})"
 ui.hunt.hud_town,내 코인 {wallet}
 ui.hunt.max,MAX
 ui.hunt.level_max,"사냥 레벨이 가장 높아요(MAX). 더는 오르지 않아요"

@@ -134,7 +134,22 @@ func _build_loadout() -> void:
 		names.append(t("name.char." + GameData.UNIT_CHARS[u - 1]))
 	_comp_lbl = UiKit.wrap(UiKit.label(t("ui.party.companions").format({"names": ", ".join(names), "have": names.size(), "n": Loadout.max_companions()}), 20))
 	col.add_child(_comp_lbl)
+	col.add_child(UiKit.label(t("ui.trait.title"), 20, UiKit.ACCENT.darkened(0.3)))
+	col.add_child(UiKit.wrap(UiKit.label(_trait_text(), 18)))
 	_detail.add_child(card)
+
+
+## 필드 특성 목록(데리고 다니는 유닛의 장비 속성, FieldTraits)
+func _trait_text() -> String:
+	var ft := FieldTraits.from_state(GameData.state, GameData.repo, GameData.field_traits)
+	var lines: Array[String] = []
+	for e in ft.summary():
+		var v := float(e["value"])
+		var shown := ("%.1f" % v) if String(e["id"]) == "execute" else str(roundi(v * 100.0))
+		lines.append("%s: %s" % [t("name.attr.%02d" % int(e["attr"])), t("ui.trait." + String(e["id"])).format({"v": shown})])
+	if ft.shields > 0:
+		lines.append(t("ui.trait.shields").format({"n": ft.shields}))
+	return "\n".join(lines) if not lines.is_empty() else t("ui.trait.none")
 
 
 func _choose_magic(kind: String, i: int) -> void:
