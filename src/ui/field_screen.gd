@@ -103,7 +103,7 @@ func open(args: Dictionary) -> void:
 	_f = GameData.field
 	_hc = GameData.hunt_cfg
 	_run = GameData.hunt_run()
-	_run.stage = GameFlow.STAGE
+	_run.stage = GameFlow.cur()
 	_gates = main.flow.open_gates()
 	_fmagic = FieldMagicUse.new(_f["magic"])
 	var s := GameData.state
@@ -114,7 +114,7 @@ func open(args: Dictionary) -> void:
 		map = WorldMap.load_default()
 	_hero = s.pos
 	if _hero == Vector2.ZERO or not map.fits(_hero, HERO_R, _gates):
-		_hero = map.exit_inside(0) if _cave != "" else map.start(GameFlow.STAGE)  # 처음이거나 옛 지도 자리면 마을에서
+		_hero = map.exit_inside(0) if _cave != "" else map.start(GameFlow.cur())  # 처음이거나 옛 지도 자리면 마을에서
 	_setup_map()
 	_in_town_now = map.is_town(_hero)
 	if _in_town_now and int(_run.bag()["orbs"]) + int(_run.bag()["coins"]) + (_run.bag()["words"] as Array).size() > 0:
@@ -159,17 +159,7 @@ func _setup_map() -> void:
 			_puz.append(GameData.puzzles[q["id"]])
 		_sync_blocks()
 		return
-	_spots = [
-		{"id": "forge", "pos": map.spot(1, "forge"), "key": "ui.field.forge", "color": UiKit.APRICOT},
-		{"id": "tree", "pos": map.spot(1, "tree"), "key": "ui.field.tree", "color": UiKit.LEAF},
-		{"id": "board", "pos": map.spot(1, "board"), "key": "ui.field.order", "color": UiKit.PINK},
-		{"id": "hospital", "pos": map.spot(1, "hospital"), "key": "ui.field.hospital", "color": UiKit.BAD},
-		{"id": "notice", "pos": map.spot(1, "notice"), "key": "ui.field.notice", "color": UiKit.SKY},
-		{"id": "gacha", "pos": map.spot(1, "gacha"), "key": "ui.field.gacha", "color": Color("f6a5c0")},
-		{"id": "kid", "pos": map.spot(1, "kid"), "key": "ui.field.kid", "color": Color("ffe3c4")},
-		{"id": "steward", "pos": map.spot(1, "steward"), "key": "ui.field.steward", "color": Color("6f7fb8")},
-		{"id": "boss", "pos": map.spot(1, "boss"), "key": "ui.field.boss", "color": UiKit.GRAY},
-	]
+	_spots = _all_spots()
 	for i in int(_f["enemy_count"]):
 		var e := _new_enemy()
 		if e:
@@ -238,6 +228,49 @@ func _tick_shields(delta: float) -> void:
 		if _shield_t[k] <= 0.0:
 			_shield_t.remove_at(k)
 			_shields = mini(_shields + 1, _shield_max)
+
+
+## 갈 수 있는 스테이지(1~MAX_STAGE) 마을·보스의 자리(지도 spots). 이름 글은 ui.field.<id>_sNN이 있으면 그것(스테이지마다 다른 이름).
+const SPOT_LOOK := {"forge": ["ui.field.forge", "f8d9c0"], "tree": ["ui.field.tree", "cfe9c4"], "board": ["ui.field.order", "f6d3dc"],
+	"hospital": ["ui.field.hospital", "e07a7a"], "notice": ["ui.field.notice", "cfe8f3"], "gacha": ["ui.field.gacha", "f6a5c0"],
+	"kid": ["ui.field.kid", "ffe3c4"], "steward": ["ui.field.steward", "6f7fb8"], "boss": ["ui.field.boss", "c9c4cf"],
+	"hunter": ["ui.field.hunter", "c98a4b"], "merchant": ["ui.field.merchant", "e7a35a"]}
+
+
+func _all_spots() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for st in range(1, GameFlow.MAX_STAGE + 1):
+		var spots: Dictionary = map.region(st).get("spots", {})
+		for id in spots:
+			var look: Array = SPOT_LOOK.get(id, ["ui.field." + str(id), "fff4dc"])
+			var key := "%s_%s" % [look[0], GameFlow.sid(st)]
+			out.append({"id": String(id), "pos": map.spot(st, String(id)), "key": key if t(key) != key else String(look[0]),
+				"color": Color(String(look[1])), "stage": st})
+	return out
+
+
+## 구역을 넘었다(스테이지 문을 지나): 지금 스테이지를 바꾸고 몹·사냥 수치·위치 카드를 그 스테이지로. 처음이면 그 스테이지 첫 장면.
+func _check_stage() -> void:
+	if map.is_cave:
+		return
+	var st := map.stage_at(_hero)
+	if st < 1 or st > GameFlow.MAX_STAGE or st == GameData.state.cur_stage:
+		return
+	GameData.state.cur_stage = st
+	_run.stage = st
+	_refresh_traits(false)
+	_enemies = _enemies.filter(func(e: FieldMob) -> bool: return map.stage_at(e.pos) == st)
+	_drops.clear()
+	_update_top()
+	_map_tex = null
+	_mini.queue_redraw()
+	_remember()
+	GameData.save()
+	_show_toast(t("ui.field.enter_stage").format({"n": st, "name": t("name.stage." + GameFlow.sid(st))}))
+	_busy = true
+	_stick_on = false
+	if not main.flow.enter_stage(st, func() -> void: _busy = false):
+		_busy = false
 
 
 func _pal_units() -> Array[int]:
@@ -436,13 +469,13 @@ func _menu_btn(text: String, icon_name: String, f: Callable, bg: Color) -> Butto
 
 
 func _update_top() -> void:
-	var g := GameData.rules.boss_gate(GameData.state, GameFlow.STAGE)
+	var g := GameData.rules.boss_gate(GameData.state, GameFlow.cur())
 	var by := {}  # 사용자 의견: 필드·마을에서 각각 얼마나 모았는지(얼마 남았는지 알게)
 	for where in ["field", "town"]:
-		var ws := GameData.repo.first_tier(GameFlow.STAGE, where)
+		var ws := GameData.repo.first_tier(GameFlow.cur(), where)
 		by[where] = [ws.filter(func(w: WordData) -> bool: return GameData.state.has_word(w.id)).size(), ws.size()]
-	_top.text = t("ui.field.top").format({"stage": t("name.stage.s01"), "have": g["have"],
-		"total": GameData.repo.first_tier(GameFlow.STAGE).size(), "need": g["need"],
+	_top.text = t("ui.field.top").format({"stage": t("name.stage." + GameFlow.sid()), "have": g["have"],
+		"total": GameData.repo.first_tier(GameFlow.cur()).size(), "need": g["need"],
 		"fh": by["field"][0], "ft": by["field"][1], "th": by["town"][0], "tt": by["town"][1],
 		"title": t("ui.dev.free_badge") if GameData.state.free_roam else (t("ui.dev.badge") if GameData.state.dev_mode else t("name.title.none"))})
 	_goal.text = t("ui.field.goal").format({"title": _goal_text()})
@@ -452,12 +485,12 @@ func _update_top() -> void:
 func _goal_text() -> String:
 	var s := GameData.state
 	var book := GameData.quests
-	var q := book.next_quest(s, GameFlow.STAGE)
-	if main.flow.seen("boss_s01"):  # 보스를 물리친 뒤(사용자 의견: 그 뒤 할 일을 알려 주고, 보스에 가라는 말은 그만)
+	var q := book.next_quest(s, GameFlow.cur())
+	if main.flow.seen("boss_" + GameFlow.sid()):  # 보스를 물리친 뒤(사용자 의견: 그 뒤 할 일을 알려 주고, 보스에 가라는 말은 그만)
 		if not q.is_empty():
 			return t("ui.quest.cleared_side").format({"title": t("ui.quest.%s.title" % q["id"])})
 		return t("ui.quest.cleared")
-	if book.boss_blockers(s, GameFlow.STAGE).is_empty():
+	if book.boss_blockers(s, GameFlow.cur()).is_empty():
 		# 보스 앞 퀘스트를 다 마쳤다. 곁 퀘스트(마을 아이의 장난감 망치 …)가 남았으면 그것도 알린다(사용자 의견: 다 마쳤다고 하면 헷갈린다)
 		if not q.is_empty():
 			return t("ui.quest.boss_ready_side").format({"title": t("ui.quest.%s.title" % q["id"])})
@@ -472,7 +505,7 @@ func _goal_text() -> String:
 ## 할 일을 눌렀을 때: 단어 모으기 퀘스트면 모은 수와 남은 단어, 아니면 이 스테이지 단어 수.
 func _goal_progress() -> String:
 	var s := GameData.state
-	var q := GameData.quests.next_quest(s, GameFlow.STAGE)
+	var q := GameData.quests.next_quest(s, GameFlow.cur())
 	if not q.is_empty() and (String(q["kind"]) != "words" or main.flow.seen(String(q["id"]) + "_got")):
 		var pr := GameData.quests.progress(s, q, GameData.rules.owned_roots(s))
 		var line := t("ui.quest.tap_progress").format({"title": t("ui.quest.%s.title" % q["id"]), "have": pr["have"], "need": pr["need"]})
@@ -484,7 +517,7 @@ func _goal_progress() -> String:
 			if not left.is_empty():
 				line += "\n" + t("ui.quest.tap_left").format({"words": ", ".join(left)})
 		return line
-	var g := GameData.rules.boss_gate(s, GameFlow.STAGE)
+	var g := GameData.rules.boss_gate(s, GameFlow.cur())
 	return t("ui.quest.tap_stage").format(g)
 
 
@@ -509,7 +542,7 @@ func _show_toast(text: String) -> void:
 
 func _new_enemy() -> FieldMob:
 	var near: Array = _f["spawn_near"]
-	var p := map.random_field_spot(GameFlow.STAGE, _rng, _hero, float(near[0]), float(near[1]), ENEMY_R)
+	var p := map.random_field_spot(GameFlow.cur(), _rng, _hero, float(near[0]), float(near[1]), ENEMY_R)
 	if p == Vector2.INF:
 		return null
 	var m := FieldMob.new()
@@ -533,9 +566,9 @@ func _new_enemy() -> FieldMob:
 ## 조우 단어: 그 스테이지 필드 1차, 빈도가 높을수록 자주(01-rpg-base '희귀도'). 다시 잡을 단어가 있으면 섞는다.
 ## rare(도망가는 몹)면 거꾸로 드문 단어일수록 자주.
 func _pick_words(rare := false) -> Array[String]:
-	var pool := GameData.repo.first_tier(GameFlow.STAGE, "field")
+	var pool := GameData.repo.first_tier(GameFlow.cur(), "field")
 	if _rng.randf() < float(GameData.learning["learned_mix"]):  # 유추 연습: 배운 조각이 든 단어를 절반쯤(06-learning.md 5절)
-		var lp := pool.filter(func(w: WordData) -> bool: return GameData.curriculum.has_learned(w, GameFlow.STAGE))
+		var lp := pool.filter(func(w: WordData) -> bool: return GameData.curriculum.has_learned(w, GameFlow.cur()))
 		if lp.size() >= GameData.rules.team_size(GameData.state):
 			pool.assign(lp)
 	var n := GameData.rules.team_size(GameData.state)
@@ -630,8 +663,9 @@ func _step(delta: float) -> void:
 		var vp: Vector2 = map.move(v.pos, vv * delta, ENEMY_R)
 		if map.is_town(vp):
 			v.pos = vp
-	if was_town and not map.is_town(_hero) and map.stage_at(_hero) == GameFlow.STAGE:
+	if was_town and not map.is_town(_hero) and map.stage_at(_hero) == GameFlow.cur():
 		main.flow.entered_field()
+	_check_stage()
 	_town_edge()
 	# 닫힌 스테이지 문에 막히면 알려 준다
 	_gate_t -= delta
@@ -685,7 +719,7 @@ func _step(delta: float) -> void:
 			var ep := np if np != e.pos else map.move(e.pos, v.rotated(0.8) * delta, ENEMY_R)
 			if not map.is_town(ep):
 				e.pos = ep
-		elif not map.is_town(np) and map.stage_at(np) == GameFlow.STAGE:
+		elif not map.is_town(np) and map.stage_at(np) == GameFlow.cur():
 			e.pos = np
 		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0 and not map.is_town(_hero) \
 				and not GameData.state.free_roam:  # 자유 탐험: 몹에 닿아도 단어 전투에 안 들어간다(보스는 그대로)
@@ -777,15 +811,17 @@ func _act() -> void:
 			main.flow.notice_board(_quest_done)
 		"boss":
 			main.flow.boss_gate()
+		"hunter", "merchant":  # 스테이지 2 마을 사람(사냥꾼·상인)
+			main.notice(t("ui.npc.%s_%s" % [GameFlow.sid(int(_near.get("stage", 1))), _near["id"]]))
 
 
 ## 알림판 퀘스트가 열렸는데 아직 받지 않았거나, 단어를 다 모아 마칠 수 있을 때.
 func _board_calls() -> bool:
 	var s := GameData.state
-	var q := GameData.quests.get_quest("s01_q_word")
+	var q := GameData.quests.get_quest(String(GameFlow.stage_cfg().get("board", "s01_q_word")))
 	if q.is_empty() or not GameData.quests.visible(s, q) or GameData.quests.done(s, q["id"]):
 		return false
-	return not main.flow.seen("s01_q_word_got") or GameData.quests.progress(s, q, [])["ready"]
+	return not main.flow.seen(String(q["id"]) + "_got") or GameData.quests.progress(s, q, [])["ready"]
 
 
 ## 퀘스트를 마치면(장면이 끝나면) 길목을 다시 읽는다.
@@ -888,6 +924,9 @@ func _town_edge() -> void:
 	_in_town_now = now
 	if now:
 		var got := _run.bank(GameData.state, GameData.rules)
+		if main.flow.enter_town(func() -> void: _busy = false):  # 그 스테이지 마을에 처음 들어섰을 때 이야기
+			_busy = true
+			_stick_on = false
 		_uw.clear()
 		_drops.clear()
 		if int(got["orbs"]) + int(got["coins"]) + (got["words"] as Array).size() + int(got["free_pulls"]) > 0:
@@ -1082,12 +1121,12 @@ func _spawn_eater() -> void:
 	m.kind = "eater"
 	m.max_hp = int(_hc["mob_hp"]["eater"])
 	m.hp = m.max_hp
-	var p := map.random_field_spot(GameFlow.STAGE, _rng, _hero, 800, 1100, ENEMY_R)
+	var p := map.random_field_spot(GameFlow.cur(), _rng, _hero, 800, 1100, ENEMY_R)
 	if p == Vector2.INF:
 		_run.d["eaters"] = maxi(0, int(_run.d["eaters"]) - 1)  # 설 자리가 없으면 다음에 다시
 		return
 	m.pos = p
-	var pool := GameData.repo.first_tier(GameFlow.STAGE, "field").filter(func(w: WordData) -> bool: return GameData.curriculum.has_learned(w, GameFlow.STAGE))
+	var pool := GameData.repo.first_tier(GameFlow.cur(), "field").filter(func(w: WordData) -> bool: return GameData.curriculum.has_learned(w, GameFlow.cur()))
 	for k in int(_hc["eater"]["words"]):
 		if not pool.is_empty():
 			m.words.append((pool[_rng.randi_range(0, pool.size() - 1)] as WordData).id)
@@ -1454,19 +1493,19 @@ static func _mmss(sec: int) -> String:
 
 ## 마을 안 아무 서 있을 수 있는 자리(마을 사람).
 func _town_spot() -> Vector2:
-	var t: Array = map.region(GameFlow.STAGE)["town"]
+	var t: Array = map.region(GameFlow.cur())["town"]
 	for k in 80:
 		var c := Vector2i(int(t[0]) + _rng.randi_range(1, int(t[2]) - 2), int(t[1]) + _rng.randi_range(1, int(t[3]) - 2))
 		var p := (Vector2(c) + Vector2(0.5, 0.5)) * map.tile
 		if map.is_town(p) and map.fits(p, ENEMY_R):
 			return p
-	return map.start(GameFlow.STAGE)
+	return map.start(GameFlow.cur())
 
 
 func _go_home() -> void:
 	if _cave != "":
 		_switch_map("", 0)
-	_hero = map.start(GameFlow.STAGE)
+	_hero = map.start(GameFlow.cur())
 	_stick_on = false
 	_remember()
 	_show_toast(t("ui.field.home_done"))
@@ -1498,7 +1537,7 @@ func _open_quests() -> void:
 	card.add_child(v)
 	v.add_child(UiKit.label(t("ui.quest.list_title"), 30, UiKit.ACCENT.darkened(0.3)))
 	var roots := GameData.rules.owned_roots(GameData.state)
-	var shown := GameData.quests.shown(GameData.state, GameFlow.STAGE)
+	var shown := GameData.quests.shown(GameData.state, GameFlow.cur())
 	if shown.is_empty():
 		var none := UiKit.label(t("ui.quest.none"), 22, UiKit.INK.lightened(0.2))
 		none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1588,6 +1627,17 @@ func _draw() -> void:
 					and (not main.flow.seen("s01_q_castle_got") or "form_stamp" in GameData.state.items):
 				draw_string(font, p + Vector2(-10, -40), "!", HORIZONTAL_ALIGNMENT_CENTER, 20, 30 + 4 * sin(Time.get_ticks_msec() / 200.0), UiKit.BAD)
 			continue
+		if sp["id"] in ["hunter", "merchant"]:  # 스테이지 2 마을 사람: 사냥꾼(갈색 옷, 모자), 상인(주황 옷)
+			draw_circle(p + Vector2(0, 14), 18, Color("8a5a34") if sp["id"] == "hunter" else Color("e7a35a"))
+			draw_circle(p - Vector2(0, 10), 16, Color("ffe3c4"))
+			draw_arc(p - Vector2(0, 10), 16, 0, TAU, 24, UiKit.INK, 2)
+			draw_circle(p + Vector2(-5, -12), 2, UiKit.INK)
+			draw_circle(p + Vector2(5, -12), 2, UiKit.INK)
+			if sp["id"] == "hunter":
+				draw_rect(Rect2(p + Vector2(-17, -30), Vector2(34, 7)), Color("5c3a24"))
+				draw_rect(Rect2(p + Vector2(-10, -38), Vector2(20, 9)), Color("5c3a24"))
+			draw_string(font, p + Vector2(-80, 50), t(sp["key"]), HORIZONTAL_ALIGNMENT_CENTER, 160, 20, UiKit.INK)
+			continue
 		if sp["id"] == "kid":  # 마을 아이(작은 마을 사람)
 			draw_circle(p + Vector2(0, 10), 13, Color("9fd8c8"))
 			draw_circle(p - Vector2(0, 8), 12, Color("ffe3c4"))
@@ -1599,10 +1649,10 @@ func _draw() -> void:
 		if sp["id"] in BUILDING_ROOF:  # 건물이 있는 시설: 문 앞에 이름만
 			if sp["id"] == "hospital" or sp["id"] == "forge" or sp["id"] == "board" or sp["id"] == "tree":
 				continue
-		if sp["id"] == "boss" and main.flow.seen("boss_s01"):
+		if sp["id"] == "boss" and main.flow.seen("boss_" + GameFlow.sid(int(sp.get("stage", 1)))):
 			col = UiKit.LEAF
-		var art_id: String = "boss_gate_open" if sp["id"] == "boss" and main.flow.seen("boss_s01") else str(sp["id"])
-		var baked: bool = _mv != null and _mv.painter.painted and sp["id"] in ["notice", "gacha"]  # 그린 배경에 알림판·뽑기 구슬이 있다
+		var art_id: String = "boss_gate_open" if sp["id"] == "boss" and main.flow.seen("boss_" + GameFlow.sid(int(sp.get("stage", 1)))) else str(sp["id"])
+		var baked: bool = _mv != null and _mv.painter.painted and sp["id"] in ["notice", "gacha"] and int(sp.get("stage", 1)) <= 2  # 그린 배경에 알림판·뽑기 구슬이 있다
 		if not baked and not Art.draw(self, "building", art_id, p, Vector2(160, 160)):
 			draw_circle(p, 54, col)
 			draw_arc(p, 54, 0, TAU, 40, UiKit.INK, 4)
@@ -1773,7 +1823,7 @@ func _pal_pos(unit: int) -> Vector2:
 func _draw_buildings(o: Vector2) -> void:
 	var ts := float(map.tile)
 	var font := ThemeDB.fallback_font
-	for b in map.region(GameFlow.STAGE).get("buildings", []):
+	for b in map.region(GameFlow.cur()).get("buildings", []):
 		var rc: Array = b["rect"]
 		var r := Rect2(o + Vector2(float(rc[0]), float(rc[1])) * ts, Vector2(float(rc[2]), float(rc[3])) * ts)
 		if not r.grow(200).intersects(Rect2(Vector2.ZERO, size)):
@@ -1789,7 +1839,8 @@ func _draw_buildings(o: Vector2) -> void:
 				draw_circle(ch0 + Vector2(9 + sin(ph * 6.0) * 6, -ph * 70), 8 + ph * 8, Color(0.9, 0.9, 0.9, 0.7 * (1.0 - ph)))
 		var key: String = {"forge": "ui.field.forge", "board": "ui.field.order", "hospital": "ui.field.hospital"}.get(id, "")
 		if key != "":
-			var label := t(key)
+			var sk := "%s_%s" % [key, GameFlow.sid(maxi(1, map.stage_at(r.get_center() - o)))]  # 스테이지마다 다른 이름(스테이지 2: 발자국 글자, 약초 오두막)
+			var label := t(sk) if t(sk) != sk else t(key)
 			var tw := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x + 20
 			var lp := Vector2(r.get_center().x - tw / 2, r.end.y - r.size.y * 0.15 - 30)
 			draw_rect(Rect2(lp, Vector2(tw, 30)), Color("fff4dc"))
@@ -2031,7 +2082,7 @@ func _draw_region_labels(o: Vector2) -> void:
 		var p := o + Vector2(float(tw[0]) * ts, float(tw[1]) * ts) + Vector2(16, 40)
 		if Rect2(p - Vector2(0, 40), Vector2(600, 60)).intersects(Rect2(Vector2.ZERO, size)):
 			draw_string(font, p, t("name.stage.s%02d" % int(rg["stage"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, UiKit.INK)
-		if int(rg["stage"]) != GameFlow.STAGE:  # 다른 지역의 보스 자리(아직 열리지 않은 곳)
+		if int(rg["stage"]) != GameFlow.cur():  # 다른 지역의 보스 자리(아직 열리지 않은 곳)
 			var bp: Array = rg["spots"]["boss"]
 			var q := o + Vector2(float(bp[0]), float(bp[1]))
 			if Rect2(Vector2(-80, -80), size + Vector2(160, 160)).has_point(q):
@@ -2122,7 +2173,7 @@ func _draw_marks(c: Control, k: float, names: bool) -> void:
 	var font := ThemeDB.fallback_font
 	for rg in map.regions:
 		var bp: Array = rg["spots"]["boss"]
-		c.draw_circle(Vector2(float(bp[0]), float(bp[1])) / ts * k, maxf(2.0, k * 1.4), UiKit.BAD if int(rg["stage"]) == GameFlow.STAGE else UiKit.GRAY.darkened(0.3))
+		c.draw_circle(Vector2(float(bp[0]), float(bp[1])) / ts * k, maxf(2.0, k * 1.4), UiKit.BAD if int(rg["stage"]) == GameFlow.cur() else UiKit.GRAY.darkened(0.3))
 		if names:
 			var sp: Array = rg["start"]
 			var p := Vector2(float(sp[0]), float(sp[1])) / ts * k
@@ -2141,7 +2192,7 @@ func _draw_marks(c: Control, k: float, names: bool) -> void:
 func _quest_caves() -> Array[Vector2]:
 	var out: Array[Vector2] = []
 	var s := GameData.state
-	for q in GameData.quests.shown(s, GameFlow.STAGE):
+	for q in GameData.quests.shown(s, GameFlow.cur()):
 		if String(q["kind"]) != "item" or GameData.quests.done(s, q["id"]) or String(q["item"]) in s.items:
 			continue
 		if q.has("giver") and not main.flow.seen(String(q["id"]) + "_got"):

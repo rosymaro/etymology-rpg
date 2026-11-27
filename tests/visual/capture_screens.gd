@@ -98,6 +98,15 @@ func _run() -> void:
 	s.pos = wm.start(1)
 	main.flow.go_field()
 	await _shot("05_town_plaza")
+	s.flags["boss_s01"] = true  # 스테이지 2 사냥꾼 마을(문이 열린 뒤)
+	s.flags["s02_ki"] = true
+	s.flags["s02_town_market"] = true
+	s.cur_stage = 2
+	s.pos = wm.start(2)
+	main.flow.go_field()
+	await _shot("05_stage2_town")
+	s.flags.erase("boss_s01")
+	s.cur_stage = 1
 	s.pos = wm.spot(1, "hospital")
 	s.rest_until = int(Time.get_unix_time_from_system()) + 151
 	main.flow.go_field()
