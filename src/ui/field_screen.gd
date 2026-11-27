@@ -782,20 +782,20 @@ func _board_calls() -> bool:
 
 
 ## 퀘스트를 마치면(장면이 끝나면) 길목을 다시 읽는다.
-## 절벽 길목 건너편(북쪽, 낮은 땅)으로 일행이 천천히 내려앉는다.
+## 절벽 길목 건너편(남쪽, 보스가 있는 낮은 땅)으로 일행이 천천히 내려앉는다(사용자 의견: 위에서 아래로 내려가게).
 func _start_descend(qg_id: String) -> void:
 	for qg in map.quest_gates:
 		if qg["id"] != qg_id:
 			continue
-		var top := 1 << 30
+		var bottom := -1
 		for c in qg["tiles"]:
 			if absf((float(c[0]) + 0.5) * map.tile - _hero.x) < map.tile * 3:
-				top = mini(top, int(c[1]))
-		if top == 1 << 30:
+				bottom = maxi(bottom, int(c[1]))
+		if bottom < 0:
 			return
-		var to := Vector2(_hero.x, (top - 1 + 0.5) * map.tile)
-		if to.y >= _hero.y:
-			return  # 이미 아래쪽(북쪽)에 있다
+		var to := Vector2(_hero.x, (bottom + 1 + 0.5) * map.tile)
+		if to.y <= _hero.y:
+			return  # 이미 아래쪽(남쪽)에 있다
 		_descend = {"a": _hero, "b": to, "t": 0.0}
 		_busy = true
 		_show_toast(t("ui.field.descend"))
@@ -810,10 +810,10 @@ func _tick_descend(delta: float) -> void:
 	var e := k * k * (3.0 - 2.0 * k)
 	_hero = (_descend["a"] as Vector2).lerp(_descend["b"], e)
 	_moving = k < 1.0
-	_facing = Vector2.UP
+	_facing = Vector2.DOWN
 	for i in _pals.size():  # 동행도 뒤따라 내려간다(조금씩 늦게)
 		var kk := clampf(k * 1.15 - 0.12 * (i + 1), 0.0, 1.0)
-		_pals[i]["pos"] = (_descend["a"] as Vector2).lerp(_descend["b"], kk * kk * (3.0 - 2.0 * kk)) + Vector2(-30 + 30 * i, 30)
+		_pals[i]["pos"] = (_descend["a"] as Vector2).lerp(_descend["b"], kk * kk * (3.0 - 2.0 * kk)) + Vector2(-30 + 30 * i, -30)
 	_follow_cam()
 	queue_redraw()
 	if k >= 1.0:

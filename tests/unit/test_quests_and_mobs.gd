@@ -291,7 +291,12 @@ func test_unaware_mobs_do_not_chase_and_eater_waits() -> void:
 func test_weapons_fly_over_town_wall_but_mobs_cannot_see_through_it() -> void:
 	var m := WorldMap.load_default()
 	var t: Array = m.region(1)["town"]
-	var wall := Vector2i(int(t[0]) + 8, int(t[1]) + int(t[3]) - 1)  # 남쪽 성벽
+	var wall := Vector2i(-1, -1)
+	for x in range(int(t[0]) + 2, int(t[0]) + int(t[2]) - 2):  # 남쪽 성벽 가운데 성문이 아닌 곳(길이 바뀌면 성문 자리도 바뀐다)
+		var c := Vector2i(x, int(t[1]) + int(t[3]) - 1)
+		if m.ch(c) == "M" and m.ch(c + Vector2i(-1, 0)) == "M" and m.ch(c + Vector2i(1, 0)) == "M":
+			wall = c
+			break
 	assert_eq(m.ch(wall), "M")
 	var inside := (Vector2(wall) + Vector2(0.5, -1.5)) * m.tile
 	var outside := (Vector2(wall) + Vector2(0.5, 2.5)) * m.tile
