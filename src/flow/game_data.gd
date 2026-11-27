@@ -15,6 +15,7 @@ var curriculum: Curriculum
 var learning: Dictionary = {}  ## data/balance/learning.json
 var hunt_cfg: Dictionary = {}  ## data/balance/field_hunt.json
 var field_traits: Dictionary = {}  ## data/balance/field_traits.json(필드 특성)
+var mob_attrs: Dictionary = {}  ## data/balance/mob_attrs.json(속성마다 몹 행동·모양)
 var field: Dictionary = {}  ## data/balance/field.json
 var state: GameState
 var save_prefix := "user://"  ## 테스트는 다른 앞머리를 써서 진짜 저장을 건드리지 않는다
@@ -44,6 +45,7 @@ func _ready() -> void:
 	learning = JsonFile.read("res://data/balance/learning.json")
 	hunt_cfg = JsonFile.read("res://data/balance/field_hunt.json")
 	field_traits = JsonFile.read(FieldTraits.PATH)
+	mob_attrs = JsonFile.read("res://data/balance/mob_attrs.json")
 	field = JsonFile.read("res://data/balance/field.json")
 	TranslationServer.set_locale("ko")
 

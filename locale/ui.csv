@@ -355,6 +355,9 @@ ui.trait.keep_bag,"지면 잃는 주머니 -{v}%"
 ui.trait.title,필드 특성(데리고 다니는 유닛의 장비 속성)
 ui.trait.none,아직 없어요. 장비를 걸치면 속성마다 특성이 생겨요
 ui.trait.shields,"방어막 {n}개 (한 유닛이 같은 속성 장비 5개)"
+ui.hunt.fake,가짜였어요! 펑 사라졌어요
+ui.hunt.rope,밧줄에 걸려 끌려가요!
+ui.hunt.caller,같은 무늬 몹들이 한꺼번에 달려와요!
 ui.hunt.shield_block,"방어막이 막았어요! (남은 방어막 {n})"
 ui.hunt.hud_town,내 코인 {wallet}
 ui.hunt.max,MAX

@@ -42,6 +42,7 @@ func base_exp(w: WordData) -> int:
 func gain_word(state: GameState, id: String) -> Dictionary:
 	var w := repo.get_word(id)
 	var is_new := not state.has_word(id)
+	state.caught[id] = int(state.caught.get(id, 0)) + 1
 	var roots_before := owned_roots(state)
 	if is_new:
 		for r in w.skill_roots:

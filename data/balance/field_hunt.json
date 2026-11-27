@@ -1,6 +1,6 @@
 {
   "_doc": "필드 사냥(07-fun.md 1절). 폰에서 손맛을 보며 고친다",
-  "mob_hp": { "wander": 4, "chase": 5, "flee": 3, "rush": 4, "eater": 90 },
+  "mob_hp": { "wander": 4, "chase": 5, "flee": 3, "rush": 4, "eater": 90, "still": 5, "stalk": 4, "bounce": 4, "burst": 4, "zigzag": 4, "orbit": 4, "march": 5 },
   "mob_hp_per_level": 1.0,
   "mob_hp_party": [0.65, 1.0, 2.0],
   "_mob_hp_party_doc": "동행 1·2·3명일 때 몹 체력 배율(hunt_sim.gd로 맞춘다: 다가오는 몹의 80%쯤을 막고 20%쯤 뚫리게)",
@@ -16,6 +16,8 @@
   "coin": { "chance": 0.35, "min": 1, "max": 3 },
   "word_chance": 0.05,
   "boss_short_fresh": 0.75,
+  "caught_decay": { "cap": 10, "floor": 0.15 },
+  "_caught_decay_doc": "몹 단어가 나올 무게: 잡은 횟수만큼 줄어 cap번 이상이면 처음의 floor배로 고정(사용자 의견: 많이 잡은 단어는 덜, 그래도 복습은 되게)",
   "free_pull_every": 5,
   "_free_pull_doc": "마을에 들어올 때 사냥 레벨 이만큼마다 무료 뽑기 1번(사용자 의견: 5를 넘지 않으면 없다. 코인이 들지 않는다)",
   "_boss_short_fresh_doc": "보스 앞에서 단어가 모자라다는 말을 들은 뒤(그 스테이지), 몹 단어를 처음 보는 단어에서만 고를 확률(사용자 의견)",

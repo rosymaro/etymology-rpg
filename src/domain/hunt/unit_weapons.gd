@@ -64,7 +64,7 @@ func targets(o: Vector2, hero: Vector2, range_px: float, enemies: Array, map: Wo
 	var out: Array[FieldMob] = []
 	for e in enemies:
 		var m := e as FieldMob
-		if m.pos.distance_to(o) <= range_px and m.pos.distance_to(hero) > no_fire_near and map.shot_line(o, m.pos):
+		if not m.hidden and m.pos.distance_to(o) <= range_px and m.pos.distance_to(hero) > no_fire_near and map.shot_line(o, m.pos):
 			out.append(m)
 	out.sort_custom(func(a: FieldMob, b: FieldMob) -> bool: return a.pos.distance_to(o) < b.pos.distance_to(o))
 	return out

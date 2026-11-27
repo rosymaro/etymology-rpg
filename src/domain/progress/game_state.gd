@@ -11,6 +11,7 @@ var hero_look := "m"  ## 주인공 모습: m(남) / f(여). 이름 짓는 화면
 var stage := 1  ## 열린 가장 높은 스테이지
 var cur_stage := 1  ## 지금 있는 스테이지(주인공이 있는 구역). 필드가 구역을 넘을 때 바꾼다
 var dex: Dictionary = {}  ## 단어 id -> 얻은 순서 번호(1부터). 한 번 얻으면 줄지 않는다(04-meta.md 5절)
+var caught: Dictionary = {}  ## 단어 id -> 잡은 횟수(많이 잡은 단어는 몹에게 덜 나온다, 사용자 의견)
 var unit_exp: Array[int] = []
 var joined: Array[int] = [1]  ## 합류한 유닛 번호
 var equipment: Dictionary = {}  ## 유닛 번호(int) -> Equipment
@@ -60,7 +61,7 @@ func to_dict() -> Dictionary:
 	for u in equipment:
 		eqs[str(u)] = equipment[u].to_dict()
 	return {
-		"version": VERSION, "hero_name": hero_name, "cur_stage": cur_stage, "hero_look": hero_look, "stage": stage, "dex": dex, "unit_exp": unit_exp,
+		"version": VERSION, "hero_name": hero_name, "caught": caught, "cur_stage": cur_stage, "hero_look": hero_look, "stage": stage, "dex": dex, "unit_exp": unit_exp,
 		"joined": joined, "equipment": eqs, "magics": magics, "chosen_roots": _str_keys(chosen_roots),
 		"flags": flags, "recapture": recapture, "place": place, "pos": [pos.x, pos.y], "cave": cave,
 		"titles": titles, "exam_fail_date": exam_fail_date, "dev_mode": dev_mode, "free_roam": free_roam,
@@ -72,6 +73,7 @@ func to_dict() -> Dictionary:
 static func from_dict(d: Dictionary) -> GameState:
 	var g := GameState.new()
 	g.hero_name = d.get("hero_name", "")
+	g.caught = d.get("caught", {})
 	g.hero_look = String(d.get("hero_look", "m"))
 	g.stage = int(d.get("stage", 1))
 	g.cur_stage = int(d.get("cur_stage", 1))
