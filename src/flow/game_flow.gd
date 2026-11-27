@@ -225,7 +225,7 @@ func quest_gate(gate: String, done: Callable) -> String:
 		return TranslationServer.translate("ui.quest.%s.locked" % q["id"])
 	var roots := GameData.rules.owned_roots(GameData.state)
 	if not GameData.quests.finish(GameData.state, q["id"], roots):
-		return TranslationServer.translate("ui.quest.%s.hint" % q["id"])
+		return TranslationServer.translate("ui.quest.%s.hint" % q["id"]).format({"dir": dir_word(item_cave_mouth(String(q.get("item", ""))))})
 	GameData.vibrate(true)
 	GameData.save()
 	main.play_scene(String(q["scene"]), func() -> void:
@@ -542,6 +542,28 @@ func _maybe_cheok() -> void:
 			main.notice(TranslationServer.translate("ui.join").format({"name": UiKit.unit_name(4)})))
 
 
+## 물건 퀘스트의 물건이 든 동굴 입구(큰 지도 px). 없으면 Vector2.INF.
+static func item_cave_mouth(item: String) -> Vector2:
+	var wm := WorldMap.load_default()
+	for c in wm.caves:
+		var cm: Dictionary = wm.cave_maps.get(c["id"], {})
+		for it in cm.get("items", []):
+			if String(it["id"]) == item and not (c["mouths"] as Array).is_empty():
+				var m: Array = c["mouths"][0]
+				return (Vector2(float(m[0]), float(m[1])) + Vector2(0.5, 0.5)) * wm.tile
+	return Vector2.INF
+
+
+## 마을에서 본 방향 낱말(동쪽, 북서쪽 …). 지도가 바뀌어도 귀띔이 맞게(사용자 의견: 어느 동굴인지 모르겠다)
+static func dir_word(p: Vector2) -> String:
+	if p == Vector2.INF:
+		return ""
+	var d := p - WorldMap.load_default().start(STAGE)
+	var a := wrapf(rad_to_deg(atan2(-d.y, d.x)), 0.0, 360.0)
+	var keys := ["e", "ne", "n", "nw", "w", "sw", "s", "se"]
+	return TranslationServer.translate("ui.dir." + keys[int(round(a / 45.0)) % 8])
+
+
 ## 마을 아이(퀘스트 동굴, 07-fun 5절): 처음엔 부탁, 장난감 망치를 찾아 오면 마친다.
 func kid_talk(done: Callable) -> void:
 	var st := GameData.state
@@ -556,13 +578,13 @@ func kid_talk(done: Callable) -> void:
 	if not seen(q["id"] + "_got"):
 		_flag(q["id"] + "_got")
 		GameData.save()
-		main.notice(tr.call("ui.kid.ask"), done)
+		main.notice(tr.call("ui.kid.ask").format({"dir": dir_word(item_cave_mouth("toy_hammer"))}), done)
 		return
 	if GameData.quests.finish(st, q["id"], []):
 		give_treasure(String(q.get("reward", "")))
 		main.notice(tr.call("ui.kid.thanks") + "\n" + _done_text(q["id"]), done)
 		return
-	main.notice(tr.call("ui.kid.wait"), done)
+	main.notice(tr.call("ui.kid.wait").format({"dir": dir_word(item_cave_mouth("toy_hammer"))}), done)
 
 
 ## 성 집사(성 퀘스트 s01_q_castle, 사용자 의견: 성의 이야기와 퀘스트): 처음엔 '유니콘 근위대' 장면,

@@ -302,3 +302,14 @@ func test_weapons_fly_over_town_wall_but_mobs_cannot_see_through_it() -> void:
 	var outside := (Vector2(wall) + Vector2(0.5, 2.5)) * m.tile
 	assert_true(m.shot_line(inside, outside), "무기는 성벽 위로")
 	assert_false(m.clear_line(outside, inside), "몹은 성벽 너머를 못 본다")
+
+
+## 사용자 의견: 어느 동굴인지 모르겠다 → 물건이 든 동굴 입구와 마을에서 본 방향을 알려 준다
+func test_item_cave_mouth_and_direction() -> void:
+	var p := GameFlow.item_cave_mouth("toy_hammer")
+	assert_ne(p, Vector2.INF, "장난감 망치는 퀘스트 동굴에 있다")
+	var wm := WorldMap.load_default()
+	var c := Vector2i(int(p.x / wm.tile), int(p.y / wm.tile))
+	assert_eq(wm.ch(c), "c", "입구 칸")
+	assert_ne(GameFlow.dir_word(p), "")
+	assert_eq(GameFlow.item_cave_mouth("없는 물건"), Vector2.INF)

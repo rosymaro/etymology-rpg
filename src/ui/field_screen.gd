@@ -453,6 +453,10 @@ func _goal_text() -> String:
 	var s := GameData.state
 	var book := GameData.quests
 	var q := book.next_quest(s, GameFlow.STAGE)
+	if main.flow.seen("boss_s01"):  # 보스를 물리친 뒤(사용자 의견: 그 뒤 할 일을 알려 주고, 보스에 가라는 말은 그만)
+		if not q.is_empty():
+			return t("ui.quest.cleared_side").format({"title": t("ui.quest.%s.title" % q["id"])})
+		return t("ui.quest.cleared")
 	if book.boss_blockers(s, GameFlow.STAGE).is_empty():
 		# 보스 앞 퀘스트를 다 마쳤다. 곁 퀘스트(마을 아이의 장난감 망치 …)가 남았으면 그것도 알린다(사용자 의견: 다 마쳤다고 하면 헷갈린다)
 		if not q.is_empty():
@@ -1506,7 +1510,7 @@ func _open_quests() -> void:
 		var head := "%s %s  (%s)" % ["✔" if done else "●", t("ui.quest.%s.title" % q["id"]),
 			t("ui.quest.state_done") if done else (t("ui.quest.state_ready") if pr["ready"] and q["kind"] != "words" else "%s %d/%d" % [t("ui.quest.state_todo"), pr["have"], pr["need"]])]
 		v.add_child(UiKit.label(head, 24, UiKit.LEAF.darkened(0.3) if done else UiKit.INK))
-		var d := UiKit.label(t("ui.quest.%s.desc" % q["id"]), 20, UiKit.INK.lightened(0.25))
+		var d := UiKit.label(t("ui.quest.%s.desc" % q["id"]).format({"dir": GameFlow.dir_word(GameFlow.item_cave_mouth(String(q.get("item", ""))))}), 20, UiKit.INK.lightened(0.25))
 		d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		d.custom_minimum_size.x = 600
 		v.add_child(d)
@@ -2125,7 +2129,27 @@ func _draw_marks(c: Control, k: float, names: bool) -> void:
 			var label := "%d. %s" % [int(rg["stage"]), t("name.stage.s%02d" % int(rg["stage"]))]
 			c.draw_string(font, p + Vector2(-60, -6), label, HORIZONTAL_ALIGNMENT_CENTER, 120, 13, UiKit.INK)
 	var blink := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 120.0)
+	if not map.is_cave:  # 받은 물건 퀘스트의 동굴 입구: 노란 !(사용자 의견: 어느 동굴인지 모르겠다)
+		for p in _quest_caves():
+			var cp := p / ts * k
+			c.draw_circle(cp, maxf(4.0, k * 2.2), Color(1.0, 0.82, 0.2, 0.6 + 0.4 * blink))
+			c.draw_string(font, cp + Vector2(-6, -maxf(5.0, k * 2.4)), "!", HORIZONTAL_ALIGNMENT_CENTER, 12, int(maxf(12.0, k * 4.0)), UiKit.BAD)
 	c.draw_circle(_hero / ts * k, maxf(3.0, k * 1.6), Color(UiKit.ACCENT, 0.5 + 0.5 * blink))
+
+
+## 받았지만 아직 물건을 못 찾은 물건 퀘스트들의 동굴 입구(px)
+func _quest_caves() -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	var s := GameData.state
+	for q in GameData.quests.shown(s, GameFlow.STAGE):
+		if String(q["kind"]) != "item" or GameData.quests.done(s, q["id"]) or String(q["item"]) in s.items:
+			continue
+		if q.has("giver") and not main.flow.seen(String(q["id"]) + "_got"):
+			continue  # 부탁을 듣기 전(마을 아이, 성 집사)
+		var p := GameFlow.item_cave_mouth(String(q["item"]))
+		if p != Vector2.INF:
+			out.append(p)
+	return out
 
 
 func _open_full() -> void:
