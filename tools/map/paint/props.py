@@ -181,8 +181,13 @@ def gacha_orb(L, cx, cy):
 
 
 def paint(W, L):
-    """스테이지 1 마을 소품을 칸 배치에서 정해(결정적) 그린다."""
-    rg = W.d["regions"][0]
+    """마을 소품을 칸 배치에서 정해(결정적) 그린다. 스테이지 1 공방 마을과 스테이지 2 사냥꾼 마을."""
+    for rg in W.d["regions"]:
+        if rg["stage"] in (1, 2) and rg.get("buildings"):
+            _paint_town(W, L, rg)
+
+
+def _paint_town(W, L, rg):
     tx, ty, tw, th = rg["town"]
     rows = W.rows
     sp = rg["spots"]
@@ -203,12 +208,12 @@ def paint(W, L):
     # 대장간 옆 나무통·상자
     for bd in rg["buildings"]:
         bx, by, bw, bh = bd["rect"]
-        if bd["id"] == "forge":
+        if bd["id"] in ("forge", "hunter_hut"):
             for k, (dx, kind) in enumerate(((bw, "barrel"), (bw, "crate"))):
                 x, y = bx + dx, by + bh - 1 - k
                 if ok(x, y):
                     items.append(((y + 0.85) * TILE, (x + 0.5) * TILE, kind, k))
-        if bd["id"].startswith("house") or bd["id"] in ("board", "hospital"):
+        if bd["id"].startswith("house") or bd["id"] in ("board", "hospital", "hunter_hut"):
             for x in (bx - 1, bx + bw):
                 y = by + bh - 1
                 if ok(x, y) and hash1(x, y, 1011) < 0.75:

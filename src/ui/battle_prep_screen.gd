@@ -63,10 +63,10 @@ func _build_field_view() -> void:
 	if _boss:
 		for k in maxi(0, _party.size() - 1):
 			labels.append(t("ui.prep.minion"))
-		labels.append(GameData.repo.boss_word(GameFlow.STAGE).id)
+		labels.append(GameData.repo.boss_word(GameFlow.cur()).id)
 	else:
 		for id in _words:
-			var lv := GameData.setup.factory.enemy_level(GameData.repo.get_word(id), GameFlow.STAGE)
+			var lv := GameData.setup.factory.enemy_level(GameData.repo.get_word(id), GameFlow.cur())
 			labels.append("%s\nLv %d" % [id, lv])
 	for i in labels.size():
 		var c := UiKit.card(UiKit.PINK if not (_boss and i == labels.size() - 1) else UiKit.ACCENT.lightened(0.5))

@@ -16,6 +16,8 @@ STYLE = {
     "house2": {"roof": "#8a6aa4", "wall": "plaster", "chimney": False},
     "house3": {"roof": "#a4744a", "wall": "timber", "chimney": False, "thatch": True},
     "house4": {"roof": "#7f9a5a", "wall": "plaster", "chimney": True},
+    "hunter_hut": {"roof": "#9c7a4a", "wall": "timber", "chimney": True, "thatch": True},  # 스테이지 2 사냥꾼 오두막
+    "house5": {"roof": "#b0894f", "wall": "timber", "chimney": False, "thatch": True},
 }
 
 

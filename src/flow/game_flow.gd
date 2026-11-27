@@ -3,9 +3,28 @@ extends RefCounted
 ## 게임 흐름(architecture.md 8절): 타이틀 → 이름 → 이야기 → 필드 ↔ 조우·퀴즈 → 전투 준비 → 전투 → 결과.
 ## 화면은 '무엇이 눌렸다'만 알리고, 다음 화면은 여기서 정한다. 흐름이 바뀌면 이 파일만 고친다.
 
-const STAGE := 1
-const MAX_STAGE := 1  ## 만들어 둔(갈 수 있는) 마지막 스테이지. 월드맵 문은 여기까지만 열린다
-const JOIN_CHEOK_AFTER := 5  ## 알기 유닛이 합류하는 포획 수(s01_skit_cheok). 이야기 진행 값이라 여기 둔다
+const MAX_STAGE := 2  ## 만들어 둔(갈 수 있는) 마지막 스테이지. 월드맵 문은 여기까지만 열린다
+
+
+## 지금 스테이지: 주인공이 있는 구역(GameState.cur_stage, 1~MAX_STAGE). 스테이지 1로 고정해 두던 값을 대신한다
+static func cur() -> int:
+	var s: GameState = GameData.state if GameData else null
+	return clampi(s.cur_stage if s else 1, 1, MAX_STAGE)
+
+
+## 스테이지 흐름(data/stages.json): 보스 앞뒤 장면, 보상 마법, 알림판 퀘스트, 합류 유닛 …
+static var _stages := {}
+
+
+static func stage_cfg(st: int = 0) -> Dictionary:
+	if _stages.is_empty():
+		_stages = JsonFile.read("res://data/stages.json")
+	return _stages.get(str(st if st > 0 else cur()), {})
+
+
+## "s01", "s02" …
+static func sid(st: int = 0) -> String:
+	return "s%02d" % (st if st > 0 else cur())
 
 var main: Main
 
@@ -245,7 +264,7 @@ func _done_text(id: String) -> String:
 
 func notice_board(done: Callable) -> void:
 	var s := GameData.state
-	var q := GameData.quests.get_quest("s01_q_word")
+	var q := GameData.quests.get_quest(String(stage_cfg().get("board", "s01_q_word")))
 	if not GameData.quests.visible(s, q):
 		main.notice(TranslationServer.translate("ui.quest.board_empty"), done)
 		return
@@ -263,12 +282,12 @@ func notice_board(done: Callable) -> void:
 		main.notice(TranslationServer.translate("ui.quest.board_fill") + "\n" + _done_text(q["id"]), done)
 		return
 	var pr := GameData.quests.progress(s, q, [])
-	main.notice(TranslationServer.translate("ui.quest.s01_q_word.hint").format(pr), done)
+	main.notice(TranslationServer.translate("ui.quest.%s.hint" % q["id"]).format(pr), done)
 
 
 ## 보스 앞에서 단어가 모자라다는 말을 들었다(이 스테이지): 몹 단어가 처음 보는 단어 쪽으로 기운다.
 static func boss_short_flag() -> String:
-	return "boss_short_s%02d" % STAGE
+	return "boss_short_s%02d" % cur()
 
 
 func seen(k: String) -> bool:
@@ -380,7 +399,11 @@ func _after_encounter(word_ids: Array[String], right: Array[bool]) -> void:
 
 ## 마을 미니게임(스테이지 1: 주문 제작). 마을 단어는 이것으로만 얻는다(01-rpg-base '마을과 특수 행위').
 func town_minigame() -> void:
-	play_minigame(MinigameRegistry.for_stage(STAGE)["id"], "story")
+	var j: Dictionary = stage_cfg().get("join", {})
+	if cur() > 1 and not j.is_empty() and not seen(String(j["flag"])):  # 스테이지 2: 덥석이 합류하면(s02_seung) 사냥꾼이 발자국 글자를 알려 준다
+		main.notice(TranslationServer.translate("ui.field.board_locked_" + sid()).format({"n": int(j["after"])}))
+		return
+	play_minigame(MinigameRegistry.for_stage(cur())["id"], "story")
 
 
 ## (옛) 게시판 퀴즈. 미니게임이 생겨 쓰지 않지만 테스트를 위해 남긴다.
@@ -421,9 +444,9 @@ func start_battle(party: Array[int], roots: Dictionary, offer: Array[String], wo
 		ctx.magic_defs[m["id"]] = m
 	var ids := word_ids
 	if boss:
-		ids = GameData.setup.boss_enemies(ctx, s, STAGE)
+		ids = GameData.setup.boss_enemies(ctx, s, cur())
 	else:
-		GameData.setup.field_enemies(ctx, word_ids, STAGE)
+		GameData.setup.field_enemies(ctx, word_ids, cur())
 		var hurt := float(enc.get("hurt", 0.0))
 		if hurt > 0.0:  # 필드 사냥으로 깎아 둔 몹: 적 체력이 그만큼 줄어 나온다
 			for e in ctx.enemies:
@@ -509,7 +532,7 @@ func _to_hospital() -> void:
 	enc = {}
 	GameData.hunt_run().lose()  # 주머니의 절반을 잃는다(07-fun 1절)
 	var s := GameData.state
-	s.pos = WorldMap.load_default().spot(STAGE, "hospital")
+	s.pos = WorldMap.load_default().spot(cur(), "hospital")
 	s.place = "town"
 	s.cave = ""
 	GameData.rules.start_rest(s, int(Time.get_unix_time_from_system()), int(GameData.field["rest_sec"]))
@@ -524,22 +547,59 @@ func _after_result() -> void:
 	var lost := _lost
 	_lost = false
 	go_field()
-	if lost:
-		main.play_scene("s01_hospital", _maybe_cheok)
+	var hs := String(stage_cfg().get("hospital", ""))
+	if lost and hs != "":
+		main.play_scene(hs, _maybe_cheok)
+	elif lost:
+		main.notice(TranslationServer.translate("ui.field.nurse"), _maybe_cheok)
 	else:
 		_maybe_cheok()
 
 
-## 단어를 5개 모으면 척척이 합류한다(s01_skit_cheok, 끝에 알림판 퀘스트가 열린다).
+## 그 스테이지 단어를 몇 개 잡으면 유닛이 합류한다(data/stages.json join).
+## 스테이지 1: 단어 5개 → 척척(s01_skit_cheok, 끝에 알림판 퀘스트가 열린다). 스테이지 2: 단어 3개 → 덥석(s02_seung, 발자국 글자 미니게임)
 func _maybe_cheok() -> void:
 	var s := GameData.state
-	if not seen("s01_skit_cheok") and s.dex_count() >= JOIN_CHEOK_AFTER:
-		_flag("s01_skit_cheok")
-		if not 4 in s.joined:
-			s.joined.append(4)
-		GameData.save()
-		main.play_scene("s01_skit_cheok", func() -> void:
-			main.notice(TranslationServer.translate("ui.join").format({"name": UiKit.unit_name(4)})))
+	var j: Dictionary = stage_cfg().get("join", {})
+	if j.is_empty() or seen(String(j["flag"])):
+		return
+	var have := s.dex_count() if cur() == 1 else GameData.repo.first_tier(cur()).filter(func(w: WordData) -> bool: return s.has_word(w.id)).size()
+	if have < int(j["after"]):
+		return
+	_flag(String(j["flag"]))
+	var u := int(j["unit"])
+	if not u in s.joined:
+		s.joined.append(u)
+	GameData.save()
+	var after := String(stage_cfg().get("after_join", ""))
+	main.play_scene(String(j["scene"]), func() -> void:
+		main.notice(TranslationServer.translate("ui.join").format({"name": UiKit.unit_name(u)}), func() -> void:
+			if after != "" and not seen(after):
+				_flag(after)
+				GameData.save()
+				main.play_scene(after, func() -> void: pass)))
+
+
+## 처음 그 구역에 들어섰을 때(필드가 부른다): 그 스테이지의 첫 장면(data/stages.json intro). 봤으면 false.
+func enter_stage(st: int, done: Callable) -> bool:
+	var sc := String(stage_cfg(st).get("intro", ""))
+	if sc == "" or seen(sc):
+		return false
+	_flag(sc)
+	GameData.save()
+	main.play_scene(sc, done)
+	return true
+
+
+## 그 스테이지 마을에 처음 들어섰을 때 장면(마을 이야기). 봤으면 false.
+func enter_town(done: Callable) -> bool:
+	var sc := String(stage_cfg().get("town", ""))
+	if sc == "" or seen(sc):
+		return false
+	_flag(sc)
+	GameData.save()
+	main.play_scene(sc, done)
+	return true
 
 
 ## 물건 퀘스트의 물건이 든 동굴 입구(큰 지도 px). 없으면 Vector2.INF.
@@ -558,7 +618,7 @@ static func item_cave_mouth(item: String) -> Vector2:
 static func dir_word(p: Vector2) -> String:
 	if p == Vector2.INF:
 		return ""
-	var d := p - WorldMap.load_default().start(STAGE)
+	var d := p - WorldMap.load_default().start(cur())
 	var a := wrapf(rad_to_deg(atan2(-d.y, d.x)), 0.0, 360.0)
 	var keys := ["e", "ne", "n", "nw", "w", "sw", "s", "se"]
 	return TranslationServer.translate("ui.dir." + keys[int(round(a / 45.0)) % 8])
@@ -691,36 +751,41 @@ func go_party() -> void:
 # ----- 보스 -----
 
 func boss_gate() -> void:
-	var g := GameData.rules.boss_gate(GameData.state, STAGE)
-	if seen("boss_s01"):
-		main.notice(TranslationServer.translate("ui.boss.already"))
+	var g := GameData.rules.boss_gate(GameData.state, cur())
+	if seen("boss_" + sid()):
+		main.notice(TranslationServer.translate("ui.boss.already").format({"boss": GameData.repo.boss_word(cur()).id}))
 		return
 	if not g["open"]:
 		_flag(boss_short_flag())  # 사용자 의견: 이때부터 이 스테이지에서 처음 보는 단어가 더 자주 나온다
 		GameData.save()
 		main.notice(TranslationServer.translate("ui.boss.gate").format(g) + "\n" + TranslationServer.translate("ui.boss.fresh_up"))
 		return
-	var left := GameData.quests.boss_blockers(GameData.state, STAGE)
+	var left := GameData.quests.boss_blockers(GameData.state, cur())
 	if not left.is_empty():
 		main.notice(TranslationServer.translate("ui.quest.boss_wait").format(
 			{"title": TranslationServer.translate("ui.quest.%s.title" % left[0]["id"])}))
 		return
 	GameData.vibrate(true)
-	main.play_scene("s01_jeon", func() -> void: go_battle_prep([] as Array[String], true))
+	main.play_scene(String(stage_cfg().get("boss_before", "s01_jeon")), func() -> void: go_battle_prep([] as Array[String], true))
 
 
 func _boss_won() -> void:
 	var s := GameData.state
-	_flag("boss_s01")
-	var bw := GameData.repo.boss_word(STAGE)
+	var st := cur()
+	_flag("boss_" + sid(st))
+	var bw := GameData.repo.boss_word(st)
 	GameData.rules.gain_word(s, bw.id)
-	for m in ["sub", "re", "com"]:
+	for m in stage_cfg(st).get("rewards", []):
 		if not m in s.magics:
 			s.magics.append(m)
-	s.stage = maxi(s.stage, STAGE + 1)
+	s.stage = maxi(s.stage, st + 1)
 	GameData.save()
-	EventBus.boss_defeated.emit(STAGE)
+	EventBus.boss_defeated.emit(st)
 	GameData.vibrate(true)
-	main.play_scene("s01_gyeol", func() -> void:
+	var mags: Array[String] = []
+	for m in stage_cfg(st).get("rewards", []):
+		mags.append(String(m) + "-")
+	var key := "ui.stage.clear" if st >= MAX_STAGE else "ui.stage.clear_next"
+	main.play_scene(String(stage_cfg(st).get("boss_after", "s01_gyeol")), func() -> void:
 		go_field()
-		main.notice(TranslationServer.translate("ui.stage.clear")))
+		main.notice(TranslationServer.translate(key).format({"n": st, "next": st + 1, "magics": "·".join(mags)})))

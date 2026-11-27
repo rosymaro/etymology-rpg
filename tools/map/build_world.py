@@ -56,6 +56,9 @@ def px(x, y):
 TOWN_BUILDINGS = [('forge', 3, 2, 6, 4), ('board', 21, 2, 6, 4), ('hospital', 3, 13, 6, 4),
                   ('house1', 10, 14, 3, 3), ('house2', 18, 14, 3, 3), ('house3', 3, 7, 3, 3), ('house4', 22, 13, 4, 3)]
 CASTLE = (10, 1, 10, 6)  # 마을 왼쪽 위 기준 (x, y, w, h). 성문은 아래 가운데
+# 스테이지 2 사냥꾼 초원 마을(18 × 12, 나무 울타리): 사냥꾼 오두막, 발자국 글자 공방(미니게임 2), 약초 오두막(병원), 장터 좌판
+TOWN2_SIZE = (18, 12)
+TOWN2_BUILDINGS = [('hunter_hut', 2, 1, 5, 3), ('board', 11, 1, 5, 3), ('hospital', 2, 7, 4, 2), ('house5', 12, 7, 3, 2)]
 
 
 CAVE_W, CAVE_H = 30, 22
@@ -228,6 +231,45 @@ def build_town(g, tx, ty, tw, th, spots):
     spots['kid'] = px(mx + 5, my + 1)  # 장난감 망치를 잃은 마을 아이(퀘스트 동굴, 07-fun 5절)
     return out
 
+def build_town2(g, tx, ty, tw, th, spots):
+    """스테이지 2 사냥꾼 마을: 나무 울타리(F, 바깥 길과 만나는 곳만 문), 십자 흙길, 오두막들. 사람(사냥꾼·상인)과 공책 자리."""
+    def px(x, y): return [(x + 0.5) * TILE, (y + 0.5) * TILE]
+    for y in range(ty, ty + th):
+        for x in range(tx, tx + tw):
+            g[y][x] = ','
+    mx, my = tx + tw // 2, ty + th // 2
+    for y in range(ty, ty + th):
+        for x in range(tx, tx + tw):
+            if not (x in (tx, tx + tw - 1) or y in (ty, ty + th - 1)):
+                continue
+            ox = x - 1 if x == tx else (x + 1 if x == tx + tw - 1 else x)
+            oy = y - 1 if y == ty else (y + 1 if y == ty + th - 1 else y)
+            g[y][x] = 's' if g[oy][ox] in 'pb' else 'F'
+    for x in range(tx + 1, tx + tw - 1):
+        g[my][x] = 's'
+    for y in range(ty + 1, ty + th - 1):
+        g[y][mx] = 's'
+    out = []
+    for (bid, bx, by, bw, bh) in TOWN2_BUILDINGS:
+        for y in range(ty + by, ty + by + bh):
+            for x in range(tx + bx, tx + bx + bw):
+                g[y][x] = 'h'
+        door = (tx + bx + bw // 2, ty + by + bh)
+        g[door[1]][door[0]] = 's'
+        for y in range(door[1], my + 1) if door[1] <= my else range(my, door[1] + 1):
+            if g[y][door[0]] == ',':
+                g[y][door[0]] = 's'
+        out.append({'id': bid, 'rect': [tx + bx, ty + by, bw, bh], 'door': px(*door)})
+        if bid == 'hunter_hut':
+            spots['hunter'] = px(door[0] + 1, door[1] + 1)
+        elif not bid.startswith('house'):
+            spots[bid] = px(door[0], door[1] + 1)
+    spots['notice'] = px(mx + 2, my - 2)  # 사냥꾼 공책(단어 퀘스트)
+    spots['merchant'] = px(mx + 3, my + 3)  # 장터 좌판의 상인
+    spots['gacha'] = px(mx - 3, my + 3)
+    return out
+
+
 def main(river_seed=1000):
     rnd = random.Random(31)
     cx, cy = W // 2, H // 2
@@ -353,7 +395,7 @@ def main(river_seed=1000):
         bx0, by0, bx1, by1 = min(xs), min(ys), max(xs), max(ys)
         ex, ey = entries[st]
         # 마을(들어오는 자리 가까이, 지역 안에 다 들어가는 14 × 10, 스테이지 1은 30 × 20)
-        tw, th = (30, 20) if st == 1 else (14, 10)
+        tw, th = (30, 20) if st == 1 else (TOWN2_SIZE if st == 2 else (14, 10))
         best = None
         for (x, y) in cells[::3]:
             if all(inside(st, x + dx, y + dy) for dx in (0, tw - 1) for dy in (0, th - 1)) and \
@@ -543,6 +585,8 @@ def main(river_seed=1000):
         buildings = []
         if st == 1:
             buildings = build_town(g, tx, ty, tw, th, spots)
+        elif st == 2:
+            buildings = build_town2(g, tx, ty, tw, th, spots)
         regions.append({'stage': st, 'rect': [bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1], 'town': [tx, ty, tw, th], 'buildings': buildings,
                         'spots': spots, 'start': px(town_c[0], town_c[1] + 2) if st == 1 else px(*town_c), 'marks': [px(*m) for m in marks],
                         'maze': [maze[0], maze[1], maze[2], maze[3]] if maze else [], 'hour': HOURS.get(st, 0)})

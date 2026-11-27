@@ -55,6 +55,20 @@
       "reward": "coin:150",
       "boss": false,
       "scene": "s01_castle_done"
+    },
+    {
+      "id": "s02_q_word",
+      "stage": 2,
+      "kind": "words",
+      "words": [
+        "recover",
+        "request",
+        "receipt"
+      ],
+      "giver": "notice",
+      "scene": "s02_q_word",
+      "boss": true,
+      "after": "s02_seung"
     }
   ]
 }

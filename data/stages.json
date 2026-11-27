@@ -1,0 +1,24 @@
+{
+  "_doc": "스테이지마다 다른 흐름(docs/story/blueprint.md). GameFlow가 읽는다. intro: 처음 그 구역에 들어설 때 장면 / join: 그 스테이지 단어를 after개 잡으면 합류하는 유닛과 장면(장면 뒤 열리는 미니게임은 MinigameRegistry) / board: 마을 알림판의 단어 퀘스트 / boss_before·boss_after: 보스 앞뒤 장면 / rewards: 보스를 물리치면 얻는 필드 마법 / hospital: 지고 나서 병원 장면(없으면 알림만) / town: 마을에 처음 들어설 때 장면",
+  "1": {
+    "intro": "",
+    "join": { "unit": 4, "after": 5, "scene": "s01_skit_cheok", "flag": "s01_skit_cheok" },
+    "board": "s01_q_word",
+    "boss_before": "s01_jeon",
+    "boss_after": "s01_gyeol",
+    "rewards": ["sub", "re", "com"],
+    "hospital": "s01_hospital",
+    "town": ""
+  },
+  "2": {
+    "intro": "s02_ki",
+    "join": { "unit": 2, "after": 3, "scene": "s02_seung", "flag": "s02_seung" },
+    "board": "s02_q_word",
+    "boss_before": "s02_jeon",
+    "boss_after": "s02_gyeol",
+    "rewards": ["ad", "ob"],
+    "hospital": "",
+    "town": "s02_town_market",
+    "after_join": "s02_tut_attr"
+  }
+}
