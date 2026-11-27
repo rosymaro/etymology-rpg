@@ -4,5 +4,8 @@
   "familiar_right": 3,
   "learned_mix": 0.5,
   "_learned_mix_doc": "필드 몹 단어 중 배운 조각이 든 단어를 이 비율쯤 섞어 낸다(유추 연습)",
-  "reveal_sec": { "right": 1.8, "wrong": 2.8 }
+  "answer_delay_sec": 0.7,
+  "_answer_delay_doc": "문제가 나오고 이만큼 보기를 누를 수 없다(사용자 의견: 필드에서 움직이려고 누르던 손가락에 틀리지 않게)",
+  "next_delay_sec": 0.4,
+  "_next_delay_doc": "풀이가 나오고 이만큼 다음 버튼을 누를 수 없다(고른 손가락이 바로 넘기지 않게). 풀이는 다음을 눌러야 넘어간다(사용자 의견)"
 }
