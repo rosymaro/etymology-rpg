@@ -46,6 +46,11 @@ var _fmagic: FieldMagicUse  ## 필드 마법 버튼 2개(07-fun 2절)
 var _fbtns: Array[Button] = []
 # 필드 사냥(07-fun 1절)
 var _run: HuntRun
+var _shields := 0  ## 남은 방어막(필드 특성: 한 유닛이 같은 속성 장비 5개)
+var _shield_max := 0
+var _shield_t: Array[float] = []  ## 깨진 방어막마다 다시 차기까지 남은 초
+var _shield_safe := 0.0  ## 방어막이 막은 뒤 잠깐 무적(연달아 닿아도 하나만 깨지게)
+var _shield_fx := 0.0
 var _hc: Dictionary  ## data/balance/field_hunt.json
 var _uw := UnitWeapons.new()  ## 데리고 다니는 유닛의 무기(07-fun 1절)
 var _pals: Array[Dictionary] = []  ## 주인공을 따라다니는 유닛 {unit, pos}
@@ -95,6 +100,7 @@ func open(args: Dictionary) -> void:
 	_f = GameData.field
 	_hc = GameData.hunt_cfg
 	_run = GameData.hunt_run()
+	_run.stage = GameFlow.STAGE
 	_gates = main.flow.open_gates()
 	_fmagic = FieldMagicUse.new(_f["magic"])
 	var s := GameData.state
@@ -182,10 +188,53 @@ func _setup_map() -> void:
 ## 데리고 다니는 유닛(파티 화면에서 고른다)을 주인공 둘레에 둔다.
 func _set_pals() -> void:
 	_run.set_units(Loadout.companions(GameData.state))
+	_refresh_traits(true)
 	_pals.clear()
 	_trail.clear()
 	for u in _run.d["units"]:
 		_pals.append({"unit": int(u), "pos": _hero})
+
+
+## 필드 특성(데리고 다니는 유닛의 장비 속성)을 다시 센다. full이면 방어막을 가득 채운다(필드에 나설 때).
+func _refresh_traits(full: bool) -> void:
+	_run.traits = FieldTraits.from_state(GameData.state, GameData.repo, GameData.field_traits)
+	_shield_max = _run.traits.shields
+	if full:
+		_shields = _shield_max
+		_shield_t.clear()
+	else:
+		_shields = mini(_shields, _shield_max)
+		while _shield_t.size() > _shield_max - _shields:
+			_shield_t.pop_back()
+
+
+## 몹에 닿았을 때: 방어막이 있으면 한 번 막는다(퀴즈에 안 들어가고 몹을 밀쳐 멈춘다). 막았으면 true.
+func _shield_block(e: FieldMob) -> bool:
+	if _shield_safe > 0.0:
+		return true
+	if _shields <= 0 or e.kind == "eater":
+		return false
+	var sc: Dictionary = GameData.field_traits["shield"]
+	_shields -= 1
+	_shield_t.append(float(sc["recharge_sec"]) * (1.0 - _run.tv("shield_regen")))
+	_shield_safe = 0.8
+	_shield_fx = 0.5
+	var away := (e.pos - _hero).normalized() if e.pos.distance_to(_hero) > 0.5 else Vector2.RIGHT
+	e.set_meta("push", away * float(sc["push"]))
+	e.set_meta("push_t", 0.3)
+	e.stun = maxf(e.stun, float(sc["stun"]))
+	_show_toast(t("ui.hunt.shield_block").format({"n": _shields}))
+	return true
+
+
+func _tick_shields(delta: float) -> void:
+	_shield_safe = maxf(0.0, _shield_safe - delta)
+	_shield_fx = maxf(0.0, _shield_fx - delta)
+	for k in range(_shield_t.size() - 1, -1, -1):
+		_shield_t[k] -= delta
+		if _shield_t[k] <= 0.0:
+			_shield_t.remove_at(k)
+			_shields = mini(_shields + 1, _shield_max)
 
 
 func _pal_units() -> Array[int]:
@@ -198,6 +247,7 @@ func _pal_units() -> Array[int]:
 ## 동행이 바뀌었을 때: 남은 동행은 자리 그대로, 새로 온 동행은 주인공 자리에서 나온다.
 func _sync_pals() -> void:
 	_run.set_units(Loadout.companions(GameData.state))
+	_refresh_traits(false)
 	var old := {}
 	for pal in _pals:
 		old[int(pal["unit"])] = pal
@@ -422,7 +472,13 @@ func _new_enemy() -> FieldMob:
 		return null
 	var m := FieldMob.new()
 	m.pos = p
-	m.kind = FieldMob.pick_kind(_f["kinds"], _rng)
+	var kinds: Dictionary = _f["kinds"]
+	if _run.tv("rare_mob") > 0.0:  # 필드 특성: 희귀 몹이 더 자주
+		kinds = kinds.duplicate(true)
+		for k in kinds:
+			if bool(kinds[k].get("rare", false)):
+				kinds[k]["weight"] = roundi(int(kinds[k]["weight"]) * (1.0 + _run.tv("rare_mob")))
+	m.kind = FieldMob.pick_kind(kinds, _rng)
 	m.words = _pick_words(bool(_f["kinds"][m.kind].get("rare", false)))
 	var w0 := GameData.repo.get_word(m.words[0]) if not m.words.is_empty() else null
 	m.attr = int(w0.attrs[0]) if w0 and not w0.attrs.is_empty() else 0
@@ -478,6 +534,7 @@ func _step(delta: float) -> void:
 	if _busy or _full or _quests or _choosing or _lock or (_tut and is_instance_valid(_tut)) or main._overlay.get_child_count() > 0:
 		_follow_cam()  # 멈춰 있어도 화면은 주인공을 비춘다(튜토리얼이 가리킬 자리가 맞게)
 		return
+	_tick_shields(delta)
 	var dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if _stick_on:
 		dir = _stick_vec
@@ -565,6 +622,9 @@ func _step(delta: float) -> void:
 		var kinds: Dictionary = _f["kinds"].duplicate()
 		kinds["eater"] = {"speed": _hc["eater"]["speed"]}
 		var v := e.steer(_hero, delta, kinds, _rng)
+		var slow := _run.tv("slow_aura")
+		if slow > 0.0 and e.kind != "eater" and e.pos.distance_to(_hero) < _run.traits.param("slow_aura", "radius", 230.0):
+			v *= 1.0 - minf(0.8, slow)  # 필드 특성: 둘레 몹이 느려진다
 		if e.has_meta("push"):  # ob-: 밀쳐진 몹은 0.3초 동안 날아간다
 			v = (e.get_meta("push") as Vector2) / 0.3
 			var pt := float(e.get_meta("push_t", 0.3)) - delta
@@ -581,6 +641,8 @@ func _step(delta: float) -> void:
 			e.pos = np
 		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0 and not map.is_town(_hero) \
 				and not GameData.state.free_roam:  # 자유 탐험: 몹에 닿아도 단어 전투에 안 들어간다(보스는 그대로)
+			if _shield_block(e):
+				continue
 			_busy = true
 			_remember()
 			main.flow.encounter(e.words, 0, [], {"hurt": snappedf(e.hurt_ratio(), 0.01), "hard": e.kind == "eater"})
@@ -817,6 +879,8 @@ func _base_count() -> int:
 func _hit(e: FieldMob, dmg: int, from: Vector2, push := 0.0, stun := 0.0) -> void:
 	if not _enemies.has(e):
 		return
+	if _run.traits:  # 필드 특성: 공격·처형·치명
+		dmg = _run.traits.damage(dmg, float(e.hp) / float(maxi(1, e.max_hp)), _rng)
 	var dead := e.take_hit(dmg)
 	if stun > 0.0 and e.kind != "eater":
 		e.stun = maxf(e.stun, stun)
@@ -824,10 +888,11 @@ func _hit(e: FieldMob, dmg: int, from: Vector2, push := 0.0, stun := 0.0) -> voi
 		var away := e.pos - from
 		if away.length() < 1.0:
 			away = e.pos - _hero
-		e.set_meta("push", (away.normalized() if away.length() > 0.5 else Vector2.RIGHT) * (push if push > 0.0 else float(_hc["knockback"])))
+		e.set_meta("push", (away.normalized() if away.length() > 0.5 else Vector2.RIGHT) * (push if push > 0.0 else float(_hc["knockback"])) * (1.0 + _run.tv("knockback")))
 		e.set_meta("push_t", 0.3)
 	if dead:
-		var got := _run.drops(e.kind, e.words, _rng)
+		var fresh := e.words.filter(func(id: Variant) -> bool: return not GameData.state.has_word(String(id)))
+		var got := _run.drops(e.kind, e.words, _rng, fresh)
 		_drops.append({"pos": e.pos, "kind": "orb", "v": got["orbs"]})
 		if int(got["coins"]) > 0:
 			_drops.append({"pos": e.pos + Vector2(14, 6), "kind": "coin", "v": got["coins"]})
@@ -1417,6 +1482,13 @@ func _draw() -> void:
 				draw_colored_polygon(PackedVector2Array([edge + dir * 30, edge + dir.rotated(2.5) * 24, edge + dir.rotated(-2.5) * 24]), UiKit.BAD)
 	# 주인공과 칭호 리본(04-meta.md 5절). 몰래 걷는 동안은 흐리게
 	var h := o + _hero
+	if _shield_max > 0:  # 방어막: 남은 만큼 둥근 막(여러 겹), 깨질 때 번쩍
+		for k in _shields:
+			draw_arc(h + Vector2(0, -10), HERO_R + 22 + k * 6, 0, TAU, 48, Color(0.55, 0.85, 1.0, 0.55), 3.0, true)
+		if _shields > 0:
+			draw_circle(h + Vector2(0, -10), HERO_R + 20, Color(0.6, 0.88, 1.0, 0.12))
+		if _shield_fx > 0.0:
+			draw_arc(h + Vector2(0, -10), HERO_R + 22 + (0.5 - _shield_fx) * 120, 0, TAU, 48, Color(1, 1, 1, _shield_fx * 2.0), 6.0, true)
 	if _fmagic and _fmagic.sneak > 0.0:
 		draw_circle(h, HERO_R + 14, Color(UiKit.SKY, 0.35))
 	var look := GameData.state.hero_look  # 사용자가 준 주인공 그림(hero/<m|f>_<동작>_N)

@@ -7,6 +7,9 @@ extends RefCounted
 
 var d: Dictionary
 var cfg: Dictionary
+var traits: FieldTraits  ## 필드 특성(장비 속성). 없으면 특성 없이
+var stage := 1  ## 몹 체력 배율을 고르는 스테이지
+var rng_bonus := RandomNumberGenerator.new()  ## 특성의 소수 몫을 확률로 올릴 때
 
 
 func _init(hunt: Dictionary, hunt_cfg: Dictionary) -> void:
@@ -61,7 +64,12 @@ func max_level() -> bool:
 
 
 func coin_cap() -> int:
-	return int(cfg["coin_cap"])
+	return int(round(int(cfg["coin_cap"]) * (1.0 + tv("coin_cap"))))
+
+
+## 특성 크기(없으면 0)
+func tv(id: String) -> float:
+	return traits.value(id) if traits else 0.0
 
 
 func coins_full() -> bool:
@@ -82,6 +90,8 @@ func mob_hp(kind: String) -> int:
 	var mult: Array = cfg.get("mob_hp_party", [1.0])  # 동행 수에 따라(혼자면 약하게, 셋이면 세게)
 	var n := clampi((d["units"] as Array).size(), 1, mult.size())
 	base = maxi(1, roundi(base * float(mult[n - 1])))
+	if traits:  # 후반 스테이지는 장비가 좋아지는 만큼 단단하게(퀴즈에 들어갈 확률을 비슷하게)
+		base = maxi(1, roundi(base * traits.mob_hp_mult(stage)))
 	return maxi(base, best_dmg() + 1)
 
 
@@ -91,12 +101,17 @@ func mob_count(base: int) -> int:
 
 
 ## 몹을 쓰러뜨렸다: 떨어지는 것 {orbs, coins, word}. 주머니에 담는 것은 줍기(pick_*)에서.
-func drops(kind: String, words: Array, rng: RandomNumberGenerator) -> Dictionary:
+## fresh: words 가운데 처음 보는 단어(특성 fresh_word가 그쪽을 고른다).
+func drops(kind: String, words: Array, rng: RandomNumberGenerator, fresh: Array = []) -> Dictionary:
 	var out := {"orbs": int(cfg["orb"].get(kind, 1)), "coins": 0, "word": ""}
+	if rng.randf() < tv("extra_orb"):
+		out["orbs"] = int(out["orbs"]) + 1
 	if rng.randf() < float(cfg["coin"]["chance"]) and not coins_full():
-		out["coins"] = rng.randi_range(int(cfg["coin"]["min"]), int(cfg["coin"]["max"]))
-	if not words.is_empty() and rng.randf() < float(cfg["word_chance"]):
-		out["word"] = String(words[rng.randi_range(0, words.size() - 1)])
+		var c := rng.randi_range(int(cfg["coin"]["min"]), int(cfg["coin"]["max"]))
+		out["coins"] = FieldTraits.roll(c * (1.0 + tv("coin_gain")), rng)
+	if not words.is_empty() and rng.randf() < float(cfg["word_chance"]) * (1.0 + tv("word_drop")):
+		var pool: Array = fresh if not fresh.is_empty() and rng.randf() < tv("fresh_word") else words
+		out["word"] = String(pool[rng.randi_range(0, pool.size() - 1)])
 	return out
 
 
@@ -105,7 +120,9 @@ func pick_orbs(n: int) -> bool:
 	bag()["orbs"] = int(bag()["orbs"]) + n
 	if level() >= int(cfg["max_level"]):
 		return false
-	d["exp"] = int(d["exp"]) + n
+	var gain := n * (1.0 + tv("orb_exp")) + float(d.get("exp_frac", 0.0))  # 구슬 하나당 경험치(소수 몫은 남겨 둔다)
+	d["exp_frac"] = gain - floorf(gain)
+	d["exp"] = int(d["exp"]) + int(floorf(gain))
 	if int(d["exp"]) >= need():
 		d["exp"] = int(d["exp"]) - need()
 		d["level"] = level() + 1
@@ -157,6 +174,11 @@ func weapon(id: String) -> Dictionary:
 	for k in w:
 		var v: Variant = w[k]
 		out[k] = v[lv] if v is Array else v
+	if traits:  # 필드 특성: 사정거리, 재사용 시간, 멈추게 하는 시간
+		out["range"] = float(out["range"]) * (1.0 + tv("range"))
+		out["cd"] = float(out["cd"]) * (1.0 - tv("cooldown"))
+		if out.has("stun"):
+			out["stun"] = float(out["stun"]) * (1.0 + tv("stun"))
 	return out
 
 
@@ -169,11 +191,11 @@ func weapons_now() -> Dictionary:
 
 
 func magnet() -> float:
-	return float(cfg["magnet"]) + float(d["magnet"])
+	return (float(cfg["magnet"]) + float(d["magnet"])) * (1.0 + tv("magnet"))
 
 
 func speed_mult() -> float:
-	return 1.0 + float(d["speed"])
+	return 1.0 + float(d["speed"]) + tv("move")
 
 
 ## 시간이 흐른다. 뿌리먹이가 나올 때가 되면 true(최대 레벨이거나 after_sec, 그 뒤 again_sec마다).
@@ -181,7 +203,7 @@ func tick(delta: float) -> bool:
 	d["sec"] = float(d["sec"]) + delta
 	var e: Dictionary = cfg["eater"]
 	var n := int(d["eaters"])
-	var due := float(e["after_sec"]) + n * float(e["again_sec"])
+	var due := (float(e["after_sec"]) + n * float(e["again_sec"])) * (1.0 + tv("eater_late"))
 	if level() >= int(cfg["max_level"]) and n == 0:
 		due = 0.0
 	if float(d["sec"]) >= due:
@@ -208,7 +230,7 @@ func bank(state: GameState, rules: ProgressRules) -> Dictionary:
 
 ## 전투에서 졌다: 주머니의 절반(lose_ratio)을 잃고 나들이는 끝.
 func lose() -> void:
-	var r := float(cfg["bank"]["lose_ratio"])
+	var r := float(cfg["bank"]["lose_ratio"]) * (1.0 - tv("keep_bag"))
 	var b := bag()
 	b["orbs"] = int(floor(int(b["orbs"]) * (1.0 - r)))
 	b["coins"] = int(floor(int(b["coins"]) * (1.0 - r)))

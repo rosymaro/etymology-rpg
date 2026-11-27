@@ -1,7 +1,9 @@
 extends SceneTree
 ## 필드 사냥 시뮬레이터(07-fun 1절). 게임의 규칙 층(HuntRun, UnitWeapons, FieldMob, WorldMap)을 그대로 쓴다.
 ## 목표: 동행이 다가오는 몹의 80%쯤을 막고, 20%쯤은 뚫려 주인공에게 붙는다(사용자 의견: 영어를 배워야 하니 자주 뚫린다).
-## godot --headless -s tools/balance/hunt_sim.gd -- [초=300] [판=6] [single: 유닛 하나씩]
+## godot --headless -s tools/balance/hunt_sim.gd -- [초=300] [판=6] [single: 유닛 하나씩 | gear: 스테이지별 장비 특성]
+## gear: 동행 [1, 5, 10]이 그 스테이지에 흔한 차수 장비 5개씩(속성은 무작위 / 모두 공격 속성)을 걸친 채로 몹 체력 배율(field_traits.json mob_hp_stage)을 받는다.
+##       뚫린 비율이 장비 없는 스테이지 1과 비슷해야 한다(사용자 의견: 단어 퀴즈에 들어갈 확률을 비슷하게).
 ## 주인공은 들판을 이리저리 걷다가 가까운 몹은 피하고(벽에 막히면 방향을 바꾼다), 떨어진 구슬은 바로 줍는다고 본다(레벨업은 무기 강화를 먼저).
 
 const HERO_R := 26.0
@@ -28,6 +30,10 @@ func _init() -> void:
 		parties = []
 		for u in range(1, 13):
 			parties.append([u])
+	if args.size() > 2 and args[2] == "gear":
+		_gear(secs, trials)
+		quit()
+		return
 	for party in parties:
 		var kills := 0
 		var breach := 0
@@ -43,12 +49,53 @@ func _init() -> void:
 	quit()
 
 
-func _run(party: Array, secs: float, seed: int) -> Dictionary:
+const STAGE_TIER := [1, 1, 2, 2, 3, 3, 3, 4, 4, 4]  ## 스테이지마다 흔히 갖출 장비 차수
+
+
+func _gear(secs: float, trials: int) -> void:
+	print("스테이지 | 장비 | 뚫린 비율 | 분당 조우")
+	var party := [1, 5, 10]
+	var base := _many(party, secs, trials, null, 1)
+	print("1 | 없음 | %d%% | %.1f" % base)
+	for stage in [1, 3, 5, 8, 10]:
+		for mode in ["random", "attack"]:
+			var g := RandomNumberGenerator.new()
+			g.seed = stage * 7
+			var per: Array = []
+			for u in party:
+				var ws: Array = []
+				for i in 5:
+					var w := WordData.new()
+					w.tier = STAGE_TIER[stage - 1]
+					if mode == "attack":
+						w.attrs.append(6)
+					else:
+						for k in g.randi_range(1, 2):
+							w.attrs.append(g.randi_range(1, 20))
+					ws.append(w)
+				per.append(ws)
+			var ft := FieldTraits.from_gear(per)
+			print("%d | %d차 %s | %d%% | %.1f" % ([stage, STAGE_TIER[stage - 1], mode] + _many(party, secs, trials, ft, stage)))
+
+
+func _many(party: Array, secs: float, trials: int, ft: FieldTraits, stage: int) -> Array:
+	var kills := 0
+	var breach := 0
+	for t in trials:
+		var r := _run(party, secs, 100 + t, ft, stage)
+		kills += int(r["kills"])
+		breach += int(r["breach"])
+	return [roundi(100.0 * breach / maxi(1, kills + breach)), breach / (secs / 60.0) / trials]
+
+
+func _run(party: Array, secs: float, seed: int, ft: FieldTraits = null, stage := 1) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
 	var run := HuntRun.new({}, hc)
 	run.set_units(party)
 	run.reset()
+	run.traits = ft
+	run.stage = stage
 	var uw := UnitWeapons.new()
 	uw.no_fire_near = float(hc["no_fire_near"])
 	var hero := _start(rng)
@@ -103,9 +150,12 @@ func _run(party: Array, secs: float, seed: int) -> Dictionary:
 				var away := (e.pos - (h["from"] as Vector2))
 				if away.length() < 1.0:
 					away = e.pos - hero
-				e.set_meta("push", away.normalized() * (push if push > 0.0 else float(hc["knockback"])))
+				e.set_meta("push", away.normalized() * (push if push > 0.0 else float(hc["knockback"])) * (1.0 + run.tv("knockback")))
 				e.set_meta("push_t", 0.3)
-			if e.take_hit(int(h["dmg"])):
+			var dmg := int(h["dmg"])
+			if ft:
+				dmg = ft.damage(dmg, float(e.hp) / float(maxi(1, e.max_hp)), rng)
+			if e.take_hit(dmg):
 				mobs.erase(e)
 				kills += 1
 				var got := run.drops(e.kind, [], rng)
