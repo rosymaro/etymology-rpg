@@ -241,7 +241,8 @@ ui.quest.state_todo,진행 중
 ui.quest.boss_wait,"아직 언덕을 오를 수 없어요. 먼저 ""{title}""을 마치세요."
 ui.quest.board_done,알림판이 다시 반짝여요. 마을 소식이 잘 보여요.
 ui.quest.board_fill,"information, inform, format! 빈칸이 채워지고 알림판에 색이 돌아왔어요."
-ui.quest.all_done,스테이지 퀘스트를 모두 마쳤어요. 마을 입구 언덕의 보스에게 가 보세요.
+ui.quest.all_done,스테이지 퀘스트를 모두 마쳤어요. 절벽 아래 마을 입구 언덕의 보스에게 가 보세요.
+ui.quest.boss_ready_side,"{title}(남은 퀘스트) · 보스에게도 갈 수 있어요"
 ui.quest.s01_q_word.title,알림판의 세 단어
 ui.quest.s01_q_word.desc,"마을 알림판의 빈칸을 채울 단어 information, inform, format을 필드에서 잡아 와요."
 ui.quest.s01_q_word.hint,"알림판 빈칸: {have}/{need}. information, inform, format을 필드에서 잡아 오세요."
