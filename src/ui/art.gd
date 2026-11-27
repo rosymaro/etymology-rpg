@@ -48,14 +48,22 @@ static func frames(kind: String, id: String, anim: String) -> Array:
 
 
 ## 발끝 foot(아래 가운데)에 높이 h로 그린다(비율 유지). flip이면 좌우를 뒤집는다. 그림이 없으면 false.
-static func draw_anim(ci: CanvasItem, kind: String, id: String, anim: String, foot: Vector2, h: float, flip: bool = false, fps: float = 6.0, modulate: Color = Color.WHITE) -> bool:
+## sink: 0~1, 발밑 땅속으로 그만큼 가라앉은 모습(위쪽만 땅 위에 보인다. de- 땅속 숨기).
+static func draw_anim(ci: CanvasItem, kind: String, id: String, anim: String, foot: Vector2, h: float, flip: bool = false, fps: float = 6.0, modulate: Color = Color.WHITE, sink: float = 0.0) -> bool:
 	var fr := frames(kind, id, anim)
 	if fr.is_empty():
 		return false
+	if sink >= 1.0:
+		return true
 	var t: Texture2D = fr[int(Time.get_ticks_msec() / 1000.0 * fps) % fr.size()]
 	var sz := Vector2(h * float(t.get_width()) / float(t.get_height()), h)
 	ci.draw_set_transform(foot, 0.0, Vector2(-1.0 if flip else 1.0, 1.0))
-	ci.draw_texture_rect(t, Rect2(Vector2(-sz.x / 2.0, -sz.y), sz), false, modulate)
+	if sink > 0.0:
+		var keep := 1.0 - sink
+		ci.draw_texture_rect_region(t, Rect2(Vector2(-sz.x / 2.0, -sz.y * keep), Vector2(sz.x, sz.y * keep)),
+			Rect2(Vector2.ZERO, Vector2(t.get_width(), t.get_height() * keep)), modulate)
+	else:
+		ci.draw_texture_rect(t, Rect2(Vector2(-sz.x / 2.0, -sz.y), sz), false, modulate)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	return true
 

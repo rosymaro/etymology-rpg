@@ -24,10 +24,13 @@ static func color(unit: int) -> Color:
 	return COLORS.get(unit, Color("cccccc"))
 
 
-static func draw(ci: CanvasItem, unit: int, p: Vector2, facing: Vector2, moving: bool = false) -> void:
+## sink: 0~1 땅속으로 가라앉은 만큼(de- 땅속 숨기).
+static func draw(ci: CanvasItem, unit: int, p: Vector2, facing: Vector2, moving: bool = false, sink: float = 0.0) -> void:
 	# 사용자가 준 그림(pal/NN_idle_1 …): 걸을 때는 walk, 왼쪽으로 가면 뒤집는다. 걸을 때 살짝 통통 튄다
 	var hop := absf(sin(Time.get_ticks_msec() / 1000.0 * 10.0 + unit)) * 4.0 if moving else 0.0
-	if Art.draw_anim(ci, "pal", "%02d" % unit, "walk" if moving else "idle", p + Vector2(0, R * 1.2 - hop), R * 3.4, facing.x < 0.0, 4.0):
+	if Art.draw_anim(ci, "pal", "%02d" % unit, "walk" if moving else "idle", p + Vector2(0, R * 1.2 - hop), R * 3.4, facing.x < 0.0, 4.0, Color.WHITE, sink):
+		return
+	if sink >= 0.5:
 		return
 	if Art.draw(ci, "pal", "%02d" % unit, p + Vector2(0, -6), Vector2(R * 3, R * 3.2)):
 		return
