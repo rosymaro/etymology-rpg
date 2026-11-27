@@ -52,6 +52,9 @@ var _shield_t: Array[float] = []  ## 깨진 방어막마다 다시 차기까지 
 var _shield_safe := 0.0  ## 방어막이 막은 뒤 잠깐 무적(연달아 닿아도 하나만 깨지게)
 var _shield_fx := 0.0
 var _dex_btn: Button  ## 단어 카드가 날아 들어가는 곳
+var _ropes: Array[Dictionary] = []  ## 날아가는 밧줄(심판)
+var _pull := {}  ## 밧줄에 끌려가는 중
+var _puffs: Array[Dictionary] = []  ## 순간이동·가짜가 사라질 때 연기
 var _descend := {}  ## de-로 절벽을 내려가는 중 {a, b, t}(사용자 의견: 오르는 모습이 아니라 내려가는 모습)
 const DESCEND_SEC := 1.6
 var _hc: Dictionary  ## data/balance/field_hunt.json
@@ -558,6 +561,7 @@ func _new_enemy() -> FieldMob:
 	var w0 := GameData.repo.get_word(m.words[0]) if not m.words.is_empty() else null
 	m.attr = int(w0.attrs[0]) if w0 and not w0.attrs.is_empty() else 0
 	m.slot = w0.slot if w0 else ""
+	m.apply_attr(GameData.mob_attrs, kinds, _rng)  # 속성마다 행동(사용자 의견). 파동은 예전 네 가지 그대로
 	m.max_hp = _run.mob_hp(m.kind)  # 레벨이 올라도 한 방에 죽지 않는다
 	m.hp = m.max_hp
 	return m
@@ -581,17 +585,28 @@ func _pick_words(rare := false) -> Array[String]:
 		var fresh := pool.filter(func(w: WordData) -> bool: return not GameData.state.has_word(w.id))
 		if fresh.size() >= n:
 			pool.assign(fresh)
-	var total := 0
-	var wt := func(w: WordData) -> int: return maxi(1, 100 / maxi(1, w.freq)) if rare else w.freq
-	for w in pool:
-		total += wt.call(w)
+	# 사용자 의견: 몹 단어는 모두 그 몹 속성 단어(첫 단어의 주속성). 많이 잡은 단어는 덜 나오고 10번 넘으면 고정(WordWeight)
+	var decay: Dictionary = _hc.get("caught_decay", {})
+	var wt := func(w: WordData) -> float:
+		var base := float(maxi(1, 100 / maxi(1, w.freq))) if rare else float(w.freq)
+		return WordWeight.weight(base, int(GameData.state.caught.get(w.id, 0)), decay)
 	var guard := 0
 	while out.size() < n and guard < 100:
 		guard += 1
-		var r := _rng.randi_range(1, total)
+		if out.size() == 1:  # 첫 단어가 정해지면 그 속성 단어로만
+			var w0 := GameData.repo.get_word(out[0])
+			if w0 and not w0.attrs.is_empty():
+				var a0 := int(w0.attrs[0])
+				var same := pool.filter(func(w: WordData) -> bool: return a0 in w.attrs and w.id != out[0])
+				if same.size() >= n - 1:
+					pool.assign(same)
+		var total := 0.0
 		for w in pool:
-			r -= wt.call(w)
-			if r <= 0:
+			total += float(wt.call(w))
+		var r := _rng.randf() * total
+		for w in pool:
+			r -= float(wt.call(w))
+			if r <= 0.0:
 				if not w.id in out:
 					out.append(w.id)
 				break
@@ -616,7 +631,13 @@ func _step(delta: float) -> void:
 		_follow_cam()  # 멈춰 있어도 화면은 주인공을 비춘다(튜토리얼이 가리킬 자리가 맞게)
 		return
 	_tick_shields(delta)
+	_tick_ropes(delta)
+	for pf in _puffs:
+		pf["t"] = float(pf["t"]) + delta
+	_puffs = _puffs.filter(func(pf: Dictionary) -> bool: return float(pf["t"]) < 0.5)
 	var dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	if not _pull.is_empty():
+		dir = Vector2.ZERO  # 끌려가는 동안은 못 움직인다
 	if _stick_on:
 		dir = _stick_vec
 	var was_town := map.is_town(_hero)
@@ -703,6 +724,9 @@ func _step(delta: float) -> void:
 			e.ignore = true
 		var kinds: Dictionary = _f["kinds"].duplicate()
 		kinds["eater"] = {"speed": _hc["eater"]["speed"]}
+		e.facing_hero = _facing
+		e.tick_trait(delta, _hero)
+		_trait_requests(e)
 		var v := e.steer(_hero, delta, kinds, _rng)
 		var slow := _run.tv("slow_aura")
 		if slow > 0.0 and e.kind != "eater" and e.pos.distance_to(_hero) < _run.traits.param("slow_aura", "radius", 230.0):
@@ -715,6 +739,10 @@ func _step(delta: float) -> void:
 				e.remove_meta("push")
 				e.remove_meta("push_t")
 		var np: Vector2 = map.move(e.pos, v * delta, ENEMY_R)
+		if e.quirk == "ghost":  # 영혼: 벽을 지나간다(마을·다른 스테이지로는 못 간다)
+			np = e.pos + v * delta
+		elif e.kind == "bounce" and v.length() > 1.0 and np.distance_to(e.pos) < v.length() * delta * 0.5:
+			e.vel = -v.rotated(_rng.randf_range(-0.6, 0.6))  # 원소: 벽에 튕긴다
 		if e.kind == "eater":  # 뿌리먹이는 벽에 걸려도 미끄러지며 계속 온다(벽을 넘지 않고, 마을에는 못 들어온다)
 			var ep := np if np != e.pos else map.move(e.pos, v.rotated(0.8) * delta, ENEMY_R)
 			if not map.is_town(ep):
@@ -722,7 +750,12 @@ func _step(delta: float) -> void:
 		elif not map.is_town(np) and map.stage_at(np) == GameFlow.cur():
 			e.pos = np
 		if e.pos.distance_to(_hero) < HERO_R + ENEMY_R and _fmagic.sneak <= 0.0 and e.stun <= 0.0 and not map.is_town(_hero) \
-				and not GameData.state.free_roam:  # 자유 탐험: 몹에 닿아도 단어 전투에 안 들어간다(보스는 그대로)
+				and not GameData.state.free_roam and not e.hidden:  # 자유 탐험: 몹에 닿아도 단어 전투에 안 들어간다(보스는 그대로)
+			if e.fake:  # 창조의 가짜: 닿으면 펑 사라질 뿐 전투가 없다
+				_puffs.append({"pos": e.pos, "t": 0.0})
+				_enemies.remove_at(i)
+				_show_toast(t("ui.hunt.fake"))
+				return
 			if _shield_block(e):
 				continue
 			_busy = true
@@ -1074,9 +1107,24 @@ func _base_count() -> int:
 func _hit(e: FieldMob, dmg: int, from: Vector2, push := 0.0, stun := 0.0) -> void:
 	if not _enemies.has(e):
 		return
+	if e.hidden:
+		return  # 땅속(형상)은 맞지 않는다
 	if _run.traits:  # 필드 특성: 공격·처형·치명
 		dmg = _run.traits.damage(dmg, float(e.hp) / float(maxi(1, e.max_hp)), _rng)
 	var dead := e.take_hit(dmg)
+	if not dead and e.quirk == "split" and e.split_left > 0 and not e.fake:  # 창조: 처음 맞으면 반으로 나뉜다(하나는 가짜)
+		var twin := e.split_off(_rng)
+		_enemies.append(twin)
+		_puffs.append({"pos": e.pos, "t": 0.0})
+	if e.quirk == "caller":  # 유대: 때리면 같은 속성이 모두 달려든다
+		var cc: Dictionary = e.traits.get("caller", {})
+		for o in _enemies:
+			if o.attr == e.attr and o.kind != "eater" and o.pos.distance_to(e.pos) < float(cc.get("radius", 1100)):
+				o.rage = float(cc.get("sec", 8.0))
+				o.rage_speed = float(cc.get("speed", 300))
+		_show_toast(t("ui.hunt.caller"))
+	if e.quirk == "heavy":
+		push = -1.0 if push < 0.0 else (push if push > 0.0 else float(_hc["knockback"])) * float(e.traits.get("heavy", {}).get("knockback", 0.3))
 	if stun > 0.0 and e.kind != "eater":
 		e.stun = maxf(e.stun, stun)
 	if e.kind != "eater" and push >= 0.0:  # 맞으면 뒤로 밀려난다(0.3초)
@@ -1099,6 +1147,55 @@ func _hit(e: FieldMob, dmg: int, from: Vector2, push := 0.0, stun := 0.0) -> voi
 			_enemies[i] = ne
 		else:
 			_enemies.remove_at(i)
+
+
+## 몹 성질이 화면에 부탁한 것: 순간이동·튀어나오기(주인공 가까이 걸을 수 있는 자리), 밧줄 쏘기, 무리 모이기.
+func _trait_requests(e: FieldMob) -> void:
+	if e.want_tp:
+		e.want_tp = false
+		var near: Array = e.traits.get(e.quirk, {}).get("near", [140, 260])
+		var p := map.random_field_spot(GameFlow.cur(), _rng, _hero, float(near[0]), float(near[1]), ENEMY_R)
+		if p != Vector2.INF:
+			_puffs.append({"pos": e.pos, "t": 0.0})
+			e.pos = p
+			_puffs.append({"pos": p, "t": 0.0})
+	if e.want_rope:
+		e.want_rope = false
+		if map.clear_line(e.pos, _hero) and not map.is_town(_hero):
+			var rc: Dictionary = e.traits.get("rope", {})
+			_ropes.append({"mob": e, "tip": e.pos, "dir": (_hero - e.pos).normalized(), "left": float(rc.get("range", 460)), "speed": float(rc.get("speed", 900)), "pull": float(rc.get("pull_sec", 0.55))})
+	if e.quirk == "pack" and e.rage <= 0.0:  # 번영: 도망가다 여럿 모이면 한꺼번에
+		var pc: Dictionary = e.traits.get("pack", {})
+		var mates := _enemies.filter(func(o: FieldMob) -> bool: return o.quirk == "pack" and o.attr == e.attr and o.pos.distance_to(e.pos) < float(pc.get("radius", 320)))
+		if mates.size() >= int(pc.get("need", 3)):
+			for o in mates:
+				o.rage = float(pc.get("sec", 3.0))
+				o.rage_speed = float(pc.get("speed", 430))
+
+
+## 밧줄(심판): 끝이 날아가다 주인공에게 닿으면 몹 자리로 끌려간다(닿으면 단어 전투).
+func _tick_ropes(delta: float) -> void:
+	for k in range(_ropes.size() - 1, -1, -1):
+		var r: Dictionary = _ropes[k]
+		var e: FieldMob = r["mob"]
+		if not _enemies.has(e):
+			_ropes.remove_at(k)
+			continue
+		var step := float(r["speed"]) * delta
+		r["tip"] = (r["tip"] as Vector2) + (r["dir"] as Vector2) * step
+		r["left"] = float(r["left"]) - step
+		if (r["tip"] as Vector2).distance_to(_hero) < HERO_R + 10.0 and _shield_safe <= 0.0:
+			_pull = {"from": _hero, "to": e.pos + (_hero - e.pos).normalized() * (HERO_R + ENEMY_R - 6.0), "t": 0.0, "dur": float(r["pull"])}
+			_show_toast(t("ui.hunt.rope"))
+			_ropes.remove_at(k)
+		elif float(r["left"]) <= 0.0:
+			_ropes.remove_at(k)
+	if not _pull.is_empty():
+		_pull["t"] = float(_pull["t"]) + delta
+		var kk := clampf(float(_pull["t"]) / float(_pull["dur"]), 0.0, 1.0)
+		_hero = map.move(_hero, (_pull["from"] as Vector2).lerp(_pull["to"], kk) - _hero, HERO_R)
+		if kk >= 1.0:
+			_pull = {}
 
 
 ## 팝업 퀴즈를 다 맞혀 잡았다: 그 몹 자리에 새 몹, 필드는 그대로.
@@ -1687,8 +1784,14 @@ func _draw() -> void:
 				draw_rect(Rect2(dp - Vector2(12, 15), Vector2(24, 30)), UiKit.ACCENT, false, 3)
 	for e in _enemies:
 		_draw_mob(e, o + e.pos)
-	if not map.is_town(_hero):
-		_draw_weapons(o)
+	for r in _ropes:  # 심판의 밧줄
+		var e2: FieldMob = r["mob"]
+		draw_line(o + e2.pos, o + (r["tip"] as Vector2), Color("8a6a3a"), 4)
+		draw_circle(o + (r["tip"] as Vector2), 7, Color("c9a06a"))
+	for pf in _puffs:  # 순간이동·가짜가 사라질 때 연기
+		var k := float(pf["t"]) / 0.5
+		draw_circle(o + (pf["pos"] as Vector2), 20 + 30 * k, Color(1, 1, 1, 0.6 * (1.0 - k)))
+	_draw_weapons(o)  # 마을 안에서 성벽 너머로 쏠 때도 날아가는 모습이 보이게(사용자 의견)
 	for pal in _pals:  # 동행 유닛과 이름
 		var pp: Vector2 = o + pal["pos"]
 		PalArt.draw(self, int(pal["unit"]), pp, _facing, _moving)
@@ -1863,37 +1966,10 @@ func _draw_villager(p: Vector2) -> void:
 ## 몸 모양 = 착용 부위(무기 별, 머리 동글, 가슴 네모, 장갑 물방울, 신발 세모) + 부위 첫 글자.
 ## 움직임(배회·쫓기·도망)은 머리 위 표시(! / 땀방울)로만 알린다.
 func _draw_attr_body(e: FieldMob, p: Vector2) -> void:
+	# 사용자 의견: 몸 모양은 속성마다(MobArt, mob_attrs.json shape). 몸 색도 속성 색. 부위는 몸 위 첫 글자
 	var col := MinigameScreen.attr_color(e.attr)
-	var r := ENEMY_R
-	match e.slot:
-		"head":  # 동글
-			draw_circle(p, r, col)
-			draw_arc(p, r, 0, TAU, 32, UiKit.INK, 3)
-		"chest":  # 네모
-			var rc := Rect2(p - Vector2(r, r * 0.9), Vector2(r * 2, r * 1.8))
-			draw_rect(rc, col)
-			draw_rect(rc, UiKit.INK, false, 3)
-		"hands":  # 물방울(위가 뾰족)
-			var pts := PackedVector2Array([p + Vector2(0, -r * 1.4)])
-			for k in 13:
-				var a := PI * k / 12.0
-				pts.append(p + Vector2(cos(a) * r, sin(a) * r))  # 아래 반원
-			draw_colored_polygon(pts, col)
-			pts.append(pts[0])
-			draw_polyline(pts, UiKit.INK, 3)
-		"feet":  # 세모
-			var tri := PackedVector2Array([p + Vector2(0, -r * 1.2), p + Vector2(r * 1.1, r * 0.9), p + Vector2(-r * 1.1, r * 0.9)])
-			draw_colored_polygon(tri, col)
-			tri.append(tri[0])
-			draw_polyline(tri, UiKit.INK, 3)
-		_:  # 무기: 별(뾰족뾰족)
-			var st := PackedVector2Array()
-			for k in 12:
-				var a := k * TAU / 12.0 - PI / 2.0
-				st.append(p + Vector2(cos(a), sin(a)) * (r * 1.15 if k % 2 == 0 else r * 0.8))
-			draw_colored_polygon(st, col)
-			st.append(st[0])
-			draw_polyline(st, UiKit.INK, 3)
+	var shape := String(GameData.mob_attrs.get("attrs", {}).get(str(e.attr), {}).get("shape", "drop"))
+	MobArt.draw(self, shape, p, ENEMY_R, col, UiKit.INK)
 	draw_circle(p + Vector2(-9, -4), 3.5, UiKit.INK)
 	draw_circle(p + Vector2(9, -4), 3.5, UiKit.INK)
 	if e.slot != "":  # 부위 첫 글자
@@ -1916,8 +1992,16 @@ func _draw_mob(e: FieldMob, p: Vector2) -> void:
 	p += Vector2(0, bob)
 	if e.kind == "rush" and e.phase == "wind":  # 돌진 전에 부르르 떤다
 		p.x += sin(Time.get_ticks_msec() / 25.0) * 4.0
+	if e.hidden:  # 땅속(형상): 흙더미만 들썩인다
+		draw_circle(p + Vector2(0, 10), ENEMY_R * 0.8, Color(0.36, 0.25, 0.16, 0.45))
+		draw_arc(p + Vector2(0, 10), ENEMY_R * 0.8, PI, TAU, 16, Color(0.36, 0.25, 0.16, 0.8), 3)
+		return
 	if not Art.draw(self, "enemy", "attr_%02d" % e.attr, p, Vector2(ENEMY_R * 2.6, ENEMY_R * 2.6)):
 		_draw_attr_body(e, p)
+	if e.shield > 0:  # 권위: 방어막
+		draw_arc(p, ENEMY_R + 9, 0, TAU, 36, Color(0.95, 0.85, 0.4, 0.9), 4, true)
+	if e.rage > 0.0:  # 달려드는 중(유대가 부름, 번영 무리, 자연이 깸)
+		draw_string(ThemeDB.fallback_font, p + Vector2(-20, -46), "!!", HORIZONTAL_ALIGNMENT_CENTER, 40, 30, UiKit.BAD)
 	if e.flash > 0.0:
 		draw_circle(p, ENEMY_R + 4, Color(1, 1, 1, 0.55))
 	if e.hp < e.max_hp:  # 깎인 체력

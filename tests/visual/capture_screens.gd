@@ -82,6 +82,20 @@ func _run() -> void:
 	for c in main._overlay.get_children():
 		c.queue_free()
 	await get_tree().process_frame
+	fs._enemies.clear()  # 속성 20가지 몹 모양(사용자 의견: 모양도 속성마다)
+	for k in 20:
+		var me := FieldMob.new()
+		me.attr = k + 1
+		me.apply_attr(gd.mob_attrs, gd.field["kinds"], gd.rng)
+		me.hidden = false
+		me.pos = fs._hero + Vector2(-260 + (k % 5) * 130, -420 + (k / 5) * 140)
+		me.max_hp = 4
+		me.hp = 4
+		me.stun = 99.0
+		fs._enemies.append(me)
+	await get_tree().create_timer(0.3).timeout
+	await _shot("04_mob_shapes")
+	fs._enemies.clear()
 	s.joined = [1, 4] as Array[int]
 	s.loadout.erase("units")
 	fs._spawn_eater()
