@@ -56,7 +56,9 @@ func _answer_all(right: bool) -> void:
 			continue
 		var ans := q._qs[q._i].answer
 		q._pick(ans if right else (ans + 1) % q._qs[q._i].options.size())
-		await wait_seconds(float(GameData.learning["reveal_sec"]["right" if right else "wrong"]) + 0.3)
+		await wait_physics_frames(2)
+		q._next()  # 풀이를 읽고 다음
+		await wait_physics_frames(2)
 
 
 func test_stage1_loop() -> void:
@@ -379,7 +381,9 @@ func test_right_words_are_caught_and_only_wrong_ones_fight() -> void:
 		var q := main.current() as QuizScreen
 		var ans := q._qs[q._i].answer
 		q._pick(ans if k == 0 else (ans + 1) % q._qs[q._i].options.size())
-		await wait_seconds(float(GameData.learning["reveal_sec"]["right" if k == 0 else "wrong"]) + 0.3)
+		await wait_physics_frames(2)
+		q._next()
+		await wait_physics_frames(2)
 	for f in 20:
 		if main.current() is BattlePrepScreen:
 			break

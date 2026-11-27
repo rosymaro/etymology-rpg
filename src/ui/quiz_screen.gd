@@ -18,6 +18,8 @@ var _opts: VBoxContainer
 var _locked := false
 var _parts_row: HBoxContainer  ## 조각 칩(단어를 조각으로 나눠 보여 줄 때)
 var _hint_lbl: Label
+var _next_btn: Button  ## 풀이 뒤 다음(사용자 의견: 다 읽고 누를 때 넘어간다)
+var _ask_ms := 0  ## 이 시각 전에는 보기를 누를 수 없다
 
 
 func open(args: Dictionary) -> void:
@@ -71,9 +73,14 @@ func open(args: Dictionary) -> void:
 	_opts = UiKit.vbox(10)
 	v.add_child(_opts)
 	# 4번째 보기 가운데가 엄지 자리(UiKit.THUMB_ROW)에 오게: 아래 여백 32, 줄 간격 14를 빼고 남는 만큼 띄운다
-	var gap2 := Control.new()
+	# 그 아래 남는 자리에 풀이 뒤 '다음' 버튼(보기와 겹치지 않게)
+	var gap2 := CenterContainer.new()
 	gap2.custom_minimum_size.y = UiKit.THUMB_ROW - UiKit.THUMB_H / 2.0 - 32.0 - 14.0
 	v.add_child(gap2)
+	_next_btn = UiKit.button(t("ui.quiz.next"), _next, UiKit.ACCENT.lightened(0.35), 26)
+	_next_btn.custom_minimum_size = Vector2(260, UiKit.THUMB_H)
+	_next_btn.visible = false
+	gap2.add_child(_next_btn)
 	if _mode == "encounter":
 		_tutorial.call_deferred()
 	if _i >= _qs.size():
@@ -95,6 +102,7 @@ func _intro_evolve() -> void:
 
 func _show() -> void:
 	_locked = false
+	_next_btn.visible = false
 	for c in _opts.get_children():
 		c.queue_free()
 	var q := _qs[_i]
@@ -106,11 +114,20 @@ func _show() -> void:
 	_show_parts(q, false)
 	for k in q.options.size():
 		var idx := k
-		var b := UiKit.button(q.options[k], func() -> void: _pick(idx), UiKit.PAPER, 26)
+		var b := UiKit.button(q.options[k], func() -> void:
+			if Time.get_ticks_msec() >= _ask_ms:
+				_pick(idx), UiKit.PAPER, 26)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.custom_minimum_size = Vector2(0, UiKit.THUMB_H)
 		b.clip_text = true
+		b.disabled = true  # 잠깐 뒤에 누를 수 있다(흐리게 보였다가 또렷해진다)
 		_opts.add_child(b)
+	var delay := float(GameData.learning.get("answer_delay_sec", 0.7))
+	_ask_ms = Time.get_ticks_msec() + int(delay * 1000.0)
+	get_tree().create_timer(delay).timeout.connect(func() -> void:
+		for c in _opts.get_children():
+			if c is Button and not _locked:
+				(c as Button).disabled = false)
 
 
 ## 조각 칩: 나눠 보여 줄 때(단계 A·B)나 풀이 때. 그 위에 원래 단어, 칩마다 위에 단어 조각, 아래에 조각 뜻(숨기면 "?").
@@ -209,16 +226,28 @@ func _pick(k: int) -> void:
 	var w := GameData.repo.get_word(q.word_id)
 	var ex: Dictionary = w.example
 	_info_lbl.text = t("ui.quiz.right" if ok else "ui.quiz.wrong") + "  " + w.meaning + ("\n" + str(ex.get("en", "")) if ex.has("en") else "")
-	var wait := 1.1 if ok else 1.8
+	for c in btns:  # 고른 뒤에는 보기를 누를 수 없다(색은 그대로)
+		var bb := c as Button
+		bb.add_theme_stylebox_override("disabled", bb.get_theme_stylebox("normal"))
+		bb.add_theme_color_override("font_disabled_color", UiKit.INK)
+		bb.disabled = true
 	if q is InferenceQuestion:  # 풀이: 조각 뜻이 이어져 단어 뜻이 된다
 		var iq := q as InferenceQuestion
 		_show_parts(iq, true)
 		if iq.kind == "infer":
 			InferenceQuiz.record(GameData.state.pieces, iq, ok)
-		var rs: Dictionary = GameData.learning["reveal_sec"]
-		wait = float(rs["right"] if ok else rs["wrong"]) if iq.parts.size() > 1 else wait
 	GameData.patch_route("evolve_quiz" if _mode == "evolve" else "quiz", {"i": _i + 1, "right": _right})
-	await get_tree().create_timer(wait).timeout
+	_next_btn.visible = true
+	_next_btn.disabled = true
+	get_tree().create_timer(float(GameData.learning.get("next_delay_sec", 0.4))).timeout.connect(func() -> void:
+		_next_btn.disabled = false)
+
+
+## 풀이를 다 읽고 다음 문제로(마지막이면 끝)
+func _next() -> void:
+	if not _locked:
+		return
+	_next_btn.visible = false
 	_i += 1
 	if _i < _qs.size():
 		_show()

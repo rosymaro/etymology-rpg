@@ -84,7 +84,9 @@ func test_factory_play_and_story_reward_goes_through_quiz() -> void:
 	var q := main.current() as QuizScreen
 	assert_not_null(q, "얻은 단어 시험")
 	q._pick(q._qs[0].answer)
-	await wait_seconds(1.5)
+	await wait_physics_frames(2)
+	q._next()
+	await wait_seconds(0.5)
 	assert_true(main.current() is ResultScreen)
 	assert_true(GameData.state.has_word(first))
 
