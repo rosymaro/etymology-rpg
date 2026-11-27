@@ -184,13 +184,12 @@ def _cliff(L, W, X, Y):
     rock = mix(m1, m0, smooth(-0.6, 0.8, strata))
     d1, gap, rid = voronoi(Xw * 0.7, Yw * 1.4, 18, 147)
     rock = shade(rock, (rid - 0.5) * 0.16 - smooth(2.0, 0.0, gap) * 0.28 + (fbm(X, Y, 12, 149, 2) - 0.5) * 0.14)
-    # 사용자 의견: 절벽은 남쪽(마을 쪽)이 높고 북쪽으로 내려간다(de-로 내려가는 길). 그래서 풀 입술은 남쪽 가장자리,
-    # 북쪽 밑동은 그늘이 진다(아래 땅으로 떨어지는 면)
+    # 위(북쪽)를 보는 면은 밝게, 아래는 그늘: 칸 판의 세로 기울기
     f = sample(W.field("cliff", 0.55), X, Y)
     gy = np.gradient(f, axis=0) * 40
-    rock = shade(rock, np.clip(-gy, -0.4, 0.25))
-    # 남쪽 가장자리 풀 입술(서 있는 높은 쪽)
-    lip = smooth(0.5, 0.56, cv) * smooth(0.64, 0.56, cv) * (gy < -0.02)
+    rock = shade(rock, np.clip(gy, -0.35, 0.3))
+    # 윗가장자리 풀 입술
+    lip = smooth(0.5, 0.56, cv) * smooth(0.64, 0.56, cv) * (gy > 0.02)
     grass = sample(W.color("grass", 0), X, Y)
     rock = mix(rock, shade(grass, 0.05), lip[..., None] * 0.8 if lip.ndim == 2 else lip)
     L.over(rock, ca, oy, ox)

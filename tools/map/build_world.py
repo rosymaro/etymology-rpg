@@ -445,8 +445,9 @@ def main(river_seed=1000):
                 maze = (mx0, my0, zw, zh, (e0[0] + 1, my0 - 1), (e1[0] + 1, my0 + zh))
         def in_maze(x, y):
             return maze and maze[0] <= x < maze[0] + maze[2] and maze[1] <= y < maze[1] + maze[3]
+        keep_out = set()  # 스테이지 1: 보스 둘레(절벽 고리 안)에는 길을 내지 않는다. 북쪽 한 길로만 내려간다(사용자 의견)
         def cost(x, y):
-            if not inside(st, x, y) or (x, y) in barrier: return None
+            if not inside(st, x, y) or (x, y) in barrier or (x, y) in keep_out: return None
             c = g[y][x]
             if in_maze(x, y): return 1.0 if c == 'p' else None
             return {'.': 1.0, ',': 1.0, 'p': 0.6, 'b': 0.6, 'T': 6.0, 'w': 25.0, '~': 40.0}.get(c, 30.0) + wob[y][x] * 3
@@ -485,17 +486,32 @@ def main(river_seed=1000):
                     dist[n] = d0 + k; heapq.heappush(pq, (d0 + k, n))
         far = [c for c in dist if all(inside(st, c[0] + dx, c[1] + dy) and (c[0] + dx, c[1] + dy) not in barrier
                                       for dx in range(-3, 4) for dy in range(-3, 4)) and not in_maze(*c)]
-        boss = max(far, key=lambda c: dist[c] - (20 if g[c[1]][c[0]] in '^#Hw~T' else 0))
+        if st == 1:  # 사용자 의견: 보스는 절벽 아래(남쪽). 북쪽에 둘레를 돌아 내려올 땅이 있는 곳에서 가장 먼 곳
+            def north_room(c):
+                return all(inside(st, c[0] + dx, c[1] - dy) and (c[0] + dx, c[1] - dy) not in barrier and (c[0] + dx, c[1] - dy) in dist
+                           for dy in range(9, 15) for dx in (-1, 0, 1))
+            boss_far = [c for c in far if north_room(c)] or far
+        else:
+            boss_far = far
+        boss = max(boss_far, key=lambda c: dist[c] - (20 if g[c[1]][c[0]] in '^#Hw~T' else 0))
+        if st == 1:
+            for y in range(boss[1] - 10, boss[1] + 11):
+                for x in range(boss[0] - 10, boss[0] + 11):
+                    if math.hypot(x - boss[0], y - boss[1]) < 9.5:
+                        keep_out.add((x, y))
+            north_in = (boss[0], boss[1] - 11)  # 절벽 고리 바깥 북쪽: 여기서 아래(남쪽)로 내려간다
         # 명소 2곳(마을·보스와 멀리)
         marks = []
         for k in range(2):
             cand = [c for c in far[::7] if g[c[1]][c[0]] in '.p']
             p = max(cand, key=lambda c: min(abs(c[0] - q[0]) + abs(c[1] - q[1]) for q in marks + [boss, town_c]))
             marks.append(p)
-        stops = [town_c] + marks + ([maze[4], maze[5]] if maze else []) + [boss]
+        stops = [town_c] + marks + ([maze[4], maze[5]] if maze else []) + [north_in if st == 1 else boss]
         for a, b in zip(stops, stops[1:]):
             if maze and a == maze[4] and b == maze[5]: continue
             carve(astar(a, b))
+        if st == 1:  # 북쪽에서 곧장 아래로 보스까지(절벽을 내려가는 길)
+            carve([(boss[0], y) for y in range(north_in[1], boss[1] + 1)])
         if st > 1:
             carve(astar(entries[st], town_c))
         else:  # 가운데 마을에서 문마다 길
