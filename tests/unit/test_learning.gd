@@ -34,7 +34,7 @@ func test_split_finds_pieces_in_the_word() -> void:
 	assert_eq(PieceSplit.piece_at(parts, 3), "forma")
 
 
-func test_step_a_shows_everything_on_stage1() -> void:
+func test_step_a_shows_pieces_and_meanings_before_stage5_boss() -> void:
 	var q := quiz.question("information", 1)
 	assert_eq(q.kind, "infer")
 	assert_eq(q.step, "A")
@@ -43,38 +43,44 @@ func test_step_a_shows_everything_on_stage1() -> void:
 		if p["piece"] != "":
 			assert_true(p["shown"], "A: 조각 뜻을 다 보여 준다")
 	assert_string_contains(q.explain("알림"), "in(안에)")
+	var q2 := quiz.question("receipt", 4, {"boss_s04": true})
+	assert_eq(q2.step, "A", "스테이지 5 보스 전까지 A")
 
 
-func test_step_b_hides_learned_pieces_but_helps_with_new_ones() -> void:
-	var q := quiz.question("receipt", 2)  # re-(배움) + capere(배움)
-	assert_eq(q.step, "B")
+func test_step_a_splits_words_without_learned_pieces_too() -> void:
+	var q := quiz.question("supply", 2)  # sub-는 스테이지 4 조각: 안 배웠어도 나눠서 뜻을 보인다
 	assert_true(q.show_split)
 	for p in q.parts:
-		if p["learned"]:
-			assert_false(p["shown"], "B: 배운 조각 뜻은 스스로 떠올린다")
-	var w := GameData.repo.get_word("supply")  # sub-는 스테이지 4: 스테이지 2에선 안 배운 조각
-	var q2 := quiz.question(w.id, 2)
-	for p in q2.parts:
-		if p["piece"] != "" and not p["learned"]:
-			assert_true(p["shown"], "안 배운 조각은 뜻을 보여 준다")
+		if p["piece"] != "":
+			assert_true(p["shown"])
 
 
-func test_step_c_does_not_split_and_familiar_pieces_hide_early() -> void:
-	var q := quiz.question("effect", 4)
+func test_step_b_hides_all_meanings_before_stage8_boss() -> void:
+	var q := quiz.question("receipt", 6, {"boss_s05": true})
+	assert_eq(q.step, "B")
+	assert_true(q.show_split, "B: 조각은 나눠 준다")
+	for p in q.parts:
+		assert_false(p["shown"], "B: 조각 뜻은 ?")
+	var q2 := quiz.question("receipt", 8, {"boss_s05": true, "boss_s07": true})
+	assert_eq(q2.step, "B", "스테이지 8 보스 전까지 B")
+
+
+func test_step_c_shows_only_the_word_after_stage8_boss() -> void:
+	var q := quiz.question("effect", 9, {"boss_s05": true, "boss_s08": true})
 	assert_eq(q.step, "C")
-	assert_false(q.show_split, "C: 나누지 않는다(조각을 스스로 찾는다)")
-	var fam := {"in-": 3, "forma": 3}
-	var q1 := quiz.question("information", 1, fam)
-	for p in q1.parts:
-		if p["learned"]:
-			assert_false(p["shown"], "잘 아는 조각은 A에서도 숨긴다")
+	assert_false(q.show_split, "C: 영어 단어만")
+
+
+func test_step_bonus_raises_one_step() -> void:
+	assert_eq(quiz.question("effect", 1, {}, 1).step, "B")
+	assert_eq(quiz.question("effect", 6, {"boss_s05": true}, 1).step, "C")
+	assert_eq(quiz.question("effect", 9, {"boss_s05": true, "boss_s08": true}, 1).step, "C")
 
 
 func test_words_without_learned_pieces_are_plain_meaning_questions() -> void:
 	var w: WordData = GameData.repo.first_tier(1, "field").filter(func(x: WordData) -> bool: return not cur.has_learned(x, 1))[0]
 	var q := quiz.question(w.id, 1)
 	assert_eq(q.kind, "meaning")
-	assert_false(q.show_split)
 	assert_eq(q.options.size(), 4)
 	assert_true(q.answer >= 0)
 

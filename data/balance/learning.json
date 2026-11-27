@@ -1,7 +1,7 @@
 {
-  "_doc": "학습 수치(06-learning.md). 단계 A~E를 스테이지로 정하고, 익숙한 조각(familiar_right번 맞힘)은 한 단계 앞당겨 숨긴다",
-  "steps": { "A": [1, 1], "B": [2, 3], "C": [4, 6], "D": [7, 9], "E": [10, 10] },
-  "familiar_right": 3,
+  "_doc": "학습 수치(06-learning.md)",
+  "step_bosses": { "A": 5, "B": 8 },
+  "_step_bosses_doc": "조우 퀴즈 단계: 이 스테이지 보스를 잡기 전까지 그 단계. A 조각+뜻, B 조각+?, 그 뒤 C 단어만(사용자 의견)",
   "learned_mix": 0.5,
   "_learned_mix_doc": "필드 몹 단어 중 배운 조각이 든 단어를 이 비율쯤 섞어 낸다(유추 연습)",
   "answer_delay_sec": 0.7,
