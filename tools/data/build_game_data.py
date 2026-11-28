@@ -7,6 +7,8 @@ import argparse, csv, json, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, 'tools/balance'))
 import skills  # 스킬 어근 65개
+sys.path.insert(0, HERE)
+import fit_forms  # 조각 모양을 철자에 맞춘다(사용자 의견: pre + sent + ation)
 
 UNITS = ['만들기', '잡기', '보기', '알기', '말하기', '가기', '나르기·주기', '이끌기', '끌기·던지기', '돌리기', '서기·두기', '깨기·자르기']
 SLOTS = {'무기': 'weapon', '머리': 'head', '가슴': 'chest', '장갑': 'hands', '신발': 'feet'}
@@ -96,7 +98,7 @@ def main():
             'stage': int(r['스테이지']) if r['스테이지'] else 0,
             'obtain': OBTAIN.get(r['얻는 방법'], ''),
             'skill_roots': sk,
-            'etym': etym_of(r['word'], v, s, R),
+            'etym': fit_forms.fit(r['word'], etym_of(r['word'], v, s, R)),
             'example': (v or s or {}).get('example', {}),
             'ipa': (v or s or {}).get('ipa', ''),
         })
@@ -104,6 +106,13 @@ def main():
     json.dump({'version': 1, 'source': 'words_v2_plan.csv + etymology-english-vocabulary', 'words': out},
               open(os.path.join(ROOT, 'data/game/words.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     fam = {s: f for f, v in FAM.items() for s in v.split()}
+    # 검토용: 철자에 맞춰 바꾼 조각 모양(사용자 의견). 단어 / 어근 / 원래 형태 / 단어 속 글자(사라짐이면 빈칸)
+    with open(os.path.join(ROOT, 'docs/data/etym_variants.tsv'), 'w', encoding='utf-8') as fh:
+        fh.write('word\troot\tbase\tform\tlost\n')
+        for w in out:
+            for e in w['etym']:
+                if 'base' in e:
+                    fh.write('%s\t%s\t%s\t%s\t%s\n' % (w['id'], e['root'], e['base'], e.get('form', ''), 'lost' if e.get('lost') else ''))
     json.dump({'version': 1, 'roots': [{'id': s, 'family': fam[s], 'tier': t} for s, t, _ in skills.S]},
               open(os.path.join(ROOT, 'data/game/skill_roots.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     assert not missing, ('뜻·어원이 없는 단어', missing)

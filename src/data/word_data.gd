@@ -48,6 +48,8 @@ static func from_dict(d: Dictionary) -> WordData:
 func forms() -> Array[String]:
 	var out: Array[String] = []
 	for e in etym:
+		if bool(e.get("lost", false)):
+			continue  # 철자에 모양이 남지 않은 조각은 미니게임 조각으로 쓰지 않는다
 		var f := str(e.get("form", "")).to_lower()
 		if f == "":
 			f = str(e.get("root", "")).replace("-", "").to_lower()
