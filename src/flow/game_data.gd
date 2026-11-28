@@ -114,7 +114,35 @@ func _write_resume(mode: String, route: Dictionary) -> void:
 	var cf := ConfigFile.new()
 	cf.set_value("resume", "mode", mode)
 	cf.set_value("resume", "route", JSON.stringify(route))
+	cf.set_value("resume", "at", int(Time.get_unix_time_from_system()))  # 마지막으로 적은 때
+	cf.set_value("resume", "build", build_stamp())  # 어느 빌드(APK)였는지
 	cf.save(resume_path)
+
+
+const RESUME_SEC := 300  ## 이만큼(5분) 넘게 지나 다시 켜면 이어 하지 않고 타이틀부터(사용자 의견)
+
+
+## 내보낼 때 넣은 빌드 시각(addons/build_stamp). 개발 중(편집기)에는 "".
+static func build_stamp() -> String:
+	var f := FileAccess.open("res://build_stamp.txt", FileAccess.READ)
+	return f.get_as_text().strip_edges() if f else ""
+
+
+## 앱이 멈출 때: 하던 곳은 그대로, 시각만 새로(5분을 여기서부터 센다).
+func touch_resume() -> void:
+	if resume_enabled and resume_mode() != "":
+		_write_resume(resume_mode(), resume_route())
+
+
+## 이어 할 수 있는가(사용자 의견): 업데이트로 빌드가 바뀌었거나, 마지막으로 적은 뒤 5분이 넘게 지났으면 타이틀부터.
+func resume_fresh(now: int = -1) -> bool:
+	var cf := ConfigFile.new()
+	if not resume_enabled or cf.load(resume_path) != OK:
+		return false
+	if String(cf.get_value("resume", "build", "")) != build_stamp():
+		return false
+	var t := now if now >= 0 else int(Time.get_unix_time_from_system())
+	return t - int(cf.get_value("resume", "at", 0)) <= RESUME_SEC
 
 
 func resume_mode() -> String:

@@ -151,3 +151,26 @@ func test_battle_resumes_at_the_same_step_with_same_result() -> void:
 	assert_eq(bs2._ctx.log.size(), log_size, "같은 씨앗·같은 선택이라 같은 전투")
 	assert_eq(bs2._picks, picks, "고른 마법도 그대로")
 	await _kill(m2)
+
+
+## 사용자 의견: 업데이트했거나 5분 넘게 지나 다시 켜면 타이틀부터
+func test_resume_only_within_five_minutes_and_same_build() -> void:
+	GameData.set_resume("story")
+	GameData.set_route({"s": "field"})
+	var now := int(Time.get_unix_time_from_system())
+	assert_true(GameData.resume_fresh(now), "방금이면 이어 한다")
+	assert_true(GameData.resume_fresh(now + GameData.RESUME_SEC - 5))
+	assert_false(GameData.resume_fresh(now + GameData.RESUME_SEC + 5), "5분이 넘으면 타이틀부터")
+	var cf := ConfigFile.new()
+	cf.load(GameData.resume_path)
+	cf.set_value("resume", "build", "old-build")
+	cf.save(GameData.resume_path)
+	assert_false(GameData.resume_fresh(now), "빌드가 바뀌었으면(업데이트) 타이틀부터")
+	GameData.set_resume("story")
+	GameData.set_route({"s": "field"})
+	cf.load(GameData.resume_path)
+	cf.set_value("resume", "at", now - GameData.RESUME_SEC - 60)
+	cf.save(GameData.resume_path)
+	var m := await _boot()
+	assert_true(m.current() is TitleScreen, "오래 지나 켜면 타이틀")
+	assert_eq(GameData.resume_mode(), "")

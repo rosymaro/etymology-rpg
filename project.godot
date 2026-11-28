@@ -26,7 +26,7 @@ window/handheld/orientation=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+enabled=PackedStringArray("res://addons/build_stamp/plugin.cfg", "res://addons/gut/plugin.cfg")
 
 [gui]
 

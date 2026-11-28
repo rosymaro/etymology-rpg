@@ -36,6 +36,7 @@ ui.title_exam.need,단어 {need}개를 모으면 볼 수 있어요 (지금 {have
 ui.common.ok,확인
 ui.common.back,돌아가기
 ui.common.close,닫기
+ui.options.to_title,처음 화면으로
 ui.title.name,어원 RPG
 ui.title.sub,말뿌리를 되찾는 여행
 ui.title.continue,이어하기

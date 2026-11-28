@@ -36,6 +36,8 @@ func _init(m: Main) -> void:
 ## 앱을 켤 때: 하던 곳이 적혀 있으면(다른 앱을 보다 와서 안드로이드가 앱을 다시 켰을 때) 그 화면에서 이어 한다.
 ## 앱을 제대로 끝냈으면(Main._exit_tree) 지워져 있어 타이틀부터.
 func start() -> void:
+	if not GameData.resume_fresh():  # 업데이트했거나 5분 넘게 지났으면 타이틀부터(사용자 의견)
+		GameData.set_resume("")
 	var mode := GameData.resume_mode()
 	var r := GameData.resume_route()
 	match mode:

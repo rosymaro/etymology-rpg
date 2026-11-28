@@ -74,6 +74,7 @@ func _notification(what: int) -> void:
 		if _screen and _screen.has_method("_remember"):
 			_screen.call("_remember")
 		GameData.save()
+		GameData.touch_resume()
 
 
 ## 앱을 제대로 끝냈을 때(뒤로 가기로 끄기, 최근 앱에서 지우기 등 안드로이드가 끝을 알려 줄 때)는 다음에 처음부터 시작한다.
