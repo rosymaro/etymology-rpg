@@ -454,14 +454,19 @@ func test_free_roam_mode_walks_through_walls_and_skips_word_battles() -> void:
 	GameData.use_save("story")
 
 
-## 사용자 의견: 마을 안에서 성벽 너머 바깥 몹을 쏜다. 마을 안의 주인공은 몹이 알아채지 못한다.
-func test_town_shoots_over_wall_and_mobs_ignore_hero_inside() -> void:
+## 사용자 의견: 성벽 너머로는 쏘지 못한다(입구로만). 마을 안의 주인공은 몹이 알아채지 못한다.
+func test_town_does_not_shoot_over_wall_and_mobs_ignore_hero_inside() -> void:
 	GameData.new_game("하늘")
 	GameData.tutorials_enabled = false
 	GameData.state.flags["s01_tut_battle"] = true
 	var m := WorldMap.load_default()
 	var t: Array = m.region(1)["town"]
-	var wall := Vector2i(int(t[0]) + 8, int(t[1]) + int(t[3]) - 1)
+	var wall := Vector2i(-1, -1)
+	for x in range(int(t[0]) + 2, int(t[0]) + int(t[2]) - 2):  # 남쪽 성벽 가운데 성문이 아닌 곳
+		var c := Vector2i(x, int(t[1]) + int(t[3]) - 1)
+		if m.ch(c) == "M" and m.ch(c + Vector2i(-1, 0)) == "M" and m.ch(c + Vector2i(1, 0)) == "M":
+			wall = c
+			break
 	GameData.state.pos = (Vector2(wall) + Vector2(0.5, -1.5)) * m.tile
 	main.flow.go_field()
 	await wait_physics_frames(2)
@@ -476,11 +481,11 @@ func test_town_shoots_over_wall_and_mobs_ignore_hero_inside() -> void:
 	e.words = ["information"] as Array[String]
 	e.pos = (Vector2(wall) + Vector2(0.5, 2.0)) * m.tile
 	f._enemies.append(e)
-	for k in 40:
+	for k in 30:
 		f._hero = GameData.state.pos
+		e.pos = (Vector2(wall) + Vector2(0.5, 2.0)) * m.tile
 		await wait_physics_frames(3)
-		if e.hp < 999:
-			break
-	assert_lt(e.hp, 999, "성벽 너머 몹을 맞힌다")
+	assert_eq(e.hp, 999, "성벽 너머 몹은 맞히지 못한다")
+	assert_false(m.shot_line(GameData.state.pos, e.pos), "성벽이 무기를 막는다")
 	assert_true(e.ignore, "마을 안의 주인공은 알아채지 못한다")
 	assert_true(main.current() is FieldScreen, "전투로 넘어가지 않는다")

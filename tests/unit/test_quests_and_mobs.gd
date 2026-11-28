@@ -304,8 +304,8 @@ func test_unaware_mobs_do_not_chase_and_eater_waits() -> void:
 	assert_gt(e.steer(Vector2(200, 0), 0.016, kinds, rng).x, 0.0, "알아채면 곧장 온다")
 
 
-## 사용자 의견: 마을 안에서 바깥으로 쏜다(무기는 성벽 위로 넘어간다), 몹의 눈은 성벽에 막힌다.
-func test_weapons_fly_over_town_wall_but_mobs_cannot_see_through_it() -> void:
+## 사용자 의견: 무기도 몹의 눈도 성벽에 막힌다(입구로만 쏠 수 있다).
+func test_town_wall_blocks_weapons_and_eyes() -> void:
 	var m := WorldMap.load_default()
 	var t: Array = m.region(1)["town"]
 	var wall := Vector2i(-1, -1)
@@ -317,7 +317,7 @@ func test_weapons_fly_over_town_wall_but_mobs_cannot_see_through_it() -> void:
 	assert_eq(m.ch(wall), "M")
 	var inside := (Vector2(wall) + Vector2(0.5, -1.5)) * m.tile
 	var outside := (Vector2(wall) + Vector2(0.5, 2.5)) * m.tile
-	assert_true(m.shot_line(inside, outside), "무기는 성벽 위로")
+	assert_false(m.shot_line(inside, outside), "무기는 성벽 너머로 못 간다")
 	assert_false(m.clear_line(outside, inside), "몹은 성벽 너머를 못 본다")
 
 

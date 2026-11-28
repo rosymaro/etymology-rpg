@@ -1,10 +1,10 @@
 {
-  "_doc": "필드 몹의 행동·모양은 속성마다(사용자 의견). 몹의 속성 = 그 몹이 가진 단어의 주속성, 몹 단어는 모두 그 속성 단어. move: 움직임(wander 배회, chase 쫓기, flee 도망, rush 떨다 돌진, still 가만히, stalk 안 볼 때만 다가옴, bounce 벽에 튕김, burst 갔다 섰다, zigzag 지그재그로 쫓기, orbit 둘레를 돌다 덮침, march 가로·세로로만 쫓기, mixed 예전 네 가지 섞임). quirk: 덧붙는 성질. shape: 몸 모양(src/ui/mob_art.gd). 수치는 traits·moves에",
+  "_doc": "필드 몹의 행동·모양은 속성마다(사용자 의견). 몹의 속성 = 그 몹이 가진 단어의 주속성, 몹 단어는 모두 그 속성 단어. move: 움직임(wander 배회, chase 쫓기, flee 도망, rush 떨다 돌진, still 가만히, stalk 안 볼 때만 다가옴, bounce 벽에 튕김, burst 갔다 섰다, zigzag 지그재그로 쫓기, orbit 둘레를 돌다 덮침, march 가로·세로로만 쫓기, wave 물결처럼 밀려왔다 물러남, mixed 예전 네 가지 섞임). quirk: 덧붙는 성질. shape: 몸 모양(src/ui/mob_art.gd). 수치는 traits·moves에",
   "attrs": {
     "1":  { "move": "wander", "quirk": "regen",   "shape": "flower" },
     "2":  { "move": "chase",  "quirk": "ghost",   "shape": "ghost" },
     "3":  { "move": "stalk",  "quirk": "",        "shape": "diamond" },
-    "4":  { "move": "mixed",  "quirk": "",        "shape": "drop" },
+    "4":  { "move": "wave",   "quirk": "",        "shape": "drop" },
     "5":  { "move": "still",  "quirk": "sleeper", "shape": "bush" },
     "6":  { "move": "bounce", "quirk": "",        "shape": "star5" },
     "7":  { "move": "wander", "quirk": "",        "shape": "square" },
@@ -22,7 +22,7 @@
     "19": { "move": "chase",  "quirk": "rope",    "shape": "kite" },
     "20": { "move": "march",  "quirk": "",        "shape": "gear" }
   },
-  "_attrs_doc": "사용자가 말한 것: 넉백이 덜(17 신성 heavy), 다가오며 순간이동(9 공간 blink), 가만히 있다가 맞으면 달려듦(5 자연 sleeper), 도망가다 여럿 모이면 한꺼번에(15 번영 pack), 방어막 하나(13 권위 shield), 밧줄로 끌고 감(19 심판 rope), 맞으면 반으로 나뉘고 하나는 가짜(8 창조 split), 안 다가오지만 때리면 같은 속성이 모두 달려듦(12 유대 caller). 나머지는 [의견]으로 속성 뜻에 맞췄다: 생명 regen(체력이 다시 참), 영혼 ghost(벽을 지나 느리게 쫓음), 지혜 stalk(주인공이 등을 보일 때만 다가옴), 파동 mixed(예전 네 가지: 스테이지 1은 모두 파동이라 그대로), 원소 bounce, 일상 배회, 시간 burst, 바람 zigzag, 파멸 rush, 영감 orbit, 형상 burrow(땅속에 숨었다가 가까이 튀어나옴), 질서 march",
+  "_attrs_doc": "사용자가 말한 것: 넉백이 덜(17 신성 heavy), 다가오며 순간이동(9 공간 blink), 가만히 있다가 맞으면 달려듦(5 자연 sleeper), 도망가다 여럿 모이면 한꺼번에(15 번영 pack), 방어막 하나(13 권위 shield), 밧줄로 끌고 감(19 심판 rope), 맞으면 반으로 나뉘고 하나는 가짜(8 창조 split), 안 다가오지만 때리면 같은 속성이 모두 달려듦(12 유대 caller). 나머지는 [의견]으로 속성 뜻에 맞췄다: 생명 regen(체력이 다시 참), 영혼 ghost(벽을 지나 느리게 쫓음), 지혜 stalk(주인공이 등을 보일 때만 다가옴), 파동 wave(사용자 결정: 속성마다 하나. 물결처럼 밀려왔다 물러나며, 사냥 레벨이 오를수록 더 멀리·빠르게), 원소 bounce, 일상 배회, 시간 burst, 바람 zigzag, 파멸 rush, 영감 orbit, 형상 burrow(땅속에 숨었다가 가까이 튀어나옴), 질서 march",
   "moves": {
     "still":  { "sight": 0 },
     "stalk":  { "speed": 300, "sight": 620 },
@@ -30,8 +30,10 @@
     "burst":  { "speed": 420, "on": 0.5, "off": 0.9, "sight": 600 },
     "zigzag": { "speed": 280, "sight": 560, "give_up": 900, "amp": 0.9, "freq": 7.0 },
     "orbit":  { "speed": 260, "sight": 600, "radius": 230, "turn": 2.2, "dive_every": 4.0, "dive_speed": 560, "dive_sec": 0.6 },
-    "march":  { "speed": 240, "sight": 560, "give_up": 900 }
+    "march":  { "speed": 240, "sight": 560, "give_up": 900 },
+    "wave":   { "speed": 210, "sight": 620, "give_up": 950, "period": 2.2, "bias": 0.35, "per_level": 0.06, "max_scale": 2.2 }
   },
+  "_wave_doc": "파동: 속도 = speed × (bias + sin) 로 밀려왔다 물러난다(bias만큼 조금씩 다가온다). 사냥 레벨 L에서 speed에 min(max_scale, 1 + L × per_level)을 곱해 더 멀리·더 빠르게",
   "traits": {
     "regen":   { "every": 3.0 },
     "ghost":   { "speed_mult": 0.7 },

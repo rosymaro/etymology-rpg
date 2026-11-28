@@ -1,6 +1,6 @@
 {
   "_doc": "필드 사냥(07-fun.md 1절). 폰에서 손맛을 보며 고친다",
-  "mob_hp": { "wander": 4, "chase": 5, "flee": 3, "rush": 4, "eater": 90, "still": 5, "stalk": 4, "bounce": 4, "burst": 4, "zigzag": 4, "orbit": 4, "march": 5 },
+  "mob_hp": { "wander": 4, "chase": 5, "flee": 3, "rush": 4, "eater": 90, "still": 5, "stalk": 4, "bounce": 4, "burst": 4, "zigzag": 4, "orbit": 4, "march": 5, "wave": 4 },
   "mob_hp_per_level": 1.0,
   "mob_hp_party": [0.65, 1.0, 2.0],
   "_mob_hp_party_doc": "동행 1·2·3명일 때 몹 체력 배율(hunt_sim.gd로 맞춘다: 다가오는 몹의 80%쯤을 막고 20%쯤 뚫리게)",

@@ -33,6 +33,7 @@ var traits := {}  ## mob_attrs.json traits
 var _tr_t := 0.0  ## 성질 타이머
 var _dive_t := 0.0
 var phase_t := 0.0
+var wave_scale := 1.0  ## 파동: 사냥 레벨에 따라 물결 거리·속도 배율(set_level)
 var _dash_dir := Vector2.ZERO
 
 
@@ -66,6 +67,12 @@ func apply_attr(cfg: Dictionary, kinds: Dictionary, rng: RandomNumberGenerator) 
 	_tr_t = rng.randf_range(0.5, 2.0)
 
 
+## 사냥 레벨에 맞춘다(파동: 레벨이 오를수록 더 멀리·빠르게 밀려온다).
+func set_level(lv: int) -> void:
+	var k: Dictionary = moves.get("wave", {})
+	wave_scale = minf(float(k.get("max_scale", 1.0)), 1.0 + lv * float(k.get("per_level", 0.0)))
+
+
 ## 나뉜다(창조): 체력을 반으로 하고 똑같은 모습의 짝을 돌려준다. 하나만 진짜(fake = false).
 func split_off(rng: RandomNumberGenerator) -> FieldMob:
 	split_left -= 1
@@ -78,6 +85,7 @@ func split_off(rng: RandomNumberGenerator) -> FieldMob:
 	m.slot = slot
 	m.quirk = quirk
 	m.moves = moves
+	m.wave_scale = wave_scale
 	m.traits = traits
 	m.max_hp = max_hp
 	m.hp = hp
@@ -203,6 +211,13 @@ func steer(hero: Vector2, delta: float, kinds: Dictionary, rng: RandomNumberGene
 					vel = d / dist * float(k["speed"])
 				else:
 					vel = (d / dist).orthogonal() * float(k["speed"]) + d / dist * (dist - float(k["radius"])) * 0.5
+				return vel
+		"wave":  # 파동: 물결처럼 밀려왔다 물러난다(조금씩 다가온다)
+			alert = dist < float(k["give_up" if alert else "sight"])
+			if alert and dist > 1.0:
+				phase_t += delta
+				var s := sin(phase_t * TAU / float(k["period"]))
+				vel = d / dist * float(k["speed"]) * wave_scale * (float(k["bias"]) + s)
 				return vel
 		"march":  # 질서: 가로·세로로만
 			alert = dist < float(k["give_up" if alert else "sight"])

@@ -108,3 +108,35 @@ func test_stage2_boss_gate_needs_more_than_half_no_cap() -> void:
 	var all: int = GameData.rules.repo.first_tier(2).size()
 	var g: Dictionary = GameData.rules.boss_gate(GameState.new(), 2)
 	assert_eq(g["need"], all / 2 + 1)
+
+
+## 사용자 의견: 동굴은 들어갈 때만 몹이 나온다(잡아도, 화면을 다시 열어도 더 나오지 않는다)
+func test_cave_mobs_only_spawn_on_entry() -> void:
+	GameData.new_game("하늘")
+	GameData.tutorials_enabled = false
+	GameData.cave_mobs.clear()
+	var wm := WorldMap.load_default()
+	var qc: Dictionary = wm.caves[0]
+	var cm := WorldMap.load_cave(qc["id"])
+	GameData.state.cave = qc["id"]
+	GameData.state.pos = cm.exit_inside(0)
+	main.flow.go_field()
+	await wait_physics_frames(2)
+	var f := main.current() as FieldScreen
+	var n0: int = GameData.cave_mobs[qc["id"]]
+	f._spawn_t = 0.0
+	f._run.d["level"] = 20  # 레벨이 올라도 더 나오지 않는다
+	var e: FieldMob = f._enemies[0]
+	f._caught(e)
+	assert_eq(int(GameData.cave_mobs[qc["id"]]), n0 - 1, "잡으면 한 마리 줄고")
+	assert_null(f._respawn(), "다시 나오지 않는다")
+	GameData.cave_mobs[qc["id"]] = n0 - 1
+	await wait_physics_frames(5)
+	var live := f._enemies.filter(func(x: FieldMob) -> bool: return x.kind != "eater").size()
+	assert_lte(live, n0 - 1, "레벨이 올라도 채우지 않는다")
+	main.flow.go_field()  # 전투하고 돌아온 것처럼 화면을 다시 연다
+	await wait_physics_frames(2)
+	var f2 := main.current() as FieldScreen
+	assert_eq(f2._enemies.filter(func(x: FieldMob) -> bool: return x.kind != "eater").size(), n0 - 1, "다시 열어도 남은 수만큼")
+	GameData.state.cave = ""
+	GameData.cave_mobs.clear()

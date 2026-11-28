@@ -145,6 +145,7 @@ func say(key: String) -> String:
 	return TranslationServer.translate(key).format({"hero": state.hero_name if state else ""})
 
 
+var cave_mobs := {}  ## 동굴 id -> 남은 몹 수(들어갈 때만 나온다. 저장은 안 함)
 var puzzles := {}  ## 퍼즐 id -> PushPuzzle(돌 자리는 화면이 바뀌어도 남는다, 저장은 안 함)
 
 
