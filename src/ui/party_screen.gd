@@ -4,9 +4,11 @@ extends Screen
 ## 칸을 누르면 고를 것이 나온다. 마법·어근 장착은 마을에서만 바꾼다(장비는 어디서나).
 
 var _detail: VBoxContainer
+var _start: Array[int] = []  ## 이 화면을 열 때의 동행(닫을 때 바뀌었으면 레벨을 이어 주고 말을 한다)
 
 
 func open(_args: Dictionary) -> void:
+	_start = Loadout.companions(GameData.state)
 	UiKit.fill_bg(self, UiKit.LEAF.lightened(0.4))
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -19,7 +21,7 @@ func open(_args: Dictionary) -> void:
 	var title := UiKit.label(t("ui.party.title"), 30)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
-	head.add_child(UiKit.button(t("ui.common.back"), func() -> void: main.flow.go_field(), UiKit.PAPER, 22))
+	head.add_child(UiKit.button(t("ui.common.back"), _leave, UiKit.PAPER, 22))
 	v.add_child(head)
 	_detail = UiKit.vbox(10)
 	v.add_child(UiKit.scroll(_detail))
@@ -41,6 +43,21 @@ func _tutorial() -> void:
 	elif not _in_town():
 		steps.append({"target": _loadout_card, "text": "tut.party.town", "mode": "any"})
 	TutorialOverlay.run(self, "party", steps)
+
+
+## 나갈 때: 동행이 바뀌었으면(마을 여관에서만) 빠진 동행의 사냥 레벨을 새 동행이 이어받고, 주인공이 말한다.
+func _leave() -> void:
+	var now := Loadout.companions(GameData.state)
+	if now == _start:
+		main.flow.go_field()
+		return
+	var gone := _start.filter(func(u: int) -> bool: return not u in now)
+	var came := now.filter(func(u: int) -> bool: return not u in _start)
+	var got := GameData.hunt_run().swap_units(now)
+	GameData.save()
+	main.flow.go_field()
+	if not gone.is_empty() or not came.is_empty():
+		main.notice(GameText.companion_swap(gone, came, got))
 
 
 func _in_town() -> bool:

@@ -29,7 +29,7 @@
   "max_level": 20,
   "no_fire_near": 0,
   "_no_fire_near_doc": "이 거리 안의 몹은 쏘지 않는다. 0: 몹이 20%쯤은 뚫고 오도록 맞춰서(hunt_sim) 퀴즈가 자연히 나온다. 짧은 무기(외침·깃발·방패·팽이)가 바로 옆 몹을 못 치던 문제가 있었다",
-  "bank": { "exp_per_orb": 6, "lose_ratio": 0.5 },
+  "bank": { "exp_per_orb": 6, "lose_ratio": 1.0 },
   "eater": { "after_sec": 360, "again_sec": 180, "speed": 420, "hard_step": 1, "bonus_orbs": 40, "words": 3 },
   "_weapons_doc": "필드 무기는 데리고 다니는 유닛마다 다르다(07-fun 1절, 사용자 의견). 배열은 강화 단계 0~4. type은 src/domain/hunt/unit_weapons.gd",
   "weapons": {

@@ -391,10 +391,18 @@ func _after_encounter(word_ids: Array[String], right: Array[bool]) -> void:
 		for id in caught:
 			GameData.rules.gain_word(GameData.state, id)
 			EventBus.word_captured.emit(id)
+		# 사용자 의견: 틀려서 전투로 들어가면 사냥 레벨과 구슬을 빼앗긴다(코인·단어는 그대로)
+		var had := GameData.hunt_run().level() > 0 or int(GameData.hunt_run().bag()["orbs"]) > 0
+		GameData.hunt_run().lose_orbs()
 		GameData.save()
 		go_battle_prep(fight, false)
+		var lines: Array[String] = []
+		if had:
+			lines.append(TranslationServer.translate("ui.hunt.orbs_stolen"))
 		if not caught.is_empty():
-			main.notice(TranslationServer.translate("ui.quiz.caught_some").format({"words": ", ".join(caught), "n": fight.size()}))
+			lines.append(TranslationServer.translate("ui.quiz.caught_some").format({"words": ", ".join(caught), "n": fight.size()}))
+		if not lines.is_empty():
+			main.notice("\n\n".join(lines))
 
 
 ## 마을 미니게임(스테이지 1: 주문 제작). 마을 단어는 이것으로만 얻는다(01-rpg-base '마을과 특수 행위').
@@ -530,7 +538,7 @@ var _lost := false  ## 방금 전투에서 졌다: 결과 뒤 병원에서 깨�
 func _to_hospital() -> void:
 	_lost = true
 	enc = {}
-	GameData.hunt_run().lose()  # 주머니의 절반을 잃는다(07-fun 1절)
+	GameData.hunt_run().lose()  # 주머니의 코인·단어를 모두 잃는다(사용자 의견)
 	var s := GameData.state
 	s.pos = WorldMap.load_default().spot(cur(), "hospital")
 	s.place = "town"

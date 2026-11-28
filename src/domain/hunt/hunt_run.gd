@@ -3,7 +3,9 @@ extends RefCounted
 ## 필드 사냥 한 번의 나들이(07-fun.md 1절). 노드·화면을 모른다. 상태는 GameState.hunt(사전)에 두어 저장·화면 전환에도 남는다.
 ## hunt = {level, exp, units: [데리고 다니는 유닛], weapons: {무기 id: 단계(0부터)}, speed, magnet, sec, eaters, bag: {orbs, coins, words: []}}
 ## 무기는 데리고 다니는 유닛마다 하나(u01 망치, u05 외침, u10 팽이 …, field_hunt.json weapons).
-## 사냥으로 얻은 것은 주머니(bag)에 담기고, 마을에 들어가야(bank) 내 것이 된다. 지면 주머니의 절반을 잃는다.
+## 사냥으로 얻은 것은 주머니(bag)에 담기고, 마을에 들어가야(bank) 코인·단어가 내 것이 된다(사용자 의견).
+## 사냥 레벨과 구슬은 마을에 가도 그대로다. 퀴즈를 틀려 전투로 들어가면 사냥 레벨과 구슬을 빼앗긴다(lose_orbs).
+## 전투에서 지면 주머니의 코인·단어도 모두 잃는다(lose).
 
 var d: Dictionary
 var cfg: Dictionary
@@ -19,7 +21,7 @@ func _init(hunt: Dictionary, hunt_cfg: Dictionary) -> void:
 		reset()
 
 
-## 마을을 나설 때: 레벨·강화는 0에서. 주머니는 그대로(마을에 들어가면 비워진다).
+## 사냥 레벨·강화를 0에서(퀴즈를 틀려 전투로 들어갈 때). 주머니는 그대로.
 func reset() -> void:
 	var bag: Dictionary = d.get("bag", {"orbs": 0, "coins": 0, "words": []})
 	var units: Array = d.get("units", [1])
@@ -34,6 +36,27 @@ func weapon_of(unit: int) -> String:
 		if int(cfg["weapons"][id].get("unit", 0)) == unit:
 			return String(id)
 	return ""
+
+
+## 동행을 바꾼다(마을 여관에서만, 사용자 의견): 빠진 동행의 무기 단계를 새 동행이 이어받는다.
+## 빠진 동행들의 평균(소수점 아래 버림)을 새로 들어온 동행 하나하나에 준다. 그대로 남은 동행은 그대로.
+## 빠진 동행 없이 늘기만 하면 새 동행은 0단계. 돌려주는 값: 새 동행 -> 받은 단계.
+func swap_units(units: Array) -> Dictionary:
+	var old: Array = d.get("units", [])
+	var gone: Array = old.filter(func(u: Variant) -> bool: return not int(u) in units.map(func(x: Variant) -> int: return int(x)))
+	var came: Array = units.filter(func(u: Variant) -> bool: return not int(u) in old.map(func(x: Variant) -> int: return int(x)))
+	var sum := 0
+	for u in gone:
+		sum += int(d["weapons"].get(weapon_of(int(u)), 0))
+	var lv := sum / gone.size() if not gone.is_empty() else 0
+	set_units(units)
+	var got := {}
+	for u in came:
+		var id := weapon_of(int(u))
+		if id != "":
+			d["weapons"][id] = mini(lv, (cfg["weapons"][id]["dmg"] as Array).size() - 1)
+			got[int(u)] = int(d["weapons"][id])
+	return got
 
 
 ## 데리고 다니는 유닛을 정한다: 그 유닛들의 무기만 남긴다(이미 있던 무기의 강화는 그대로, 새 무기는 0단계).
@@ -212,23 +235,27 @@ func tick(delta: float) -> bool:
 	return false
 
 
-## 마을에 들어갔다: 주머니를 풀어 내 것으로(구슬 → 유닛 경험치, 코인 → 지갑, 단어 → 도감). 나들이도 새로.
-## 돌려주는 값 {orbs, coins, words: [단어 id]} (풀 게 없었으면 orbs·coins 0, words 빈 배열)
+## 마을에 들어갔다: 코인 → 지갑, 단어 → 도감(주머니에서 비운다). 사냥 레벨과 구슬은 그대로 둔다(사용자 의견).
+## 구슬은 지난번 마을 뒤로 새로 모은 만큼만 유닛 경험치가 되고, 무료 뽑기도 새로 오른 레벨만큼만 준다(두 번 받지 않게).
+## 돌려주는 값 {orbs: 이번에 경험치가 된 구슬, coins, words: [단어 id], free_pulls}
 func bank(state: GameState, rules: ProgressRules) -> Dictionary:
-	var b := bag().duplicate(true)
-	# 사용자 의견: 들어오기 전 사냥 레벨 5마다 무료 뽑기 1번(코인이 들지 않는다). 5를 넘지 않으면 없다
-	b["free_pulls"] = free_pulls_for(level())
-	state.free_pulls += int(b["free_pulls"])
-	var exp := int(b["orbs"]) * int(cfg["bank"]["exp_per_orb"])
+	var b := bag()
+	var out := {"orbs": maxi(0, int(b["orbs"]) - int(d.get("orbs_banked", 0))), "coins": int(b["coins"]), "words": (b["words"] as Array).duplicate()}
+	# 사용자 의견: 사냥 레벨 5마다 무료 뽑기 1번(코인이 들지 않는다)
+	out["free_pulls"] = maxi(0, free_pulls_for(level()) - int(d.get("pulls_given", 0)))
+	d["pulls_given"] = int(d.get("pulls_given", 0)) + int(out["free_pulls"])
+	state.free_pulls += int(out["free_pulls"])
+	var exp := int(out["orbs"]) * int(cfg["bank"]["exp_per_orb"])
 	if exp > 0:
 		for u in state.joined:
 			state.unit_exp[u - 1] += exp
+	d["orbs_banked"] = int(b["orbs"])
 	state.wallet += int(b["coins"])
 	for w in b["words"]:
 		rules.gain_word(state, String(w))
-	d["bag"] = {"orbs": 0, "coins": 0, "words": []}
-	reset()
-	return b
+	b["coins"] = 0
+	b["words"] = []
+	return out
 
 
 ## 사냥 레벨 L에서 마을에 들어오면 받는 무료 뽑기 수(field_hunt.json free_pull_every 레벨마다 1번).
@@ -236,12 +263,18 @@ func free_pulls_for(lv: int) -> int:
 	return lv / maxi(1, int(cfg.get("free_pull_every", 5)))
 
 
-## 전투에서 졌다: 주머니의 절반(lose_ratio)을 잃고 나들이는 끝.
+## 퀴즈를 틀려 전투로 들어간다(사용자 의견): 사냥 레벨과 구슬을 빼앗긴다. 코인과 단어는 그대로.
+func lose_orbs() -> void:
+	bag()["orbs"] = 0
+	reset()
+
+
+## 전투에서 졌다(사용자 의견): 주머니의 코인·단어도 모두 잃는다(lose_ratio 1.0, 필드 특성 keep_bag만큼은 남는다).
 func lose() -> void:
-	var r := float(cfg["bank"]["lose_ratio"]) * (1.0 - tv("keep_bag"))
+	var keep := 1.0 - float(cfg["bank"]["lose_ratio"]) * (1.0 - tv("keep_bag"))
 	var b := bag()
-	b["orbs"] = int(floor(int(b["orbs"]) * (1.0 - r)))
-	b["coins"] = int(floor(int(b["coins"]) * (1.0 - r)))
+	b["orbs"] = 0
+	b["coins"] = int(floor(int(b["coins"]) * keep))
 	var ws: Array = b["words"]
-	b["words"] = ws.slice(0, int(floor(ws.size() * (1.0 - r))))
+	b["words"] = ws.slice(0, int(floor(ws.size() * keep)))
 	reset()

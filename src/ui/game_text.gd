@@ -55,3 +55,38 @@ static func etym_text(w: WordData) -> String:
 	for e in w.etym:
 		parts.append("%s(%s)" % [e.get("root", ""), e.get("meaning", "")])
 	return " + ".join(parts) if not parts.is_empty() else "-"
+
+
+## 받침에 맞춘 조사: josa("뚝딱", "은", "는") → "뚝딱은", josa("빙글", "아", "야") → "빙글아".
+static func josa(word: String, with_final: String, without_final: String) -> String:
+	if word == "":
+		return word
+	var c := word.unicode_at(word.length() - 1)
+	var has := c >= 0xAC00 and c <= 0xD7A3 and (c - 0xAC00) % 28 != 0
+	return word + (with_final if has else without_final)
+
+
+## 동행을 바꾸었을 때 주인공의 말(사용자 의견: 마을 여관에 머문다는 설정).
+## "뚝딱은 마을에서 쉬고 있어. 빙글아, 우리 같이 놀자~"
+static func companion_swap(gone: Array, came: Array, levels: Dictionary) -> String:
+	var lines: Array[String] = []
+	var gn: Array[String] = []
+	for u in gone:
+		gn.append(tr_("name.char." + GameData.UNIT_CHARS[int(u) - 1]))
+	if not gn.is_empty():
+		var last := gn.pop_back() as String
+		gn.append(josa(last, "은", "는"))
+		lines.append(tr_("ui.party.swap_rest").format({"names": ", ".join(gn)}))
+	var cn: Array[String] = []
+	for u in came:
+		cn.append(tr_("name.char." + GameData.UNIT_CHARS[int(u) - 1]))
+	if not cn.is_empty():
+		var last2 := cn.pop_back() as String
+		cn.append(josa(last2, "아", "야"))
+		lines.append(tr_("ui.party.swap_join").format({"names": ", ".join(cn)}))
+		var lv: Array[String] = []
+		for u in came:
+			lv.append("%s %d" % [tr_("name.char." + GameData.UNIT_CHARS[int(u) - 1]), int(levels.get(int(u), 0))])
+		if not gone.is_empty():
+			lines.append(tr_("ui.party.swap_level").format({"list": ", ".join(lv)}))
+	return "\n".join(lines)

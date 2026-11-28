@@ -12,6 +12,7 @@ const ART_H := 176.0  ## 카드 위쪽 그림 자리 높이(사용자 의견: �
 var coins: CoinRow
 var _card: PanelContainer
 var _bg: ColorRect
+var frame: CardFrame  ## 속성마다 다른 테두리(사용자 의견)
 var _title: Label
 var art: WordArt  ## 그림 자리: 적은 단어 그림, 아군은 유닛 그림
 var _icon: SlotIcon
@@ -64,6 +65,8 @@ func _init() -> void:
 	_hp = UiKit.label("", 24)
 	for l in [_atk, _def, _hp]:
 		v.add_child(l)
+	frame = CardFrame.new()
+	_card.add_child(frame)  # 맨 위에 겹친다
 	_card.gui_input.connect(_on_card_input)
 
 
@@ -91,8 +94,13 @@ func _set_look(c: Combatant) -> void:
 		mat.set_shader_parameter("c%d" % i, cs[mini(i, cs.size() - 1)])
 	if w:
 		art.set_word(w)
+		frame.attr = int(w.attrs[0]) if not w.attrs.is_empty() else 0
 	else:
 		art.set_unit(c.unit_no)
+		frame.attr = 0
+		if c.unit_no > 0 and GameData.state:  # 아군: 장비로 켜진 속성(없으면 먹선)
+			var ar := AttributeResolver.new().resolve(GameData.state.eq(c.unit_no), GameData.repo)
+			frame.attr = int(ar["attr"]) if int(ar["tier"]) > 0 else 0
 	_icon.visible = w != null and w.slot != ""
 	if _icon.visible:
 		_icon.slot = w.slot
