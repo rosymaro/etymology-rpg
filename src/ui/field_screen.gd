@@ -153,7 +153,10 @@ func _setup_map() -> void:
 	_puz.clear()
 	_spots = []
 	if _cave != "":
-		for i in int(_f.get("cave_enemies", 5)):  # 닫힌 곳: 들어갈 때 한 번만
+		# 닫힌 곳: 들어갈 때 한 번만. 전투하고 돌아와도(화면을 다시 열어도) 남은 수만큼만(사용자 의견)
+		if not GameData.cave_mobs.has(_cave):
+			GameData.cave_mobs[_cave] = int(_f.get("cave_enemies", 5))
+		for i in int(GameData.cave_mobs[_cave]):
 			var ce := _new_enemy(false)
 			if ce:
 				_enemies.append(ce)
@@ -341,6 +344,8 @@ func _leave_cave(i: int) -> void:
 func _switch_map(cave: String, i: int) -> void:
 	var from := _cave
 	_cave = cave
+	GameData.cave_mobs.erase(from)  # 나가면 잊는다: 다시 들어가면 새로(입장 때만 나온다)
+	GameData.cave_mobs.erase(cave)
 	if cave == "":
 		map = WorldMap.load_default()
 		_hero = map.cave_out(from, i)
@@ -563,7 +568,8 @@ func _new_enemy(offscreen := true) -> FieldMob:
 	var w0 := GameData.repo.get_word(m.words[0]) if not m.words.is_empty() else null
 	m.attr = int(w0.attrs[0]) if w0 and not w0.attrs.is_empty() else 0
 	m.slot = w0.slot if w0 else ""
-	m.apply_attr(GameData.mob_attrs, kinds, _rng)  # 속성마다 행동(사용자 의견). 파동은 예전 네 가지 그대로
+	m.apply_attr(GameData.mob_attrs, kinds, _rng)  # 속성마다 행동(사용자 의견)
+	m.set_level(_run.level())
 	m.max_hp = _run.mob_hp(m.kind)  # 레벨이 올라도 한 방에 죽지 않는다
 	m.hp = m.max_hp
 	return m
@@ -576,8 +582,12 @@ func _view_rect() -> Rect2:
 
 
 ## 다시 나오기(잡힘·쓰러짐·멀어짐): 닫힌 곳(동굴·성)에서는 처음 들어갈 때만 나오고 더는 안 나온다(사용자 의견).
+## 동굴에서는 남은 수를 줄인다(GameData.cave_mobs, 들어갈 때 새로 센다).
 func _respawn() -> FieldMob:
-	return null if _cave != "" else _new_enemy()
+	if _cave != "":
+		GameData.cave_mobs[_cave] = maxi(0, int(GameData.cave_mobs.get(_cave, 0)) - 1)
+		return null
+	return _new_enemy()
 
 
 ## 조우 단어: 그 스테이지 필드 1차, 빈도가 높을수록 자주(01-rpg-base '희귀도'). 다시 잡을 단어가 있으면 섞는다.
@@ -1245,8 +1255,8 @@ func _spawn_eater() -> void:
 	m.kind = "eater"
 	m.max_hp = int(_hc["mob_hp"]["eater"])
 	m.hp = m.max_hp
-	var p := map.random_field_spot(GameFlow.cur(), _rng, _hero, 800, 1100, ENEMY_R)
-	if p == Vector2.INF:
+	var p := Vector2.INF if _cave != "" else map.random_field_spot(GameFlow.cur(), _rng, _hero, 800, 1100, ENEMY_R, _view_rect())
+	if p == Vector2.INF:  # 동굴(닫힌 곳)에는 새로 나오지 않는다
 		_run.d["eaters"] = maxi(0, int(_run.d["eaters"]) - 1)  # 설 자리가 없으면 다음에 다시
 		return
 	m.pos = p
@@ -2027,9 +2037,6 @@ func _draw_attr_body(e: FieldMob, p: Vector2) -> void:
 	MobArt.draw(self, shape, p, ENEMY_R, col, UiKit.INK)
 	draw_circle(p + Vector2(-9, -4), 3.5, UiKit.INK)
 	draw_circle(p + Vector2(9, -4), 3.5, UiKit.INK)
-	if e.slot != "":  # 부위 첫 글자
-		var nm := t("name.slot." + e.slot)
-		draw_string(ThemeDB.fallback_font, p + Vector2(-12, 16), nm.substr(0, 1), HORIZONTAL_ALIGNMENT_CENTER, 24, 16, UiKit.INK)
 
 
 func _draw_mob(e: FieldMob, p: Vector2) -> void:

@@ -174,12 +174,12 @@ func clear_line(a: Vector2, b: Vector2) -> bool:
 	return true
 
 
-## 무기가 지나가는 칸: 걸을 수 있는 칸과 마을 성벽(M) 위(사용자 의견: 마을 안에서 바깥으로 쏜다).
+## 무기가 지나가는 칸: 걸을 수 있는 칸만. 마을 성벽도 막는다(사용자 의견: 입구로는 쏠 수 있지만 성벽 너머로는 안 된다).
 func shot_passes(c: Vector2i) -> bool:
-	return walkable(c, {}, true) or ch(c) == "M"
+	return walkable(c, {}, true)
 
 
-## a에서 b까지 무기가 막히지 않는가(성벽 위로는 넘어간다).
+## a에서 b까지 무기가 막히지 않는가(벽·성벽에 막힌다).
 func shot_line(a: Vector2, b: Vector2) -> bool:
 	var n := int(ceil(a.distance_to(b) / (tile * 0.4)))
 	for k in range(1, n):

@@ -163,7 +163,7 @@ func _move_shots(delta: float, enemies: Array, map: WorldMap, origins: Dictionar
 					fx.append({"type": "slam", "a": sh["to"], "r": float(sh["r"]), "t": 0.0, "max": 0.35, "unit": sh["unit"]})
 					shots.erase(sh)
 				continue
-		if not map.shot_passes(map.cell(sh["pos"])):  # 벽을 뚫지 못한다: 부딪히면 떨어진다(마을 성벽 위로는 넘어간다)
+		if not map.shot_passes(map.cell(sh["pos"])):  # 벽·성벽을 뚫지 못한다: 부딪히면 떨어진다
 			shots.erase(sh)
 			continue
 		for e in enemies:

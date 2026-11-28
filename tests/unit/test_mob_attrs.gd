@@ -27,12 +27,28 @@ func test_every_attr_has_behavior_and_shape() -> void:
 		assert_true(c.has("move") and c.has("shape"), "속성 %d" % a)
 
 
-func test_wave_keeps_old_four_kinds() -> void:
-	var seen := {}
-	for i in 80:
-		seen[_mob(4).kind] = true
-	for k in ["wander", "chase", "flee", "rush"]:
-		assert_true(seen.has(k), "파동은 예전 네 가지가 섞인다: " + k)
+func test_wave_is_one_move_that_comes_and_goes_and_grows_with_level() -> void:
+	for i in 10:
+		assert_eq(_mob(4).kind, "wave", "파동은 언제나 물결(속성마다 하나)")
+	var m := _mob(4)
+	m.pos = Vector2(300, 0)
+	var toward := 0
+	var away := 0
+	for i in 200:  # 2.2초 주기를 넘게
+		var v := m.steer(Vector2.ZERO, 0.02, GameData.field["kinds"], GameData.rng)
+		if v.x < -1.0:
+			toward += 1
+		elif v.x > 1.0:
+			away += 1
+	assert_gt(toward, away, "조금씩 다가온다")
+	assert_gt(away, 0, "물러나기도 한다")
+	var lo := _mob(4)
+	lo.set_level(1)
+	var hi := _mob(4)
+	hi.set_level(15)
+	assert_gt(hi.wave_scale, lo.wave_scale, "사냥 레벨이 오르면 더 멀리·빠르게")
+	hi.set_level(999)
+	assert_almost_eq(hi.wave_scale, float(GameData.mob_attrs["moves"]["wave"]["max_scale"]), 0.001)
 
 
 func test_authority_shield_blocks_one_hit() -> void:
