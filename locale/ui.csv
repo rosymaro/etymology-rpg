@@ -317,6 +317,8 @@ ui.npc.s01_3,"마을 사람: 폼(form) 잡는다는 게 모양을 잡는다는 �
 ui.npc.s01_4,"마을 사람: 공방 사람들이 단어를 두드려서 만든대요. 말도 만드는 건가 봐요."
 ui.npc.s01_5,"마을 사람: 병원 간호사님은 3분은 꼭 쉬라고 해요. 엄청 단호하죠."
 ui.npc.s01_6,"마을 사람: 말뿌리 나무가 시들어서 다들 말을 잊어버렸대요."
+ui.quiz.variant,"{text}는 {root}의 변형이고, '{meaning}' 뜻이에요."
+ui.quiz.lost_piece,"{root}('{meaning}')는 이 단어에서 모양이 사라졌어요."
 ui.quiz.infer_hint,조각 뜻을 이어서 단어 뜻을 짐작해 보세요
 ui.prep.roots,"장착 어근(유닛 창에서 바꿔요): {list}"
 ui.party.loadout,장착

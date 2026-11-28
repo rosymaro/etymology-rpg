@@ -108,7 +108,8 @@ func pull(n: int, free := false) -> void:
 		var parts := PieceSplit.split(w.id, w.etym)
 		var q := InferenceQuestion.new()
 		q.parts = parts
-		_info.text = (t("ui.gacha.new_word") + "  " if got[0]["new"] else "") + (q.explain(w.meaning) if parts.size() > 1 else "%s = %s" % [w.id, w.meaning])
+		var notes := GameText.etym_notes(parts, w.etym)
+		_info.text = (t("ui.gacha.new_word") + "  " if got[0]["new"] else "") + (q.explain(w.meaning) if parts.size() > 1 else "%s = %s" % [w.id, w.meaning]) + ("\n" + notes if notes != "" else "")
 	else:
 		_info.text = t("ui.gacha.news").format({"n": news.size()})
 	_busy = false

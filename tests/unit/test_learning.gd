@@ -95,3 +95,37 @@ func test_record_counts_right_answers_per_piece() -> void:
 	var s := GameState.new()
 	s.pieces = pieces
 	assert_eq(GameState.from_dict(s.to_dict()).pieces["forma"]["right"], 1, "저장된다")
+
+
+## 사용자 의견: 철자에 어원 모양이 그대로 없어도 자른다(presentation = pre + sent + ation), 설명은 '변형'으로
+func test_presentation_splits_into_pre_sent_ation() -> void:
+	var w := GameData.repo.get_word("presentation")
+	var parts := PieceSplit.split(w.id, w.etym)
+	var texts: Array = parts.map(func(p: Dictionary) -> String: return p["text"])
+	assert_eq(texts, ["pre", "sent", "ation"])
+	var notes := GameText.etym_notes(parts, w.etym)
+	assert_string_contains(notes, "pre는 prae-의 변형")
+	assert_string_contains(notes, "sent는 esse (futurus)의 변형")
+
+
+func test_every_word_cuts_every_piece_it_still_has() -> void:
+	var cut := 0
+	for id in GameData.repo.all_ids():
+		var w := GameData.repo.get_word(id)
+		var parts := PieceSplit.split(w.id, w.etym)
+		var joined := ""
+		var pieces := 0
+		for p in parts:
+			joined += String(p["text"])
+			if String(p["piece"]) != "":
+				pieces += 1
+		assert_eq(joined, w.id, "이어 붙이면 단어: " + w.id)
+		var want := 0
+		for e in w.etym:
+			if String(e.get("form", "")) != "" and not bool(e.get("lost", false)):
+				want += 1
+		if pieces != want:
+			fail_test("조각이 빠졌다: %s %d/%d" % [w.id, pieces, want])
+			return
+		cut += pieces
+	assert_gt(cut, 12000)

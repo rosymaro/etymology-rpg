@@ -184,7 +184,9 @@ func _show_parts(q: QuizQuestion, reveal: bool) -> void:
 			card.scale = Vector2(0.8, 0.8)
 			create_tween().tween_property(card, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK)
 	if reveal:
-		_hint_lbl.text = iq.explain(GameData.repo.get_word(iq.word_id).meaning)
+		var w := GameData.repo.get_word(iq.word_id)
+		var notes := GameText.etym_notes(iq.parts, w.etym)
+		_hint_lbl.text = iq.explain(w.meaning) + ("\n" + notes if notes != "" else "")
 	else:
 		_hint_lbl.text = t("ui.quiz.infer_hint")
 
