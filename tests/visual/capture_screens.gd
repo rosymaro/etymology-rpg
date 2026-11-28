@@ -301,13 +301,37 @@ func _run() -> void:
 	(main.current() as DexScreen)._show(gd.repo.get_word(field[0].id))
 	await _shot("13_dex_detail")
 	main.flow.go_party()
+	await get_tree().create_timer(0.3).timeout
+	for o in main.current().find_children("*", "TutorialOverlay", true, false):
+		o._finish()
 	await _shot("14_party")
+	var ps := main.current() as PartyScreen
+	ps._magic_popup("deck", 0)
+	await _shot("14_party_magic")
+	ps._close_popup()
+	ps._sel = s.joined[0]
+	ps._refresh()
+	await _shot("14_party_unit")
+	ps._gear_unit = s.joined[0]
+	ps._refresh()
+	await get_tree().create_timer(0.2).timeout
+	await _shot("14_party_gear")
+	ps._gear_popup(s.joined[0], "head")
+	await _shot("14_party_gear_pick")
+	ps._close_popup()
 	s.wallet = 1200
-	main.flow.go_gacha()
+	main.flow.go_field()
+	await get_tree().process_frame
+	var gs := main.flow.go_gacha()
 	await _shot("17_gacha")
-	(main.current() as GachaScreen).pull(10)
+	gs.pull(1)
+	await get_tree().create_timer(0.35).timeout
+	await _shot("17_gacha_spin")
+	await get_tree().create_timer(1.2).timeout
+	gs.pull(10)
 	await get_tree().create_timer(2.4).timeout
 	await _shot("17_gacha_10")
+	gs.queue_free()
 	main.flow.go_options(main.flow.go_field)
 	await _shot("15_options")
 	main.notice(TranslationServer.translate("ui.boss.gate").format({"need": 77, "have": 40}))

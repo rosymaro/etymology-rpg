@@ -708,9 +708,28 @@ func give_treasure(reward: String) -> String:
 # ----- 마을 -----
 
 ## 말 뽑기(07-fun 7절, 마을 광장).
-func go_gacha() -> void:
+## 필드에서는 배경 없이 필드 위에 겹쳐 연다(사용자 의견). 돌려주는 값: 연 뽑기 화면.
+func go_gacha() -> GachaScreen:
+	var g := GachaScreen.new()
+	if main.current() is FieldScreen:
+		g.main = main
+		var fs := main.current() as FieldScreen
+		var hidden: Array[Control] = []  # 필드 위쪽 카드·단추는 잠깐 감춘다(지도와 인물만 비친다)
+		for c in fs.get_children():
+			if c is Control and c != fs._mv and (c as Control).visible:
+				(c as Control).visible = false
+				hidden.append(c)
+		g.tree_exited.connect(func() -> void:
+			for c in hidden:
+				if is_instance_valid(c):
+					c.visible = true)
+		main._overlay.add_child(g)
+		g.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		g.open({"overlay": true})
+		return g
 	GameData.set_route({"s": "gacha"})
-	main.show_screen(GachaScreen.new())
+	main.show_screen(g)
+	return g
 
 
 func go_forge() -> void:

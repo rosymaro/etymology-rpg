@@ -35,6 +35,7 @@ ui.title_exam.locked_today,오늘은 시험을 볼 수 없어요. 내일 다시 
 ui.title_exam.need,단어 {need}개를 모으면 볼 수 있어요 (지금 {have}개)
 ui.common.ok,확인
 ui.common.back,돌아가기
+ui.common.close,닫기
 ui.title.name,어원 RPG
 ui.title.sub,말뿌리를 되찾는 여행
 ui.title.continue,이어하기
@@ -155,6 +156,16 @@ ui.party.field_attack,필드: {w}
 ui.party.companions_full,"동행은 {n}명까지예요. 다른 유닛을 먼저 빼 주세요"
 ui.party.companions_one,"한 명은 꼭 데리고 다녀야 해요"
 ui.party.title,파티
+ui.party.hero,주인공
+ui.party.not_joined,???
+ui.party.comp_row,"{name} · 어근 {root}"
+ui.party.in_use,다른 칸에 있음
+ui.party.lv_exp,Lv {level} · 경험치 {exp}
+ui.party.stats,"공{atk} 방{def} 체{hp} · 코인{coins} · {attr}"
+ui.party.gear,장비
+ui.party.gear_title,{name}의 장비
+ui.party.now_stats,지금 능력치
+ui.party.no_gear,이 부위에 입을 단어가 아직 없어요
 ui.party.unit,"{name} Lv{level} · 공{atk} 방{def} 체{hp} · 코인{coins} · {attr}"
 ui.party.attr,{attr} {count}
 ui.party.attr_off,속성 없음
