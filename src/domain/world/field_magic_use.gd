@@ -43,6 +43,13 @@ func use(id: String, hero: Vector2, mobs: Array) -> bool:
 				var d := fm.pos - hero
 				if d.length() <= float(c["r"]):
 					fm.set_meta("push", (d.normalized() if d.length() > 1.0 else Vector2.RIGHT) * float(c["push"]))
+		"ex":  # 필드: 둘레(r) 안의 몹을 r 바깥까지 밀어낸다(피해 없음). 동굴에서 나가기는 화면이 한다
+			for m in mobs:
+				var fm := m as FieldMob
+				var d := fm.pos - hero
+				if d.length() < float(c.get("r", 0.0)):
+					var dir := d.normalized() if d.length() > 1.0 else Vector2.RIGHT
+					fm.set_meta("push", dir * (float(c["r"]) + 30.0 - d.length()))
 		"sub":
 			sneak = float(c["sec"])
 		"pro":

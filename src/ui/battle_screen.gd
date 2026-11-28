@@ -289,8 +289,8 @@ func _show_popup(text_lines: Array[String], at: Vector2, c: Combatant = null) ->
 
 
 func _who(side: int, idx: int) -> String:
-	if side == Combatant.ALLY:
-		return UiKit.unit_name(_party[idx])
+	if side == Combatant.ALLY:  # 기록은 짧게 이름만(사용자 의견: 한 줄로)
+		return t("name.char." + GameData.UNIT_CHARS[_party[idx] - 1])
 	return _ctx.enemies[idx].word_id
 
 

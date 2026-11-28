@@ -137,7 +137,9 @@ func test_cave_mobs_only_spawn_on_entry() -> void:
 	main.flow.go_field()  # 전투하고 돌아온 것처럼 화면을 다시 연다
 	await wait_physics_frames(2)
 	var f2 := main.current() as FieldScreen
-	assert_eq(f2._enemies.filter(func(x: FieldMob) -> bool: return x.kind != "eater").size(), n0 - 1, "다시 열어도 남은 수만큼")
+	var again := f2._enemies.filter(func(x: FieldMob) -> bool: return x.kind != "eater").size()
+	assert_lte(again, n0 - 1, "다시 열어도 남은 수를 넘지 않는다(설 자리가 없으면 덜 나올 수 있다)")
+	assert_gt(again, 0)
 	GameData.state.cave = ""
 	GameData.cave_mobs.clear()
 

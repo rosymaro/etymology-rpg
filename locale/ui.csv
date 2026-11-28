@@ -65,7 +65,7 @@ ui.field.hospital_s02,약초 오두막
 ui.field.boss_s02,초원 한가운데
 ui.npc.s02_hunter,"사냥꾼: 잡는 법을 잊어서 사냥감이 다 달아나… 단어를 잡아다 주면 생각날지도 몰라."
 ui.npc.s02_merchant,"상인: 퍼체이스? 쫓아가서 손에 넣는 거라던데… 그냥 돈을 내시면 돼요."
-ui.field.top,"{stage} · {title}  |  단어 {have}/{total} (필드 {fh}/{ft}, 마을 {th}/{tt}, 보스: {need}개 필요)"
+ui.field.top,"{stage} · {title} | 단어 {have}/{total} · 필드 {fh}/{ft} · 마을 {th}/{tt} · 보스 {need}개"
 ui.field.forge,대장간
 ui.field.tree,말뿌리 나무
 ui.field.board,게시판
@@ -116,7 +116,7 @@ ui.battle.coins_word,코인
 ui.battle.h_enter,▶ {who} 등장 · 코인 {coins} → {change}
 ui.battle.h_no_change,능력치 그대로
 ui.battle.h_magic_hit,"{who} 마법 효과: 체력 {h0}→{h1}, 공격 {a0}→{a1}"
-ui.battle.h_round,"{n}턴: {a} → {b} 피해 {to_b} (체력 {bh0}→{bh}), {b} → {a} 피해 {to_a} (체력 {ah0}→{ah})"
+ui.battle.h_round,"{n}턴  {b} ♥{bh0}→{bh}  ·  {a} ♥{ah0}→{ah}"
 ui.result.caught_all,모두 맞혀서 싸우지 않고 잡았어요!
 ui.result.won,승리! 단어를 모두 얻었어요
 ui.result.partial,일부를 쓰러뜨려 단어 하나를 얻었어요
@@ -148,19 +148,19 @@ ui.dex.group.field,필드
 ui.dex.group.town,마을
 ui.dex.group.evolved,진화
 ui.dex.group.boss,보스
-ui.party.companions,"동행 {have}/{n}: {names}  (유닛 이름 왼쪽의 '동행' 버튼으로 골라요. 필드에서 주인공을 따라다니며 싸워요)"
+ui.party.companions,"동행 {have}/{n}: {names}"
 ui.party.with_on,동행 중
 ui.party.with_off,동행
-ui.party.field_attack,필드 공격: {w}
+ui.party.field_attack,필드: {w}
 ui.party.companions_full,"동행은 {n}명까지예요. 다른 유닛을 먼저 빼 주세요"
 ui.party.companions_one,"한 명은 꼭 데리고 다녀야 해요"
 ui.party.title,파티
-ui.party.unit,{name}  Lv {level} (경험치 {exp})  공격 {atk} 방어 {def} 체력 {hp} · 코인 {coins}개 · {attr}
-ui.party.attr,속성 {attr} {count}개
-ui.party.attr_off,속성 꺼짐
+ui.party.unit,"{name} Lv{level} · 공{atk} 방{def} 체{hp} · 코인{coins} · {attr}"
+ui.party.attr,{attr} {count}
+ui.party.attr_off,속성 없음
 ui.party.choose,{name}의 {slot}: 입을 단어를 고르세요
-ui.boss.fresh_up,이제부터 이 스테이지에서는 처음 보는 단어가 더 자주 나와요
-ui.boss.gate,길이 막혀 있어요. 이 스테이지 단어를 {need}개 모아야 지나갈 수 있어요(지금 {have}개).
+ui.boss.fresh_up,이제 처음 보는 단어가 더 자주 나와요
+ui.boss.gate,보스 길이 막혔어요 · 단어 {have}/{need}
 ui.boss.lost,destroyer에게 졌어요. 단어를 더 모으고 진화해서 다시 도전해요.
 ui.boss.already,{boss}는 이미 물리쳤어요.
 ui.dir.e,동쪽
@@ -281,7 +281,7 @@ ui.quest.s01_q_magic.title,절벽 아래 창고
 ui.quest.s01_q_magic.desc,"언덕 앞 절벽 아래로 내려가야 해요. 필드 마법 de-(아래로)가 있으면 내려갈 수 있어요."
 ui.quest.s01_q_magic.hint,"절벽이 가팔라요. 필드 마법 de-(아래로)가 있으면 내려갈 수 있어요."
 ui.quest.state_ready,할 수 있어요! 길목에 가 보세요
-ui.quest.none,"아직 퀘스트가 없어요. 들판에서 단어를 잡으며 동료를 만나 보세요."
+ui.quest.none,"아직 퀘스트가 없어요 · 들판에서 동료를 만나 보세요"
 ui.quest.tap_progress,"{title}: {have}/{need}개 모았어요"
 ui.quest.tap_left,"남은 단어: {words}"
 ui.quest.tap_stage,"이 스테이지 단어 {have}개 모았어요(보스까지 {need}개)"
@@ -317,8 +317,9 @@ ui.npc.s01_3,"마을 사람: 폼(form) 잡는다는 게 모양을 잡는다는 �
 ui.npc.s01_4,"마을 사람: 공방 사람들이 단어를 두드려서 만든대요. 말도 만드는 건가 봐요."
 ui.npc.s01_5,"마을 사람: 병원 간호사님은 3분은 꼭 쉬라고 해요. 엄청 단호하죠."
 ui.npc.s01_6,"마을 사람: 말뿌리 나무가 시들어서 다들 말을 잊어버렸대요."
-ui.quiz.variant,"{text}는 {root}의 변형이고, '{meaning}' 뜻이에요."
-ui.quiz.lost_piece,"{root}('{meaning}')는 이 단어에서 모양이 사라졌어요."
+ui.quiz.variant,"{text} ← {root}"
+ui.quiz.lost_piece,"{root}({meaning}) 사라짐"
+ui.quiz.variant_head,"변형: "
 ui.quiz.infer_hint,조각 뜻을 이어서 단어 뜻을 짐작해 보세요
 ui.prep.roots,"장착 어근(유닛 창에서 바꿔요): {list}"
 ui.party.loadout,장착
@@ -335,7 +336,7 @@ ui.party.pick_deck,전투 마법 고르기(전투마다 덱 4개 중 3개가 나
 ui.party.pick_root,"{name}의 어근 고르기"
 ui.field.magic_used,{magic}!
 ui.field.magic_soon,이 마법의 필드 효과는 아직 준비 중이에요
-ui.hunt.hud,"사냥 Lv {lv}  ·  내 코인 {wallet}\n주머니: 구슬 {orbs} · 코인 {coins}/{cap} · 단어 {words}"
+ui.hunt.hud,"사냥 Lv {lv} · 내 코인 {wallet}\n구슬 {orbs} · 코인 {coins}/{cap} · 단어 {words}"
 ui.quiz.caught_some,"맞힌 단어 {words}는 싸우지 않고 잡았어요! 틀린 단어 {n}개만 싸워요"
 ui.trait.shield_regen,"방어막 다시 차는 시간 -{v}%"
 ui.trait.extra_orb,"구슬 하나 더 떨어질 확률 {v}%"
@@ -357,7 +358,7 @@ ui.trait.eater_late,"뿌리먹이가 늦게 +{v}%"
 ui.trait.rare_mob,"희귀 몹 확률 +{v}%"
 ui.trait.execute,"약한 몹에게 피해 +{v}"
 ui.trait.keep_bag,"지면 잃는 주머니 -{v}%"
-ui.trait.title,필드 특성(데리고 다니는 유닛의 장비 속성)
+ui.trait.title,필드 특성 (동행 장비 속성)
 ui.trait.none,아직 없어요. 장비를 걸치면 속성마다 특성이 생겨요
 ui.trait.shields,"방어막 {n}개 (한 유닛이 같은 속성 장비 5개)"
 ui.hunt.fake,가짜였어요! 펑 사라졌어요
@@ -368,7 +369,7 @@ ui.hunt.hud_town,내 코인 {wallet}
 ui.hunt.max,MAX
 ui.hunt.level_max,"사냥 레벨이 가장 높아요(MAX). 더는 오르지 않아요"
 ui.hunt.coins_full,"주머니에 코인이 가득 찼어요({cap}개)! 마을로 돌아가 내 것으로 만드세요"
-ui.hunt.banked,"마을에서 주머니를 풀었어요: 구슬 {orbs}(경험치), 코인 +{coins} → 내 코인 {wallet}, 단어 {words}"
+ui.hunt.banked,"마을 도착 · 코인 +{coins} → {wallet} · 단어 +{words}"
 ui.hunt.word,"단어를 주웠어요: {word} (마을에 가면 내 것)"
 ui.hunt.eater,뿌리먹이가 나타났어요! 공격을 뚫고 다가와요
 ui.hunt.level_up,"사냥 레벨 {lv}! 하나를 고르세요"
@@ -392,7 +393,7 @@ ui.gacha.free,"무료 뽑기 {n}번 돌리기"
 ui.hunt.free_pulls,"사냥 레벨 {lv}! 무료 뽑기 {n}번을 받았어요"
 ui.hunt.free_go,뽑으러 가기
 ui.gacha.title,말 뽑기
-ui.gacha.how,"코인을 넣고 손잡이를 돌리면 단어가 하나 나와요. 빈도가 낮은 단어일수록 드물어요(★). 10번 뽑기는 ★ 하나 이상!"
+ui.gacha.how,"코인으로 단어 뽑기 · 드문 단어일수록 ★ · 10번 뽑기는 ★ 1개 이상"
 ui.gacha.coins,"코인 {n}"
 ui.gacha.pull,"{n}번 ({price})"
 ui.gacha.no_coins,코인이 모자라요. 들판에서 사냥하거나 보물을 찾아 보세요.

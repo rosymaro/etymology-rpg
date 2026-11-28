@@ -70,7 +70,7 @@ sys.field_magic.ob,ob- 밀어내기
 sys.field_magic.prae,prae- 미리 보기
 sys.field_magic.in,in- 들어가기
 sys.field_magic.pro,pro- 앞길 비추기
-sys.field_magic.ex,ex- 밖으로
+sys.field_magic.ex,ex- 밖으로·밀어내기
 sys.field_magic.in_neg,in- 보이지 않기
 sys.field_magic.un,un- 열기
 sys.field_magic.dis,dis- 풀기

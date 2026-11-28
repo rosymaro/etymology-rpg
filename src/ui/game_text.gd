@@ -92,7 +92,7 @@ static func companion_swap(gone: Array, came: Array, levels: Dictionary) -> Stri
 	return "\n".join(lines)
 
 
-## 조각 설명(사용자 의견): "pre는 prae-의 변형이고, '앞에' 뜻이에요." 모양이 사라진 조각도 알려 준다.
+## 조각 설명(사용자 의견): 한 줄로 "변형: pre ← prae- · sent ← esse (futurus) · in-(안으로) 사라짐".
 static func etym_notes(parts: Array, etym: Array) -> String:
 	var lines: Array[String] = []
 	for p in parts:
@@ -100,4 +100,4 @@ static func etym_notes(parts: Array, etym: Array) -> String:
 			lines.append(tr_("ui.quiz.variant").format({"text": p["text"], "root": p["root"], "meaning": p["meaning"]}))
 	for l in PieceSplit.lost(etym):
 		lines.append(tr_("ui.quiz.lost_piece").format({"root": l["root"], "meaning": l["meaning"]}))
-	return "\n".join(lines)
+	return (tr_("ui.quiz.variant_head") + "  ·  ".join(lines)) if not lines.is_empty() else ""
