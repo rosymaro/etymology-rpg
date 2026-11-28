@@ -1004,8 +1004,7 @@ func _town_edge() -> void:
 		_enemies = _enemies.filter(func(e: FieldMob) -> bool: return e.kind != "eater")
 	else:
 		_sync_pals()  # 마을에서 유닛이 새로 들어왔거나 동행을 바꿨으면 보이는 동행도 같이 바꾼다(공격만 바뀌던 버그)
-		_run.reset()
-		_uw.clear()
+		_uw.clear()  # 사냥 레벨은 그대로 이어 간다(사용자 의견: 퀴즈를 틀려 전투로 갈 때만 잃는다)
 		_tutorial("hunt")
 
 

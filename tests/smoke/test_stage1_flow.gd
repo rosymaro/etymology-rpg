@@ -283,8 +283,9 @@ func test_field_hunt_hammer_kills_mob_and_bag_is_banked_in_town() -> void:
 	var exp0 := GameData.state.unit_exp[0]
 	f._hero = f.map.start(1)
 	await wait_physics_frames(3)
-	assert_eq(int(f._run.bag()["orbs"]), 0, "마을에 들어가면 주머니를 푼다")
-	assert_gt(GameData.state.unit_exp[0], exp0, "구슬이 경험치가 된다")
+	var orbs := int(f._run.bag()["orbs"])
+	assert_gt(orbs, 0, "사용자 의견: 마을에 들어가도 구슬은 그대로")
+	assert_gt(GameData.state.unit_exp[0], exp0, "새로 모은 구슬이 경험치가 된다")
 
 
 func test_mobs_never_enter_town_and_look_by_attribute() -> void:

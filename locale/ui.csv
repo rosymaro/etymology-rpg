@@ -52,6 +52,7 @@ ui.menu.party,파티
 ui.menu.save,저장
 ui.menu.saved,저장했어요
 ui.menu.option,옵션
+ui.hunt.orbs_stolen,히잉~ 우리가 모은 어원의 구슬을 빼앗겼어.
 ui.field.burrow,"de-! 땅속에 숨었어요. 움직이면 나와요"
 ui.field.descend,de-! 일행이 절벽 아래로 천천히 내려가요
 ui.field.enter_stage,"스테이지 {n}: {name}"
@@ -319,7 +320,10 @@ ui.npc.s01_6,"마을 사람: 말뿌리 나무가 시들어서 다들 말을 잊�
 ui.quiz.infer_hint,조각 뜻을 이어서 단어 뜻을 짐작해 보세요
 ui.prep.roots,"장착 어근(유닛 창에서 바꿔요): {list}"
 ui.party.loadout,장착
-ui.party.town_only,마법과 어근은 마을에서만 바꿀 수 있어요
+ui.party.town_only,"마법, 어근, 동행은 마을에서만 바꿀 수 있어요(동행은 마을 여관에 머물러요)"
+ui.party.swap_rest,{names} 마을에서 쉬고 있어.
+ui.party.swap_join,"{names}, 우리 같이 놀자~"
+ui.party.swap_level,(사냥 레벨을 이어받았어요: {list})
 ui.party.field,필드 마법
 ui.party.deck,전투 마법 덱
 ui.party.empty,(비움)

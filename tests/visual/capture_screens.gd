@@ -96,6 +96,25 @@ func _run() -> void:
 	await get_tree().create_timer(0.3).timeout
 	await _shot("04_mob_shapes")
 	fs._enemies.clear()
+	var cf := ColorRect.new()  # 전투 카드 테두리 20가지(사용자 의견: 속성마다)
+	cf.color = UiKit.PAPER
+	cf.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	main._overlay.add_child(cf)
+	for k in 20:
+		var bg := ColorRect.new()
+		bg.color = MinigameScreen.attr_color(k + 1).lightened(0.35)
+		bg.position = Vector2(14 + (k % 4) * 176, 20 + (k / 4) * 250)
+		bg.size = Vector2(164, 236)
+		cf.add_child(bg)
+		var fr := CardFrame.new()
+		bg.add_child(fr)
+		fr.attr = k + 1
+		var lb := UiKit.label(t_attr(k + 1), 20)
+		lb.position = Vector2(40, 100)
+		bg.add_child(lb)
+	await get_tree().create_timer(0.3).timeout
+	await _shot("06_card_frames")
+	cf.queue_free()
 	fs._fmagic.under = true  # de- 땅속 숨기: 가라앉는 중 / 그림자만
 	fs._sink = 0.5
 	fs.set_process(false)  # 가라앉는 한가운데를 멈춰 찍는다
@@ -378,3 +397,6 @@ func _card_gallery(gd: Node) -> void:
 			row.add_child(WordCard.make(picked[n][i], "", 22, Callable(), 1 if i % 2 == 0 else 0))
 	await _shot("31_word_cards")
 	layer.queue_free()
+
+func t_attr(a: int) -> String:
+	return TranslationServer.translate("name.attr.%02d" % a)

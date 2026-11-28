@@ -140,3 +140,36 @@ func test_cave_mobs_only_spawn_on_entry() -> void:
 	assert_eq(f2._enemies.filter(func(x: FieldMob) -> bool: return x.kind != "eater").size(), n0 - 1, "다시 열어도 남은 수만큼")
 	GameData.state.cave = ""
 	GameData.cave_mobs.clear()
+
+
+## 사용자 의견: 퀴즈를 틀려 전투로 들어가면 사냥 레벨과 구슬을 빼앗긴다(코인·단어는 그대로)
+func test_wrong_quiz_steals_level_and_orbs() -> void:
+	GameData.new_game("하늘")
+	GameData.tutorials_enabled = false
+	var run := GameData.hunt_run()
+	run.d["level"] = 4
+	run.pick_orbs(5)
+	run.pick_coins(3)
+	run.pick_word("format")
+	main.flow._after_encounter(["information"] as Array[String], [false] as Array[bool])
+	await wait_physics_frames(2)
+	assert_eq(run.level(), 0, "사냥 레벨을 잃는다")
+	assert_eq(int(run.bag()["orbs"]), 0, "구슬을 잃는다")
+	assert_eq(int(run.bag()["coins"]), 3, "코인은 그대로")
+	assert_eq(run.bag()["words"], ["format"], "단어도 그대로")
+	var said := false
+	for n in main._overlay.get_children():
+		if n is NoticeOverlay:
+			said = true
+	assert_true(said, "히잉~ 알림")
+	for n in main._overlay.get_children():
+		n.queue_free()
+
+
+func test_companion_swap_line() -> void:
+	assert_eq(GameText.josa("뚝딱", "은", "는"), "뚝딱은")
+	assert_eq(GameText.josa("빙글", "아", "야"), "빙글아")
+	assert_eq(GameText.josa("조잘", "아", "야"), "조잘아")
+	var line := GameText.companion_swap([1], [10], {10: 2})
+	assert_string_contains(line, "마을에서 쉬고 있어")
+	assert_string_contains(line, "같이 놀자")
