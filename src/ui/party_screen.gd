@@ -330,7 +330,7 @@ func _build_gear(u: int) -> void:
 	_detail.add_child(head)
 	var fig := GearBody.new()
 	fig.unit = u
-	fig.custom_minimum_size = Vector2(0, 640)
+	fig.custom_minimum_size = Vector2(0, 680)
 	_detail.add_child(fig)
 	await get_tree().process_frame  # 크기가 정해진 뒤 부위 단추를 놓는다
 	if not is_instance_valid(fig):
@@ -448,7 +448,8 @@ class Portrait extends Control:
 		queue_redraw()
 
 
-## 장비 페이지의 몸: 유닛 색 실루엣(머리·몸통·팔·다리)과 부위 자리. 단추는 화면이 slot_pos에 놓는다.
+## 장비 페이지의 몸(사용자 의견: 톤앤매너를 지켜 곱게). 갈색 먹선, 유닛 색 파스텔, 둥근 팔다리, 볼터치 얼굴, 부드러운 빛과 그림자.
+## 단추는 화면이 slot_pos에 놓는다(머리·가슴·장갑 = 왼손·무기 = 오른손·신발).
 class GearBody extends Control:
 	var unit := 1
 
@@ -456,42 +457,91 @@ class GearBody extends Control:
 		var c := Vector2(sz.x / 2.0, 0)
 		match slot:
 			"head":
-				return c + Vector2(0, 80)
+				return c + Vector2(0, 40)
 			"chest":
-				return c + Vector2(0, 250)
+				return c + Vector2(0, 300)
 			"hands":
-				return c + Vector2(-sz.x * 0.3, 330)
+				return c + Vector2(-minf(sz.x * 0.33, 160.0), 380)
 			"weapon":
-				return c + Vector2(sz.x * 0.3, 330)
+				return c + Vector2(minf(sz.x * 0.33, 160.0), 380)
 			"feet":
-				return c + Vector2(0, 560)
+				return c + Vector2(0, 600)
 		return c
 
+	## 먹선을 두른 둥근 막대(팔·다리)
+	func _limb(a: Vector2, b: Vector2, r: float, col: Color) -> void:
+		var ink := UiKit.INK
+		draw_line(a, b, ink, r * 2.0 + 8.0, true)
+		draw_circle(a, r + 4.0, ink)
+		draw_circle(b, r + 4.0, ink)
+		draw_line(a, b, col, r * 2.0, true)
+		draw_circle(a, r, col)
+		draw_circle(b, r, col)
+		var n := (b - a).normalized().orthogonal()  # 한쪽 빛
+		draw_line(a - n * r * 0.45, b - n * r * 0.45, col.lightened(0.28), r * 0.5, true)
+
+	func _ball(p: Vector2, r: float, col: Color) -> void:
+		draw_circle(p, r + 4.0, UiKit.INK)
+		draw_circle(p, r, col)
+		draw_circle(p + Vector2(-r * 0.3, -r * 0.3), r * 0.35, col.lightened(0.3))
+
+	func _oval(p: Vector2, rx: float, ry: float, col: Color) -> void:
+		draw_set_transform(p, 0.0, Vector2(1.0, ry / rx))
+		draw_circle(Vector2.ZERO, rx, col)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
 	func _draw() -> void:
-		var col := PalArt.color(unit).lightened(0.25)
+		var base := PalArt.color(unit)
+		var col := base.lightened(0.35)
+		var dark := base.darkened(0.12)
 		var ink := UiKit.INK
 		var c := Vector2(size.x / 2.0, 0)
-		# 바닥 그림자
-		draw_set_transform(c + Vector2(0, 610), 0.0, Vector2(1.0, 0.22))
-		draw_circle(Vector2.ZERO, 120, Color(0.2, 0.12, 0.06, 0.16))
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		# 다리
+		# 뒤의 둥근 빛(무대)과 바닥 그림자
+		draw_circle(c + Vector2(0, 330), 235, Color(base.lightened(0.6), 0.55))
+		draw_arc(c + Vector2(0, 330), 235, 0, TAU, 72, Color(base.lightened(0.3), 0.6), 4, true)
+		_oval(c + Vector2(0, 640), 150, 26, Color(0.24, 0.14, 0.07, 0.2))
+		# 다리와 신발
 		for sx in [-1.0, 1.0]:
-			var leg := PackedVector2Array([c + Vector2(sx * 18, 380), c + Vector2(sx * 62, 380), c + Vector2(sx * 58, 560), c + Vector2(sx * 22, 560)])
-			draw_colored_polygon(leg, col.darkened(0.08))
-			draw_polyline(leg + PackedVector2Array([leg[0]]), ink, 4, true)
-		# 팔
+			_limb(c + Vector2(sx * 38, 430), c + Vector2(sx * 44, 572), 30, dark)
+			_oval(c + Vector2(sx * 52, 600), 50, 28, ink)
+			_oval(c + Vector2(sx * 52, 597), 45, 23, Color("8a6046"))
+			_oval(c + Vector2(sx * 40, 590), 16, 7, Color(1, 1, 1, 0.35))
+		# 팔(어깨 → 손)
 		for sx in [-1.0, 1.0]:
-			var arm := PackedVector2Array([c + Vector2(sx * 78, 190), c + Vector2(sx * 112, 200), c + Vector2(sx * 178, 320), c + Vector2(sx * 150, 336)])
-			draw_colored_polygon(arm, col.darkened(0.04))
-			draw_polyline(arm + PackedVector2Array([arm[0]]), ink, 4, true)
-		# 몸통
-		var body := PackedVector2Array([c + Vector2(-84, 180), c + Vector2(84, 180), c + Vector2(70, 390), c + Vector2(-70, 390)])
-		draw_colored_polygon(body, col)
-		draw_polyline(body + PackedVector2Array([body[0]]), ink, 4, true)
-		# 머리
-		draw_circle(c + Vector2(0, 100), 70, col.lightened(0.15))
-		draw_arc(c + Vector2(0, 100), 70, 0, TAU, 48, ink, 4, true)
-		draw_circle(c + Vector2(-22, 96), 6, ink)
-		draw_circle(c + Vector2(22, 96), 6, ink)
-		draw_arc(c + Vector2(0, 112), 14, 0.3, PI - 0.3, 12, ink, 3, true)
+			_limb(c + Vector2(sx * 92, 222), c + Vector2(sx * 150, 346), 24, col.darkened(0.05))
+			_ball(c + Vector2(sx * 158, 362), 27, col.lightened(0.08))
+		# 몸통: 둥근 네모 + 배 빛 + 단추
+		var body := Rect2(c + Vector2(-100, 190), Vector2(200, 250))
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = col
+		sb.set_corner_radius_all(56)
+		sb.border_color = ink
+		sb.set_border_width_all(4)
+		sb.anti_aliasing = true
+		draw_style_box(sb, body)
+		_oval(c + Vector2(-34, 250), 34, 46, Color(1, 1, 1, 0.22))
+		var belt := StyleBoxFlat.new()
+		belt.bg_color = dark
+		belt.set_corner_radius_all(10)
+		draw_style_box(belt, Rect2(c + Vector2(-96, 372), Vector2(192, 22)))
+		for k in 2:
+			draw_circle(c + Vector2(0, 236 + k * 46), 7, ink)
+			draw_circle(c + Vector2(0, 236 + k * 46), 4.5, Color("fff6e3"))
+		# 목
+		_limb(c + Vector2(0, 172), c + Vector2(0, 196), 22, col)
+		# 머리: 큰 동그라미, 반짝 눈, 볼터치, 웃는 입
+		var hc := c + Vector2(0, 104)
+		draw_circle(hc, 84, ink)
+		draw_circle(hc, 80, col.lightened(0.12))
+		draw_arc(hc, 66, PI * 1.12, PI * 1.42, 16, Color(1, 1, 1, 0.55), 9, true)
+		for sx in [-1.0, 1.0]:
+			_oval(hc + Vector2(sx * 28, 8), 9, 12, ink)
+			draw_circle(hc + Vector2(sx * 28 - 3, 3), 3.5, Color(1, 1, 1, 0.95))
+			_oval(hc + Vector2(sx * 48, 30), 15, 9, Color(UiKit.PINK.darkened(0.08), 0.85))
+		draw_arc(hc + Vector2(0, 30), 13, 0.35, PI - 0.35, 14, ink, 4, true)
+		# 머리 위 작은 새싹(어원 나무에서 자란 아이들)
+		draw_line(hc + Vector2(0, -80), hc + Vector2(4, -104), ink, 5, true)
+		_oval(hc + Vector2(-12, -108), 14, 8, ink)
+		_oval(hc + Vector2(-12, -108), 11, 5.5, UiKit.LEAF.darkened(0.15))
+		_oval(hc + Vector2(18, -104), 14, 8, ink)
+		_oval(hc + Vector2(18, -104), 11, 5.5, UiKit.LEAF.darkened(0.05))

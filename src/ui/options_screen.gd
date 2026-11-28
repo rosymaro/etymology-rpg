@@ -39,6 +39,12 @@ func open(args: Dictionary) -> void:
 		TutorialBook.reset_all(GameData.state)
 		GameData.save()
 		main.notice(t("ui.options.tutorial_reset")), UiKit.PAPER))
+	v.add_child(UiKit.button(t("ui.options.to_title"), func() -> void:  # 사용자 의견: 처음 화면으로
+		for ov in main._overlay.get_children():
+			ov.queue_free()
+		if GameData.state:
+			GameData.save()
+		main.flow.go_title(), UiKit.PAPER))
 	v.add_child(UiKit.button(t("ui.common.back"), _close))
 
 
