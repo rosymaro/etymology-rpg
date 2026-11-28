@@ -92,7 +92,7 @@ func _refresh() -> void:
 		cb.custom_minimum_size = Vector2(110, 52)
 		cb.disabled = not _in_town()
 		head.add_child(cb)
-		head.add_child(UiKit.wrap(UiKit.label(t("ui.party.unit").format({"name": UiKit.unit_name(u), "level": lv,
+		head.add_child(UiKit.wrap(UiKit.label(t("ui.party.unit").format({"name": t("name.char." + GameData.UNIT_CHARS[u - 1]), "level": lv,
 			"exp": s.unit_exp[u - 1], "atk": a.base.atk, "def": a.base.def, "hp": a.base.hp,
 			"coins": a.coins, "attr": attr_text}), 22)))
 		col.add_child(head)

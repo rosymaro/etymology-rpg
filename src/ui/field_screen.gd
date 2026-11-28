@@ -683,6 +683,7 @@ func _step(delta: float) -> void:
 		_pal_check = 0.5
 		if _pal_units() != Loadout.companions(GameData.state):
 			_sync_pals()
+		_update_top()  # 할 일·단어 수를 늘 새로(사용자 의견: 척척이 합류해 퀘스트가 생겨도 바로 안 바뀌었다)
 	_follow_pals(dir, delta)
 	var left: int = main.flow.rest_left()
 	if left > 0 and was_town and not map.is_town(_hero):  # 병원에서 쉬는 중: 마을 밖으로 못 나간다
@@ -963,10 +964,15 @@ func _cast(id: String) -> void:
 		_fmagic.use(id, _hero, [])
 		_go_home()
 		return
-	if id == "ex":  # 동굴에서 바로 밖으로
-		if map.in_cave(_hero):
+	if id == "ex":  # 동굴에서는 바로 밖으로, 필드에서는 둘레 몹을 공격 없이 바깥으로 밀어낸다(사용자 의견)
+		if map.is_cave:
 			_fmagic.use(id, _hero, [])
 			_leave_cave(map.nearest_exit(_hero))
+			return
+		_fmagic.use(id, _hero, _enemies)
+		_puffs.append({"pos": _hero, "t": 0.0})
+		_show_toast(t("ui.field.magic_used").format({"magic": GameText.field_magic_name(id)}))
+		queue_redraw()
 		return
 	if id == "de":  # 땅속으로(움직이면 풀린다)
 		_fmagic.use(id, _hero, [])

@@ -104,8 +104,8 @@ func test_presentation_splits_into_pre_sent_ation() -> void:
 	var texts: Array = parts.map(func(p: Dictionary) -> String: return p["text"])
 	assert_eq(texts, ["pre", "sent", "ation"])
 	var notes := GameText.etym_notes(parts, w.etym)
-	assert_string_contains(notes, "pre는 prae-의 변형")
-	assert_string_contains(notes, "sent는 esse (futurus)의 변형")
+	assert_string_contains(notes, "pre ← prae-")
+	assert_string_contains(notes, "sent ← esse (futurus)")
 
 
 func test_every_word_cuts_every_piece_it_still_has() -> void:

@@ -106,7 +106,7 @@ func test_stage1_loop() -> void:
 	var hist := "\n".join(bs.lines)
 	assert_string_contains(hist, "1턴", "기록에 턴이 남는다")
 	assert_string_contains(hist, "코인", "기록에 코인 결과가 남는다")
-	assert_string_contains(hist, "체력", "기록에 체력 변화가 남는다")
+	assert_string_contains(hist, "♥", "기록에 체력 변화가 남는다(♥)")
 	bs._end_btn.pressed.emit()
 	await wait_physics_frames(3)
 	for k in 12:  # 새 어근을 익힌 유닛이 기뻐하는 화면이 있으면 넘긴다
